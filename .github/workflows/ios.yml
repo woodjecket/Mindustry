@@ -28,8 +28,7 @@ jobs:
       with:
         java-version: '17'
     - name: iOS deploy
-      run:  |
-      ./gradlew ios:deploy
+      run: ./gradlew ios:deploy
     - name: Upload desktop JAR for testing
       with:
         name: Desktop JAR (zipped)
