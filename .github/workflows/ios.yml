@@ -30,3 +30,7 @@ jobs:
     - name: iOS deploy
       run:  |
       ./gradlew ios:deploy
+    - name: Upload desktop JAR for testing
+      with:
+        name: Desktop JAR (zipped)
+        path: ios/build/lib/
