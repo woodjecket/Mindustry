@@ -28,4 +28,4 @@ jobs:
       with:
         java-version: '17'
     - name: 'iOS deploy'
-      run:./gradlew ios:deploy
+      run: ./gradlew ios:deploy
