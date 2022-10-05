@@ -32,5 +32,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
           name: ios-build
-          path: ios/build/robovm/
+          path: ios/build/robovm/IOSLauncher.ipa
       
