@@ -45,6 +45,18 @@ public class Junction extends Block{
     }
 
     public class JunctionBuild extends Building{
+        private static int floorDiv(int x, int y){
+            int r = x / y;
+            if((x ^ y) < 0 && （r * y != x)){
+                r--;
+            }
+            return r;
+        }
+        
+        private static int floorMod(int x, int y){
+            return x - floorDiv(x,y) * y;
+        }
+        
         public DirectionalItemBuffer buffer = new DirectionalItemBuffer(capacity);
 
         @Override
@@ -102,10 +114,10 @@ public class Junction extends Block{
                 float[][] times = buffer.getTimes();
                 Item[][] items = buffer.getItems();
                 for(int i = 0; i < 4; i++){
-                    endx = x + Geometry.d4(i).x * tilesize / 2f + Geometry.d4(Math.floorMod(i + 1, 4)).x * tilesize / 4f;
-                    endy = y + Geometry.d4(i).y * tilesize / 2f + Geometry.d4(Math.floorMod(i + 1, 4)).y * tilesize / 4f;
-                    begx = x - Geometry.d4(i).x * tilesize / 4f + Geometry.d4(Math.floorMod(i + 1, 4)).x * tilesize / 4f;
-                    begy = y - Geometry.d4(i).y * tilesize / 4f + Geometry.d4(Math.floorMod(i + 1, 4)).y * tilesize / 4f;
+                    endx = x + Geometry.d4(i).x * tilesize / 2f + Geometry.d4(floorMod(i + 1, 4)).x * tilesize / 4f;
+                    endy = y + Geometry.d4(i).y * tilesize / 2f + Geometry.d4(floorMod(i + 1, 4)).y * tilesize / 4f;
+                    begx = x - Geometry.d4(i).x * tilesize / 4f + Geometry.d4(floorMod(i + 1, 4)).x * tilesize / 4f;
+                    begy = y - Geometry.d4(i).y * tilesize / 4f + Geometry.d4(floorMod(i + 1, 4)).y * tilesize / 4f;
                     if(buffer.indexes[i] > 0){
                         float loti = 0f;
                         for(int idi = 0; idi < buffer.indexes[i]; idi++){
