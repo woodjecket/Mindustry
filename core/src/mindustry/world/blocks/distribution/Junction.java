@@ -45,7 +45,7 @@ public class Junction extends Block{
     }
 
     public class JunctionBuild extends Building{
-        private static int floorDiv(int x, int y){
+        private int floorDiv(int x, int y){
             int r = x / y;
             if((x ^ y) < 0 && (r * y != x)){
                 r--;
@@ -53,7 +53,7 @@ public class Junction extends Block{
             return r;
         }
         
-        private static int floorMod(int x, int y){
+        private int floorMod(int x, int y){
             return x - floorDiv(x,y) * y;
         }
         
