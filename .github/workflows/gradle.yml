@@ -1,36 +1,32 @@
-name: Tests
 
-on: [push, workflow_dispatch]
+name: iOS deploy
+
+on: [push]
+
+permissions:
+  contents: read
 
 jobs:
-  runPush:
-    runs-on: ubuntu-latest
+  build:
+
+    runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Trigger BE build
-      if: ${{ github.repository == 'Anuken/Mindustry' }}
-      run: |
-        git clone --depth=1 --branch=master https://github.com/Anuken/MindustryBuilds ../MindustryBuilds
-        cd ../MindustryBuilds
-        BNUM=$(($GITHUB_RUN_NUMBER + 20000))
-        git tag ${BNUM}
-        git config --global user.name "Github Actions"
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/MindustryBuilds ${BNUM}
+    - uses: actions/checkout@v3
     - name: Set up JDK 17
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3
       with:
-        java-version: 17
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v2
-    - name: Update bundles
-      if: ${{ github.repository == 'Anuken/Mindustry' }}
+        java-version: '17'
+        distribution: 'temurin'
+    - name: Arc Clone
       run: |
-        ./gradlew updateBundles
-        if [ -n "$(git status --porcelain)" ]; then
-          git add core/assets/bundles/*
-          git commit -m "Automatic bundle update"
-          git push
-        fi
-    - name: Run unit tests
-      run: ./gradlew clean cleanTest test --stacktrace
+           cd ..
+           git clone https://github.com/Anuken/Arc.git
+           cd Mindustry
+    - name: iOS deploy
+      run: ./gradlew ios:deploy
+    - name: Upload file
+      uses: actions/upload-artifact@v3
+      with:
+          name: ios-build
+          path: ios/build/robovm/IOSLauncher.ipa
