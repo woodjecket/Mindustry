@@ -19,7 +19,7 @@ task incrementConfig{
         props.load(new FileInputStream(vfile))
     }else{
         props['app.id'] = 'cn.arc.mindustry-cn-arc'
-        props['app.version'] = '7.1'
+        props['app.version'] = '145.1'
         props['app.mainclass'] = 'mindustry.IOSLauncher'
         props['app.executable'] = 'IOSLauncher'
         props['app.name'] = 'Mindustry CN-ARC'
