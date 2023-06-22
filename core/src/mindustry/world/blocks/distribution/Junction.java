@@ -56,6 +56,7 @@ public class Junction extends Block{
         
         private int floorMod(int x, int y){
             return x - floorDiv(x,y) * y;
+        }
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
             return 0;
