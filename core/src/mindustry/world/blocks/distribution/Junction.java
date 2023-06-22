@@ -46,7 +46,16 @@ public class Junction extends Block{
 
     public class JunctionBuild extends Building{
         public DirectionalItemBuffer buffer = new DirectionalItemBuffer(capacity);
-
+        private int floorDiv(int x, int y){
+            int r = x / y;
+            if((x ^ y) < 0 && (r * y != x)){
+                r--;
+            }
+            return r;
+        }
+        
+        private int floorMod(int x, int y){
+            return x - floorDiv(x,y) * y;
         @Override
         public int acceptStack(Item item, int amount, Teamc source){
             return 0;
