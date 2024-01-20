@@ -9,7 +9,7 @@ Subject: [PATCH] Change versionType to `MindustryX`
  2 files changed, 10 insertions(+), 5 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index 0c774d0cc758c78d3c8552146ff90bfe83e9af8f..21fc48cc78893299ddc290a808edb8d9996f46b7 100644
+index 08e366725571f8b4b5df482e370a6a57c5c93fc4..85a69bf239cbaf49569afa9dfec678a749782b28 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -30,12 +30,12 @@ allprojects{

@@ -4,14 +4,23 @@ Date: Fri, 23 Jun 2023 15:42:03 +0800
 Subject: [PATCH] Remove Useless project
 
 ---
- build.gradle    | 39 +--------------------------------------
- settings.gradle |  4 ++--
- 2 files changed, 3 insertions(+), 40 deletions(-)
+ build.gradle    | 23 +++--------------------
+ settings.gradle |  5 +++--
+ 2 files changed, 6 insertions(+), 22 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index 84cfbefca7ba0af2c492ff86aa0a312549b78e84..0c774d0cc758c78d3c8552146ff90bfe83e9af8f 100644
+index 84cfbefca7ba0af2c492ff86aa0a312549b78e84..08e366725571f8b4b5df482e370a6a57c5c93fc4 100644
 --- a/build.gradle
 +++ b/build.gradle
+@@ -58,7 +58,7 @@ allprojects{
+             }else{
+                 //skip to last submodule
+                 if(name.contains(':')) name = name.split(':').last()
+-                return "com.github.Anuken.Arc:$name:${getArcHash()}"
++                return "com.github.anuken.Arc:$name:${getArcHash()}"
+             }
+         }
+ 
 @@ -103,16 +103,6 @@ allprojects{
              return project.ext.mainClassName.substring(0, project.ext.mainClassName.indexOf("desktop") - 1)
          }
@@ -29,33 +38,15 @@ index 84cfbefca7ba0af2c492ff86aa0a312549b78e84..0c774d0cc758c78d3c8552146ff90bfe
          generateLocales = {
              def output = 'en\n'
              def bundles = new File(project(':core').projectDir, 'assets/bundles/')
-@@ -236,25 +226,6 @@ configure(subprojects - project(":annotations")){
+@@ -236,6 +226,7 @@ configure(subprojects - project(":annotations")){
      }
  }
  
--project(":desktop"){
--    apply plugin: "java"
--
--    compileJava.options.fork = true
--
--    dependencies{
--        implementation project(":core")
--        implementation arcModule("extensions:discord")
--        implementation arcModule("natives:natives-desktop")
--        implementation arcModule("natives:natives-freetype-desktop")
--
--        if(debugged()) implementation project(":debug")
--
--        implementation "com.github.Anuken:steamworks4j:$steamworksVersion"
--
--        implementation arcModule("backends:backend-sdl")
--    }
--}
--
- project(":core"){
-     apply plugin: "java-library"
-     apply plugin: "kotlin"
-@@ -341,10 +312,7 @@ project(":core"){
++if(findProject("desktop")!=null)
+ project(":desktop"){
+     apply plugin: "java"
+ 
+@@ -341,10 +332,7 @@ project(":core"){
  
      afterEvaluate{
          task mergedJavadoc(type: Javadoc){
@@ -63,11 +54,11 @@ index 84cfbefca7ba0af2c492ff86aa0a312549b78e84..0c774d0cc758c78d3c8552146ff90bfe
 -            if(findProject(":android") != null){
 -                blacklist += project(":android")
 -            }
-+            def blacklist = [project(":server"), project(":annotations")]
++            def blacklist = [project(":server"), project(":annotations"), findProject(":desktop")]
  
              source rootProject.subprojects.collect{ project ->
                  if(!blacklist.contains(project) && project.hasProperty("sourceSets")){
-@@ -458,13 +426,8 @@ task deployAll{
+@@ -458,13 +446,8 @@ task deployAll{
      }
  
      dependsOn cleanDeployOutput
@@ -82,19 +73,20 @@ index 84cfbefca7ba0af2c492ff86aa0a312549b78e84..0c774d0cc758c78d3c8552146ff90bfe
  }
  
 diff --git a/settings.gradle b/settings.gradle
-index fed0fcf07666d4654905a50e341590dccfe9718e..fbabdea3f28a02757a65baef8be6e6c1c8355500 100644
+index fed0fcf07666d4654905a50e341590dccfe9718e..e344541be936a2da267de1fbb35f29355ff13789 100644
 --- a/settings.gradle
 +++ b/settings.gradle
-@@ -2,7 +2,7 @@ if(JavaVersion.current().ordinal() < JavaVersion.VERSION_16.ordinal()){
+@@ -2,7 +2,8 @@ if(JavaVersion.current().ordinal() < JavaVersion.VERSION_16.ordinal()){
      throw new Exception("!!! YOU MUST USE JAVA 16 OR ABOVE TO COMPILE AND RUN MINDUSTRY !!! Read the README. Your version: ${System.properties["java.version"]}")
  }
  
 -include 'desktop', 'core', 'server', 'ios', 'annotations', 'tools', 'tests'
 +include 'core', 'server', 'annotations', 'tools', 'tests'
++include 'desktop'
  
  def use = { ... names ->
      for(String name : names){
-@@ -27,7 +27,7 @@ if(hasSdk){
+@@ -27,7 +28,7 @@ if(hasSdk){
  
      //UPDATE: it no longer chokes on AGP with the latest version, but instead gives a completely different error. brilliant.
      if(!System.getProperty("jna.tmpdir")?.contains("JetBrains")){
