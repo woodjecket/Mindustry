@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Anuken <arnukren@gmail.com>
+Date: Sat, 17 Feb 2024 09:03:09 -0500
+Subject: [PATCH] PICK: Fixed #9566
+
+---
+ core/src/mindustry/logic/LExecutor.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
+index 40785ce9dd106cca6b94c633bb79d195def92c37..c39ac898c97f5087d4b6af934dc52718d2fc49c4 100644
+--- a/core/src/mindustry/logic/LExecutor.java
++++ b/core/src/mindustry/logic/LExecutor.java
+@@ -688,7 +688,7 @@ public class LExecutor{
+             int address = exec.numi(position);
+             Building from = exec.building(target);
+ 
+-            if(from instanceof MemoryBuild mem && (exec.privileged || from.team == exec.team) && address >= 0 && address < mem.memory.length){
++            if(from instanceof MemoryBuild mem && (exec.privileged || (from.team == exec.team && !mem.block.privileged)) && address >= 0 && address < mem.memory.length){
+                 mem.memory[address] = exec.num(value);
+             }
+         }
