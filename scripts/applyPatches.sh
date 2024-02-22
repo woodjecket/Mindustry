@@ -2,4 +2,4 @@
 
 cd work/ || exit 1
 git tag -f base
-git am --no-gpg-sign ../patches/*
+git am --3way --no-gpg-sign ../patches/*
