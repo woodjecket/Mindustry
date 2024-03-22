@@ -4,11 +4,11 @@ Date: Fri, 23 Jun 2023 16:21:59 +0800
 Subject: [PATCH] SO: improve ControlPathfinder.java (limit memory use)
 
 ---
- core/src/mindustry/ai/ControlPathfinder.java | 23 +++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ core/src/mindustry/ai/ControlPathfinder.java | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
 diff --git a/core/src/mindustry/ai/ControlPathfinder.java b/core/src/mindustry/ai/ControlPathfinder.java
-index 4ff9f7e384f50411470de468170f8b02db2af824..8fa6039a97917c683016ba73dce61ccf1a8c272a 100644
+index 4ff9f7e384f50411470de468170f8b02db2af824..86ad9c250ab58343af0b0e4947a973e773409858 100644
 --- a/core/src/mindustry/ai/ControlPathfinder.java
 +++ b/core/src/mindustry/ai/ControlPathfinder.java
 @@ -13,6 +13,10 @@ import mindustry.game.*;
@@ -39,19 +39,16 @@ index 4ff9f7e384f50411470de468170f8b02db2af824..8fa6039a97917c683016ba73dce61ccf
  
      public ControlPathfinder(){
  
-@@ -106,7 +113,10 @@ public class ControlPathfinder{
-                 //skipped N update -> drop it
-                 if(req.lastUpdateId <= state.updateId - 10){
-                     //concurrent modification!
--                    Core.app.post(() -> requests.remove(req.unit));
-+                    Core.app.post(() -> {
-+                        requests.remove(req.unit);
-+                        workingRequests.remove(req);
-+                    });
+@@ -110,6 +117,8 @@ public class ControlPathfinder{
                      req.thread.queue.post(() -> req.thread.requests.remove(req));
                  }
              }
-@@ -334,6 +344,7 @@ public class ControlPathfinder{
++            //skipped N update -> drop it
++            workingRequests.keySet().removeIf(req -> req.lastUpdateId <= state.updateId - 10);
+         });
+ 
+         Events.run(Trigger.draw, () -> {
+@@ -334,6 +343,7 @@ public class ControlPathfinder{
          }
          threads = null;
          requests.clear();
@@ -59,7 +56,7 @@ index 4ff9f7e384f50411470de468170f8b02db2af824..8fa6039a97917c683016ba73dce61ccf
      }
  
      private static boolean raycast(int team, PathCost type, int x1, int y1, int x2, int y2){
-@@ -463,9 +474,15 @@ public class ControlPathfinder{
+@@ -463,9 +473,15 @@ public class ControlPathfinder{
                          requestSize = requests.size;
  
                          //total update time no longer than maxUpdate
