@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 23 Feb 2024 01:05:54 +0800
+Subject: [PATCH] API: Hooks.onHandleSendMessage
+
+---
+ core/src/mindustry/core/NetClient.java | 4 ++++
+ core/src/mindustryX/Hooks.java         | 6 ++++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
+index a25b52a1bc41ef870cf09527ce9c7f7677927674..3fe5e439e13396d08eb239e5d3f041e182807b69 100644
+--- a/core/src/mindustry/core/NetClient.java
++++ b/core/src/mindustry/core/NetClient.java
+@@ -199,6 +199,8 @@ public class NetClient implements ApplicationListener{
+ 
+     @Remote(targets = Loc.server, variants = Variant.both)
+     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
++        message = mindustryX.Hooks.onHandleSendMessage(message, playersender);
++        if(message == null) return;
+         if(Vars.ui != null){
+             Vars.ui.chatfrag.addMessage(message);
+             Sounds.chatMessage.play();
+@@ -216,6 +218,8 @@ public class NetClient implements ApplicationListener{
+     //equivalent to above method but there's no sender and no console log
+     @Remote(called = Loc.server, targets = Loc.server)
+     public static void sendMessage(String message){
++        message = mindustryX.Hooks.onHandleSendMessage(message, null);
++        if(message == null) return;
+         if(Vars.ui != null){
+             Vars.ui.chatfrag.addMessage(message);
+             Sounds.chatMessage.play();
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index cb7b9f19d279eec171a0f07a20243bbbb95d9b92..226299c7267bf8323cc9973392b853fdb0c073a1 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -2,6 +2,7 @@ package mindustryX;
+ 
+ import arc.*;
+ import arc.util.*;
++import mindustry.gen.*;
+ import mindustryX.features.*;
+ 
+ import java.net.*;
+@@ -28,4 +29,9 @@ public class Hooks implements ApplicationListener{
+             }
+         }
+     }
++
++    public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
++        if(message == null) return null;
++        return message;
++    }
+ }

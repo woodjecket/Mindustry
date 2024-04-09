@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 4 Apr 2024 14:56:59 +0800
+Subject: [PATCH] C(RenderExt) unitHide
+
+---
+ core/src/mindustry/arcModule/ARCVars.java                   | 1 -
+ core/src/mindustry/arcModule/draw/ARCUnits.java             | 3 ++-
+ .../mindustry/arcModule/ui/quickTool/HudSettingsTable.java  | 3 ++-
+ core/src/mindustry/entities/comp/MinerComp.java             | 2 --
+ core/src/mindustry/graphics/OverlayRenderer.java            | 3 +--
+ core/src/mindustry/input/DesktopInput.java                  | 6 +++---
+ core/src/mindustry/input/InputHandler.java                  | 2 ++
+ core/src/mindustryX/features/RenderExt.java                 | 4 ++++
+ 8 files changed, 14 insertions(+), 10 deletions(-)
+
+diff --git a/core/src/mindustry/arcModule/ARCVars.java b/core/src/mindustry/arcModule/ARCVars.java
+index 30a009a297fde5cf8b5fd3b6c5afcd314040bc40..461ea20e7577f953d97bfc11c33b94ff140f11e6 100644
+--- a/core/src/mindustry/arcModule/ARCVars.java
++++ b/core/src/mindustry/arcModule/ARCVars.java
+@@ -11,7 +11,6 @@ import static arc.Core.settings;
+ 
+ public class ARCVars{
+     public static ARCUI arcui = new ARCUI();
+-    public static boolean unitHide = false;
+     public static boolean limitUpdate = false;
+     public static int limitDst = 0;
+     public static final int maxBuildPlans = 100;
+diff --git a/core/src/mindustry/arcModule/draw/ARCUnits.java b/core/src/mindustry/arcModule/draw/ARCUnits.java
+index 3938d6db737d781535665562c4170bd6aab82dbd..ffad09d6c4702a17b5b88b21dc7fa5dfa83043dc 100644
+--- a/core/src/mindustry/arcModule/draw/ARCUnits.java
++++ b/core/src/mindustry/arcModule/draw/ARCUnits.java
+@@ -13,6 +13,7 @@ import mindustry.game.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
+ import mindustry.world.blocks.payloads.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ import static mindustry.arcModule.ARCVars.maxBuildPlans;
+@@ -39,7 +40,7 @@ public class ARCUnits{
+             unithitbox = Core.settings.getBool("unithitbox");
+             unitBuildPlan = Core.settings.getBool("unitbuildplan");
+ 
+-            defaultUnitTrans = ARCVars.unitHide ? 0 : Core.settings.getInt("unitTransparency") / 100f;
++            defaultUnitTrans = RenderExt.unitHide ? 0 : Core.settings.getInt("unitTransparency") / 100f;
+             unitDrawMinHealth = Core.settings.getInt("unitDrawMinHealth");
+             unitBarDrawMinHealth = Core.settings.getInt("unitBarDrawMinHealth");
+ 
+diff --git a/core/src/mindustry/arcModule/ui/quickTool/HudSettingsTable.java b/core/src/mindustry/arcModule/ui/quickTool/HudSettingsTable.java
+index 8502de80eb70b48789b14de726cfbd520def6a46..8702c820443c607f2f1f77b1d4c5a3fc4b705fcd 100644
+--- a/core/src/mindustry/arcModule/ui/quickTool/HudSettingsTable.java
++++ b/core/src/mindustry/arcModule/ui/quickTool/HudSettingsTable.java
+@@ -13,6 +13,7 @@ import mindustry.game.*;
+ import mindustry.gen.*;
+ import mindustry.ui.*;
+ import mindustry.ui.dialogs.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -109,7 +110,7 @@ public class HudSettingsTable extends ElementUtils.ToolTable{
+                     int blockRenderLevel = Core.settings.getInt("blockRenderLevel");
+                     Core.settings.put("blockRenderLevel", (blockRenderLevel + 1) % 3);
+                 }).size(30, 30).tooltip("建筑显示");
+-                t.button("[cyan]兵", textStyle, () -> ARCVars.unitHide = !ARCVars.unitHide).checked(a -> !ARCVars.unitHide).size(30, 30).tooltip("兵种显示");
++                t.button("[cyan]兵", textStyle, () -> RenderExt.unitHide = !RenderExt.unitHide).checked(a -> !RenderExt.unitHide).size(30, 30).tooltip("兵种显示");
+                 t.button("[cyan]箱", textStyle, () -> Core.settings.put("unithitbox", !Core.settings.getBool("unithitbox"))).checked(a -> Core.settings.getBool("unithitbox")).size(30, 30).tooltip("碰撞箱显示");
+                 t.button("[cyan]弹", textStyle, () -> Core.settings.put("bulletShow", !Core.settings.getBool("bulletShow"))).checked(a -> Core.settings.getBool("bulletShow")).size(30, 30).tooltip("子弹显示");
+                 t.button("[violet]锁", textStyle, () -> {
+diff --git a/core/src/mindustry/entities/comp/MinerComp.java b/core/src/mindustry/entities/comp/MinerComp.java
+index 16e0cd6ba3f920f88b63a687dc7e65e07b15137b..0e1caeb7283ae45f57c55825affe28a2b644bac0 100644
+--- a/core/src/mindustry/entities/comp/MinerComp.java
++++ b/core/src/mindustry/entities/comp/MinerComp.java
+@@ -6,7 +6,6 @@ import arc.graphics.g2d.*;
+ import arc.math.*;
+ import arc.util.*;
+ import mindustry.annotations.Annotations.*;
+-import mindustry.arcModule.ARCVars;
+ import mindustry.content.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
+@@ -128,7 +127,6 @@ abstract class MinerComp implements Itemsc, Posc, Teamc, Rotc, Drawc{
+     @Override
+     public void draw(){
+         if(!mining()) return;
+-        if (ARCVars.unitHide) return;
+         float focusLen = hitSize / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
+         float swingScl = 12f, swingMag = tilesize / 8f;
+         float flashScl = 0.3f;
+diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
+index 35f3ec91efbe88b8e4dd4e3c7392a18e92af4dda..68b3e67fe65291c9d4dae48c6616569edb867222 100644
+--- a/core/src/mindustry/graphics/OverlayRenderer.java
++++ b/core/src/mindustry/graphics/OverlayRenderer.java
+@@ -9,7 +9,6 @@ import arc.struct.*;
+ import arc.util.*;
+ import mindustry.*;
+ import mindustry.ai.types.*;
+-import mindustry.arcModule.ARCVars;
+ import mindustry.entities.*;
+ import mindustry.game.EventType.*;
+ import mindustry.game.*;
+@@ -126,7 +125,7 @@ public class OverlayRenderer{
+ 
+         InputHandler input = control.input;
+ 
+-        Sized select = ARCVars.unitHide ? null : input.selectedUnit();
++        Sized select = input.selectedUnit();
+         if(select == null) select = input.selectedControlBuild();
+         if(!Core.input.keyDown(Binding.control) || !state.rules.possessionAllowed) select = null;
+ 
+diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
+index fe0ed1682e4c72f717449b66592efce31c465fe9..9b6b93f694c64e78c1113937b565262392a5d4f6 100644
+--- a/core/src/mindustry/input/DesktopInput.java
++++ b/core/src/mindustry/input/DesktopInput.java
+@@ -13,7 +13,6 @@ import arc.scene.ui.layout.*;
+ import arc.struct.*;
+ import arc.util.*;
+ import mindustry.*;
+-import mindustry.arcModule.ARCVars;
+ import mindustry.arcModule.Marker;
+ import mindustry.content.Items;
+ import mindustry.content.UnitTypes;
+@@ -29,6 +28,7 @@ import mindustry.type.UnitType;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.ControlBlock;
++import mindustryX.features.*;
+ 
+ import static arc.Core.camera;
+ import static arc.Core.*;
+@@ -376,7 +376,7 @@ public class DesktopInput extends InputHandler{
+             if(Core.input.keyDown(Binding.control) && Core.input.keyTap(Binding.select)){
+                 Unit on = selectedUnit();
+                 var build = selectedControlBuild();
+-                if(!ARCVars.unitHide && on != null){
++                if(on != null){
+                     Call.unitControl(player, on);
+                     shouldShoot = false;
+                     recentRespawnTimer = 1f;
+@@ -797,7 +797,7 @@ public class DesktopInput extends InputHandler{
+         }
+ 
+         if (input.keyTap(Binding.toggle_unit)) {
+-            ARCVars.unitHide = !ARCVars.unitHide;
++            RenderExt.unitHide = !RenderExt.unitHide;
+         }
+ 
+         if (input.keyTap(Binding.superUnitEffect)) {
+diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
+index f7240c629098ff3c99889d3a52b0c8df88383ee9..d624f7510f7a8e85e025eafeb6bde677fcf65e10 100644
+--- a/core/src/mindustry/input/InputHandler.java
++++ b/core/src/mindustry/input/InputHandler.java
+@@ -41,6 +41,7 @@ import mindustry.world.blocks.payloads.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import java.util.*;
+ 
+@@ -1620,6 +1621,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+     }
+ 
+     public @Nullable Unit selectedUnit(){
++        if(RenderExt.unitHide) return null;
+         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
+         if(unit != null){
+             unit.hitbox(Tmp.r1);
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 949ca69aa54504b8ec3e88c9f536a90396e605b4..23216764d050d0fa3969a18ff54c14145da841b8 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -23,6 +23,9 @@ public class RenderExt{
+     public static int hiddenItemTransparency;
+     public static int blockBarMinHealth;
+     public static float overdriveZoneTransparency;
++
++    public static boolean unitHide = false;
++
+     private static Effect placementEffect;
+ 
+     public static void init(){
+@@ -57,6 +60,7 @@ public class RenderExt{
+     }
+ 
+     public static void onGroupDraw(Drawc t){
++        if(unitHide && t instanceof Minerc) return;
+         if(!bulletShow && t instanceof Bulletc) return;
+         if(!showMineBeam && t instanceof Minerc) return;
+         t.draw();

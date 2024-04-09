@@ -1,0 +1,122 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 18 Feb 2024 15:39:43 +0800
+Subject: [PATCH] =?UTF-8?q?C(RenderExt)=20researchViewer(=E7=A7=91?=
+ =?UTF-8?q?=E6=8A=80=E6=A0=91=E9=80=8F=E8=A7=86)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/game/Objectives.java           |  4 +++-
+ core/src/mindustry/ui/dialogs/ResearchDialog.java | 12 ++++++------
+ core/src/mindustryX/features/RenderExt.java       |  2 ++
+ 3 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/core/src/mindustry/game/Objectives.java b/core/src/mindustry/game/Objectives.java
+index f50c8c0ca180f07cc2ce13068540910c915189d5..fbb783f85810db49bd6a321d729f5214fd0d22b3 100644
+--- a/core/src/mindustry/game/Objectives.java
++++ b/core/src/mindustry/game/Objectives.java
+@@ -4,6 +4,7 @@ import arc.*;
+ import arc.scene.ui.layout.*;
+ import mindustry.ctype.*;
+ import mindustry.type.*;
++import mindustryX.features.*;
+ 
+ /** Holds objective classes. */
+ public class Objectives{
+@@ -26,6 +27,7 @@ public class Objectives{
+         public String display(){
+             return Core.bundle.format("requirement.research",
+                 //TODO broken for multi tech nodes.
++            RenderExt.researchViewer ||
+                 (content.techNode == null || content.techNode.parent == null || content.techNode.parent.content.unlocked()) ?
+                     (content.emoji() + " " + content.localizedName) : "???");
+         }
+@@ -48,7 +50,7 @@ public class Objectives{
+         @Override
+         public String display(){
+             return Core.bundle.format("requirement.produce",
+-                content.unlocked() ? (content.emoji() + " " + content.localizedName) : "???");
++                RenderExt.researchViewer || content.unlocked() ? (content.emoji() + " " + content.localizedName) : "???");
+         }
+     }
+ 
+diff --git a/core/src/mindustry/ui/dialogs/ResearchDialog.java b/core/src/mindustry/ui/dialogs/ResearchDialog.java
+index a251419f31092b68aca9fd756f19e8c3602263d4..b48434c90924d17f8cd671e01159b6f8e294718f 100644
+--- a/core/src/mindustry/ui/dialogs/ResearchDialog.java
++++ b/core/src/mindustry/ui/dialogs/ResearchDialog.java
+@@ -27,6 +27,7 @@ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.ui.layout.*;
+ import mindustry.ui.layout.TreeLayout.*;
++import mindustryX.features.*;
+ 
+ import java.util.*;
+ 
+@@ -350,10 +351,9 @@ public class ResearchDialog extends BaseDialog{
+ 
+     void checkNodes(TechTreeNode node){
+         boolean locked = locked(node.node);
+-        if(!locked && (node.parent == null || node.parent.visible)) node.visible = true;
++        node.visible = RenderExt.researchViewer || !locked && (node.parent == null || node.parent.visible);
+         node.selectable = selectable(node.node);
+         for(TechTreeNode l : node.children){
+-            l.visible = !locked && l.parent.visible;
+             checkNodes(l);
+         }
+ 
+@@ -444,7 +444,7 @@ public class ResearchDialog extends BaseDialog{
+                     }
+                 });
+                 button.hovered(() -> {
+-                    if(!mobile && hoverNode != button && node.visible){
++                    if(!mobile && hoverNode != button && (node.visible)){
+                         hoverNode = button;
+                         rebuild();
+                     }
+@@ -463,7 +463,7 @@ public class ResearchDialog extends BaseDialog{
+                     button.setPosition(node.x + panX + width / 2f, node.y + panY + height / 2f + offset, Align.center);
+                     button.getStyle().up = !locked(node.node) ? Tex.buttonOver : !selectable(node.node) || !canSpend(node.node) ? Tex.buttonRed : Tex.button;
+ 
+-                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable ? node.node.content.uiIcon : Icon.lock.getRegion());
++                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable|| RenderExt.researchViewer ? node.node.content.uiIcon : Icon.lock.getRegion());
+                     button.getImage().setColor(!locked(node.node) ? Color.white : node.selectable ? Color.gray : Pal.gray);
+                     button.getImage().layout();
+                 });
+@@ -603,13 +603,13 @@ public class ResearchDialog extends BaseDialog{
+             infoTable.table(b -> {
+                 b.margin(0).left().defaults().left();
+ 
+-                if(selectable){
++                if(selectable || RenderExt.researchViewer){
+                     b.button(Icon.info, Styles.flati, () -> ui.content.show(node.content)).growY().width(50f);
+                 }
+                 b.add().grow();
+                 b.table(desc -> {
+                     desc.left().defaults().left();
+-                    desc.add(selectable ? node.content.localizedName : "[accent]???");
++                    desc.add(selectable ? node.content.localizedName : RenderExt.researchViewer ? node.content.localizedName+"\n[red]未满足前置科技":"[accent]???");
+                     desc.row();
+                     if(locked(node) || debugShowRequirements){
+ 
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 32021d1fcc48d6731715170eef6db29b6a007766..89c94f0da33d750dd88827189d777d8f1f8e8927 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -10,6 +10,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
+ public class RenderExt{
+     public static boolean bulletShow, showMineBeam, displayAllMessage;
+     public static boolean arcChoiceUiIcon;
++    public static boolean researchViewer;
+ 
+     public static void init(){
+         Events.run(Trigger.update, () -> {
+@@ -17,6 +18,7 @@ public class RenderExt{
+             showMineBeam = Core.settings.getBool("showminebeam");
+             displayAllMessage = Core.settings.getBool("displayallmessage");
+             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
++            researchViewer = Core.settings.getBool("researchViewer");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+     }

@@ -1,0 +1,444 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 23 Feb 2024 21:31:47 +0800
+Subject: [PATCH] =?UTF-8?q?C:=20claj=E5=8A=9F=E8=83=BD?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Origin: squi2rel <501410836@qq.com>
+---
+ .../src/mindustryX/features/InternalMods.java |   2 +
+ core/src/mindustryX/mods/claj/Claj.java       |  37 +++++
+ .../mindustryX/mods/claj/ClajIntegration.java | 139 ++++++++++++++++++
+ .../mods/claj/dialogs/JoinViaClajDialog.java  | 100 +++++++++++++
+ .../mods/claj/dialogs/ManageRoomsDialog.java  |  99 +++++++++++++
+ 5 files changed, 377 insertions(+)
+ create mode 100644 core/src/mindustryX/mods/claj/Claj.java
+ create mode 100644 core/src/mindustryX/mods/claj/ClajIntegration.java
+ create mode 100644 core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
+ create mode 100644 core/src/mindustryX/mods/claj/dialogs/ManageRoomsDialog.java
+
+diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
+index 1ce00d17c712d417383a3d61f13e6f62e5d91adc..67e4cde70b0dbdc197cf8e9d5f12b5ae26172f08 100644
+--- a/core/src/mindustryX/features/InternalMods.java
++++ b/core/src/mindustryX/features/InternalMods.java
+@@ -5,6 +5,7 @@ import arc.struct.*;
+ import mindustry.core.*;
+ import mindustry.mod.*;
+ import mindustry.mod.Mods.*;
++import mindustryX.mods.claj.*;
+ 
+ import static arc.Core.files;
+ import static mindustry.Vars.*;
+@@ -12,6 +13,7 @@ import static mindustry.Vars.*;
+ public class InternalMods{
+     public static Seq<LoadedMod> load(){
+         return Seq.with(
++        internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj())
+         );
+     }
+ 
+diff --git a/core/src/mindustryX/mods/claj/Claj.java b/core/src/mindustryX/mods/claj/Claj.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1bbd1446ccd44e532df8ce542921d34ef3eadb5c
+--- /dev/null
++++ b/core/src/mindustryX/mods/claj/Claj.java
+@@ -0,0 +1,37 @@
++package mindustryX.mods.claj;
++
++import arc.scene.ui.layout.*;
++import mindustry.*;
++import mindustry.gen.*;
++import mindustry.mod.*;
++import mindustry.mod.Mods.*;
++import mindustryX.mods.claj.dialogs.JoinViaClajDialog;
++import mindustryX.mods.claj.dialogs.ManageRoomsDialog;
++
++public class Claj extends Plugin{
++    public JoinViaClajDialog joinViaClaj;
++    public ManageRoomsDialog manageRooms;
++
++    @Override
++    public void init(){
++        ClajIntegration.load();
++        joinViaClaj = new JoinViaClajDialog();
++        manageRooms = new ManageRoomsDialog();
++
++        Stack stack = (Stack)Vars.ui.join.getChildren().get(1);
++        Table root = (Table)stack.getChildren().get(1);
++
++        root.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show);
++        if(!Vars.steam && !Vars.mobile) root.getCells().insert(4, root.getCells().remove(6));
++        else root.getCells().insert(3, root.getCells().remove(4));
++
++        var pausedDialog = Vars.ui.paused;
++        pausedDialog.shown(() -> {
++            if(Vars.mobile){
++                pausedDialog.cont.buttonRow("管理claj房间", Icon.planet, () -> manageRooms.show()).colspan(2).width(450f).disabled(b -> !Vars.net.server());
++            }else{
++                pausedDialog.cont.row().button("管理claj房间", Icon.planet, () -> manageRooms.show()).colspan(2).width(450f).disabled(b -> !Vars.net.server());
++            }
++        });
++    }
++}
+\ No newline at end of file
+diff --git a/core/src/mindustryX/mods/claj/ClajIntegration.java b/core/src/mindustryX/mods/claj/ClajIntegration.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e586f677e9d116407af2b0ccd47e7ab2a946b348
+--- /dev/null
++++ b/core/src/mindustryX/mods/claj/ClajIntegration.java
+@@ -0,0 +1,139 @@
++package mindustryX.mods.claj;
++
++import arc.Events;
++import arc.func.Cons;
++import arc.net.Client;
++import arc.net.Connection;
++import arc.net.DcReason;
++import arc.net.NetListener;
++import arc.struct.Seq;
++import arc.util.Reflect;
++import arc.util.Threads;
++import mindustry.Vars;
++import mindustry.game.EventType;
++import mindustry.game.EventType.ClientPreConnectEvent;
++import mindustry.gen.Call;
++import mindustry.io.TypeIO;
++import mindustry.net.ArcNetProvider.PacketSerializer;
++
++import java.io.IOException;
++import java.nio.ByteBuffer;
++
++public class ClajIntegration {
++    private static final Seq<Client> clients = new Seq<>();
++    private static NetListener serverListener = null;
++
++    public static void load() {
++        Events.run(EventType.HostEvent.class, ClajIntegration::clear);
++        Events.run(ClientPreConnectEvent.class, ClajIntegration::clear);
++
++        var provider = Reflect.get(Vars.net, "provider");
++        if (Vars.steam) provider = Reflect.get(provider, "provider"); // thanks
++
++
++        var server = Reflect.get(provider, "server");
++        serverListener = Reflect.get(server, "dispatchListener");
++    }
++
++// region room management
++
++    public static Client createRoom(String ip, int port, Cons<String> link, Runnable disconnected) throws IOException {
++        var client = new Client(8192, 8192, new Serializer());
++        Threads.daemon("CLaJ Room", client);
++
++        client.addListener(new NetListener() {
++            /** Used when creating redirectors.  */
++            String key = null;
++
++            @Override
++            public void connected(Connection connection) {
++                client.sendTCP("new");
++            }
++
++            @Override
++            public void disconnected(Connection connection, DcReason reason) {
++                disconnected.run();
++            }
++
++            @Override
++            public void received(Connection connection, Object object) {
++                if (object instanceof String s) {
++                    if (s.startsWith("CLaJ")) {
++                        key = s;
++                        link.get(key + '#' + ip + ':' + port);
++                    } else if (s.equals("new")) {
++                        try {
++                            createRedirector(ip, port, key);
++                        } catch (Exception ignored) {
++                        }
++                    } else Call.sendMessage(s);
++                }
++            }
++        });
++
++        client.connect(5000, ip, port, port);
++        clients.add(client);
++
++        return client;
++    }
++
++    public static void createRedirector(String ip, int port, String key) throws IOException {
++        var client = new Client(8192, 8192, new Serializer());
++        Threads.daemon("CLaJ Redirector", client);
++
++        client.addListener(serverListener);
++        client.addListener(new NetListener() {
++            @Override
++            public void connected(Connection connection) {
++                client.sendTCP("host" + key);
++            }
++        });
++
++        client.connect(5000, ip, port, port);
++        clients.add(client);
++    }
++
++    public static void joinRoom(String ip, int port, String key, Runnable success) {
++        Vars.logic.reset();
++        Vars.net.reset();
++
++        Vars.netClient.beginConnecting();
++        Vars.net.connect(ip, port, () -> {
++            if (!Vars.net.client()) return;
++            success.run();
++
++            var buffer = ByteBuffer.allocate(8192);
++            buffer.put(Serializer.linkID);
++            TypeIO.writeString(buffer, "join" + key);
++
++            buffer.limit(buffer.position()).position(0);
++            Vars.net.send(buffer, true);
++        });
++    }
++
++    private static void clear() {
++        clients.each(Client::close);
++        clients.clear();
++    }
++
++// endregion
++
++
++    static class Serializer extends PacketSerializer {
++        public static final byte linkID = -3;
++
++        public void write(ByteBuffer buffer, Object object) {
++            if (object instanceof String s) {
++                buffer.put(linkID);
++                TypeIO.writeString(buffer, s);
++            } else super.write(buffer, object);
++        }
++
++        public Object read(ByteBuffer buffer) {
++            if (buffer.get() == linkID) return TypeIO.readString(buffer);
++
++            buffer.position(buffer.position() - 1);
++            return super.read(buffer);
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ecb87dc0e32a33bf95f33d0e05bb6712cd845c26
+--- /dev/null
++++ b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
+@@ -0,0 +1,100 @@
++package mindustryX.mods.claj.dialogs;
++
++import mindustry.Vars;
++import mindustry.ui.dialogs.BaseDialog;
++import mindustryX.mods.claj.*;
++
++import java.io.IOException;
++import java.util.Objects;
++
++public class JoinViaClajDialog extends BaseDialog{
++    private String lastLink = "请输入您的claj代码";
++
++    private Boolean valid = false;
++    private String output = null;
++
++    public JoinViaClajDialog(){
++        super("通过claj加入游戏");
++        cont.table(table -> {
++            table.add("房间代码：").padRight(5f).left();
++            table.field(lastLink, this::setLink).size(550f, 54f).maxTextLength(100).valid(this::setLink);
++        }).row();
++
++        cont.label(() -> output).width(550f).left();
++
++        buttons.defaults().size(140f, 60f).pad(4f);
++        buttons.button("@cancel", this::hide);
++        buttons.button("@ok", () -> {
++            try{
++                if(Vars.player.name.trim().isEmpty()){
++                    Vars.ui.showInfo("@noname");
++                    return;
++                }
++
++                var link = parseLink(lastLink);
++                ClajIntegration.joinRoom(link.ip, link.port, link.key, () -> {
++                    Vars.ui.join.hide();
++                    hide();
++                });
++
++                Vars.ui.loadfrag.show("@connecting");
++                Vars.ui.loadfrag.setButton(() -> {
++                    Vars.ui.loadfrag.hide();
++                    Vars.netClient.disconnectQuietly();
++                });
++            }catch(Throwable e){
++                Vars.ui.showErrorMessage(e.getMessage());
++            }
++        }).disabled(b -> lastLink.isEmpty() || Vars.net.active());
++    }
++
++    private boolean setLink(String link){
++        if(Objects.equals(lastLink, link)) return valid;
++
++        try{
++            parseLink(link);
++
++            output = "[lime]代码格式正确, 点击下方按钮尝试连接！";
++            valid = true;
++        }catch(Throwable e){
++            output = e.getMessage();
++            valid = false;
++        }
++
++        lastLink = link;
++        return valid;
++    }
++
++    private Link parseLink(String link) throws IOException{
++        var link1 = link;
++        link1 = link1.trim();
++        if(!link1.startsWith("CLaJ")) throw new IOException("无效的claj代码：无CLaJ前缀");
++
++        var hash = link1.indexOf('#');
++        if(hash != 42 + 4) throw new IOException("无效的claj代码：长度错误");
++
++        var semicolon = link1.indexOf(':');
++        if(semicolon == -1) throw new IOException("无效的claj代码：服务器地址格式不正确");
++
++        int port;
++        try{
++            port = Integer.parseInt(link1.substring(semicolon + 1));
++        }catch(Throwable ignored){
++            throw new IOException("无效的claj代码：找不到服务器端口");
++        }
++
++        return new Link(link1.substring(0, hash), link1.substring(hash + 1, semicolon), port);
++    }
++
++    public static final class Link{
++        private final String key;
++        private final String ip;
++        private final int port;
++
++        public Link(String key, String ip, int port){
++            this.key = key;
++            this.ip = ip;
++            this.port = port;
++        }
++    }
++}
+\ No newline at end of file
+diff --git a/core/src/mindustryX/mods/claj/dialogs/ManageRoomsDialog.java b/core/src/mindustryX/mods/claj/dialogs/ManageRoomsDialog.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..9ad970eec19bdabd464732a97396d9a1ecac1c84
+--- /dev/null
++++ b/core/src/mindustryX/mods/claj/dialogs/ManageRoomsDialog.java
+@@ -0,0 +1,99 @@
++package mindustryX.mods.claj.dialogs;
++
++import arc.*;
++import arc.graphics.Color;
++import arc.net.Client;
++import arc.scene.ui.TextField;
++import arc.scene.ui.layout.Table;
++import arc.struct.Seq;
++import arc.util.Strings;
++import mindustry.Vars;
++import mindustry.gen.Icon;
++import mindustry.gen.Tex;
++import mindustry.ui.Styles;
++import mindustry.ui.dialogs.BaseDialog;
++import mindustryX.mods.claj.*;
++
++import java.io.IOException;
++
++public class ManageRoomsDialog extends BaseDialog {
++    static String serverIP = null;
++    static int serverPort = 0;
++
++    private Table list = null;
++    private TextField field = null;
++    private boolean valid = false;
++    private boolean flip = false;
++    private final Seq<String> clajURLs = Seq.with("new.xem8k5.top:1050");
++
++    public ManageRoomsDialog() {
++        super("管理claj房间");
++        addCloseButton();
++
++        cont.defaults().width(Vars.mobile ? 550f : 750f);
++
++        cont.table(list -> {
++            list.defaults().growX().padBottom(8f);
++            list.update(() -> list.getCells().retainAll(cell -> cell.get() != null)); // remove closed rooms
++            this.list = list;
++        }).row();
++
++        cont.table(url -> {
++            url.field(clajURLs.first(), this::setURL).maxTextLength(100).valid(this::validURL).with(f -> field = f).growX();
++            url.button(Icon.downOpen, Styles.clearNonei, () -> flip = !flip).size(48f).padLeft(8f);
++        }).row();
++
++        cont.collapser(list -> clajURLs.each(url -> list.button(url, Styles.cleart, () -> setURL(url)).height(32f).growX().row()), true, () -> flip).row();
++
++        cont.button("新建房间并生成claj代码", () -> {
++            try {
++                list.add(new Room()).row();
++            } catch (Exception e) {
++                Vars.ui.showErrorMessage(e.getMessage());
++            }
++        }).disabled(b -> list.getChildren().size >= 4 || !valid).row();
++
++        cont.labelWrap("允许你的朋友通过claj代码联机").labelAlign(2, 8).padTop(16f).width(400f).get().getStyle().fontColor = Color.lightGray;
++
++        setURL(clajURLs.first());
++    }
++
++    // region URL
++    private void setURL(String url) {
++        field.setText(url);
++
++        var semicolon = url.indexOf(':');
++        serverIP = url.substring(0, semicolon);
++        serverPort = Strings.parseInt(url.substring(semicolon + 1));
++    }
++
++    private boolean validURL(String url) {
++        return valid = url.contains(":") && Strings.canParseInt(url.substring(url.indexOf(':') + 1));
++    }
++
++    // endregion
++    static class Room extends Table {
++        private final Client client;
++        private String link = null;
++
++        Room() throws IOException {
++            client = ClajIntegration.createRoom(serverIP, serverPort, link -> this.link = link, this::close);
++
++            table(Tex.underline, cont -> cont.label(() -> link)).growX().left().fontScale(.7f).ellipsis(true).growX();
++
++            table(btns -> {
++                btns.defaults().size(48f).padLeft(8f);
++                btns.button(Icon.copy, Styles.clearNonei, () -> {
++                    Core.app.setClipboardText(link);
++                    Vars.ui.showInfoFade("@copied");
++                }).disabled(_it -> link == null);
++                btns.button(Icon.cancel, Styles.clearNonei, this::close);
++            });
++        }
++
++        private void close() {
++            client.close();
++            remove();
++        }
++    }
++}
+\ No newline at end of file

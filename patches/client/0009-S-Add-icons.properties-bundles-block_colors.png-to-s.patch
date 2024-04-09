@@ -10,10 +10,10 @@ Subject: [PATCH] S: Add icons.properties,bundles,block_colors.png to server
  2 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/server/build.gradle b/server/build.gradle
-index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..8a35079e902ab916d93e0942a17aca753fe813a1 100644
+index 0ea1b05d6928c1d16ffb5f48a6ac0c1eb8d66bd8..8e6276a74b8b2b26d19da562abd5ca2420e15aa6 100644
 --- a/server/build.gradle
 +++ b/server/build.gradle
-@@ -34,18 +34,18 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
+@@ -31,18 +31,18 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
      from files(sourceSets.main.output.classesDirs)
      from files(sourceSets.main.output.resourcesDir)
      from {configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }}

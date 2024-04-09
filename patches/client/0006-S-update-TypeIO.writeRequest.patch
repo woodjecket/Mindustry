@@ -8,7 +8,7 @@ Subject: [PATCH] S: update TypeIO.writeRequest
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
-index 21ad470fd74bf322e35b33aecf0bf90a5ca73d8c..54dbc2e26d3f307c34cc67f99dccbe4baaa5b0b5 100644
+index 285ef94a9cb81e7412b08a50e9d2d186d38e49e4..d257d7446ace686c9250b15f986a847335a640f6 100644
 --- a/core/src/mindustry/io/TypeIO.java
 +++ b/core/src/mindustry/io/TypeIO.java
 @@ -403,8 +403,9 @@ public class TypeIO{
@@ -17,7 +17,7 @@ index 21ad470fd74bf322e35b33aecf0bf90a5ca73d8c..54dbc2e26d3f307c34cc67f99dccbe4b
              write.b((byte)plan.rotation);
 -            write.b(1); //always has config
 -            writeObject(write, plan.config);
-+            boolean writePlan = !net.server();
++            boolean writePlan = !headless || !net.server();
 +            write.b(writePlan ? 1 : 0); //always has config
 +            writeObject(write, writePlan ? plan.config : null);
          }

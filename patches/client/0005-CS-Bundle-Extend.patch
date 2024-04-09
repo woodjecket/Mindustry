@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 18:21:28 +0800
+Subject: [PATCH] CS: Bundle Extend
+
+---
+ core/assets/bundles/bundle-mdtx.properties |  0
+ core/src/mindustry/Vars.java               | 16 ++++++++++++++++
+ 2 files changed, 16 insertions(+)
+ create mode 100644 core/assets/bundles/bundle-mdtx.properties
+
+diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
+index ec34503e16c87ab34dcdba33e7e89d8f644048c6..498e222893f7e224cf87ba4d983df99efd181ae1 100644
+--- a/core/src/mindustry/Vars.java
++++ b/core/src/mindustry/Vars.java
+@@ -482,5 +482,21 @@ public class Vars implements Loadable{
+                 bundle.debug("router");
+             }
+         }
++
++        //MDTX: bundle overwrite
++        try{
++            I18NBundle originBundle = bundle;
++            Fi handle = Core.files.internal("bundles/bundle-mdtx");
++            Core.bundle = I18NBundle.createBundle(handle, Locale.getDefault());
++            Reflect.set(bundle, "locale", originBundle.getLocale());
++            Log.info("MDTX: bundle has been loaded.");
++            var rootBundle = bundle;
++            while(rootBundle.getParent()!=null){
++                rootBundle = rootBundle.getParent();
++            }
++            Reflect.set(rootBundle, "parent", originBundle);
++        }catch(Throwable e){
++            e.printStackTrace();
++        }
+     }
+ }

@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Cong0707 <49234756+cong0707@users.noreply.github.com>
+Date: Sat, 24 Feb 2024 21:38:32 +0800
+Subject: [PATCH] C: add a paste button in claj dialog
+
+---
+ .../mods/claj/dialogs/JoinViaClajDialog.java      | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
+index ecb87dc0e32a33bf95f33d0e05bb6712cd845c26..273be4fd4edfee6f3f1d3fb14793cb4ba1a05e0a 100644
+--- a/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
++++ b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
+@@ -1,6 +1,10 @@
+ package mindustryX.mods.claj.dialogs;
+ 
++import arc.Core;
++import arc.scene.ui.TextField;
+ import mindustry.Vars;
++import mindustry.gen.Icon;
++import mindustry.ui.Styles;
+ import mindustry.ui.dialogs.BaseDialog;
+ import mindustryX.mods.claj.*;
+ 
+@@ -17,7 +21,16 @@ public class JoinViaClajDialog extends BaseDialog{
+         super("通过claj加入游戏");
+         cont.table(table -> {
+             table.add("房间代码：").padRight(5f).left();
+-            table.field(lastLink, this::setLink).size(550f, 54f).maxTextLength(100).valid(this::setLink);
++            TextField tf = table.field(lastLink, this::setLink).size(550f, 54f).maxTextLength(100).valid(this::setLink).get();
++
++            table.defaults().size(48f).padLeft(8f);
++            table.button(Icon.copy, Styles.clearNonei, () -> {
++                lastLink = Core.app.getClipboardText();
++                tf.setText("");
++                tf.paste(lastLink, true);
++                setLink(lastLink);
++            });
++
+         }).row();
+ 
+         cont.label(() -> output).width(550f).left();

@@ -1,8 +1,17 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: WayZer <himc.wicp@gmail.com>
 Date: Wed, 6 Sep 2023 00:43:17 +0800
-Subject: [PATCH] SO: Early release #Anuken:9018
+Subject: [PATCH] add `@server` to logic (#9018)
 
+* add @master to logic
+
+* remove `Vars.`
+
+* Update GlobalVars.java
+
+* Update GlobalVars.java
+
+(cherry picked from commit c9beb3d158bee8d17fe4e057418710294f7eef65)
 ---
  core/src/mindustry/logic/GlobalVars.java | 7 ++++++-
  1 file changed, 6 insertions(+), 1 deletion(-)

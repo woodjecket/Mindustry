@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 26 Mar 2024 19:50:47 +0800
+Subject: [PATCH] API: VarsX.isLoader
+
+---
+ core/src/mindustryX/VarsX.java       | 5 +++++
+ core/src/mindustryX/loader/Main.java | 1 +
+ 2 files changed, 6 insertions(+)
+ create mode 100644 core/src/mindustryX/VarsX.java
+
+diff --git a/core/src/mindustryX/VarsX.java b/core/src/mindustryX/VarsX.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..69a28133bf43daa1b1e507ff5e2de415f5a45241
+--- /dev/null
++++ b/core/src/mindustryX/VarsX.java
+@@ -0,0 +1,5 @@
++package mindustryX;
++
++public class VarsX{
++    public static boolean isLoader = false;
++}
+diff --git a/core/src/mindustryX/loader/Main.java b/core/src/mindustryX/loader/Main.java
+index c0f7d4a491a480763bee18139bbc13f896670bb4..0c05b4782e489aa8219ea520d03be3a0460bcec8 100644
+--- a/core/src/mindustryX/loader/Main.java
++++ b/core/src/mindustryX/loader/Main.java
+@@ -120,6 +120,7 @@ public class Main extends Mod{
+         Log.logger = new NoopLogHandler();
+         try{
+             Thread.currentThread().setContextClassLoader(classLoader);
++            Reflect.set(classLoader.loadClass("mindustryX.VarsX"), "isLoader", true);
+             impl.launch(classLoader);
+             Thread.currentThread().interrupt();
+         }catch(Exception e){

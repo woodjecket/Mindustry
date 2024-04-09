@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 26 Mar 2024 19:22:00 +0800
+Subject: [PATCH] API: RenderExt
+
+---
+ core/src/mindustry/core/Renderer.java       |  3 ++-
+ core/src/mindustryX/Hooks.java              |  2 ++
+ core/src/mindustryX/features/RenderExt.java | 21 +++++++++++++++++++++
+ 3 files changed, 25 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/mindustryX/features/RenderExt.java
+
+diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
+index 8b3614436d4d67c66871d3ae3e2ef190084d4542..dc816c50f79214665eb0335ff2cf4cd642411c86 100644
+--- a/core/src/mindustry/core/Renderer.java
++++ b/core/src/mindustry/core/Renderer.java
+@@ -22,6 +22,7 @@ import mindustry.maps.*;
+ import mindustry.type.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -376,7 +377,7 @@ public class Renderer implements ApplicationListener{
+         Events.fire(Trigger.drawOver);
+         blocks.drawBlocks();
+ 
+-        Groups.draw.draw(Drawc::draw);
++        Groups.draw.draw(RenderExt::onGroupDraw);
+ 
+         Draw.reset();
+         Draw.flush();
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index ddb597d4389659c823a28f965434ed5be233215b..cb7b9f19d279eec171a0f07a20243bbbb95d9b92 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -2,6 +2,7 @@ package mindustryX;
+ 
+ import arc.*;
+ import arc.util.*;
++import mindustryX.features.*;
+ 
+ import java.net.*;
+ 
+@@ -9,6 +10,7 @@ public class Hooks implements ApplicationListener{
+     @Override
+     public void init(){
+         Log.infoTag("MindustryX", "Hooks.init");
++        RenderExt.init();
+     }
+ 
+     @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ad060e73b146b784247e059b45df8369b390c6d5
+--- /dev/null
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -0,0 +1,21 @@
++package mindustryX.features;
++
++import arc.*;
++import mindustry.game.EventType.*;
++import mindustry.gen.*;
++
++public class RenderExt{
++    public static void init(){
++        Events.run(Trigger.update, () -> {
++        });
++        Events.run(Trigger.draw, RenderExt::draw);
++    }
++
++    private static void draw(){
++
++    }
++
++    public static void onGroupDraw(Drawc t){
++        t.draw();
++    }
++}

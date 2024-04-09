@@ -1,0 +1,71 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 18 Feb 2024 15:57:51 +0800
+Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
+ arcTurretPlaceCheck
+
+---
+ .../world/blocks/defense/turrets/BaseTurret.java    |  6 ++++++
+ core/src/mindustryX/features/RenderExt.java         | 13 +++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+index a959c00ba2d01957c499fe3b9447cb200e3bf8e1..60193cd29f30f90ebf58bbe93e621fa71db4fe53 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+@@ -1,5 +1,7 @@
+ package mindustry.world.blocks.defense.turrets;
+ 
++import arc.*;
++import arc.graphics.g2d.*;
+ import arc.math.*;
+ import arc.struct.*;
+ import arc.util.*;
+@@ -67,6 +69,10 @@ public class BaseTurret extends Block{
+ 
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, Pal.placing);
+ 
++        if(state.rules.placeRangeCheck && Core.settings.getBool("arcTurretPlaceCheck")){
++            Draw.alpha(0.5f);
++            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, placeOverlapRange, Pal.remove);
++        }
+         if(fogRadiusMultiplier < 0.99f && state.rules.fog){
+             Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
+         }
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index ad060e73b146b784247e059b45df8369b390c6d5..9ffd2daff427480bf8f1f051e7aa68be15b2007b 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -1,12 +1,20 @@
+ package mindustryX.features;
+ 
+ import arc.*;
++import arc.graphics.g2d.*;
+ import mindustry.game.EventType.*;
+ import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.world.blocks.logic.MessageBlock.*;
+ 
+ public class RenderExt{
++    public static boolean bulletShow, showMineBeam, displayAllMessage;
++
+     public static void init(){
+         Events.run(Trigger.update, () -> {
++            bulletShow = Core.settings.getBool("bulletShow");
++            showMineBeam = Core.settings.getBool("showminebeam");
++            displayAllMessage = Core.settings.getBool("displayallmessage");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+     }
+@@ -16,6 +24,11 @@ public class RenderExt{
+     }
+ 
+     public static void onGroupDraw(Drawc t){
++        if(!bulletShow && t instanceof Bulletc) return;
++        if(!showMineBeam && t instanceof Minerc) return;
+         t.draw();
++        if(displayAllMessage && t instanceof MessageBuild build){
++            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
++        }
+     }
+ }

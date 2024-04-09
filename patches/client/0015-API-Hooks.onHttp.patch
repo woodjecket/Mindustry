@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 18:23:19 +0800
+Subject: [PATCH] API: Hooks.onHttp
+
+---
+ core/src/mindustry/ClientLauncher.java |  1 +
+ core/src/mindustryX/Hooks.java         | 29 ++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
+ create mode 100644 core/src/mindustryX/Hooks.java
+
+diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
+index 13ed04479f74a426a01cdb0c7719dc11feb6ea8f..8b67384d24cf653e3b55af19b8eb8dabccec50b1 100644
+--- a/core/src/mindustry/ClientLauncher.java
++++ b/core/src/mindustry/ClientLauncher.java
+@@ -169,6 +169,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+         add(ui = new UI());
+         add(netServer = new NetServer());
+         add(netClient = new NetClient());
++        add(new mindustryX.Hooks());
+ 
+         assets.load(schematics);
+ 
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ddb597d4389659c823a28f965434ed5be233215b
+--- /dev/null
++++ b/core/src/mindustryX/Hooks.java
+@@ -0,0 +1,29 @@
++package mindustryX;
++
++import arc.*;
++import arc.util.*;
++
++import java.net.*;
++
++public class Hooks implements ApplicationListener{
++    @Override
++    public void init(){
++        Log.infoTag("MindustryX", "Hooks.init");
++    }
++
++    @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
++    public static void onHttp(Http.HttpRequest req){
++        if(Core.settings.getBool("githubMirror")){
++            try{
++                String url = req.url;
++                String host = new URL(url).getHost();
++                if(host.contains("github.com") || host.contains("raw.githubusercontent.com")){
++                    url = "https://gh.tinylake.tech/" + url;
++                    req.url = url;
++                }
++            }catch(Exception e){
++                //ignore
++            }
++        }
++    }
++}

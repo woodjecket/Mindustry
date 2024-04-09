@@ -1,0 +1,77 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 18 Feb 2024 15:58:00 +0800
+Subject: [PATCH] C: misc patch
+
+---
+ core/src/mindustry/core/Control.java                            | 2 +-
+ core/src/mindustry/net/ArcNetProvider.java                      | 2 +-
+ core/src/mindustry/ui/fragments/BlockInventoryFragment.java     | 2 +-
+ core/src/mindustry/world/blocks/distribution/Router.java        | 2 +-
+ core/src/mindustry/world/blocks/distribution/StackConveyor.java | 1 +
+ 5 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
+index 9d6a699bded059f6b1b81a84f634262f6d6a0eac..7733381e912adc6f698d16d35679c92df47ee732 100644
+--- a/core/src/mindustry/core/Control.java
++++ b/core/src/mindustry/core/Control.java
+@@ -573,7 +573,7 @@ public class Control implements ApplicationListener, Loadable{
+                 BaseDialog dialog = new BaseDialog("@confirm");
+                 dialog.setFillParent(true);
+ 
+-                float[] countdown = {60 * 11};
++                float[] countdown = {60 * 31};
+                 Runnable exit = () -> {
+                     Core.settings.put("uiscale", 100);
+                     Core.settings.put("uiscalechanged", false);
+diff --git a/core/src/mindustry/net/ArcNetProvider.java b/core/src/mindustry/net/ArcNetProvider.java
+index c9ed683299dda52d1cd793a6db6fbd58dd93ebfe..8d5e2256d917064a0b4f345b9913ffb9a424a6a6 100644
+--- a/core/src/mindustry/net/ArcNetProvider.java
++++ b/core/src/mindustry/net/ArcNetProvider.java
+@@ -52,7 +52,7 @@ public class ArcNetProvider implements NetProvider{
+             packetSpamLimit = Config.packetSpamLimit.num();
+         });
+ 
+-        client = new Client(8192, 16384, new PacketSerializer());
++        client = new Client(16384, 16384, new PacketSerializer());
+         client.setDiscoveryPacket(packetSupplier);
+         client.addListener(new NetListener(){
+             @Override
+diff --git a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
+index 84f5bc221c2f1846d831acf4abf902b15bfc1c59..4a8ef62fb82970df299159e53687f4c87b927f63 100644
+--- a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
++++ b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
+@@ -138,7 +138,7 @@ public class BlockInventoryFragment{
+             }
+         });
+ 
+-        int cols = 3;
++        int cols = Core.settings.getInt("blockInventoryWidth", 3);
+         int row = 0;
+ 
+         table.margin(4f);
+diff --git a/core/src/mindustry/world/blocks/distribution/Router.java b/core/src/mindustry/world/blocks/distribution/Router.java
+index 1e4a9399aac99d771d201d6ac01055295da686d4..84ba6004c7b00cbecc284e8d308c4cc8daf3383c 100644
+--- a/core/src/mindustry/world/blocks/distribution/Router.java
++++ b/core/src/mindustry/world/blocks/distribution/Router.java
+@@ -41,7 +41,7 @@ public class Router extends Block{
+ 
+         @Override
+         public boolean canControl(){
+-            return size == 1;
++            return size != 0;
+         }
+ 
+         @Override
+diff --git a/core/src/mindustry/world/blocks/distribution/StackConveyor.java b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
+index 264db024d8cf4960166fe21f26d17420af8941cb..44d9dac14c342119ab08372fb92779efe216db7b 100644
+--- a/core/src/mindustry/world/blocks/distribution/StackConveyor.java
++++ b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
+@@ -280,6 +280,7 @@ public class StackConveyor extends Block implements Autotiler{
+                         poofOut();
+                         lastItem = null;
+                     }
++                    if(lastItem != items.first()) break;
+                 }
+             }else{ //transfer
+                 if(state != stateLoad || (items.total() >= getMaximumAccepted(lastItem))){

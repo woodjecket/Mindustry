@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Wed, 3 Apr 2024 21:57:24 +0800
+Subject: [PATCH] API: Hooks.beforeInit
+
+---
+ core/src/mindustry/Vars.java   | 1 +
+ core/src/mindustryX/Hooks.java | 6 ++++++
+ 2 files changed, 7 insertions(+)
+
+diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
+index 313874de35d6cf5cc7a2cc5b06e7950fca2eede2..c7692170f49fae761dc659225330c43c3ee04e3e 100644
+--- a/core/src/mindustry/Vars.java
++++ b/core/src/mindustry/Vars.java
+@@ -259,6 +259,7 @@ public class Vars implements Loadable{
+     }
+ 
+     public static void init(){
++        mindustryX.Hooks.beforeInit();
+         Groups.init();
+ 
+         if(loadLocales){
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index ec10681aafa6ad769c8f25ed8faa253ab047db07..55726251ff2a3a52f6bfd71da8f962bf5c936159 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -9,6 +9,12 @@ import mindustryX.features.*;
+ import java.net.*;
+ 
+ public class Hooks implements ApplicationListener{
++    /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
++    public static void beforeInit(){
++        Log.infoTag("MindustryX", "Hooks.beforeInit");
++    }
++
++    /** invoke after loading, just before `Mod::init` */
+     @Override
+     public void init(){
+         Log.infoTag("MindustryX", "Hooks.init");
