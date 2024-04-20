@@ -10,8 +10,8 @@ Content-Transfer-Encoding: 8bit
 ---
  core/assets/labels                            | 74 +++++++++++++++++++
  .../mindustry/ui/fragments/MenuFragment.java  |  7 ++
- .../features/ui/MenuFloatLabel.java           | 42 +++++++++++
- 3 files changed, 123 insertions(+)
+ .../features/ui/MenuFloatLabel.java           | 38 ++++++++++
+ 3 files changed, 119 insertions(+)
  create mode 100644 core/assets/labels
  create mode 100644 core/src/mindustryX/features/ui/MenuFloatLabel.java
 
@@ -136,10 +136,10 @@ index 497b2077e17316a2582a5abdea274c4f773b99fd..593d8e2bfbb8c1e156b998dc44d35543
  
 diff --git a/core/src/mindustryX/features/ui/MenuFloatLabel.java b/core/src/mindustryX/features/ui/MenuFloatLabel.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e86ca66246f2c7af871d464b9eee0e7019ad6a50
+index 0000000000000000000000000000000000000000..a0423b616af0ac1499339d03f44cae839115725a
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/MenuFloatLabel.java
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,38 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -154,7 +154,7 @@ index 0000000000000000000000000000000000000000..e86ca66246f2c7af871d464b9eee0e70
 +    private final Label textLabel;
 +    private final String[] labels;
 +    public float baseScale = 1f;
-+    private boolean lastVisible;
++    private long lastVisible;
 +
 +    public MenuFloatLabel(){
 +        super();
@@ -165,14 +165,10 @@ index 0000000000000000000000000000000000000000..e86ca66246f2c7af871d464b9eee0e70
 +        textLabel.setAlignment(Align.center);
 +        update(() -> {
 +            textLabel.setFontScale(baseScale * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
-+            boolean visible = getScene() != null;
-+            Element element = this;
-+            while(element != null){
-+                visible &= element.visible;
-+                element = element.parent;
++            if(Core.graphics.getFrameId() - lastVisible > 1){
++                randomLabel();
 +            }
-+            if(!lastVisible && visible) randomLabel();
-+            lastVisible = visible;
++            lastVisible = Core.graphics.getFrameId();
 +        });
 +        labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
 +        randomLabel();

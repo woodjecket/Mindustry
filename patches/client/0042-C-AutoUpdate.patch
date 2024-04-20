@@ -6,8 +6,8 @@ Subject: [PATCH] C: AutoUpdate
 ---
  .../mindustry/ui/fragments/MenuFragment.java  |  17 +-
  core/src/mindustryX/Hooks.java                |   2 +
- core/src/mindustryX/features/AutoUpdate.kt    | 162 ++++++++++++++++++
- 3 files changed, 178 insertions(+), 3 deletions(-)
+ core/src/mindustryX/features/AutoUpdate.kt    | 163 ++++++++++++++++++
+ 3 files changed, 179 insertions(+), 3 deletions(-)
  create mode 100644 core/src/mindustryX/features/AutoUpdate.kt
 
 diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
@@ -60,10 +60,10 @@ index 258f345ed68dc2b607e5a1a5245b6ee817a27edf..ec10681aafa6ad769c8f25ed8faa253a
              UIExt.init();
 diff --git a/core/src/mindustryX/features/AutoUpdate.kt b/core/src/mindustryX/features/AutoUpdate.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea637312fb
+index 0000000000000000000000000000000000000000..c02764dfee2fefc4b6cb3d351672c9e939de19bf
 --- /dev/null
 +++ b/core/src/mindustryX/features/AutoUpdate.kt
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,163 @@
 +package mindustryX.features
 +
 +import arc.Core
@@ -84,6 +84,7 @@ index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea
 +import mindustry.ui.Bar
 +import mindustry.ui.dialogs.BaseDialog
 +import mindustryX.VarsX
++import mindustryX.features.ui.Format
 +import kotlin.system.exitProcess
 +
 +object AutoUpdate {
@@ -92,8 +93,8 @@ index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea
 +
 +        fun findAsset(): Asset? {
 +            val assets = json.get("assets").asArray().asIterable()
-+                    .map { Asset(it.getString("name"), it.getString("browser_download_url", "")) }
-+                    .sortedByDescending { it.name }
++                .map { Asset(it.getString("name"), it.getString("browser_download_url", "")) }
++                .sortedByDescending { it.name }
 +            return assets.firstOrNull {
 +                when {
 +                    VarsX.isLoader -> it.name.endsWith("loader.dex.jar")
@@ -114,15 +115,15 @@ index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea
 +    fun checkUpdate() {
 +        if (versions.isNotEmpty()) return
 +        Http.get("https://api.github.com/repos/$repo/releases")
-+                .timeout(10000)
-+                .error { Log.warn("Fetch releases fail: $it") }
-+                .submit { res ->
-+                    val json = Jval.read(res.resultAsString)
-+                    versions = json.asArray().map {
-+                        Release(it.getString("tag_name"), it.getString("name"), it)
-+                    }.toList()
-+                    Core.app.post(::fetchSuccess)
-+                }
++            .timeout(10000)
++            .error { Log.warn("Fetch releases fail: $it") }
++            .submit { res ->
++                val json = Jval.read(res.resultAsString)
++                versions = json.asArray().map {
++                    Release(it.getString("tag_name"), it.getString("name"), it)
++                }.toList()
++                Core.app.post(::fetchSuccess)
++            }
 +    }
 +
 +    private fun fetchSuccess() {
@@ -184,12 +185,12 @@ index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea
 +        val file = Vars.bebuildDirectory.child(asset.name)
 +
 +        var progress = 0f
-+        var length = 0L
++        var length = 0f
 +        var canceled = false
 +        val dialog = BaseDialog("@be.updating").apply {
 +            cont.add(Bar({
-+                if (length == 0L) return@Bar Core.bundle["be.updating"]
-+                "${progress * length / 1024 / 1024}/${length / 1024 / 1024}MB"
++                if (length == 0f) return@Bar Core.bundle["be.updating"]
++                with(Format(fixDecimals = true)) { "${format(progress * length)}/${format(length)}MB" }
 +            }, { Pal.accent }, { progress })).width(400f).height(70f)
 +            buttons.button("@cancel", Icon.cancel) {
 +                canceled = true
@@ -199,9 +200,9 @@ index 0000000000000000000000000000000000000000..c0f37a3b62e5631ffb2278a7e4cfb5ea
 +            show()
 +        }
 +        Http.get(asset.url, { res ->
-+            length = res.contentLength
++            length = res.contentLength.toFloat() / 1024 / 1024
 +            file.write(false, 4096).use { out ->
-+                Streams.copyProgress(res.resultAsStream, out, length, 4096) { progress = it }
++                Streams.copyProgress(res.resultAsStream, out, res.contentLength, 4096) { progress = it }
 +            }
 +            if (canceled) return@get
 +            endDownload(file)

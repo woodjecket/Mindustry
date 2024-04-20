@@ -362,7 +362,7 @@ index 21babe1f3e89b0a33bbc93c8e79bc9d76505ad5f..1ca61ee0140d29c28239ed87a165f1fe
  
      public Item getDrop(Tile tile){
 diff --git a/core/src/mindustry/world/blocks/production/HeatCrafter.java b/core/src/mindustry/world/blocks/production/HeatCrafter.java
-index 5af67c37c74871553a35e9b5ff9757869072b6da..f470206eb8153dede7b6d46a8fa4f698fe11d6f9 100644
+index 5af67c37c74871553a35e9b5ff9757869072b6da..39a2956d60c1da89f2bb89ab345462cbb1a7a7dc 100644
 --- a/core/src/mindustry/world/blocks/production/HeatCrafter.java
 +++ b/core/src/mindustry/world/blocks/production/HeatCrafter.java
 @@ -6,6 +6,7 @@ import mindustry.graphics.*;
@@ -380,7 +380,7 @@ index 5af67c37c74871553a35e9b5ff9757869072b6da..f470206eb8153dede7b6d46a8fa4f698
 -            new Bar(() ->
 -            Core.bundle.format("bar.heatpercent", (int)(entity.heat + 0.01f), (int)(entity.efficiencyScale() * 100 + 0.01f)),
 +            new Bar(
-+            () -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatRequirement, entity.efficiencyScale() * 100),
++            () -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatRequirement, entity.efficiencyScale() * 100, true),
              () -> Pal.lightOrange,
              () -> entity.heat / heatRequirement));
      }

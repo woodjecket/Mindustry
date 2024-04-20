@@ -2,16 +2,22 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sat, 2 Mar 2024 00:52:10 +0800
 Subject: [PATCH] C: AdvanceToolTable
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+移动工具箱位置
+way-zer <himc.wicp@gmail.com> on 2024/4/10 at 19:52
 ---
+ .../ui/fragments/PlacementFragment.java       |   2 +
  core/src/mindustryX/Hooks.java                |   1 +
- core/src/mindustryX/features/UIExt.java       |  51 ++
+ core/src/mindustryX/features/UIExt.java       |  50 ++
  core/src/mindustryX/features/UnitExt.java     |  21 +
- .../features/ui/AdvanceToolTable.kt           | 176 +++++++
+ .../features/ui/AdvanceToolTable.kt           | 178 +++++++
  .../features/ui/ArcUnitFactoryDialog.java     | 483 ++++++++++++++++++
  .../mindustryX/features/ui/SimpleCollapse.kt  |  37 ++
  .../features/ui/TeamSelectDialog.java         |  51 ++
- 7 files changed, 820 insertions(+)
+ 8 files changed, 823 insertions(+)
  create mode 100644 core/src/mindustryX/features/UIExt.java
  create mode 100644 core/src/mindustryX/features/UnitExt.java
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
@@ -19,6 +25,26 @@ Subject: [PATCH] C: AdvanceToolTable
  create mode 100644 core/src/mindustryX/features/ui/SimpleCollapse.kt
  create mode 100644 core/src/mindustryX/features/ui/TeamSelectDialog.java
 
+diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
+index df9dec8133a10da577c7ddffd3c5271518f8a0ac..ec32b1df8d50829e5af8817dbd4e05dae79bd04b 100644
+--- a/core/src/mindustry/ui/fragments/PlacementFragment.java
++++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
+@@ -25,6 +25,7 @@ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.ConstructBlock.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -242,6 +243,7 @@ public class PlacementFragment{
+             toggler = full;
+             full.bottom().right().visible(() -> ui.hudfrag.shown);
+ 
++            full.add(UIExt.advanceToolTable).bottom().right();
+             full.table(frame -> {
+ 
+                 //rebuilds the category table with the correct recipes
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
 index d90d5a98ae523cbc08d9f2911050fb162282681f..59e606e4744893f0d3441e650f7fc26e3e7220c3 100644
 --- a/core/src/mindustryX/Hooks.java
@@ -33,10 +59,10 @@ index d90d5a98ae523cbc08d9f2911050fb162282681f..59e606e4744893f0d3441e650f7fc26e
  
 diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..eae451191d3cdf7222614b13802d4ac0e1e3672a
+index 0000000000000000000000000000000000000000..b2576d865d48a096dea0ec18fb65e499caef8bea
 --- /dev/null
 +++ b/core/src/mindustryX/features/UIExt.java
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,50 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -58,9 +84,8 @@ index 0000000000000000000000000000000000000000..eae451191d3cdf7222614b13802d4ac0
 +
 +        advanceToolTable = new AdvanceToolTable();
 +        advanceToolTable.name = "advanceToolTable";
-+        advanceToolTable.left().bottom().setFillParent(true);
-+        advanceToolTable.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showAdvanceToolTable"));
-+        ui.hudGroup.addChild(advanceToolTable);
++        advanceToolTable.right().bottom();
++        advanceToolTable.visible(() -> Core.settings.getBool("showAdvanceToolTable"));
 +    }
 +
 +    public static void buildPositionRow(Table tt, Vec2 vec){
@@ -117,10 +142,10 @@ index 0000000000000000000000000000000000000000..200a2295b5c2d0c662097df7538742ea
 +}
 diff --git a/core/src/mindustryX/features/ui/AdvanceToolTable.kt b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..40d3936651610ee6f7acd174797d26f8623816c3
+index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a942a9f3b
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,178 @@
 +package mindustryX.features.ui
 +
 +import arc.Events
@@ -173,8 +198,10 @@ index 0000000000000000000000000000000000000000..40d3936651610ee6f7acd174797d26f8
 +            }
 +        }
 +
++        defaults().right()
 +        val showEntities = SimpleCollapser().table {
-+            background = Tex.buttonEdge3
++            background = Tex.buttonEdge1
++            add("单位：")
 +            button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
 +                for (item in Vars.content.items()) Vars.player.core().items[item] = Vars.player.core().storageCapacity
 +            }.width(40f).tooltip("[acid]填满核心的所有资源")
@@ -188,13 +215,20 @@ index 0000000000000000000000000000000000000000..40d3936651610ee6f7acd174797d26f8
 +            }.width(40f).tooltip("[acid]克隆")
 +            button(UnitTypes.gamma.emoji() + "[red]×", Styles.cleart) { Vars.player.unit().kill() }.width(40f).tooltip("[red]自杀")
 +            button(Icon.waves, Styles.clearNonei) { factoryDialog.show() }.width(40f).tooltip("[acid]单位工厂-ARC")
-+        }.also { add(it).left().row() }
-+        val showTimeControl = SimpleCollapser().table {
-+            background = Tex.buttonEdge3
-+            TimeControl.draw(this)
-+        }.also { add(it).left().row() }
++        }.also { add(it).row() }
++        val showTeamChange = SimpleCollapser().table {
++            background = Tex.buttonEdge1
++            add("队伍：")
++            for (team in Team.baseTeams) {
++                button(String.format("[#%s]%s", team.color, team.localized()), Styles.flatToggleMenut) { Vars.player.team(team) }
++                    .checked { Vars.player.team() === team }.size(30f, 30f)
++            }
++            button("[violet]+", Styles.flatToggleMenut) { UIExt.teamSelect.pickOne({ team: Team? -> Vars.player.team(team) }, Vars.player.team()) }
++                .checked { !Seq.with(*Team.baseTeams).contains(Vars.player.team()) }
++                .tooltip("[acid]更多队伍选择").size(30f, 30f)
++        }.also { add(it).row() }
 +        val showCreator = SimpleCollapser().table {
-+            background = Tex.buttonEdge3
++            background = Tex.buttonEdge1
 +            button("创世神", Styles.flatToggleMenut) { worldCreator = !worldCreator }
 +                .checked { worldCreator }.size(70f, 30f)
 +            button("强制放置", Styles.flatToggleMenut) { forcePlacement = !forcePlacement }
@@ -206,39 +240,32 @@ index 0000000000000000000000000000000000000000..40d3936651610ee6f7acd174797d26f8
 +                .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
 +            button("[orange]复制地形", Styles.flatToggleMenut) { tileCopyDialog.show() }
 +                .tooltip("[acid]复制特定地形").size(70f, 30f).checked { false }
-+        }.also { add(it).left().row() }
-+        val showTeamChange = SimpleCollapser().table {
-+            background = Tex.buttonEdge3
-+            add("队伍：").left()
-+            for (team in Team.baseTeams) {
-+                button(String.format("[#%s]%s", team.color, team.localized()), Styles.flatToggleMenut) { Vars.player.team(team) }
-+                    .checked { Vars.player.team() === team }.size(30f, 30f)
-+            }
-+            button("[violet]+", Styles.flatToggleMenut) { UIExt.teamSelect.pickOne({ team: Team? -> Vars.player.team(team) }, Vars.player.team()) }
-+                .checked { !Seq.with(*Team.baseTeams).contains(Vars.player.team()) }
-+                .tooltip("[acid]更多队伍选择").size(30f, 30f)
-+        }.also { add(it).left().row() }
++        }.also { add(it).row() }
 +        val showGameMode = SimpleCollapser().table {
-+            background = Tex.buttonEdge3
-+            add("规则：").left()
++            background = Tex.buttonEdge1
++            add("规则：")
 +            button("无限火力", Styles.flatToggleMenut) { Vars.player.team().rules().cheat = !Vars.player.team().rules().cheat }
 +                .checked { Vars.player.team().rules().cheat }.tooltip("[acid]开关自己队的无限火力").size(90f, 30f)
 +            button("编辑器", Styles.flatToggleMenut) { Vars.state.rules.editor = !Vars.state.rules.editor }
 +                .checked { Vars.state.rules.editor }.size(70f, 30f)
 +            button("沙盒", Styles.flatToggleMenut) { Vars.state.rules.infiniteResources = !Vars.state.rules.infiniteResources }
 +                .checked { Vars.state.rules.infiniteResources }.size(50f, 30f)
-+        }.also { add(it).left().row() }
-+        table(Tex.buttonEdge3) { row: Table ->
++        }.also { add(it).row() }
++        val showTimeControl = SimpleCollapser().table {
++            background = Tex.buttonEdge1
++            add("沙漏：")
++            TimeControl.draw(this)
++        }.also { add(it).row() }
++        table(Tex.buttonEdge1) { row: Table ->
 +            val showButtons = SimpleCollapser().table {
 +                button(Items.copper.emoji() + UnitTypes.gamma.emoji(), Styles.cleart, showEntities::toggle).width(50f)
-+                button(Blocks.worldProcessor.emoji(), Styles.cleart, showCreator::toggle).width(50f)
-+                button(Blocks.overdriveProjector.emoji(), Styles.cleart, showTimeControl::toggle).width(50f)
-+                button("规则", Styles.cleart, showGameMode::toggle).width(50f)
 +                button("队伍", Styles.cleart, showTeamChange::toggle).width(50f)
-+            }
++                button(Blocks.worldProcessor.emoji(), Styles.cleart, showCreator::toggle).width(50f)
++                button("规则", Styles.cleart, showGameMode::toggle).width(50f)
++                button(Blocks.overdriveProjector.emoji(), Styles.cleart, showTimeControl::toggle).width(50f)
++            }.also { row.add(it) }
 +            row.button("", Styles.cleart, showButtons::toggle).update { it.setText(if (showButtons.collapsed) "[cyan]工具箱" else "[red]工具箱") }.width(70f)
-+            row.add(showButtons)
-+        }.left()
++        }
 +    }
 +
 +    private fun cloneExactUnit(unit: Unit): Unit {

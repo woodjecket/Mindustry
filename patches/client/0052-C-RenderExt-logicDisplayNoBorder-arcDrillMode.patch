@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 22:28:36 +0800
+Subject: [PATCH] =?UTF-8?q?C(RenderExt)=20logicDisplayNoBorder(=E6=98=BE?=
+ =?UTF-8?q?=E7=A4=BA=E5=B1=8F=E6=97=A0=E8=BE=B9=E6=A1=86),arcDrillMode(?=
+ =?UTF-8?q?=E8=BD=AC=E5=A4=B4=E6=98=BE=E7=A4=BA=E7=89=A9=E5=93=81)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .../world/blocks/logic/LogicDisplay.java        |  7 ++++++-
+ .../world/blocks/production/BurstDrill.java     | 17 +++++++++++++++++
+ core/src/mindustryX/features/RenderExt.java     |  3 +++
+ 3 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/world/blocks/logic/LogicDisplay.java b/core/src/mindustry/world/blocks/logic/LogicDisplay.java
+index 453a3391bda3a93071d260f837171d2e8e6cdbb9..8bb9c227ca6d815bdcff8420796386c9819acb19 100644
+--- a/core/src/mindustry/world/blocks/logic/LogicDisplay.java
++++ b/core/src/mindustry/world/blocks/logic/LogicDisplay.java
+@@ -13,6 +13,7 @@ import mindustry.graphics.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ public class LogicDisplay extends Block{
+     public static final byte
+@@ -60,7 +61,7 @@ public class LogicDisplay extends Block{
+ 
+         @Override
+         public void draw(){
+-            super.draw();
++            if(!RenderExt.logicDisplayNoBorder) super.draw();
+ 
+             //don't even bother processing anything when displays are off.
+             if(!Vars.renderer.drawDisplays) return;
+@@ -118,6 +119,10 @@ public class LogicDisplay extends Block{
+             Draw.blend(Blending.disabled);
+             Draw.draw(Draw.z(), () -> {
+                 if(buffer != null){
++                    if(RenderExt.logicDisplayNoBorder){
++                        Draw.rect(Draw.wrap(buffer.getTexture()), x, y, (buffer.getWidth() + 16) * Draw.scl, -(buffer.getHeight() + 16) * Draw.scl);
++                        return;
++                    }
+                     Draw.rect(Draw.wrap(buffer.getTexture()), x, y, buffer.getWidth() * scaleFactor * Draw.scl, -buffer.getHeight() * scaleFactor * Draw.scl);
+                 }
+             });
+diff --git a/core/src/mindustry/world/blocks/production/BurstDrill.java b/core/src/mindustry/world/blocks/production/BurstDrill.java
+index cf4340866e6b8f74e43a2baca5398b9f46da43ca..3035f1129196ac329522b4dc194911afd9f625b4 100644
+--- a/core/src/mindustry/world/blocks/production/BurstDrill.java
++++ b/core/src/mindustry/world/blocks/production/BurstDrill.java
+@@ -11,6 +11,9 @@ import mindustry.entities.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
+ import mindustry.type.*;
++import mindustryX.features.*;
++
++import static mindustry.Vars.tilesize;
+ 
+ public class BurstDrill extends Drill{
+     public float shake = 2f;
+@@ -162,6 +165,20 @@ public class BurstDrill extends Drill{
+             if(glowRegion.found()){
+                 Drawf.additive(glowRegion, Tmp.c2.set(glowColor).a(Mathf.pow(fract, 3f) * glowColor.a), x, y);
+             }
++            if(RenderExt.arcDrillMode && dominantItem != null){
++                float dx = x - size * tilesize / 2f + 5, dy = y - size * tilesize / 2f + 5;
++                float iconSize = 5f;
++                Draw.rect(dominantItem.fullIcon, dx, dy, iconSize, iconSize);
++                Draw.reset();
++
++                float eff = Mathf.lerp(0, 1, Math.min(1f, (float)dominantItems / (size * size)));
++                if(eff < 0.9f){
++                    Draw.alpha(0.5f);
++                    Draw.color(dominantItem.color);
++                    Lines.stroke(1f);
++                    Lines.arc(dx, dy, iconSize * 0.75f, eff);
++                }
++            }
+         }
+     }
+ }
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 23216764d050d0fa3969a18ff54c14145da841b8..9012693e9e0c9d7951f4d9b517c37fa9c14bd170 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -23,6 +23,7 @@ public class RenderExt{
+     public static int hiddenItemTransparency;
+     public static int blockBarMinHealth;
+     public static float overdriveZoneTransparency;
++    public static boolean logicDisplayNoBorder, arcDrillMode;
+ 
+     public static boolean unitHide = false;
+ 
+@@ -50,6 +51,8 @@ public class RenderExt{
+             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
+             blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
+             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
++            logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
++            arcDrillMode = Core.settings.getBool("arcdrillmode");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);

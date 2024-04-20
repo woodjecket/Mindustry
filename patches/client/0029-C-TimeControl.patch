@@ -33,7 +33,7 @@ index 226299c7267bf8323cc9973392b853fdb0c073a1..d90d5a98ae523cbc08d9f2911050fb16
      @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
 diff --git a/core/src/mindustryX/features/TimeControl.java b/core/src/mindustryX/features/TimeControl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..83aeb68aaea8fb8d92f7b9b6a3c295943abf30f4
+index 0000000000000000000000000000000000000000..f2833ec179764dbb088fb6caa769f32172e863c8
 --- /dev/null
 +++ b/core/src/mindustryX/features/TimeControl.java
 @@ -0,0 +1,85 @@
@@ -100,7 +100,7 @@ index 0000000000000000000000000000000000000000..83aeb68aaea8fb8d92f7b9b6a3c29594
 +    }
 +
 +    public static void draw(Table table){
-+        table.label(() -> "沙漏：x" + Strings.autoFixed(getGameSpeed(), 2)).width(18f * 6);
++        table.label(() -> "x" + Strings.autoFixed(getGameSpeed(), 2)).width(18f * 3);
 +
 +        table.button("/2", Styles.cleart, () -> setGameSpeed(gameSpeed * 0.5f)).tooltip("[acid]将时间流速放慢到一半").size(40f, 30f);
 +        table.button("×2", Styles.cleart, () -> setGameSpeed(gameSpeed * 2f)).tooltip("[acid]将时间流速加快到两倍").size(40f, 30f);
@@ -119,6 +119,6 @@ index 0000000000000000000000000000000000000000..83aeb68aaea8fb8d92f7b9b6a3c29594
 +            if(!Strings.canParsePositiveInt(s)) return false;
 +            int num = Integer.parseInt(s);
 +            return 2 <= num && num < 10000;
-+        }).tooltip("允许的范围：2~9999").size(90f, 30f);
++        }).tooltip("允许的范围：2~9999").size(80f, 30f);
 +    }
 +}
