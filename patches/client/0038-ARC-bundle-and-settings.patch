@@ -2,20 +2,25 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sat, 17 Feb 2024 13:56:18 +0800
 Subject: [PATCH] ARC bundle and settings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+移除一些无效设置
+way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 538 ++++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 534 ++++++++++++++++++
  .../ui/dialogs/SettingsMenuDialog.java        | 137 +++--
  core/src/mindustryX/Hooks.java                |   1 +
- core/src/mindustryX/features/ArcOld.java      | 281 +++++++++
- 4 files changed, 920 insertions(+), 37 deletions(-)
+ core/src/mindustryX/features/ArcOld.java      | 269 +++++++++
+ 4 files changed, 904 insertions(+), 37 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..93e2678d420e71183f6b3c21e3b2dde03c2ff987 100644
+index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..1ac2f7d9dc63e7a955c8a1a3b80017ad857f406d 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -40,3 +40,541 @@ stat.ammo_type = 子弹类型
+@@ -40,3 +40,537 @@ stat.ammo_type = 子弹类型
  stat.ammo_capacity = 子弹容量
  
  #end StatExt
@@ -370,7 +375,6 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..93e2678d420e71183f6b3c21e3b2dde0
 +setting.blockreplace.name = 允许覆盖建筑
 +
 +category.arcCAssist.name = 辅助功能
-+setting.shiftCopyIcon.name = shift复制方块图标
 +setting.maxSchematicSize.name = [acid]蓝图大小
 +setting.crashreport.name = 发送匿名的崩溃报告
 +
@@ -486,7 +490,6 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..93e2678d420e71183f6b3c21e3b2dde0
 +setting.menuFlyersFollower.name = 首页兵种小弟模式
 +setting.menuFloatText.name = 首页悬浮文字
 +setting.showUpdateDialog.name = 检测到新版学术时弹窗
-+setting.arcInfSchem.name = [cyan]无视加载蓝图大小限制  [red]谨防崩端
 +
 +settings.forcehide = [orange]帧率重调装置
 +category.arcCDisplayBlock.name = 建筑显示
@@ -503,7 +506,6 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..93e2678d420e71183f6b3c21e3b2dde0
 +settings.specmode = [acid]更多内容适配
 +category.moreContent.name = 更多内容适配
 +setting.githubMirror.name = [cyan]GitHub镜像加速(WZ镜像)    [gray]优化全球服务器列表及Mod浏览器功能
-+setting.modMode.name = [cyan]模组工厂支持器    [gray]针对部分模组工厂进行说明
 +setting.itemSelectionHeight.name = [cyan]建筑选择框行数
 +setting.itemSelectionWidth.name = [cyan]建筑选择框列数
 +setting.blockInventoryWidth.name = [cyan]建筑物品栏每行物品数
@@ -512,7 +514,6 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..93e2678d420e71183f6b3c21e3b2dde0
 +setting.colorizedContent.name = [orange]彩[yellow]色[acid]属[cyan]性[violet]包
 +setting.fontSet.name = [cyan]字体设置！
 +setting.fontSize.name = [cyan]字体大小！
-+setting.themeColor.name = [cyan]主题颜色
 +setting.arcBackgroundPath.name = [cyan]首页背景路径
 +setting.arcCursorPath.name = [cyan]自定义指针路径  [orange]文件夹，其中文件后缀为png
 +setting.yuanshen.name = [cyan]原神，启动！
@@ -881,10 +882,10 @@ index 59e606e4744893f0d3441e650f7fc26e3e7220c3..258f345ed68dc2b607e5a1a5245b6ee8
              UIExt.init();
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5e3f54f0b8353ac3ea7715ffe30468763efc5439
+index 0000000000000000000000000000000000000000..666ede7ad6e22fefd7dedba01ed05ec451a00f0b
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,281 @@
+@@ -0,0 +1,269 @@
 +package mindustryX.features;
 +
 +import arc.util.*;
@@ -954,17 +955,10 @@ index 0000000000000000000000000000000000000000..5e3f54f0b8353ac3ea7715ffe3046876
 +
 +            c.addCategory("arcCDisplayBlock");
 +            c.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> {
-+                if(s == 0){
-+                    return "隐藏全部建筑";
-+                }else if(s == 1){
-+                    return "只显示建筑状态";
-+                }else if(s == 2){
-+                    return "全部显示";
-+                }else{
-+                    return s + "";
-+                }
++                if(s > 1) return "全部显示";
++                if(s > 0) return "只显示建筑状态";
++                return "隐藏全部建筑";
 +            });
-+            c.checkPref("displayblock", true);
 +            c.checkPref("forceEnableDarkness", true);
 +            c.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
@@ -1029,7 +1023,7 @@ index 0000000000000000000000000000000000000000..5e3f54f0b8353ac3ea7715ffe3046876
 +
 +            c.checkPref("unitWeaponTargetLine", false);
 +            c.checkPref("showminebeam", true);
-+            c.checkPref("unitItemCarried", false);
++            c.checkPref("unitItemCarried", true);
 +            c.checkPref("unithitbox", false);
 +            c.checkPref("unitLogicMoveLine", false);
 +            c.checkPref("unitLogicTimerBars", false);
@@ -1109,9 +1103,6 @@ index 0000000000000000000000000000000000000000..5e3f54f0b8353ac3ea7715ffe3046876
 +        setting.addCategory("@settings.specmode", Icon.info, (c) -> {
 +            c.addCategory("moreContent");
 +            c.checkPref("override_boss_shown", false);
-+            c.checkPref("shiftCopyIcon", true);
-+            c.checkPref("githubMirror", false);
-+            c.checkPref("modMode", false);
 +            c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
 +            c.sliderPref("maxSchematicSize", 32, 32, 257, 1, v -> {
 +                maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
@@ -1148,11 +1139,9 @@ index 0000000000000000000000000000000000000000..5e3f54f0b8353ac3ea7715ffe3046876
 +            c.checkPref("menuFlyersFollower", false);
 +            c.checkPref("colorizedContent", false);
 +            c.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
-+            c.stringInput("themeColor", "ffd37f");
 +            c.stringInput("arcBackgroundPath", "");
 +
 +            c.addCategory("developerMode");
-+            c.checkPref("arcInfSchem", false);
 +            c.checkPref("rotateCanvas", false);
 +            c.checkPref("limitupdate", false, v -> {
 +                if(!v) return;

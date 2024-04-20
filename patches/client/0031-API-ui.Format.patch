@@ -4,16 +4,16 @@ Date: Sat, 6 Apr 2024 16:01:26 +0800
 Subject: [PATCH] API: ui.Format
 
 ---
- core/src/mindustryX/features/ui/Format.kt | 84 +++++++++++++++++++++++
- 1 file changed, 84 insertions(+)
+ core/src/mindustryX/features/ui/Format.kt | 89 +++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/Format.kt
 
 diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..9fb3a953945406ee9d2ad59e4c7c372e6a22666b
+index 0000000000000000000000000000000000000000..31df651b2b738e2a6e9928c4e4de1a05008bb285
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/Format.kt
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,89 @@
 +package mindustryX.features.ui
 +
 +import arc.math.Mathf
@@ -21,7 +21,7 @@ index 0000000000000000000000000000000000000000..9fb3a953945406ee9d2ad59e4c7c372e
 +import kotlin.math.abs
 +
 +@Suppress("MemberVisibilityCanBePrivate")
-+data class Format(private var decimal: Int = 2) {
++data class Format @JvmOverloads constructor(private var decimal: Int = 2, private var fixDecimals: Boolean = false) {
 +    /**以固定的有效位数输出*/
 +    fun fixedPrecision(v: Float): String {
 +        val exponent = Mathf.floor(Mathf.log(10f, abs(v)))
@@ -36,6 +36,11 @@ index 0000000000000000000000000000000000000000..9fb3a953945406ee9d2ad59e4c7c372e
 +        return "${Strings.fixed(mantissa, decimal)}[gray]E$exponent[]"
 +    }
 +
++    private fun format0(number: Float): String {
++        if (fixDecimals) return Strings.fixed(number, decimal)
++        return fixedPrecision(number)
++    }
++
 +    /** 格式化浮点数，设计特性如下
 +     * 1. 支持特殊数值显示
 +     * 2. 支持超大超小数显示科学计数法, 支持K,M,B显示
@@ -48,12 +53,12 @@ index 0000000000000000000000000000000000000000..9fb3a953945406ee9d2ad59e4c7c372e
 +
 +        val abs = abs(number)
 +        return when {
-+            abs <= java.lang.Float.MIN_NORMAL -> fixedPrecision(0f)
++            abs <= java.lang.Float.MIN_NORMAL -> format0(0f)
 +            abs < Mathf.pow(10f, -decimal.toFloat()) -> scienceFormat(number)
-+            abs < 1e3f || abs < Mathf.pow(10f, 1f + decimal) -> fixedPrecision(number) //直接渲染
-+            abs < 1e6f -> "${fixedPrecision(number / 1e3f)}[gray]K[]"
-+            abs < 1e9f -> "${fixedPrecision(number / 1e6f)}[gray]M[]"
-+            abs < 1e12f -> "${fixedPrecision(number / 1e9f)}[gray]B[]"
++            abs < 1e3f || abs < Mathf.pow(10f, 1f + decimal) -> format0(number) //直接渲染
++            abs < 1e6f -> "${format0(number / 1e3f)}[gray]K[]"
++            abs < 1e9f -> "${format0(number / 1e6f)}[gray]M[]"
++            abs < 1e12f -> "${format0(number / 1e9f)}[gray]B[]"
 +            else -> scienceFormat(number)
 +        }
 +    }

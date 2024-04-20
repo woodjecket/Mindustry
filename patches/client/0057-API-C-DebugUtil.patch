@@ -1,0 +1,135 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 20 Apr 2024 20:56:38 +0800
+Subject: [PATCH] API&C: DebugUtil
+
+---
+ core/src/mindustry/ClientLauncher.java        | 12 ++++++++++-
+ core/src/mindustry/core/Logic.java            |  3 +++
+ .../mindustry/ui/fragments/HudFragment.java   |  6 ++++++
+ core/src/mindustryX/Hooks.java                |  1 +
+ core/src/mindustryX/features/DebugUtil.java   | 21 +++++++++++++++++++
+ 5 files changed, 42 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/mindustryX/features/DebugUtil.java
+
+diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
+index 45f4ff19c7d157ea1437b061ae1e76d8f53e817b..5b212994363532fb77a98ea8c822b90624a7e7fd 100644
+--- a/core/src/mindustry/ClientLauncher.java
++++ b/core/src/mindustry/ClientLauncher.java
+@@ -20,6 +20,7 @@ import mindustry.maps.*;
+ import mindustry.mod.*;
+ import mindustry.net.*;
+ import mindustry.ui.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -68,7 +69,16 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+             return (Float.isNaN(result) || Float.isInfinite(result)) ? 1f : Mathf.clamp(result, 0.0001f, 60f / 10f);
+         });
+ 
+-        batch = new SortedSpriteBatch();
++        //MDTX: add numRequests count.
++        batch = new SortedSpriteBatch(){
++            @Override
++            protected void flushRequests(){
++                if(!flushing){
++                    DebugUtil.lastDrawRequests += numRequests;
++                }
++                super.flushRequests();
++            }
++        };
+         assets = new AssetManager();
+         assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
+ 
+diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
+index e722afb8f1d368d3068d9d8510f9fdda2ac27844..489ff2990d9b6c2bac49b4eb574266e369caf027 100644
+--- a/core/src/mindustry/core/Logic.java
++++ b/core/src/mindustry/core/Logic.java
+@@ -16,6 +16,7 @@ import mindustry.type.*;
+ import mindustry.type.Weather.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
++import mindustryX.features.*;
+ 
+ import java.util.*;
+ 
+@@ -403,6 +404,7 @@ public class Logic implements ApplicationListener{
+ 
+     @Override
+     public void update(){
++        var start = Time.nanos();
+         Events.fire(Trigger.update);
+         universe.updateGlobal();
+ 
+@@ -489,6 +491,7 @@ public class Logic implements ApplicationListener{
+         }else if(netServer.isWaitingForPlayers() && runStateCheck){
+             checkGameState();
+         }
++        DebugUtil.logicTime = Time.timeSinceNanos(start);
+     }
+ 
+     /** @return whether the wave timer is paused due to enemies */
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index b97b59f1b179833947a7a3ba485a4a2f8a902873..7965f8d000e5f2619e3fa568d62bf8b51798fbb7 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -27,6 +27,7 @@ import mindustry.input.*;
+ import mindustry.net.Packets.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ import static mindustry.gen.Tex.*;
+@@ -276,6 +277,11 @@ public class HudFragment{
+ 
+                 info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
+                 info.row();
++                info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
++                .left().style(Styles.outlineLabel).name("cpuTime");
++                info.row();
++                info.label(() -> "Draws: " + DebugUtil.lastDrawRequests).left().style(Styles.outlineLabel).name("draw");
++                info.row();
+ 
+                 if(android){
+                     info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 45c4ce1b88cfb0e1ebb7272a4e93dd5c7d743c53..968220cdda30ad874848d2455957a0a8cc655f23 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
+     public static void beforeInit(){
+         Log.infoTag("MindustryX", "Hooks.beforeInit");
+         Settings.baseSettings();
++        DebugUtil.init();//this is safe, and better at beforeInit,
+     }
+ 
+     /** invoke after loading, just before `Mod::init` */
+diff --git a/core/src/mindustryX/features/DebugUtil.java b/core/src/mindustryX/features/DebugUtil.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2b1e8ab59c3d5a93190fa24b0882f22c9253af50
+--- /dev/null
++++ b/core/src/mindustryX/features/DebugUtil.java
+@@ -0,0 +1,21 @@
++package mindustryX.features;
++
++import arc.*;
++import arc.util.*;
++import mindustry.game.EventType.*;
++
++public class DebugUtil{
++    public static int lastDrawRequests = 0;
++    public static long logicTime, rendererTime, uiTime;//nanos
++    private static long rendererStart, uiStart;//nanos
++
++    public static void init(){
++        Events.run(Trigger.preDraw, () -> {
++            lastDrawRequests = 0;
++            rendererStart = Time.nanos();
++        });
++        Events.run(Trigger.postDraw, () -> rendererTime = Time.timeSinceNanos(rendererStart));
++        Events.run(Trigger.uiDrawBegin, () -> uiStart = Time.nanos());
++        Events.run(Trigger.uiDrawEnd, () -> uiTime = Time.timeSinceNanos(uiStart));
++    }
++}

@@ -461,7 +461,7 @@ index 97aedf43b5595bcfb63ea9ecce91dc6e57967e92..cd30d93b35b0547658c39c0b0f6e5ef0
  
      public class PointDefenseBuild extends ReloadTurretBuild{
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index 9003d6e4c6afa463aec395590b7473a28d842a17..13d3a0ea2b54e19a6e61b23270ffb632a134dbca 100644
+index 9003d6e4c6afa463aec395590b7473a28d842a17..f6866128bc39fdbf40d8e1b853ecc533ab5b9880 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -26,6 +26,7 @@ import mindustry.ui.*;
@@ -478,7 +478,7 @@ index 9003d6e4c6afa463aec395590b7473a28d842a17..13d3a0ea2b54e19a6e61b23270ffb632
          stats.add(Stat.inaccuracy, (int)inaccuracy, StatUnit.degrees);
 -        stats.add(Stat.reload, 60f / (reload) * shoot.shots, StatUnit.perSecond);
 +        int shoots = StatExt.totalShots(shoot);
-+        stats.add(Stat.reload, "@@/s", shoots == 1 ? "" : shoots + " x ", Strings.autoFixed(60f / reload, 2) + "/s");
++        stats.add(Stat.reload, "@@/s", shoots == 1 ? "" : shoots + " x ", Strings.autoFixed(60f / reload, 2));
          stats.add(Stat.targetsAir, targetAir);
          stats.add(Stat.targetsGround, targetGround);
          if(ammoPerShot != 1) stats.add(Stat.ammoUse, ammoPerShot, StatUnit.perShot);

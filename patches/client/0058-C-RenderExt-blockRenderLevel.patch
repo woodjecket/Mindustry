@@ -1,0 +1,174 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 20 Apr 2024 22:22:19 +0800
+Subject: [PATCH] C(RenderExt) blockRenderLevel
+
+---
+ core/src/mindustry/core/Renderer.java                       | 6 ++++--
+ core/src/mindustry/graphics/BlockRenderer.java              | 3 ++-
+ core/src/mindustry/input/Binding.java                       | 1 +
+ core/src/mindustry/world/blocks/production/Drill.java       | 5 +++--
+ .../mindustry/world/blocks/production/GenericCrafter.java   | 5 ++++-
+ core/src/mindustryX/Hooks.java                              | 5 +++++
+ core/src/mindustryX/features/RenderExt.java                 | 2 ++
+ 7 files changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
+index 7da88abd8a8f5c11f7d14ba5df66c55e02c17656..54670380d6dbfdd947640ae3949a1ba9d7141ce8 100644
+--- a/core/src/mindustry/core/Renderer.java
++++ b/core/src/mindustry/core/Renderer.java
+@@ -323,7 +323,8 @@ public class Renderer implements ApplicationListener{
+ 
+         Draw.draw(Layer.background, this::drawBackground);
+         Draw.draw(Layer.floor, blocks.floor::drawFloor);
+-        Draw.draw(Layer.block - 1, blocks::drawShadows);
++        if(RenderExt.blockRenderLevel > 0)
++            Draw.draw(Layer.block - 1, blocks::drawShadows);
+         Draw.draw(Layer.block - 0.09f, () -> {
+             blocks.floor.beginDraw();
+             blocks.floor.drawLayer(CacheLayer.walls);
+@@ -380,7 +381,8 @@ public class Renderer implements ApplicationListener{
+         Draw.draw(Layer.space, this::drawLanding);
+ 
+         Events.fire(Trigger.drawOver);
+-        blocks.drawBlocks();
++        if(RenderExt.blockRenderLevel > 0)
++            blocks.drawBlocks();
+ 
+         Groups.draw.draw(RenderExt::onGroupDraw);
+ 
+diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
+index aec39b666137666976321336b698e80177b05f84..8e6bb188cd42409bdcbda2a357b96a27d9ccedba 100644
+--- a/core/src/mindustry/graphics/BlockRenderer.java
++++ b/core/src/mindustry/graphics/BlockRenderer.java
+@@ -18,6 +18,7 @@ import mindustry.gen.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.environment.Floor.*;
+ import mindustry.world.blocks.power.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -417,7 +418,7 @@ public class BlockRenderer{
+ 
+             //comment wasVisible part for hiding?
+             if(block != Blocks.air && (visible || build.wasVisible)){
+-                block.drawBase(tile);
++                if(RenderExt.blockRenderLevel > 1) block.drawBase(tile);
+                 Draw.reset();
+                 Draw.z(Layer.block);
+ 
+diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
+index bd9a4157cd9fc28d81c2e598abd1d84d89710299..7f6398a106d011022ba80b837e152a3a6d33a224 100644
+--- a/core/src/mindustry/input/Binding.java
++++ b/core/src/mindustry/input/Binding.java
+@@ -93,6 +93,7 @@ public enum Binding implements KeyBind{
+     toggle_unit(KeyCode.unknown),
+     point(KeyCode.j),
+     lockonLastMark(KeyCode.unknown),
++    toggle_block_render(KeyCode.unknown),
+     ;
+ 
+     private final KeybindValue defaultValue;
+diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
+index 1ca61ee0140d29c28239ed87a165f1fedf11cd97..48fc9ec8be0701be3babcc14943383b7afd6f8f7 100644
+--- a/core/src/mindustry/world/blocks/production/Drill.java
++++ b/core/src/mindustry/world/blocks/production/Drill.java
+@@ -21,6 +21,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.environment.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -306,7 +307,7 @@ public class Drill extends Block{
+                 warmup = Mathf.approachDelta(warmup, speed, warmupSpeed);
+                 progress += delta() * dominantItems * speed * warmup;
+ 
+-                if(Mathf.chanceDelta(updateEffectChance * warmup))
++                if(RenderExt.blockRenderLevel > 1 && Mathf.chanceDelta(updateEffectChance * warmup))
+                     updateEffect.at(x + Mathf.range(size * 2f), y + Mathf.range(size * 2f));
+             }else{
+                 lastDrillSpeed = 0f;
+@@ -319,7 +320,7 @@ public class Drill extends Block{
+ 
+                 progress %= delay;
+ 
+-                if(wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
++                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
+             }
+         }
+ 
+diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+index 1a2843e8297dff49b8fb8bb87da27985690b5aec..7e3645814d96cd2497332bbfcb2c9d286bbed5b0 100644
+--- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
++++ b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+@@ -15,6 +15,7 @@ import mindustry.type.*;
+ import mindustry.world.*;
+ import mindustry.world.draw.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -222,7 +223,7 @@ public class GenericCrafter extends Block{
+                     }
+                 }
+ 
+-                if(wasVisible && Mathf.chanceDelta(updateEffectChance)){
++                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance)){
+                     updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));
+                 }
+             }else{
+@@ -288,6 +289,8 @@ public class GenericCrafter extends Block{
+             if(wasVisible){
+                 craftEffect.at(x, y);
+             }
++
++            if (RenderExt.blockRenderLevel > 1) craftEffect.at(x, y);
+             progress %= 1f;
+         }
+ 
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 968220cdda30ad874848d2455957a0a8cc655f23..44a2d221648c1bbfb7938bf965d5a985db85ce79 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -10,6 +10,8 @@ import mindustryX.features.*;
+ 
+ import java.net.*;
+ 
++import static arc.Core.*;
++
+ public class Hooks implements ApplicationListener{
+     /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
+     public static void beforeInit(){
+@@ -73,5 +75,8 @@ public class Hooks implements ApplicationListener{
+         if(Core.input.keyTap(Binding.point)){
+             MarkerType.selected.markWithMessage(Core.input.mouseWorld());
+         }
++        if(input.keyTap(Binding.toggle_block_render)){
++            settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
++        }
+     }
+ }
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 9012693e9e0c9d7951f4d9b517c37fa9c14bd170..68a8bcb2789d5ead726596677689b44190714fff 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -24,6 +24,7 @@ public class RenderExt{
+     public static int blockBarMinHealth;
+     public static float overdriveZoneTransparency;
+     public static boolean logicDisplayNoBorder, arcDrillMode;
++    public static int blockRenderLevel;
+ 
+     public static boolean unitHide = false;
+ 
+@@ -53,6 +54,7 @@ public class RenderExt{
+             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+             logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
+             arcDrillMode = Core.settings.getBool("arcdrillmode");
++            blockRenderLevel = Core.settings.getInt("blockRenderLevel");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);

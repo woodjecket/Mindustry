@@ -7,13 +7,20 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 Origin: squi2rel <501410836@qq.com>
+
+add a paste button in claj dialog
+Cong0707 <49234756+cong0707@users.noreply.github.com> on 2024/2/24 at 21:38
+
+PausedDialog重排;修复一个潜在的claj代码输入bug
+MinRi2 <2275045670@qq.com> on 2024/4/11 at 22:15
+way-zer <himc.wicp@gmail.com> on 2024/4/13 at 19:18
 ---
  .../src/mindustryX/features/InternalMods.java |   2 +
  core/src/mindustryX/mods/claj/Claj.java       |  37 +++++
  .../mindustryX/mods/claj/ClajIntegration.java | 139 ++++++++++++++++++
- .../mods/claj/dialogs/JoinViaClajDialog.java  | 100 +++++++++++++
+ .../mods/claj/dialogs/JoinViaClajDialog.java  | 108 ++++++++++++++
  .../mods/claj/dialogs/ManageRoomsDialog.java  |  99 +++++++++++++
- 5 files changed, 377 insertions(+)
+ 5 files changed, 385 insertions(+)
  create mode 100644 core/src/mindustryX/mods/claj/Claj.java
  create mode 100644 core/src/mindustryX/mods/claj/ClajIntegration.java
  create mode 100644 core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
@@ -41,19 +48,18 @@ index 1ce00d17c712d417383a3d61f13e6f62e5d91adc..67e4cde70b0dbdc197cf8e9d5f12b5ae
  
 diff --git a/core/src/mindustryX/mods/claj/Claj.java b/core/src/mindustryX/mods/claj/Claj.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1bbd1446ccd44e532df8ce542921d34ef3eadb5c
+index 0000000000000000000000000000000000000000..40c5cf6f869fdfc8637f53480107b1b8b4f6c1c8
 --- /dev/null
 +++ b/core/src/mindustryX/mods/claj/Claj.java
 @@ -0,0 +1,37 @@
 +package mindustryX.mods.claj;
 +
 +import arc.scene.ui.layout.*;
++import arc.struct.*;
 +import mindustry.*;
 +import mindustry.gen.*;
 +import mindustry.mod.*;
-+import mindustry.mod.Mods.*;
-+import mindustryX.mods.claj.dialogs.JoinViaClajDialog;
-+import mindustryX.mods.claj.dialogs.ManageRoomsDialog;
++import mindustryX.mods.claj.dialogs.*;
 +
 +public class Claj extends Plugin{
 +    public JoinViaClajDialog joinViaClaj;
@@ -65,20 +71,21 @@ index 0000000000000000000000000000000000000000..1bbd1446ccd44e532df8ce542921d34e
 +        joinViaClaj = new JoinViaClajDialog();
 +        manageRooms = new ManageRoomsDialog();
 +
-+        Stack stack = (Stack)Vars.ui.join.getChildren().get(1);
-+        Table root = (Table)stack.getChildren().get(1);
-+
-+        root.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show);
-+        if(!Vars.steam && !Vars.mobile) root.getCells().insert(4, root.getCells().remove(6));
-+        else root.getCells().insert(3, root.getCells().remove(4));
++        Table buttons = Vars.ui.join.buttons;
++        buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show).self(cell -> {
++            Seq<Cell> cells = buttons.getCells();
++            cells.remove(cell);
++            cells.insert(3, cell); // 插入到占位元素前
++        });
 +
 +        var pausedDialog = Vars.ui.paused;
 +        pausedDialog.shown(() -> {
-+            if(Vars.mobile){
-+                pausedDialog.cont.buttonRow("管理claj房间", Icon.planet, () -> manageRooms.show()).colspan(2).width(450f).disabled(b -> !Vars.net.server());
-+            }else{
-+                pausedDialog.cont.row().button("管理claj房间", Icon.planet, () -> manageRooms.show()).colspan(2).width(450f).disabled(b -> !Vars.net.server());
-+            }
++            Table cont = pausedDialog.cont;
++
++            int columns = cont.getColumns();
++
++            cont.row();
++            cont.button("管理claj房间", Icon.planet, () -> manageRooms.show()).size(Float.NEGATIVE_INFINITY, 60).colspan(columns).fill().disabled(b -> !Vars.net.server());
 +        });
 +    }
 +}
@@ -231,18 +238,22 @@ index 0000000000000000000000000000000000000000..e586f677e9d116407af2b0ccd47e7ab2
 \ No newline at end of file
 diff --git a/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ecb87dc0e32a33bf95f33d0e05bb6712cd845c26
+index 0000000000000000000000000000000000000000..8e8e959090e6a75386ca59259f5dd0b0be958419
 --- /dev/null
 +++ b/core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,108 @@
 +package mindustryX.mods.claj.dialogs;
 +
-+import mindustry.Vars;
-+import mindustry.ui.dialogs.BaseDialog;
++import arc.*;
++import arc.scene.ui.*;
++import mindustry.*;
++import mindustry.gen.*;
++import mindustry.ui.*;
++import mindustry.ui.dialogs.*;
 +import mindustryX.mods.claj.*;
 +
-+import java.io.IOException;
-+import java.util.Objects;
++import java.io.*;
++import java.util.*;
 +
 +public class JoinViaClajDialog extends BaseDialog{
 +    private String lastLink = "请输入您的claj代码";
@@ -254,7 +265,11 @@ index 0000000000000000000000000000000000000000..ecb87dc0e32a33bf95f33d0e05bb6712
 +        super("通过claj加入游戏");
 +        cont.table(table -> {
 +            table.add("房间代码：").padRight(5f).left();
-+            table.field(lastLink, this::setLink).size(550f, 54f).maxTextLength(100).valid(this::setLink);
++            TextField tf = table.field(lastLink, this::setLink).size(550f, 54f).maxTextLength(100).valid(this::setLink).get();
++            tf.setProgrammaticChangeEvents(true);
++
++            table.defaults().size(48f).padLeft(8f);
++            table.button(Icon.paste, Styles.clearNonei, () -> tf.setText(Core.app.getClipboardText()));
 +        }).row();
 +
 +        cont.label(() -> output).width(550f).left();
