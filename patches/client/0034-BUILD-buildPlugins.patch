@@ -2,16 +2,21 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Tue, 9 Apr 2024 17:57:46 +0800
 Subject: [PATCH] BUILD buildPlugins
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+patchArc改写成transform
+way-zer <himc.wicp@gmail.com> on 2024/4/27 at 18:57
 ---
  .gitignore                                    |   6 +-
  buildPlugins/build.gradle.kts                 |  23 +++
  .../plugins/mindustryX/buildExt.gradle.kts    |  31 ++++
- .../plugins/mindustryX/loaderMod.gradle.kts   | 134 ++++++++++++++++++
- .../plugins/mindustryX/patchArc.gradle.kts    |  62 ++++++++
+ .../plugins/mindustryX/loaderMod.gradle.kts   | 135 ++++++++++++++++++
+ .../plugins/mindustryX/patchArc.gradle.kts    |  91 ++++++++++++
  core/build.gradle.kts                         |   1 +
  settings.gradle                               |   2 +
- 7 files changed, 255 insertions(+), 4 deletions(-)
+ 7 files changed, 285 insertions(+), 4 deletions(-)
  create mode 100644 buildPlugins/build.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/buildExt.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
@@ -109,10 +114,10 @@ index 0000000000000000000000000000000000000000..f6cd338cc79a0382e8a23ca590ac034f
 \ No newline at end of file
 diff --git a/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts b/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..1fe4b9c547d19c577d2566b8a5b40df9884512f2
+index 0000000000000000000000000000000000000000..0991a7b64651323ddd767cccc8fdf2633e9d977f
 --- /dev/null
 +++ b/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,135 @@
 +package mindustryX
 +
 +import com.android.tools.smali.dexlib2.DexFileFactory
@@ -201,6 +206,7 @@ index 0000000000000000000000000000000000000000..1fe4b9c547d19c577d2566b8a5b40df9
 +    val genLoaderModDex by registering {
 +        outputs.cacheIf { true }
 +        dependsOn(genLoaderMod, distTask)
++        inputs.files(files(genLoaderMod))
 +        val outFile = temporaryDir.resolve("classes.dex")
 +        outputs.file(outFile)
 +        doLast {
@@ -250,39 +256,32 @@ index 0000000000000000000000000000000000000000..1fe4b9c547d19c577d2566b8a5b40df9
 \ No newline at end of file
 diff --git a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..35878409a9472f9c889c3bd862a29ac08df9ae11
+index 0000000000000000000000000000000000000000..19c7a9d241a187f985e0709e395847acc37786df
 --- /dev/null
 +++ b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,91 @@
 +package mindustryX
 +
-+import org.gradle.jvm.tasks.Jar
 +import javassist.ClassPool
 +import javassist.CtClass
 +import javassist.bytecode.Bytecode
 +import javassist.bytecode.Descriptor
++import java.util.zip.ZipFile
++import java.util.zip.ZipOutputStream
 +
 +plugins {
 +    java
 +}
 +
-+tasks {
-+    val patchSrc by configurations.creating
-+    dependencies {
-+        configurations.named("api").configure {
-+            val arcLib = dependencies.find { it.name == "arc-core" }
-+                ?: error("Can't find arc-core")
-+            dependencies.remove(arcLib)
-+            patchSrc(arcLib)
-+        }
-+    }
-+    val patchArc by registering(Jar::class) {
-+        group = "build"
-+        destinationDirectory.set(temporaryDir)
-+        archiveBaseName.set("patched")
-+        inputs.files(patchSrc)
-+        val transform = mutableMapOf<String, CtClass.() -> Unit>()
-+        transform["arc.util.Http\$HttpRequest"] = clz@{
++@CacheableTransform
++abstract class PatchArc : TransformAction<TransformParameters.None> {
++    @get:InputArtifact
++    @get:PathSensitive(PathSensitivity.NONE)
++    abstract val inputArtifact: Provider<FileSystemLocation>
++
++    private val genDir = File("build/gen/patchedArc")
++    private val transform = mapOf<String, CtClass.() -> Unit>(
++        "arc.util.Http\$HttpRequest" to clz@{
 +            getDeclaredMethod("block").apply {
 +                val code = Bytecode(methodInfo.constPool)
 +                val desc = Descriptor.ofMethod(CtClass.voidType, arrayOf(this@clz))
@@ -292,29 +291,65 @@ index 0000000000000000000000000000000000000000..35878409a9472f9c889c3bd862a29ac0
 +                methodInfo.rebuildStackMapIf6(classPool, classFile)
 +            }
 +        }
++    )
 +
-+        val genDir = layout.buildDirectory.dir("generated/patched")
-+        from(genDir)
-+        from(zipTree(patchSrc.files.single()))
-+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
++    override fun transform(outputs: TransformOutputs) {
++        val input = inputArtifact.get().asFile
++        val output = outputs.file("${input.nameWithoutExtension}.patched.jar")
++        doTransform(input, output)
++    }
 +
-+        doFirst {
-+            genDir.get().asFileTree.forEach { it.delete() }
++    private fun doTransform(input: File, output: File) {
++        val pool = ClassPool()
++        pool.appendSystemPath()
++        pool.appendClassPath(input.path)
 +
-+            val pool = ClassPool()
-+            pool.appendSystemPath()
-+            patchSrc.files.forEach {
-+                pool.appendClassPath(it.path)
-+            }
++        val tmp = output.resolveSibling("tmp")
++        if (tmp.exists()) tmp.deleteRecursively()
++        tmp.mkdirs()
++        transform.forEach { (clz, block) ->
++            pool.get(clz).also(block)
++                .writeFile(tmp.path)
++        }
 +
-+            transform.forEach { (clz, block) ->
-+                pool.get(clz).also(block)
-+                    .writeFile(genDir.get().asFile.path)
++        val overwrite = tmp.walk().associateBy { it.toRelativeString(tmp).replace(File.separatorChar, '/') }
++        ZipOutputStream(output.outputStream()).use { out ->
++            ZipFile(input).use { zip ->
++                for (entry in zip.entries()) {
++                    out.putNextEntry(entry)
++                    (overwrite[entry.name]?.also {
++                        println("patchArc ${entry.name}")
++                    }?.inputStream() ?: zip.getInputStream(entry)).copyTo(out)
++                    out.closeEntry()
++                }
 +            }
 +        }
++        tmp.deleteRecursively()
 +    }
-+    dependencies { "api"(files(patchArc)) }
-+    named("compileJava") { dependsOn(patchArc) }
++}
++
++val artifactType = Attribute.of("artifactType", String::class.java)
++val patched = Attribute.of("patched", Boolean::class.javaObjectType)
++tasks {
++    dependencies {
++        attributesSchema {
++            attribute(patched)
++        }
++        artifactTypes.getByName("jar") {
++            attributes.attribute(patched, false)
++        }
++        configurations.named("api") {
++            val arcLib = dependencies.find { it.name == "arc-core" }
++                ?: error("Can't find arc-core")
++            (arcLib as ExternalModuleDependency).attributes {
++                attribute(patched, true)
++            }
++        }
++        registerTransform(PatchArc::class) {
++            from.attribute(artifactType, "jar").attribute(patched, false)
++            to.attribute(artifactType, "jar").attribute(patched, true)
++        }
++    }
 +}
 \ No newline at end of file
 diff --git a/core/build.gradle.kts b/core/build.gradle.kts

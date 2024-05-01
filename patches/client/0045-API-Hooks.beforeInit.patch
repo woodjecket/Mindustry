@@ -21,7 +21,7 @@ index 313874de35d6cf5cc7a2cc5b06e7950fca2eede2..c7692170f49fae761dc659225330c43c
  
          if(loadLocales){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index ec10681aafa6ad769c8f25ed8faa253ab047db07..55726251ff2a3a52f6bfd71da8f962bf5c936159 100644
+index 3c181a34c201a6641d4aba6cd0e00b30253d43bd..2d1aea2c9da5a511d34b2d7c6dde6993d6ff1518 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -9,6 +9,12 @@ import mindustryX.features.*;

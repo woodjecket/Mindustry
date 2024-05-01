@@ -12,10 +12,10 @@ Subject: [PATCH] C: misc patch
  5 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index 9d6a699bded059f6b1b81a84f634262f6d6a0eac..7733381e912adc6f698d16d35679c92df47ee732 100644
+index 21047767677f54172ec1806ded2a925c438b2b86..759c871b4414bb50e1c89c861c25d5a843373a52 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
-@@ -573,7 +573,7 @@ public class Control implements ApplicationListener, Loadable{
+@@ -575,7 +575,7 @@ public class Control implements ApplicationListener, Loadable{
                  BaseDialog dialog = new BaseDialog("@confirm");
                  dialog.setFillParent(true);
  
@@ -25,7 +25,7 @@ index 9d6a699bded059f6b1b81a84f634262f6d6a0eac..7733381e912adc6f698d16d35679c92d
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/net/ArcNetProvider.java b/core/src/mindustry/net/ArcNetProvider.java
-index c9ed683299dda52d1cd793a6db6fbd58dd93ebfe..8d5e2256d917064a0b4f345b9913ffb9a424a6a6 100644
+index 80e9b6b7317ac124d936bebce0e4481e2a31721c..c4dbdec9794a9915331fc217ae2f42c5f5085ed8 100644
 --- a/core/src/mindustry/net/ArcNetProvider.java
 +++ b/core/src/mindustry/net/ArcNetProvider.java
 @@ -52,7 +52,7 @@ public class ArcNetProvider implements NetProvider{

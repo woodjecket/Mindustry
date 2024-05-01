@@ -125,7 +125,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9b
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index beb3e79d02f5a271b5e4a3c9c2b70edef5d224aa..6a5b43c0bd6edf7ad162ae97f289dad6fc826dcc 100644
+index 4577524eff635398f18be119caa89a63079a2f64..304cbed8fd5b3149816fc1fbcd1fe7715befecaa 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 @@ -1,5 +1,6 @@
@@ -143,7 +143,7 @@ index beb3e79d02f5a271b5e4a3c9c2b70edef5d224aa..6a5b43c0bd6edf7ad162ae97f289dad6
  
  import static mindustry.Vars.*;
  
-@@ -355,6 +357,19 @@ public class ItemBridge extends Block{
+@@ -356,6 +358,19 @@ public class ItemBridge extends Block{
  
              Draw.z(Layer.power);
  

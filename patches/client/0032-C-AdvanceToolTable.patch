@@ -15,9 +15,9 @@ way-zer <himc.wicp@gmail.com> on 2024/4/10 at 19:52
  core/src/mindustryX/features/UnitExt.java     |  21 +
  .../features/ui/AdvanceToolTable.kt           | 178 +++++++
  .../features/ui/ArcUnitFactoryDialog.java     | 483 ++++++++++++++++++
- .../mindustryX/features/ui/SimpleCollapse.kt  |  37 ++
+ .../mindustryX/features/ui/SimpleCollapse.kt  |  43 ++
  .../features/ui/TeamSelectDialog.java         |  51 ++
- 8 files changed, 823 insertions(+)
+ 8 files changed, 829 insertions(+)
  create mode 100644 core/src/mindustryX/features/UIExt.java
  create mode 100644 core/src/mindustryX/features/UnitExt.java
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
@@ -26,7 +26,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/10 at 19:52
  create mode 100644 core/src/mindustryX/features/ui/TeamSelectDialog.java
 
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index df9dec8133a10da577c7ddffd3c5271518f8a0ac..ec32b1df8d50829e5af8817dbd4e05dae79bd04b 100644
+index 966520f5c00e34e56f3f1cd8e315e338d4812a61..be2e0724973bd8011561d90393e3835fea59eba4 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -25,6 +25,7 @@ import mindustry.type.*;
@@ -37,7 +37,7 @@ index df9dec8133a10da577c7ddffd3c5271518f8a0ac..ec32b1df8d50829e5af8817dbd4e05da
  
  import static mindustry.Vars.*;
  
-@@ -242,6 +243,7 @@ public class PlacementFragment{
+@@ -246,6 +247,7 @@ public class PlacementFragment{
              toggler = full;
              full.bottom().right().visible(() -> ui.hudfrag.shown);
  
@@ -816,26 +816,32 @@ index 0000000000000000000000000000000000000000..a44e5f559ede909bf21d3ad6f852ccf4
 +}
 diff --git a/core/src/mindustryX/features/ui/SimpleCollapse.kt b/core/src/mindustryX/features/ui/SimpleCollapse.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..29adb4868f32d349c118a65ccd3451a91f6fa7c7
+index 0000000000000000000000000000000000000000..122e9dad97e6ed58568d842ce594fbb246340eb8
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/SimpleCollapse.kt
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,43 @@
 +package mindustryX.features.ui
 +
 +import arc.scene.event.Touchable
 +import arc.scene.ui.layout.Table
 +import arc.scene.ui.layout.WidgetGroup
 +
-+class SimpleCollapser(val table: Table = Table(), var collapsed: Boolean = true) : WidgetGroup(table) {
++class SimpleCollapser(val table: Table = Table(), collapsed: Boolean = true) : WidgetGroup(table) {
++    var collapsed: Boolean = false
++        set(value) {
++            if (field == value) return
++            field = value
++            this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
++            this.visible = !collapsed
++            invalidateHierarchy()
++        }
++
 +    init {
-+        this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
++        if (collapsed) this.collapsed = true
 +    }
 +
 +    fun toggle() {
 +        collapsed = !collapsed
-+        this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
-+        this.visible = !collapsed
-+        invalidateHierarchy()
 +    }
 +
 +    override fun draw() {

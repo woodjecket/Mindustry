@@ -123,7 +123,7 @@ index a524970fcdeb4f24a84e72524f5d9372ddfa8e89..e99bcb9589a2a65274ab1f8dada9e24a
  
      @Override
 diff --git a/core/src/mindustry/type/StatusEffect.java b/core/src/mindustry/type/StatusEffect.java
-index d9aad9d90af798cce078192597ef7c91e381b89f..b7a53a3de753c7a6ecd73dada0fc3e18a30503d2 100644
+index 4ffb7a61831a323b64200da77bf2c6da6d142cbf..054e2975ec0b052b0cea07ec5a2dd7f9ae6f1e0e 100644
 --- a/core/src/mindustry/type/StatusEffect.java
 +++ b/core/src/mindustry/type/StatusEffect.java
 @@ -13,6 +13,7 @@ import mindustry.gen.*;
@@ -134,7 +134,7 @@ index d9aad9d90af798cce078192597ef7c91e381b89f..b7a53a3de753c7a6ecd73dada0fc3e18
  
  public class StatusEffect extends UnlockableContent{
      /** Damage dealt by the unit with the effect. */
-@@ -91,6 +92,7 @@ public class StatusEffect extends UnlockableContent{
+@@ -93,6 +94,7 @@ public class StatusEffect extends UnlockableContent{
          if(speedMultiplier != 1) stats.addPercent(Stat.speedMultiplier, speedMultiplier);
          if(reloadMultiplier != 1) stats.addPercent(Stat.reloadMultiplier, reloadMultiplier);
          if(buildSpeedMultiplier != 1) stats.addPercent(Stat.buildSpeedMultiplier, buildSpeedMultiplier);
@@ -143,7 +143,7 @@ index d9aad9d90af798cce078192597ef7c91e381b89f..b7a53a3de753c7a6ecd73dada0fc3e18
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index c44769f4d5a4fd8f7feb6d53fe41d9eb856e708d..3c66132fabaf01d9fc2b023a1588046661eb3f19 100644
+index a96bdfec868be2fea8c1f76beeab78c8a717b9ce..2e92d78a290327c53dbf40479df20a7b8296d0de 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -37,6 +37,8 @@ import mindustry.world.blocks.payloads.*;
@@ -222,7 +222,7 @@ index c44769f4d5a4fd8f7feb6d53fe41d9eb856e708d..3c66132fabaf01d9fc2b023a15880466
          if(example instanceof WaterMovec){
              naval = true;
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index 97ac3b45daf598caaa695c373bfbdbfa190d6e86..f5fd2a75caa099baf96010bed9e1a29b6d631d4c 100644
+index 55554c5400641cb87cb4dd1eac4ce4cd45511727..7e56b3b8ef56179a8521c3bd1c083c53b09eaa02 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
 @@ -22,6 +22,7 @@ import mindustry.entities.units.*;
@@ -310,7 +310,7 @@ index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..6f20b9cd229a15a67d629e56762d86df
          this(stack.item.uiIcon, stack.amount);
      }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index c1a87f510c523ff133ae06ddff8482ce5cdbcad8..26624a2bb102f41388a3d7438391f3f08138afca 100644
+index 325f37c7b184445dfc4d75ac5e82581894dd34d9..0cd4d52bf61ce00ab59e0d6dff993d85221b0868 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -32,6 +32,7 @@ import mindustry.world.blocks.environment.*;

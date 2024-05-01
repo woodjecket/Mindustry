@@ -11,7 +11,7 @@ Subject: [PATCH] API: add SendPacketEvent
  create mode 100644 core/src/mindustryX/events/SendPacketEvent.java
 
 diff --git a/core/src/mindustry/net/ArcNetProvider.java b/core/src/mindustry/net/ArcNetProvider.java
-index 87a16f6a52b12ebe06c0a39c96fbba2773066636..c9ed683299dda52d1cd793a6db6fbd58dd93ebfe 100644
+index 3eaeacd1f3ea9436ba8b67b9a04b1a40cad02a5c..80e9b6b7317ac124d936bebce0e4481e2a31721c 100644
 --- a/core/src/mindustry/net/ArcNetProvider.java
 +++ b/core/src/mindustry/net/ArcNetProvider.java
 @@ -15,6 +15,7 @@ import mindustry.game.EventType.*;
@@ -22,15 +22,15 @@ index 87a16f6a52b12ebe06c0a39c96fbba2773066636..c9ed683299dda52d1cd793a6db6fbd58
  import net.jpountz.lz4.*;
  
  import java.io.*;
-@@ -327,6 +328,7 @@ public class ArcNetProvider implements NetProvider{
+@@ -329,6 +330,7 @@ public class ArcNetProvider implements NetProvider{
  
          @Override
          public void sendStream(Streamable stream){
 +            if(SendPacketEvent.emit(this, null, stream)) return;
-             connection.addListener(new InputStreamSender(stream.stream, 512){
+             connection.addListener(new InputStreamSender(stream.stream, 1024){
                  int id;
  
-@@ -352,6 +354,7 @@ public class ArcNetProvider implements NetProvider{
+@@ -354,6 +356,7 @@ public class ArcNetProvider implements NetProvider{
  
          @Override
          public void send(Object object, boolean reliable){

@@ -1,13 +1,22 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Wed, 20 Mar 2024 23:51:15 +0800
-Subject: [PATCH] FC: ReplayController
+Subject: [PATCH] C: ReplayController
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+兼容ARC的mrep格式
+way-zer <himc.wicp@gmail.com> on 2024/4/22 at 18:10
+
+实现功能按钮
+way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
 ---
  core/src/mindustry/core/NetClient.java        |   3 +
  core/src/mindustry/net/Net.java               |   2 +
- .../mindustryX/features/ReplayController.java | 214 ++++++++++++++++++
- 3 files changed, 219 insertions(+)
+ core/src/mindustryX/Hooks.java                |   1 +
+ .../mindustryX/features/ReplayController.java | 231 ++++++++++++++++++
+ 4 files changed, 237 insertions(+)
  create mode 100644 core/src/mindustryX/features/ReplayController.java
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
@@ -58,22 +67,36 @@ index 6f9b8f9b50079b42f7762c8ee2b1101394b54e33..22b66b83cde27a73415b9154ed813cdf
  
          if(object instanceof StreamBegin b){
              streams.put(b.id, currentStream = new StreamBuilder(b));
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 59e606e4744893f0d3441e650f7fc26e3e7220c3..35a8ced5c36d6e17fb3ea98033b34555f7163ffa 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -16,6 +16,7 @@ public class Hooks implements ApplicationListener{
+         if(!Vars.headless){
+             TimeControl.init();
+             UIExt.init();
++            ReplayController.init();
+         }
+     }
+ 
 diff --git a/core/src/mindustryX/features/ReplayController.java b/core/src/mindustryX/features/ReplayController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b388c0a59
+index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb4427baeb
 --- /dev/null
 +++ b/core/src/mindustryX/features/ReplayController.java
-@@ -0,0 +1,214 @@
+@@ -0,0 +1,231 @@
 +package mindustryX.features;
 +
 +import arc.*;
 +import arc.files.*;
++import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
 +import arc.util.io.*;
 +import mindustry.*;
 +import mindustry.core.*;
 +import mindustry.game.*;
++import mindustry.gen.*;
 +import mindustry.net.*;
 +import mindustry.net.Packets.*;
 +import mindustry.ui.dialogs.*;
@@ -99,13 +122,28 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +    private static final Writes tmpWr = new Writes(new ByteBufferOutput(tmpBuf));
 +    private static ReplayData now = null;
 +
-+    public ReplayController(){
++    public static void init(){
 +        Events.run(EventType.Trigger.update, () -> {
-+            if(state.getState() == GameState.State.menu && !netClient.isConnecting()){
-+                replaying = false;
++            if(replaying && state.isMenu() && !netClient.isConnecting()){
 +                stopPlay();
 +            }
 +        });
++        {
++            Table buttons = Vars.ui.join.buttons;
++            buttons.button("加载回放文件", Icon.file, () -> {
++                FileChooser.setLastDirectory(saveDirectory);
++                platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> ReplayController.startPlay(f)));
++            });
++        }
++        {
++            var pausedDialog = Vars.ui.paused;
++            pausedDialog.shown(() -> {
++                if(!replaying) return;
++                pausedDialog.cont.row()
++                .button("查看录制信息", Icon.fileImage, ReplayController::showInfo).name("ReplayInfo")
++                .size(0, 60).colspan(pausedDialog.cont.getColumns()).fill();
++            });
++        }
 +    }
 +
 +    private static class ReplayData{
@@ -113,7 +151,7 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +        Date time;
 +        String ip;
 +        String name;
-+        long length;
++        float length;
 +        private final IntIntMap packetCount = new IntIntMap();
 +
 +        ReplayData(int version, Date time, String ip, String name){
@@ -196,10 +234,11 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +            Date time = new Date(r.l());
 +            String ip = r.str();
 +            String name = r.str();
-+            Log.info("version: @, time: @, ip: @, name: @", version, time, ip, name);
++            Log.infoTag("Replay", Strings.format("version: @, time: @, ip: @, name: @", version, time, ip, name));
 +            now = new ReplayData(version, time, ip, name);
 +            while(true){
-+                long l = r.l();
++                float l = version > 10 ? r.f() :
++                (r.l() * Time.toSeconds / Time.nanosPerMilli / 1000);
 +                byte id = r.b();
 +                r.skip(r.us());
 +                now.packetCount.put(id, now.packetCount.get(id, 0) + 1);
@@ -230,15 +269,13 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +        netClient.beginConnecting();
 +        Reflect.set(net, "active", true);
 +        Reflect.set(net, "server", true);
-+        Packets.Connect c = new Packets.Connect();
-+        c.addressTCP = now.ip;
-+        net.handleClientReceived(c);
 +
 +        startTime = Time.time;
 +        Threads.daemon("Replay Controller", () -> {
 +            try{
 +                while(replaying){
-+                    float nextTime = reads.f();
++                    float nextTime = now.version > 10 ? reads.f() :
++                    (reads.l() * Time.toSeconds / Time.nanosPerMilli / 1000);
 +                    Packet p = Net.newPacket(reads.b());
 +                    p.read(reads, reads.us());
 +                    while(Time.time - startTime < nextTime)
@@ -256,6 +293,7 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +
 +    public static void stopPlay(){
 +        replaying = false;
++        Log.infoTag("Replay", "stop");
 +    }
 +
 +
@@ -270,7 +308,7 @@ index 0000000000000000000000000000000000000000..1038acc6076fec3d06ed8d9c0559b49b
 +        dialog.cont.add("回放创建时间:" + replay.time).row();
 +        dialog.cont.add("服务器ip:" + replay.ip).row();
 +        dialog.cont.add("玩家名:" + replay.name).row();
-+        int secs = (int)(replay.length / 1000000000);
++        int secs = (int)(replay.length / 60);
 +        dialog.cont.add("回放长度:" + (secs / 3600) + ":" + (secs / 60 % 60) + ":" + (secs % 60)).row();
 +        dialog.cont.pane(t -> replay.packetCount.keys().toArray().each(b ->
 +        t.add(Net.newPacket((byte)b).getClass().getSimpleName() + " " + replay.packetCount.get(b)).row())).growX().row();
