@@ -27,7 +27,7 @@ Subject: [PATCH] ARC setBars
  20 files changed, 102 insertions(+), 40 deletions(-)
 
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 26624a2bb102f41388a3d7438391f3f08138afca..966ad9bd89a5c8c1886a375543684bfe84ff8af8 100644
+index 0cd4d52bf61ce00ab59e0d6dff993d85221b0868..e8c7594bac9e5417902db4440c9c0eea375fd1f7 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
@@ -433,7 +433,7 @@ index c4da0d2e18cfaf6bfc419854fcd58213f2b791c4..9d93309425be6b6d00cfd8a1b0425960
          new Bar(
              () -> e.unit() == null ? "[lightgray]" + Iconc.cancel :
 diff --git a/core/src/mindustry/world/blocks/units/UnitAssembler.java b/core/src/mindustry/world/blocks/units/UnitAssembler.java
-index 70034869a9487dd8b4451cc9354a83d5f0354eaa..351979d9765286df62c0fded42b8d5c242ebafba 100644
+index 72b86188915ff06bc2ec588c48e993aaf0e7186f..0dfd86871738edcd4feda4a3fd20af19897c37bc 100644
 --- a/core/src/mindustry/world/blocks/units/UnitAssembler.java
 +++ b/core/src/mindustry/world/blocks/units/UnitAssembler.java
 @@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;

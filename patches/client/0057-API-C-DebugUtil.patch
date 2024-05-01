@@ -13,7 +13,7 @@ Subject: [PATCH] API&C: DebugUtil
  create mode 100644 core/src/mindustryX/features/DebugUtil.java
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 45f4ff19c7d157ea1437b061ae1e76d8f53e817b..5b212994363532fb77a98ea8c822b90624a7e7fd 100644
+index 1a27c69e350fac21e9ff0ce4198f59b0e6304b9b..a7a4f4cff7641ef3d75741902c8c7da575ed66fe 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -20,6 +20,7 @@ import mindustry.maps.*;
@@ -24,7 +24,7 @@ index 45f4ff19c7d157ea1437b061ae1e76d8f53e817b..5b212994363532fb77a98ea8c822b906
  
  import static arc.Core.*;
  import static mindustry.Vars.*;
-@@ -68,7 +69,16 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -69,7 +70,16 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
              return (Float.isNaN(result) || Float.isInfinite(result)) ? 1f : Mathf.clamp(result, 0.0001f, 60f / 10f);
          });
  
@@ -71,7 +71,7 @@ index e722afb8f1d368d3068d9d8510f9fdda2ac27844..489ff2990d9b6c2bac49b4eb574266e3
  
      /** @return whether the wave timer is paused due to enemies */
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index b97b59f1b179833947a7a3ba485a4a2f8a902873..7965f8d000e5f2619e3fa568d62bf8b51798fbb7 100644
+index e964aa5fdf02e5a606a6b3ca51babc5c03790799..58978ef3586f170c75d562cb203e5000a3804377 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -27,6 +27,7 @@ import mindustry.input.*;
@@ -82,7 +82,7 @@ index b97b59f1b179833947a7a3ba485a4a2f8a902873..7965f8d000e5f2619e3fa568d62bf8b5
  
  import static mindustry.Vars.*;
  import static mindustry.gen.Tex.*;
-@@ -276,6 +277,11 @@ public class HudFragment{
+@@ -280,6 +281,11 @@ public class HudFragment{
  
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
@@ -95,7 +95,7 @@ index b97b59f1b179833947a7a3ba485a4a2f8a902873..7965f8d000e5f2619e3fa568d62bf8b5
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 45c4ce1b88cfb0e1ebb7272a4e93dd5c7d743c53..968220cdda30ad874848d2455957a0a8cc655f23 100644
+index c7d6da1293da79105ffd3adf8b1a47db3d04b58a..aa7da585a40a45bddf749ab4e3371fdcf656b252 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{

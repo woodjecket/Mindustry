@@ -11,7 +11,7 @@ Subject: [PATCH] API: RenderExt
  create mode 100644 core/src/mindustryX/features/RenderExt.java
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 8b3614436d4d67c66871d3ae3e2ef190084d4542..dc816c50f79214665eb0335ff2cf4cd642411c86 100644
+index 7769d3be7687ac8db960bef392a144410a1cc124..bab0738bca0a8b40d556bc3bfe36e6794f67c748 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
 @@ -22,6 +22,7 @@ import mindustry.maps.*;
@@ -22,7 +22,7 @@ index 8b3614436d4d67c66871d3ae3e2ef190084d4542..dc816c50f79214665eb0335ff2cf4cd6
  
  import static arc.Core.*;
  import static mindustry.Vars.*;
-@@ -376,7 +377,7 @@ public class Renderer implements ApplicationListener{
+@@ -379,7 +380,7 @@ public class Renderer implements ApplicationListener{
          Events.fire(Trigger.drawOver);
          blocks.drawBlocks();
  

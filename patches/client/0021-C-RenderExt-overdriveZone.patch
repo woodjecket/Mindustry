@@ -11,10 +11,10 @@ Subject: [PATCH] C(RenderExt) overdriveZone
  4 files changed, 29 insertions(+)
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index dc816c50f79214665eb0335ff2cf4cd642411c86..7da88abd8a8f5c11f7d14ba5df66c55e02c17656 100644
+index bab0738bca0a8b40d556bc3bfe36e6794f67c748..6ed4bb3d08571aab42e7ed7059cf3b6ca43190e3 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
-@@ -364,6 +364,11 @@ public class Renderer implements ApplicationListener{
+@@ -367,6 +367,11 @@ public class Renderer implements ApplicationListener{
                  effectBuffer.blit(Shaders.shield);
              });
  

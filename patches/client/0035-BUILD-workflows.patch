@@ -4,11 +4,11 @@ Date: Sun, 3 Mar 2024 16:54:20 +0800
 Subject: [PATCH] BUILD workflows
 
 ---
- .github/workflows/build.yml      | 62 +++++++++++++++++++++
+ .github/workflows/build.yml      | 61 +++++++++++++++++++++
  .github/workflows/deployment.yml | 93 --------------------------------
  .github/workflows/pr.yml         | 26 ---------
  .github/workflows/push.yml       | 59 --------------------
- 4 files changed, 62 insertions(+), 178 deletions(-)
+ 4 files changed, 61 insertions(+), 178 deletions(-)
  create mode 100644 .github/workflows/build.yml
  delete mode 100644 .github/workflows/deployment.yml
  delete mode 100644 .github/workflows/pr.yml
@@ -16,10 +16,10 @@ Subject: [PATCH] BUILD workflows
 
 diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
 new file mode 100644
-index 0000000000000000000000000000000000000000..be5a1ccb0b2baf28e94ab935566b9b725d57eabe
+index 0000000000000000000000000000000000000000..10f800a3a57e1f0c19513526e27d940e6b22aa26
 --- /dev/null
 +++ b/.github/workflows/build.yml
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,61 @@
 +name: Build Artifacts
 +
 +on:
@@ -44,10 +44,9 @@ index 0000000000000000000000000000000000000000..be5a1ccb0b2baf28e94ab935566b9b72
 +        with:
 +          gradle-version: 8.6
 +          cache-read-only: false
-+          gradle-home-cache-cleanup: true
 +          build-scan-publish: true
-+          build-scan-terms-of-service-url: "https://gradle.com/terms-of-service"
-+          build-scan-terms-of-service-agree: "yes"
++          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
++          build-scan-terms-of-use-agree: "yes"
 +      - name: Set env
 +        run: |
 +          echo "RELEASE_TAG=${GITHUB_REF_NAME}-build" >> $GITHUB_ENV

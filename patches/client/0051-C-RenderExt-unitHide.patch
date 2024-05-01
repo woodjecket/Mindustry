@@ -4,26 +4,27 @@ Date: Thu, 4 Apr 2024 14:56:59 +0800
 Subject: [PATCH] C(RenderExt) unitHide
 
 ---
- core/src/mindustry/input/Binding.java       | 1 +
+ core/src/mindustry/input/Binding.java       | 2 +-
  core/src/mindustry/input/InputHandler.java  | 2 ++
  core/src/mindustryX/Hooks.java              | 4 ++++
  core/src/mindustryX/features/RenderExt.java | 4 ++++
- 4 files changed, 11 insertions(+)
+ 4 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
-index 0e91d2a5057024fac3f8c93e4425d5fa6d4ae967..01cdb8cafcec71f0bc255459f0f34abb3cd38777 100644
+index 3a9f9845adbb5679a899e5c154349414942f1ed6..b4ddb5af181ffd4515f59b267b6558f1e84a337a 100644
 --- a/core/src/mindustry/input/Binding.java
 +++ b/core/src/mindustry/input/Binding.java
-@@ -90,6 +90,7 @@ public enum Binding implements KeyBind{
+@@ -90,7 +90,7 @@ public enum Binding implements KeyBind{
      console(KeyCode.f8),
  
      //MDTX
-+    toggle_unit(KeyCode.unknown),
+-    mindustryX(KeyCode.unknown, "mindustryX"),
++    toggle_unit(KeyCode.unknown, "mindustryX"),
      ;
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 1bfab55d1aea822a0741bd6e63002287edd3aa6b..e5e23114ce0d69f33bd42f32d337788250d1deca 100644
+index 0f86972de21272412e19b347ff3bae7a32dff502..6ad644550ad940c9be203835cc83e635ffa486a0 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -39,6 +39,7 @@ import mindustry.world.blocks.payloads.*;
@@ -34,7 +35,7 @@ index 1bfab55d1aea822a0741bd6e63002287edd3aa6b..e5e23114ce0d69f33bd42f32d3377882
  
  import java.util.*;
  
-@@ -1575,6 +1576,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1594,6 +1595,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public @Nullable Unit selectedUnit(){
@@ -43,7 +44,7 @@ index 1bfab55d1aea822a0741bd6e63002287edd3aa6b..e5e23114ce0d69f33bd42f32d3377882
          if(unit != null){
              unit.hitbox(Tmp.r1);
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index aff20031f81653f44ebe5430ada6fa98eebde30d..a0be68dcfcc2935e5ae67d70562cc1ab91079aae 100644
+index 41bd37f7aa552b1c98512dfb8504f16dbd551f4d..6c0ffd8b069f0aaea41a8f7e5fcfa6b3f02e2eac 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -54,7 +55,7 @@ index aff20031f81653f44ebe5430ada6fa98eebde30d..a0be68dcfcc2935e5ae67d70562cc1ab
  import mindustryX.features.Settings;
  import mindustryX.features.*;
  
-@@ -59,5 +60,8 @@ public class Hooks implements ApplicationListener{
+@@ -60,5 +61,8 @@ public class Hooks implements ApplicationListener{
  
      public static void pollKeys(){
          if(Core.scene.hasField()) return;

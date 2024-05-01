@@ -15,23 +15,23 @@ Content-Transfer-Encoding: 8bit
  create mode 100644 core/src/mindustryX/features/MarkerType.java
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
-index 01cdb8cafcec71f0bc255459f0f34abb3cd38777..bd9a4157cd9fc28d81c2e598abd1d84d89710299 100644
+index b4ddb5af181ffd4515f59b267b6558f1e84a337a..efd2697aac27d4f14ee51de2f9b8cfee3c728402 100644
 --- a/core/src/mindustry/input/Binding.java
 +++ b/core/src/mindustry/input/Binding.java
 @@ -91,6 +91,8 @@ public enum Binding implements KeyBind{
  
      //MDTX
-     toggle_unit(KeyCode.unknown),
+     toggle_unit(KeyCode.unknown, "mindustryX"),
 +    point(KeyCode.j),
 +    lockonLastMark(KeyCode.unknown),
      ;
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index a0be68dcfcc2935e5ae67d70562cc1ab91079aae..45c4ce1b88cfb0e1ebb7272a4e93dd5c7d743c53 100644
+index 6c0ffd8b069f0aaea41a8f7e5fcfa6b3f02e2eac..c7d6da1293da79105ffd3adf8b1a47db3d04b58a 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -50,6 +50,9 @@ public class Hooks implements ApplicationListener{
+@@ -51,6 +51,9 @@ public class Hooks implements ApplicationListener{
  
      public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
          if(message == null) return null;
@@ -41,7 +41,7 @@ index a0be68dcfcc2935e5ae67d70562cc1ab91079aae..45c4ce1b88cfb0e1ebb7272a4e93dd5c
          return message;
      }
  
-@@ -63,5 +66,11 @@ public class Hooks implements ApplicationListener{
+@@ -64,5 +67,11 @@ public class Hooks implements ApplicationListener{
          if(Core.input.keyTap(Binding.toggle_unit)){
              RenderExt.unitHide = !RenderExt.unitHide;
          }

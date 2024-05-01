@@ -14,13 +14,16 @@ Cong0707 <49234756+cong0707@users.noreply.github.com> on 2024/2/24 at 21:38
 PausedDialog重排;修复一个潜在的claj代码输入bug
 MinRi2 <2275045670@qq.com> on 2024/4/11 at 22:15
 way-zer <himc.wicp@gmail.com> on 2024/4/13 at 19:18
+
+不可用时隐藏claj按钮
+way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:1
 ---
  .../src/mindustryX/features/InternalMods.java |   2 +
- core/src/mindustryX/mods/claj/Claj.java       |  37 +++++
+ core/src/mindustryX/mods/claj/Claj.java       |  31 ++++
  .../mindustryX/mods/claj/ClajIntegration.java | 139 ++++++++++++++++++
  .../mods/claj/dialogs/JoinViaClajDialog.java  | 108 ++++++++++++++
  .../mods/claj/dialogs/ManageRoomsDialog.java  |  99 +++++++++++++
- 5 files changed, 385 insertions(+)
+ 5 files changed, 379 insertions(+)
  create mode 100644 core/src/mindustryX/mods/claj/Claj.java
  create mode 100644 core/src/mindustryX/mods/claj/ClajIntegration.java
  create mode 100644 core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
@@ -48,10 +51,10 @@ index 1ce00d17c712d417383a3d61f13e6f62e5d91adc..67e4cde70b0dbdc197cf8e9d5f12b5ae
  
 diff --git a/core/src/mindustryX/mods/claj/Claj.java b/core/src/mindustryX/mods/claj/Claj.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..40c5cf6f869fdfc8637f53480107b1b8b4f6c1c8
+index 0000000000000000000000000000000000000000..ef0deaffdc749b0dc501a0a4b5ae79608f3f2230
 --- /dev/null
 +++ b/core/src/mindustryX/mods/claj/Claj.java
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,31 @@
 +package mindustryX.mods.claj;
 +
 +import arc.scene.ui.layout.*;
@@ -72,20 +75,14 @@ index 0000000000000000000000000000000000000000..40c5cf6f869fdfc8637f53480107b1b8
 +        manageRooms = new ManageRoomsDialog();
 +
 +        Table buttons = Vars.ui.join.buttons;
-+        buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show).self(cell -> {
-+            Seq<Cell> cells = buttons.getCells();
-+            cells.remove(cell);
-+            cells.insert(3, cell); // 插入到占位元素前
-+        });
++        buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show);
 +
 +        var pausedDialog = Vars.ui.paused;
 +        pausedDialog.shown(() -> {
-+            Table cont = pausedDialog.cont;
-+
-+            int columns = cont.getColumns();
-+
-+            cont.row();
-+            cont.button("管理claj房间", Icon.planet, () -> manageRooms.show()).size(Float.NEGATIVE_INFINITY, 60).colspan(columns).fill().disabled(b -> !Vars.net.server());
++            if(!Vars.net.server()) return;
++            pausedDialog.cont.row()
++            .button("管理claj房间", Icon.planet, () -> manageRooms.show()).name("ClajInfo")
++            .size(0, 60).colspan(pausedDialog.cont.getColumns()).fill();
 +        });
 +    }
 +}

@@ -10,7 +10,7 @@ Subject: [PATCH] API: InternalMods
  create mode 100644 core/src/mindustryX/features/InternalMods.java
 
 diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
-index 37b1dead723467a6bf109ec37a50f16c878176b2..721eeece93cc485061bc0a08b60b26cd430126e1 100644
+index 34bbd1afaff81717f3baf8afdc7835d42ac89c75..4a474b1209ba7125d5315a33ae64b120221d97d3 100644
 --- a/core/src/mindustry/mod/Mods.java
 +++ b/core/src/mindustry/mod/Mods.java
 @@ -422,7 +422,7 @@ public class Mods implements Loadable{
