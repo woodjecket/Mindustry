@@ -26,7 +26,7 @@ UPDATE5: 修复文字渲染错误
  create mode 100644 core/src/arc/graphics/g2d/SortedSpriteBatch2.java
 
 diff --git a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-index 19c7a9d241a187f985e0709e395847acc37786df..7afc49c3ce9b3989e605462fda5fe07217eb5bfe 100644
+index 75ab3b5813b4a279c5134a7cf316e367ef778d37..f0d75573ae7cdc5ace00ce9faae05e112492da8f 100644
 --- a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
 +++ b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
 @@ -2,6 +2,7 @@ package mindustryX
@@ -49,7 +49,7 @@ index 19c7a9d241a187f985e0709e395847acc37786df..7afc49c3ce9b3989e605462fda5fe072
      )
  
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index ed99faa613a47518bbcea038b6f9d1e3df710594..70f20db99f3595789c9e7fa998996c4c24b2f7f4 100644
+index 9dd96dade62133fa140cdce0a6a42fea77e7e401..c341ed754cdc92da0bd15594c0db772a94b39211 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -67,6 +67,9 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
@@ -949,16 +949,16 @@ index 68a8bcb2789d5ead726596677689b44190714fff..3cfd7cc0fbd54e53fa156591ebc49d53
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 68332ec5d4c1934c5191320d948da5fd503782dc..699f9dbad0ba9f0b15e1a88becd60c260983f251 100644
+index 72e4c685b12f4071f7b0ed6f2d912e3e14f8cfe6..cbf930d504101732c1739a15204991bc0fec5ef0 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -45,6 +45,9 @@ public class Settings{
+@@ -60,6 +60,9 @@ public class Settings{
              c.addCategory("entitySettings");
              c.checkPref("bulletShow", true);
              c.checkPref("showMineBeam".toLowerCase(), true);
 +
 +            c.addCategory("developerMode");
 +            c.checkPref("renderSort", false);
-         });
-     }
- }
+         }));
+         ArcOld.init(categories);
+         Events.on(ClientLoadEvent.class, e -> {

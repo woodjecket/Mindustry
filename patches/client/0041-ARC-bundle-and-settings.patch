@@ -9,21 +9,21 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 465 ++++++++++++++++++
- .../ui/dialogs/SettingsMenuDialog.java        | 137 ++++--
- core/src/mindustryX/Hooks.java                |   1 +
- core/src/mindustryX/features/ArcOld.java      | 269 ++++++++++
- 4 files changed, 835 insertions(+), 37 deletions(-)
+ core/assets/bundles/bundle-mdtx.properties    | 464 ++++++++++++++++++
+ .../ui/dialogs/SettingsMenuDialog.java        |  29 +-
+ core/src/mindustryX/features/ArcOld.java      | 258 ++++++++++
+ core/src/mindustryX/features/Settings.java    |   1 +
+ 4 files changed, 737 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..14a2eb193c8bb0d3716414f31b4e223e30fdcdb2 100644
+index 2dddf7df609c90e43ca5810c27b77c337819d90e..9dd96dade62133fa140cdce0a6a42fea77e7e401 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -40,3 +40,468 @@ stat.ammo_type = 子弹类型
- stat.ammo_capacity = 子弹容量
- 
- #end StatExt
+@@ -68,3 +68,467 @@ category.entitySettings.name = 实体相关设置
+ setting.bulletShow.name = 显示子弹
+ setting.showminebeam.name = 显示单位挖掘光束
+ #end Settings
 +
 +stat.reloadDetail = 装填：{0}%
 +stat.warmupDetail = 充能：{0}%
@@ -169,7 +169,6 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..14a2eb193c8bb0d3716414f31b4e223e
 +setting.arcBuildInfo.name = [cyan]建造范围
 +setting.arcCommandTable.name = [acid]RTS辅助器     [lightgray]替代原版
 +setting.arcCoreItemsCol.name = [acid]arc核心物资列数
-+setting.arcDetailInfo.name = [acid]单位|建筑详细信息
 +setting.arcDisableModWarning.name = [orange]我已知晓且同意学术端的mod使用原则
 +setting.arcDrillProgress.name = [acid]钻头[white]：显示挖掘进度      [gray]只推荐mod下使用
 +setting.arcPlayerList.name = [acid]简化玩家列表
@@ -217,7 +216,7 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..14a2eb193c8bb0d3716414f31b4e223e
 +setting.oneBlockProperty.name = [acid]复制单个建筑时展示属性       [orange]无需要不建议开启，会导致属性丢失
 +setting.otherCheat.name = [red]其他作弊功能(游戏外)
 +setting.overrideSkipWave.name = [acid]功能[white]：忽视跳波限制
-+setting.override_boss_shown.name = [cyan]boss血条[orange][重启生效]
++setting.override_boss_shown.name = [cyan]boss血条
 +setting.overridebuild.name = [cyan]强制覆盖建筑与墙体      [yellow][仅限单机有效]
 +setting.playerEffectColor.name = [acid]玩家射程[white]：颜色
 +setting.playerEffectCurStroke.name = [acid]玩家射程[white]：粗细
@@ -491,56 +490,10 @@ index 82aa7382ecbb65b88d7c39ea467c5fb8ab0fadc9..14a2eb193c8bb0d3716414f31b4e223e
 +sstat.unitsDestroyed.name = 摧毁的单位
 \ No newline at end of file
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997a138a5ee 100644
+index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956c4518d72 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-@@ -24,6 +24,7 @@ import mindustry.gen.*;
- import mindustry.graphics.*;
- import mindustry.input.*;
- import mindustry.ui.*;
-+import mindustryX.*;
- 
- import java.io.*;
- import java.util.zip.*;
-@@ -49,10 +50,7 @@ public class SettingsMenuDialog extends BaseDialog{
-         cont.add(main = new SettingsTable());
-         shouldPause = true;
- 
--        shown(() -> {
--            back();
--            rebuildMenu();
--        });
-+        shown(this::back);
- 
-         onResize(() -> {
-             graphics.rebuild();
-@@ -277,12 +275,6 @@ public class SettingsMenuDialog extends BaseDialog{
-         menu.button("@settings.game", Icon.settings, style, isize, () -> visible(0)).marginLeft(marg).row();
-         menu.button("@settings.graphics", Icon.image, style, isize, () -> visible(1)).marginLeft(marg).row();
-         menu.button("@settings.sound", Icon.filters, style, isize, () -> visible(2)).marginLeft(marg).row();
--        menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
--        if(!mobile || Core.settings.getBool("keyboard")){
--            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
--        }
--
--        menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
- 
-         int i = 3;
-         for(var cat : categories){
-@@ -294,17 +286,25 @@ public class SettingsMenuDialog extends BaseDialog{
-             }
-             i++;
-         }
-+
-+        menu.button("@settings.language", Icon.chat, style, isize, ui.language::show).marginLeft(marg).row();
-+        if(!mobile || Core.settings.getBool("keyboard")){
-+            menu.button("@settings.controls", Icon.move, style, isize, ui.controls::show).marginLeft(marg).row();
-+        }
-+
-+        menu.button("@settings.data", Icon.save, style, isize, () -> dataDialog.show()).marginLeft(marg).row();
-     }
- 
-     void addSettings(){
+@@ -303,11 +303,12 @@ public class SettingsMenuDialog extends BaseDialog{
          sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
@@ -554,7 +507,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997
              if(!ios){
                  game.checkPref("keyboard", false, val -> {
                      control.setInput(val ? new DesktopInput() : new MobileInput());
-@@ -338,11 +338,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -341,11 +342,9 @@ public class SettingsMenuDialog extends BaseDialog{
          game.checkPref("hints", true);
          game.checkPref("logichints", true);
  
@@ -569,7 +522,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997
  
          game.checkPref("doubletapmine", false);
          game.checkPref("commandmodehold", true);
-@@ -364,9 +362,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -367,9 +366,9 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -582,24 +535,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997
  
          int[] lastUiScale = {settings.getInt("uiscale", 100)};
  
-@@ -382,14 +380,14 @@ public class SettingsMenuDialog extends BaseDialog{
-         graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
- 
-         graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
--        graphics.sliderPref("chatopacity", 100, 0, 100, 5, s -> s + "%");
-+        graphics.sliderPref("chatopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
-         graphics.sliderPref("lasersopacity", 100, 0, 100, 5, s -> {
-             if(ui.settings != null){
-                 Core.settings.put("preferredlaseropacity", s);
-             }
-             return s + "%";
-         });
--        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, s -> s + "%");
-+        graphics.sliderPref("bridgeopacity", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
- 
-         if(!mobile){
-             graphics.checkPref("vsync", true, b -> Core.graphics.setVSync(b));
-@@ -445,18 +443,17 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -448,18 +447,18 @@ public class SettingsMenuDialog extends BaseDialog{
          graphics.checkPref("destroyedblocks", true);
          graphics.checkPref("blockstatus", false);
          graphics.checkPref("playerchat", true);
@@ -608,6 +544,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997
 -        }
 +
 +        graphics.addCategory("arcCgamewindow");
++        graphics.checkPref("coreitems", true);
          graphics.checkPref("minimap", !mobile);
          graphics.checkPref("smoothcamera", true);
          graphics.checkPref("position", false);
@@ -623,215 +560,27 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..db57b3ecdb84a4a2a7417c4f68186997
          graphics.checkPref("showweather", true);
          graphics.checkPref("animatedwater", true);
  
-@@ -571,13 +568,13 @@ public class SettingsMenuDialog extends BaseDialog{
-     private void visible(int index){
-         prefs.clearChildren();
- 
--        Seq<Table> tables = new Seq<>();
-+        Seq<SettingsTable> tables = new Seq<>();
-         tables.addAll(game, graphics, sound);
-         for(var custom : categories){
-             tables.add(custom.table);
-         }
- 
--        prefs.add(tables.get(index));
-+        prefs.add(tables.get(index).rebuild2());
-     }
- 
-     @Override
-@@ -618,23 +615,41 @@ public class SettingsMenuDialog extends BaseDialog{
- 
-             table = new SettingsTable();
-             builder.get(table);
-+            table.rebuild();
-+        }
-+
-+        @MindustryXApi
-+        public void rebuild(){
-+            table.reset();
-+            builder.get(table);
-+            table.rebuild();
-         }
-     }
- 
-     public static class SettingsTable extends Table{
-         protected Seq<Setting> list = new Seq<>();
-+        private int lastSize;
- 
-+        @Deprecated()//MDTX: recommend SettingsCategory
-         public SettingsTable(){
-             left();
-         }
- 
-+        @Override
-+        public void act(float delta){
-+            if(lastSize != list.size){
-+                lastSize = list.size;
-+                rebuild();
-+            }
-+            super.act(delta);
-+        }
-+
-         public Seq<Setting> getSettings(){
-             return list;
-         }
- 
-         public void pref(Setting setting){
-             list.add(setting);
--            rebuild();
-         }
- 
-         public SliderSetting sliderPref(String name, int def, int min, int max, StringProcessor s){
-@@ -645,47 +660,59 @@ public class SettingsMenuDialog extends BaseDialog{
-             SliderSetting res;
-             list.add(res = new SliderSetting(name, def, min, max, step, s));
-             settings.defaults(name, def);
--            rebuild();
-             return res;
-         }
- 
-         public void checkPref(String name, boolean def){
-             list.add(new CheckSetting(name, def, null));
-             settings.defaults(name, def);
--            rebuild();
-         }
- 
-         public void checkPref(String name, boolean def, Boolc changed){
-             list.add(new CheckSetting(name, def, changed));
-             settings.defaults(name, def);
--            rebuild();
-+        }
-+
-+        public void addCategory(String name){
-+            list.add(new Divider(name, bundle.get("category." + name + ".name")));
-+        }
-+
-+        public void stringInput(String name, String def){
-+            list.add(new StringSetting(name, def));
-+            settings.defaults(name, def);
-         }
- 
-         public void textPref(String name, String def){
-             list.add(new TextSetting(name, def, null));
-             settings.defaults(name, def);
--            rebuild();
-         }
- 
-         public void textPref(String name, String def, Cons<String> changed){
-             list.add(new TextSetting(name, def, changed));
-             settings.defaults(name, def);
--            rebuild();
-         }
- 
-         public void areaTextPref(String name, String def){
-             list.add(new AreaTextSetting(name, def, null));
-             settings.defaults(name, def);
--            rebuild();
-         }
- 
-         public void areaTextPref(String name, String def, Cons<String> changed){
-             list.add(new AreaTextSetting(name, def, changed));
-             settings.defaults(name, def);
--            rebuild();
-+        }
-+
-+        public void reset(){
-+            clearChildren();
-+            list.clear();
-         }
- 
-         public void rebuild(){
-+            rebuild2();
-+        }
-+
-+        public Table rebuild2(){
-+            if(list.isEmpty()) return this;
-             clearChildren();
- 
-             for(Setting setting : list){
-@@ -699,6 +726,7 @@ public class SettingsMenuDialog extends BaseDialog{
-                 }
-                 rebuild();
-             }).margin(14).width(240f).pad(6);
-+            return this;
-         }
- 
-         public abstract static class Setting{
-@@ -787,6 +815,41 @@ public class SettingsMenuDialog extends BaseDialog{
-             }
-         }
- 
-+        public static class Divider extends Setting{
-+
-+            Divider(String name, String title){
-+                super(name);
-+                this.title = title;
-+            }
-+
-+            @Override
-+            public void add(SettingsTable table){
-+                table.add(title).color(Pal.accent).colspan(4).pad(10).padTop(15).padBottom(4).row();
-+                table.image().color(Pal.accent).fillX().height(3).colspan(4).padTop(0).padBottom(10).row();
-+            }
-+        }
-+
-+        public static class StringSetting extends Setting{
-+            String value;
-+
-+            StringSetting(String name, String def){
-+                super(name);
-+                this.value = def;
-+            }
-+
-+            @Override
-+            public void add(SettingsTable table){
-+                value = settings.getString(name);
-+                Table field = new Table();
-+                field.add(bundle.get("setting." + name + ".name"));
-+                field.field(value, text -> {
-+                    settings.put(name, text);
-+                    value = text;
-+                }).growX().padLeft(30);
-+                table.add(field).growX().pad(10).padTop(15).padBottom(4).row();
-+            }
-+        }
-+
-         public static class TextSetting extends Setting{
-             String def;
-             Cons<String> changed;
-diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 35a8ced5c36d6e17fb3ea98033b34555f7163ffa..292ff3468d5ec0a0b1f8e6d147fc1de7244c7155 100644
---- a/core/src/mindustryX/Hooks.java
-+++ b/core/src/mindustryX/Hooks.java
-@@ -13,6 +13,7 @@ public class Hooks implements ApplicationListener{
-     public void init(){
-         Log.infoTag("MindustryX", "Hooks.init");
-         RenderExt.init();
-+        ArcOld.addSettings();
-         if(!Vars.headless){
-             TimeControl.init();
-             UIExt.init();
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef668c19505
+index 0000000000000000000000000000000000000000..18d8a8ab03f4dc16b27d9928878884a151e30f15
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,269 @@
+@@ -0,0 +1,258 @@
 +package mindustryX.features;
 +
++import arc.struct.*;
 +import arc.util.*;
-+import mindustry.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
++import mindustryX.features.Settings.*;
 +import mindustryX.features.ui.*;
 +
 +import static arc.Core.settings;
 +import static mindustry.Vars.*;
 +
 +public class ArcOld{
-+    public static void addSettings(){
-+        var setting = Vars.ui.settings;
-+        setting.addCategory("@settings.arc", Icon.star, (c) -> {
++    public static void init(Seq<LazySettingsCategory> categories){
++        categories.add(new LazySettingsCategory("@settings.arc", () -> Icon.star, (c) -> {
 +            c.addCategory("arcHudToolbox");
 +            c.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> {
 +                if(s == 0){
@@ -863,16 +612,7 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +                }
 +            });
 +            c.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
-+            c.checkPref("showQuickToolTable", settings.getBool("showFloatingSettings"));
-+            c.sliderPref("arcDetailInfo", 1, 0, 1, 1, s -> {
-+                if(s == 0){
-+                    return "详细模式";
-+                }else if(s == 1){
-+                    return "简略模式";
-+                }else{
-+                    return s + "";
-+                }
-+            });
++            c.checkPref("showQuickToolTable", true);
 +
 +            c.addCategory("arcCgameview");
 +            c.checkPref("hoveredTileInfo", false);
@@ -906,7 +646,7 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +
 +            c.sliderPref("mass_driver_line_alpha", 100, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("mass_driver_line_interval", 40, 8, 400, 4, i -> i / 8f + "格");
-+            c.stringInput("mass_driver_line_color", "ff8c66");
++            c.textPref("mass_driver_line_color", "ff8c66");
 +
 +            c.addCategory("arcAddTurretInfo");
 +            c.checkPref("showTurretAmmo", false);
@@ -965,7 +705,7 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +            c.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
 +
 +            c.addCategory("arcPlayerEffect");
-+            c.stringInput("playerEffectColor", "ffd37f");
++            c.textPref("playerEffectColor", "ffd37f");
 +            c.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
 +                if(s == 0){
 +                    return "关闭";
@@ -1027,11 +767,10 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +            c.addCategory("arcStrongCheat");
 +            c.checkPref("showOtherTeamResource", false);
 +            c.checkPref("showOtherTeamState", false);
-+            c.checkPref("selectTeam", false);
 +            c.checkPref("playerNeedShooting", false);
 +            c.checkPref("otherCheat", false);
-+        });
-+        setting.addCategory("@settings.specmode", Icon.info, (c) -> {
++        }));
++        categories.add(new LazySettingsCategory("@settings.specmode", () -> Icon.info, (c) -> {
 +            c.addCategory("moreContent");
 +            c.checkPref("override_boss_shown", false);
 +            c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
@@ -1069,8 +808,7 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +            c.checkPref("menuFlyersRange", false);
 +            c.checkPref("menuFlyersFollower", false);
 +            c.checkPref("colorizedContent", false);
-+            c.sliderPref("fontSize", 10, 5, 25, 1, i -> "x " + Strings.fixed(i * 0.1f, 1));
-+            c.stringInput("arcBackgroundPath", "");
++            c.textPref("arcBackgroundPath", "");
 +
 +            c.addCategory("developerMode");
 +            c.checkPref("rotateCanvas", false);
@@ -1083,6 +821,18 @@ index 0000000000000000000000000000000000000000..820010750767dd20fc16529a65a31ef6
 +            });
 +            c.sliderPref("limitdst", 10, 0, 100, 1, s -> s + "格");
 +            c.checkPref("developMode", false);
-+        });
++        }));
 +    }
 +}
+diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
+index 01c8d7eb6217295e62051088f45090b790b1b654..72e4c685b12f4071f7b0ed6f2d912e3e14f8cfe6 100644
+--- a/core/src/mindustryX/features/Settings.java
++++ b/core/src/mindustryX/features/Settings.java
+@@ -61,6 +61,7 @@ public class Settings{
+             c.checkPref("bulletShow", true);
+             c.checkPref("showMineBeam".toLowerCase(), true);
+         }));
++        ArcOld.init(categories);
+         Events.on(ClientLoadEvent.class, e -> {
+             categories.each(LazySettingsCategory::init);
+             Vars.ui.settings.getCategories().addAll(categories);

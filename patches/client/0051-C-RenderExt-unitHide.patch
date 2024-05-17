@@ -44,7 +44,7 @@ index 0f86972de21272412e19b347ff3bae7a32dff502..6ad644550ad940c9be203835cc83e635
          if(unit != null){
              unit.hitbox(Tmp.r1);
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 41bd37f7aa552b1c98512dfb8504f16dbd551f4d..6c0ffd8b069f0aaea41a8f7e5fcfa6b3f02e2eac 100644
+index 0271b93974c79e5630148d2615ed81fe20800d97..b384d7525b403e589542379c62760c39e4f6e998 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -55,7 +55,7 @@ index 41bd37f7aa552b1c98512dfb8504f16dbd551f4d..6c0ffd8b069f0aaea41a8f7e5fcfa6b3
  import mindustryX.features.Settings;
  import mindustryX.features.*;
  
-@@ -60,5 +61,8 @@ public class Hooks implements ApplicationListener{
+@@ -58,5 +59,8 @@ public class Hooks implements ApplicationListener{
  
      public static void pollKeys(){
          if(Core.scene.hasField()) return;
