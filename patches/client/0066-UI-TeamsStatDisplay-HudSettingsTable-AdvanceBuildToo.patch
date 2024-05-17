@@ -1,0 +1,1031 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Wed, 1 May 2024 16:09:53 +0800
+Subject: [PATCH] UI: TeamsStatDisplay, HudSettingsTable, AdvanceBuildTool
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+整理差不多了，从ARC拆分
+---
+ core/src/mindustryX/features/UIExt.java       |  19 +
+ .../features/ui/AdvanceBuildTool.java         | 434 ++++++++++++++++++
+ .../features/ui/HudSettingsTable.java         | 319 +++++++++++++
+ .../features/ui/TeamsStatDisplay.java         | 171 +++++++
+ .../mindustryX/features/ui/ToolTableBase.java |  24 +
+ 5 files changed, 967 insertions(+)
+ create mode 100644 core/src/mindustryX/features/ui/AdvanceBuildTool.java
+ create mode 100644 core/src/mindustryX/features/ui/HudSettingsTable.java
+ create mode 100644 core/src/mindustryX/features/ui/TeamsStatDisplay.java
+ create mode 100644 core/src/mindustryX/features/ui/ToolTableBase.java
+
+diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
+index 8a7332b9e3e6c432aa415bd3d5e7402df18ac419..5263fa6ab78a412a743fa566d8df79479c10d25e 100644
+--- a/core/src/mindustryX/features/UIExt.java
++++ b/core/src/mindustryX/features/UIExt.java
+@@ -14,6 +14,9 @@ public class UIExt{
+     public static AdvanceToolTable advanceToolTable;
+     public static TeamSelectDialog teamSelect;
+     public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
++    public static TeamsStatDisplay teamsStatDisplay;
++    public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
++    public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
+ 
+     public static void init(){
+         teamSelect = new TeamSelectDialog();
+@@ -22,6 +25,22 @@ public class UIExt{
+         advanceToolTable.name = "advanceToolTable";
+         advanceToolTable.right().bottom();
+         advanceToolTable.visible(() -> Core.settings.getBool("showAdvanceToolTable"));
++
++        teamsStatDisplay = new TeamsStatDisplay();
++        ui.hudGroup.fill(t -> {
++            t.name = "otherCore";
++            t.left().add(teamsStatDisplay);
++            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showOtherTeamResource"));
++        });
++
++        hudSettingsTable = new HudSettingsTable();
++        advanceBuildTool = new AdvanceBuildTool();
++        ui.hudGroup.fill(t -> {
++            t.name = "quickTool";
++            t.right().add(hudSettingsTable).growX();
++            t.row().add(advanceBuildTool).growX();
++            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showQuickToolTable"));
++        });
+     }
+ 
+     public static void buildPositionRow(Table tt, Vec2 vec){
+diff --git a/core/src/mindustryX/features/ui/AdvanceBuildTool.java b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f0422d42fc2e99f490c793547a7253879904457
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
+@@ -0,0 +1,434 @@
++package mindustryX.features.ui;
++
++import arc.*;
++import arc.func.*;
++import arc.graphics.g2d.*;
++import arc.math.geom.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import arc.struct.*;
++import arc.util.*;
++import mindustry.arcModule.*;
++import mindustry.arcModule.ui.dialogs.*;
++import mindustry.content.*;
++import mindustry.entities.units.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.ui.*;
++import mindustry.ui.dialogs.*;
++import mindustry.world.*;
++import mindustry.world.blocks.*;
++import mindustry.world.blocks.environment.*;
++import mindustry.world.blocks.power.*;
++import mindustry.world.blocks.production.*;
++import mindustry.world.blocks.storage.*;
++
++import static mindustry.Vars.*;
++import static mindustry.ui.Styles.flatTogglet;
++
++//moved from mindustry.arcModule.ui.quickTool.AdvanceBuildTool
++public class AdvanceBuildTool extends ToolTableBase{
++    BuildRange placement = BuildRange.player;
++    Rect selection = new Rect();
++    private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
++    private Block autoBuild = Blocks.turbineCondenser;
++    private Block searchBlock = Blocks.itemSource;
++    private Building searchBuild = null;
++    private int searchBlockIndex = -1;
++    private boolean shadowBuild = false;
++
++    public Seq<Building> buildingSeq = new Seq<>();
++    private final BuildTiles buildTiles = new BuildTiles();
++    private final ObjectFloatMap<Tile> buildEff = new ObjectFloatMap<>();//default 0f
++
++
++    public AdvanceBuildTool(){
++        icon = Blocks.buildTower.emoji();
++        Events.on(EventType.WorldLoadEvent.class, e -> rebuild());
++        Events.run(EventType.Trigger.update, () -> {
++            if(shadowBuild && player.unit() != null && player.unit().plans != null && player.unit().activelyBuilding()){
++                if(player.unit().buildPlan().progress == 0) return;
++                player.unit().plans.remove(player.unit().buildPlan());
++                Call.deletePlans(player, new int[]{player.unit().plans.indexOf(player.unit().buildPlan(), true)});
++            }
++        });
++
++    }
++
++    @Override
++    protected void buildTable(){
++        table(t -> {
++            t.setBackground(Styles.black6);
++            t.table(tt -> {
++                tt.button((placement == BuildRange.global ? "[cyan]" : "[gray]") + "", Styles.flatBordert, () -> {
++                    placement = BuildRange.global;
++                    rebuild();
++                }).tooltip("[cyan]全局检查").size(30f);
++                tt.button((placement == BuildRange.zone ? "[cyan]" : "[gray]") + "\uE818", Styles.flatBordert, () -> {
++                    selection = control.input.lastSelection;
++                    if(selection.area() < 10f) return;
++                    placement = BuildRange.zone;
++                    rebuild();
++                }).tooltip("[cyan]选择范围").size(30f);
++                tt.button((placement == BuildRange.team ? "" : "[gray]") + Blocks.coreShard.emoji(), Styles.flatBordert, () -> {
++                    placement = BuildRange.team;
++                    rebuild();
++                }).tooltip("[cyan]队伍区域").size(30f);
++                tt.button((placement == BuildRange.player ? "" : "[gray]") + UnitTypes.gamma.emoji(), Styles.flatBordert, () -> {
++                    placement = BuildRange.player;
++                    rebuild();
++                }).tooltip("[cyan]玩家建造区").size(30f);
++                tt.update(() -> {
++                    if(placement != BuildRange.zone) return;
++                    DrawUtilities.drawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, Align.bottom);
++                    Draw.color(Pal.stat, 0.7f);
++                    Draw.z(Layer.effect - 1f);
++                    Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
++                    Lines.rect(selection.x * tilesize - tilesize / 2f, selection.y * tilesize - tilesize / 2f, selection.width * tilesize + tilesize, selection.height * tilesize + tilesize);
++                    Draw.reset();
++                });
++            }).fillX().row();
++            t.table(tt -> {
++                tt.button("R", Styles.flatBordert, this::replaceBlock).tooltip("[cyan]替换方块").size(30f);
++                tt.button(replaceBlockName(), Styles.flatBordert, this::replaceBlockSetting).tooltip("[acid]设置替换").width(100f).height(30f);
++            }).fillX().row();
++            t.table(tt -> {
++                tt.button(autoBuild.emoji(), Styles.flatBordert, () -> blockAutoPlacer(autoBuild)).size(30f);
++                tt.button("\uE87C", Styles.flatBordert, () -> {
++                    new BlockSelectDialog(Block::isPlaceable, block -> autoBuild = block, block -> autoBuild == block).show();
++                    rebuild();
++                }).size(30f);
++                tt.update(() -> {
++                    if(control.input.selectedBlock()){
++                        autoBuild = control.input.block;
++                        rebuild();
++                    }
++                });
++            }).fillX().row();
++            t.table(tt -> {
++                tt.button("S", Styles.flatBordert, this::searchBlock).update(button -> {
++
++                    buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
++                    if(searchBlock.privileged){
++                        for(Team team : Team.all){
++                            if(team == player.team()) continue;
++                            buildingSeq.add(team.data().buildings.select(building1 -> building1.block == searchBlock));
++                        }
++                    }
++
++                    if(buildingSeq.contains(searchBuild)){
++                        searchBlockIndex = buildingSeq.indexOf(searchBuild);
++                    }else{
++                        searchBuild = null;
++                        searchBlockIndex = -1;
++                    }
++
++                    if(buildingSeq.isEmpty() || searchBlockIndex == -1) button.setText("[lightgray]\uE88A");
++                    else button.setText("\uE88A" + (searchBlockIndex + 1) + "/" + buildingSeq.size);
++                }).tooltip("[cyan]搜索方块").growX().height(30f);
++
++                tt.button(searchBlock.emoji(), Styles.flatBordert, () -> {
++                    new BlockSelectDialog(Block::isPlaceable, block -> searchBlock = block, block -> searchBlock == block).show().hidden(this::rebuild);
++                    searchBlockIndex = 0;
++                }).tooltip("[acid]搜索替换").width(30f).height(30f);
++
++                tt.update(() -> {
++                    if(control.input.selectedBlock()){
++                        searchBlock = control.input.block;
++                        rebuild();
++                    }
++                });
++            }).fillX().row();
++            t.table(tt -> {
++                tt.button(Blocks.worldMessage.emoji(), flatTogglet, () -> Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false))).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
++                tt.button(Blocks.worldProcessor.emoji(), Styles.flatBordert, () -> {
++                    RFuncs.worldProcessor();
++                    searchBlock = Blocks.worldProcessor;
++                    rebuild();
++                }).size(30).tooltip("地图世处信息");
++            }).fillX().row();
++            t.table(tt -> tt.button("\uE817", flatTogglet, () -> shadowBuild = !shadowBuild).checked(a -> shadowBuild).size(30, 30).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用")).fillX().row();
++            if(!net.client()){
++                t.table(tt -> {
++                    tt.button("\uF8C9", flatTogglet, () -> {
++                        AdvanceToolTable.forcePlacement ^= true;
++                        if(mobile)
++                            ui.announce("允许蓝图建造地形");
++                    }).checked(a -> AdvanceToolTable.forcePlacement).size(30, 30).tooltip("允许蓝图建造地形");
++                    tt.button("\uE800", Styles.flatBordert, () -> {
++                        instantBuild();
++                        if(mobile)
++                            ui.announce("瞬间建造\n[cyan]强制瞬间建造[acid]选择范围内[cyan]内规划中的所有建筑\n[orange]可能出现bug");
++                    }).size(30, 30).tooltip("瞬间建造\n[cyan]强制瞬间建造[acid]选择范围内[cyan]规划中的所有建筑\n[orange]可能出现bug");
++                    tt.button("\uF8D2", Styles.flatBordert, () -> {
++                        if(!AdvanceToolTable.forcePlacement) ui.announce("请开启允许蓝图建造地形 \uF8C9");
++                        else saveTerrain(true);
++                    }).size(30, 30).tooltip("复制所选范围内的地板作为蓝图");
++                    tt.button("\uF8C4", Styles.flatBordert, () -> {
++                        if(!AdvanceToolTable.forcePlacement) ui.announce("请开启允许蓝图建造地形 \uF8C9");
++                        else saveTerrain(false);
++                    }).size(30, 30).tooltip("复制所选范围内的修饰作为蓝图");
++
++                }).fillX().row();
++            }
++        });
++    }
++
++    void replaceBlockSetting(){
++        BaseDialog dialog = new BaseDialog("方块替换器");
++        dialog.cont.table(t -> {
++            t.table(tt -> tt.label(() -> "当前选择：" + replaceBlockName())).row();
++            t.image().color(Pal.accent).fillX().row();
++            t.table(tt -> {
++                replaceBlockGroup(dialog, tt, Blocks.conveyor, Blocks.titaniumConveyor);
++                replaceBlockGroup(dialog, tt, Blocks.conveyor, Blocks.duct);
++                replaceBlockGroup(dialog, tt, Blocks.conduit, Blocks.pulseConduit);
++                replaceBlockGroup(dialog, tt, Blocks.conduit, Blocks.reinforcedConduit);
++            }).padTop(5f).row();
++            t.image().color(Pal.accent).padTop(5f).fillX().row();
++            t.table(tt -> {
++                tt.button("源方块", () -> new BlockSelectDialog(block -> block.replaceable, block -> original = block, block -> original == block).show()).width(100f).height(30f).row();
++                tt.button("新方块", () -> new BlockSelectDialog(block -> original.canReplace(block), block -> newBlock = block, block -> newBlock == block).show()).width(100f).height(30f).row();
++            }).padTop(5f).row();
++        });
++        dialog.hidden(this::rebuild);
++        dialog.addCloseButton();
++        dialog.show();
++    }
++
++    void replaceBlockGroup(Dialog dialog, Table t, Block ori, Block re){
++        t.button(replaceBlockName(ori, re), () -> {
++            original = ori;
++            newBlock = re;
++            dialog.hide();
++        }).width(100f).height(30f);
++    }
++
++    String replaceBlockName(){
++        return replaceBlockName(original, newBlock);
++    }
++
++    String replaceBlockName(Block ori, Block re){
++        return ori.emoji() + "\uE803" + re.emoji();
++    }
++
++    void replaceBlock(){
++        replaceBlock(original, newBlock);
++    }
++
++    void replaceBlock(Block ori, Block re){
++        player.team().data().buildings.each(building -> building.block() == ori && contain(building.tile),
++        building -> player.unit().addBuild(new BuildPlan(building.tile.x, building.tile.y, building.rotation, re, building.config())));
++    }
++
++    void blockAutoPlacer(Block block){
++        buildTiles.buildBlock(block, tile -> getBlockEff(block, tile));
++    }
++
++    float getBlockEff(Block block, Tile tile){
++        if(block instanceof ThermalGenerator) return block.sumAttribute(((ThermalGenerator)block).attribute, tile);
++        if(block instanceof Drill) return ((Drill)block).countOreArc(tile);
++        return 1f;
++    }
++
++    boolean contain(Tile tile){
++        if(placement == BuildRange.global) return true;
++        if(placement == BuildRange.zone) return selection.contains(tile.x, tile.y);
++        if(placement == BuildRange.player) return tile.within(player.x, player.y, buildingRange);
++        if(placement == BuildRange.team){
++            if(state.rules.polygonCoreProtection){
++                float mindst = Float.MAX_VALUE;
++                CoreBlock.CoreBuild closest = null;
++                for(Teams.TeamData data : state.teams.active){
++                    for(CoreBlock.CoreBuild tiles : data.cores){
++                        float dst = tiles.dst2(tile.x * tilesize, tile.y * tilesize);
++                        if(dst < mindst){
++                            closest = tiles;
++                            mindst = dst;
++                        }
++                    }
++                }
++                return closest == null || closest.team == player.team();
++            }else return !state.teams.anyEnemyCoresWithin(player.team(), tile.x * tilesize, tile.y * tilesize, state.rules.enemyCoreBuildRadius + tilesize);
++        }
++        return true;
++    }
++
++    void searchBlock(){
++        if(buildingSeq.size == 0){
++            ui.announce("[violet]方块搜索\n[acid]未找到此方块");
++            return;
++        }
++        searchBlockIndex = (searchBlockIndex + 1) % buildingSeq.size;
++        searchBuild = buildingSeq.get(searchBlockIndex);
++
++        RFuncs.arcSetCamera(searchBuild);
++        ui.announce("[violet]方块搜索\n[acid]找到方块[cyan]" + (searchBlockIndex + 1) + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
++    }
++
++    void instantBuild(){
++        player.unit().plans.each(buildPlan -> {
++            if(!contain(buildPlan.tile())) return;
++            forceBuildBlock(buildPlan.block, buildPlan.tile(), player.team(), buildPlan.rotation, buildPlan.config);
++        });
++    }
++
++    void saveTerrain(boolean floor){
++        buildTiles.updateTiles();
++        Seq<Schematic.Stile> tiles = new Seq<>();
++        buildTiles.validTile.each(tile -> {
++            if(!floor && tile.overlay() == Blocks.air) return;
++            tiles.add(new Schematic.Stile(floor ? tile.floor() : tile.overlay(), tile.x - buildTiles.minx, tile.y - buildTiles.miny));
++        });
++        control.input.lastSchematic = new Schematic(tiles, new StringMap(), buildTiles.width, buildTiles.height);
++        control.input.useSchematic(control.input.lastSchematic);
++    }
++
++    void forceBuildBlock(Block block, Tile tile, Team team, int rotation, Object config){
++        if(block == Blocks.cliff) buildCliff(tile);
++        else if(block instanceof OverlayFloor){
++            tile.setOverlay(block);
++        }else if(block instanceof Floor floor){
++            tile.setFloor(floor);
++        }else{
++            tile.setBlock(block, team, rotation);
++            tile.build.configure(config);
++        }
++        pathfinder.updateTile(tile);
++    }
++
++    void buildCliff(Tile tile){
++        int rotation = 0;
++        for(int i = 0; i < 8; i++){
++            Tile other = world.tiles.get(tile.x + Geometry.d8[i].x, tile.y + Geometry.d8[i].y);
++            if(other != null && !other.floor().hasSurface()){
++                rotation |= (1 << i);
++            }
++        }
++
++        if(rotation != 0){
++            tile.setBlock(Blocks.cliff);
++        }
++
++        tile.data = (byte)rotation;
++    }
++
++    enum BuildRange{
++        global, zone, team, player
++    }
++
++    class BuildTiles{
++        public int minx, miny, maxx, maxy, width, height;
++        Seq<Tile> validTile = new Seq<>();
++        Seq<Float> eff = new Seq<>();
++        float efficiency = 0;
++        Block block;
++        boolean canBuild = true;
++
++        public BuildTiles(){
++        }
++
++        void buildBlock(Block buildBlock, Floatf<Tile> tilef){
++            block = buildBlock;
++            updateTiles();
++            checkValid();
++            calBlockEff(tilef);
++            eff.sort().reverse().remove(0f);
++            eff.each(this::buildEff);
++        }
++
++        public void updateTiles(){
++            minx = 9999;
++            miny = 9999;
++            maxx = -999;
++            maxy = -999;
++            validTile.clear();
++            eff.clear();
++            world.tiles.eachTile(tile -> {
++                if(tile == null) return;
++                if(!contain(tile)) return;
++                validTile.add(tile);
++                minx = Math.min(minx, tile.x);
++                miny = Math.min(miny, tile.y);
++                maxx = Math.max(maxx, tile.x);
++                maxy = Math.max(maxy, tile.y);
++            });
++            buildEff.clear();
++            width = maxx - minx;
++            height = maxy - miny;
++        }
++
++        void checkValid(){
++            validTile.each(tile -> {
++                if(
++                (block.size == 2 && world.getDarkness(tile.x, tile.y) >= 3) ||
++                (state.rules.staticFog && state.rules.fog && !fogControl.isDiscovered(player.team(), tile.x, tile.y)) ||
++                (tile.floor().isDeep() && !block.floating && !block.requiresWater && !block.placeableLiquid) || //deep water
++                (block == tile.block() && tile.build != null && rotation == tile.build.rotation && block.rotate) || //same block, same rotation
++                !tile.interactable(player.team()) || //cannot interact
++                !tile.floor().placeableOn || //solid wall
++                //replacing a block that should be replaced (e.g. payload placement)
++                !((block.canReplace(tile.block()) || //can replace type
++                (tile.build instanceof ConstructBlock.ConstructBuild build && build.current == block && tile.centerX() == tile.x && tile.centerY() == tile.y)) && //same type in construction
++                block.bounds(tile.x, tile.y, Tmp.r1).grow(0.01f).contains(tile.block().bounds(tile.centerX(), tile.centerY(), Tmp.r2))) || //no replacement
++                (block.requiresWater && tile.floor().liquidDrop != Liquids.water) //requires water but none found
++                ) buildEff.put(tile, -1); // cannot build
++            });
++        }
++
++        void calBlockEff(Floatf<Tile> tilef){
++            validTile.each(tile -> {
++                canBuild = true;
++                getLinkedTiles(tile, tile1 -> canBuild = buildEff.get(tile, 0f) != -1 && canBuild);   //不可能建造
++                if(canBuild){
++                    efficiency = tilef.get(tile);
++                    buildEff.put(tile, efficiency);
++                    if(!eff.contains(efficiency)) eff.add(efficiency);
++                }else{
++                    buildEff.remove(tile, 0);
++                }
++            });
++        }
++
++        void buildEff(float e){
++            if(e == 0) return;
++            validTile.each(tile -> {
++                if(buildEff.get(tile, 0f) != e) return;
++                if(!block.canPlaceOn(tile, player.team(), 0)) return;
++                player.unit().addBuild(new BuildPlan(tile.x, tile.y, 0, block));
++                getFullLinkedTiles(tile, tile1 -> buildEff.remove(tile1, 0f));
++            });
++        }
++
++        private void getLinkedTiles(Tile tile, Cons<Tile> cons){
++            if(block.isMultiblock()){
++                int size = block.size, o = block.sizeOffset;
++                for(int dx = 0; dx < size; dx++){
++                    for(int dy = 0; dy < size; dy++){
++                        Tile other = world.tile(tile.x + dx + o, tile.y + dy + o);
++                        if(other != null) cons.get(other);
++                    }
++                }
++            }else{
++                cons.get(tile);
++            }
++        }
++
++        private void getFullLinkedTiles(Tile tile, Cons<Tile> cons){
++            if(block.isMultiblock()){
++                int size = block.size, o = 0;
++                for(int dx = -size + 1; dx < size; dx++){
++                    for(int dy = -size + 1; dy < size; dy++){
++                        Tile other = world.tile(tile.x + dx + o, tile.y + dy + o);
++                        if(other != null) cons.get(other);
++                    }
++                }
++            }else{
++                cons.get(tile);
++            }
++        }
++
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/HudSettingsTable.java b/core/src/mindustryX/features/ui/HudSettingsTable.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..38e307e1898596b82ccd0c9ad84f12181b1a7721
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/HudSettingsTable.java
+@@ -0,0 +1,319 @@
++package mindustryX.features.ui;
++
++import arc.*;
++import arc.func.*;
++import arc.scene.*;
++import arc.scene.event.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import arc.struct.*;
++import mindustry.content.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.ui.*;
++import mindustry.ui.dialogs.*;
++import mindustryX.features.*;
++
++import static arc.Core.*;
++import static mindustry.Vars.*;
++
++//moved from mindustry.arcModule.ui.quickTool.HudSettingsTable
++public class HudSettingsTable extends ToolTableBase{
++    protected Seq<Setting> list = new Seq<>();
++
++    public HudSettingsTable(){
++        icon = String.valueOf(Iconc.settings);
++        rebuild();
++        Events.on(EventType.WorldLoadEvent.class, e -> Core.settings.put("removeLogicLock", false));
++    }
++
++    @Override
++    protected void buildTable(){
++        list.clear();
++        Table sets = new Table();
++        sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
++            if(s == 0){
++                return "关闭";
++            }else if(s == 1){
++                return "仅对地";
++            }else if(s == 2){
++                return "仅对空";
++            }else if(s == 3){
++                return "全部";
++            }else{
++                return s + "";
++            }
++        });
++        sliderPref("chatValidType", 0, 0, 3, 1, s -> {
++            if(s == 0){
++                return "原版模式";
++            }else if(s == 1){
++                return "纯净聊天";
++            }else if(s == 2){
++                return "服务器记录";
++            }else if(s == 3){
++                return "全部记录";
++            }else{
++                return s + "";
++            }
++        });
++        checkPref("unitHealthBar", false);
++        sliderPref("unitTransparency", 100, 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
++        sliderPref("unitDrawMinHealth", 0, 0, 2500, 50, i -> i + "[red]HP");
++        sliderPref("unitBarDrawMinHealth", 0, 0, 2500, 100, i -> i + "[red]HP");
++        sliderPref("unitWeaponRange", 0, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
++
++        checkPref("alwaysShowUnitRTSAi", false);
++        checkPref("unitLogicMoveLine", true);
++        checkPref("unitWeaponTargetLine", true);
++
++        checkPref("blockWeaponTargetLine", true);
++        checkPref("unitbuildplan", false);
++
++
++        for(Setting setting : list){
++            setting.add(sets);
++        }
++
++        ScrollPane pane = pane(sp -> {
++            sp.background(Styles.black6);
++            sp.table(t -> {
++                t.button("[cyan]S", Styles.flatBordert, () -> Call.sendChatMessage("/sync")).size(30).tooltip("同步一波");
++                t.button("[cyan]观", Styles.flatBordert, () -> Call.sendChatMessage("/ob")).size(30).tooltip("观察者模式");
++                t.button("[cyan]技", Styles.flatBordert, () -> Call.sendChatMessage("/skill")).size(30).tooltip("技能！");
++                t.button("[cyan]版", Styles.flatBordert, () -> Call.sendChatMessage("/broad")).size(30).tooltip("服务器信息版");
++                t.button("[red]版", Styles.flatTogglet, () -> settings.put("ShowInfoPopup", !Core.settings.getBool("ShowInfoPopup"))).checked(a -> Core.settings.getBool("ShowInfoPopup")).size(30, 30).tooltip("关闭所有信息版");
++                t.button("[white]法", Styles.flatBordert, () -> ui.showConfirm("受不了，直接投降？", () -> Call.sendChatMessage("/vote gameover"))).size(30, 30).tooltip("法国军礼");
++                if(settings.getInt("arcQuickMsg", 0) == 0)
++                    t.button("\uE87C", Styles.flatBordert, this::arcQuickMsgTable).size(30, 30).tooltip("快捷消息");
++            }).left();
++            sp.row();
++            if(settings.getInt("arcQuickMsg") > 0){
++                sp.table(t -> {
++                    for(int i = 0; i < settings.getInt("arcQuickMsg"); i++){
++                        if(i % settings.getInt("arcQuickMsgKey", 8) == 0) t.row();
++                        int finalI = i;
++                        t.button(settings.getString(getArcQuickMsgShortName(i)), Styles.flatBordert, () -> {
++                            if(settings.getBool(getArcQuickMsgJs(finalI))) mods.getScripts().runConsole(settings.getString(getArcQuickMsgName(finalI)));
++                            else Call.sendChatMessage(settings.getString(getArcQuickMsgName(finalI)));
++                        }
++                        ).size(30);
++                    }
++                    t.button("\uE87C", Styles.flatBordert, this::arcQuickMsgTable).size(30, 30).tooltip("快捷消息");
++                }).left();
++                sp.row();
++            }
++            sp.table(t -> {
++                t.button("[cyan]块", Styles.flatTogglet, () -> Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3))
++                .checked((a) -> RenderExt.blockRenderLevel > 0).size(30, 30).tooltip("建筑显示");
++                t.button("[cyan]兵", Styles.flatTogglet, () -> RenderExt.unitHide = !RenderExt.unitHide)
++                .checked(a -> !RenderExt.unitHide).size(30, 30).tooltip("兵种显示");
++                t.button("[cyan]箱", Styles.flatTogglet, () -> Core.settings.put("unithitbox", !Core.settings.getBool("unithitbox")))
++                .checked(a -> Core.settings.getBool("unithitbox")).size(30, 30).tooltip("碰撞箱显示");
++                t.button("[cyan]弹", Styles.flatTogglet, () -> Core.settings.put("bulletShow", !Core.settings.getBool("bulletShow")))
++                .checked(a -> Core.settings.getBool("bulletShow")).size(30, 30).tooltip("子弹显示");
++                t.button("[violet]锁", Styles.flatTogglet, () -> {
++                    Core.settings.put("removeLogicLock", !Core.settings.getBool("removeLogicLock"));
++                    control.input.logicCutscene = false;
++                    ui.announce("已移除逻辑视角锁定");
++                }).checked(a -> Core.settings.getBool("removeLogicLock")).size(30, 30).tooltip("逻辑锁定");
++                t.button("[violet]丢", Styles.flatTogglet, () -> {
++                    boolean block = Core.settings.getBool("blockDrop");
++                    Core.settings.put("blockDrop", !block);
++                    ui.announce("已" + (block ? "开启" : "关闭") + "丢弃物品");
++                }).checked(a -> !Core.settings.getBool("blockDrop")).size(30, 30).tooltip("允许丢弃物品");
++                t.button("[cyan]雾", Styles.flatTogglet, () -> {
++                    if(!state.rules.pvp || player.team().id == 255) renderer.fogEnabled = !renderer.fogEnabled;
++                }).checked(a -> renderer.fogEnabled).size(30, 30).tooltip("战争迷雾").visible(() -> !state.rules.pvp || player.team().id == 255);
++            }).left();
++            sp.row();
++            sp.table(t -> {
++                t.button("[red]灯", Styles.flatTogglet, () -> settings.put("drawlight", !settings.getBool("drawlight")))
++                .checked(a -> state.rules.lighting).size(30, 30).name("灯光").tooltip("[cyan]开灯啊！");
++                t.button("[acid]效", Styles.flatTogglet, () -> Core.settings.put("effects", !Core.settings.getBool("effects")))
++                .checked(a -> Core.settings.getBool("effects")).size(30, 30).tooltip("特效显示");
++                t.button("[acid]光", Styles.flatTogglet, () -> {
++                    Core.settings.put("bloom", !Core.settings.getBool("bloom"));
++                    renderer.toggleBloom(settings.getBool("bloom"));
++                }).checked(a -> Core.settings.getBool("bloom")).size(30, 30).tooltip("光效显示");
++                t.button("[acid]墙", Styles.flatTogglet, () -> Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness")))
++                .checked(a -> Core.settings.getBool("forceEnableDarkness")).size(30, 30).tooltip("墙体阴影显示");
++                t.button("[acid]天", Styles.flatTogglet, () -> Core.settings.put("showweather", !Core.settings.getBool("showweather")))
++                .checked(a -> Core.settings.getBool("showweather")).size(30, 30).tooltip("天气显示");
++                if(settings.getBool("developMode"))
++                    t.button(StatusEffects.burning.emoji(), Styles.flatTogglet, () -> state.rules.fire = !state.rules.fire)
++                    .checked(a -> state.rules.fire).size(30, 30).tooltip("太燃了");
++                t.button("[cyan]扫", Styles.flatTogglet, () -> control.input.arcScanMode = !control.input.arcScanMode)
++                .checked(a -> control.input.arcScanMode).size(30, 30).tooltip("扫描模式");
++
++            }).left();
++            sp.row();
++            sp.add(sets);
++        }).maxSize(800f, 300f).get();
++
++        pane.update(() -> {
++            Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
++            if(e != null && e.isDescendantOf(pane)){
++                pane.requestScroll();
++            }else if(pane.hasScroll()){
++                Core.scene.setScrollFocus(null);
++            }
++        });
++    }
++
++    private void arcQuickMsgTable(){
++        BaseDialog dialog = new BaseDialog("快捷信息");
++        dialog.cont.table(t -> {
++            t.add("在此编辑快速消息，可在快捷设置面板显示。如设置：\n[white]法 /vote gameover\n" +
++            "这一指令会添加一个“[white]法的按钮，点击会自动输入/vote gameover。\n" +
++            "由于懒得写更新，请修改滑块后[orange]关闭此窗口后再打开一次[white]\n" +
++            "快捷设置面板同样需要[orange]关闭后再打开一次[white]才能生效").center().fillX().row();
++            t.table(tt -> {
++                tt.add("快捷消息个数： ");
++                Label label = tt.add(String.valueOf(settings.getInt("arcQuickMsg", 0))).get();
++                tt.slider(0, 50, 1, settings.getInt("arcQuickMsg", 0), i -> {
++                    settings.put("arcQuickMsg", (int)i);
++                    label.setText(String.valueOf(settings.getInt("arcQuickMsg")));
++                }).width(200f).row();
++                tt.add("每行多少个按键： ");
++                Label label2 = tt.add(String.valueOf(settings.getInt("arcQuickMsgKey", 0))).get();
++                tt.slider(3, 10, 1, settings.getInt("arcQuickMsgKey", 0), i -> {
++                    settings.put("arcQuickMsgKey", (int)i);
++                    label2.setText(String.valueOf(settings.getInt("arcQuickMsgKey")));
++                }).width(200f);
++            }).row();
++            t.pane(tt -> {
++                tt.add("第i个").width(50f);
++                tt.add("JS").width(50f);
++                tt.add("按钮显示\n(建议单个字符)").width(100f);
++                tt.add("              输入信息").width(400f).center().row();
++
++                for(int i = 0; i < settings.getInt("arcQuickMsg", 0); i++){
++                    tt.add(i + "  ");
++                    int finalI = i;
++                    tt.check("", settings.getBool(getArcQuickMsgJs(finalI)), js -> settings.put(getArcQuickMsgJs(finalI), js));
++                    tt.field(settings.getString(getArcQuickMsgShortName(finalI), "?"), text -> settings.put(getArcQuickMsgShortName(finalI), text)).maxTextLength(10);
++                    tt.field(settings.getString(getArcQuickMsgName(finalI), "未输入指令"), text -> settings.put(getArcQuickMsgName(finalI), text)).maxTextLength(300).width(350f);
++                    tt.row();
++                }
++            });
++        });
++        dialog.addCloseButton();
++        dialog.show();
++    }
++
++    private String getArcQuickMsgShortName(int i){
++        return "arcQuickMsgShort" + i;
++    }
++
++    private String getArcQuickMsgName(int i){
++        return "arcQuickMsg" + i;
++    }
++
++    private String getArcQuickMsgJs(int i){
++        return "arcQuickMsgJs" + i;
++    }
++
++    public interface StringProcessor{
++        String get(int i);
++    }
++
++    public Seq<Setting> getSettings(){
++        return list;
++    }
++
++    public SliderSettingF sliderPref(String name, int def, int min, int max, int step, StringProcessor s){
++        SliderSettingF res;
++        list.add(res = new SliderSettingF(name, bundle.get("setting." + name + ".name"), def, min, max, step, s));
++        settings.defaults(name, def);
++        return res;
++    }
++
++    /**
++     * Localized title.
++     */
++    public void checkPref(String name, boolean def){
++        list.add(new CheckSettingF(name, bundle.get("setting." + name + ".name"), def, null));
++        settings.defaults(name, def);
++    }
++
++    public abstract static class Setting{
++        public String name;
++        public String title;
++
++        public abstract void add(Table table);
++    }
++
++    public static class CheckSettingF extends Setting{
++        boolean def;
++        Boolc changed;
++
++        CheckSettingF(String name, String title, boolean def, Boolc changed){
++            this.name = name;
++            this.title = title;
++            this.def = def;
++            this.changed = changed;
++        }
++
++        @Override
++        public void add(Table table){
++            CheckBox box = new CheckBox(title);
++            box.update(() -> box.setChecked(settings.getBool(name)));
++
++            box.changed(() -> {
++                settings.put(name, box.isChecked());
++                if(changed != null){
++                    changed.get(box.isChecked());
++                }
++            });
++
++            box.left();
++            table.add(box).left().padTop(0.5f);
++            table.row();
++        }
++    }
++
++    public static class SliderSettingF extends Setting{
++        int def;
++        int min;
++        int max;
++        int step;
++        StringProcessor sp;
++        float[] values = null;
++
++        SliderSettingF(String name, String title, int def, int min, int max, int step, StringProcessor s){
++            this.name = name;
++            this.title = title;
++            this.def = def;
++            this.min = min;
++            this.max = max;
++            this.step = step;
++            this.sp = s;
++        }
++
++        @Override
++        public void add(Table table){
++            Slider slider = new Slider(min, max, step, false);
++
++            slider.setValue(settings.getInt(name));
++
++            Label value = new Label("", Styles.outlineLabel);
++            Table content = new Table();
++            content.add(title, Styles.outlineLabel).left().growX().wrap();
++            content.add(value).padLeft(10f).right();
++            content.margin(3f, 33f, 3f, 33f);
++            content.touchable = Touchable.disabled;
++
++            slider.changed(() -> {
++                settings.put(name, (int)slider.getValue());
++                value.setText(sp.get((int)slider.getValue()));
++            });
++
++            slider.change();
++
++            table.stack(slider, content).width(Math.min(Core.graphics.getWidth() / 1.2f, 300f)).left().padTop(4f).get();
++            table.row();
++        }
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/TeamsStatDisplay.java b/core/src/mindustryX/features/ui/TeamsStatDisplay.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1c0b1281f190593a3272e2654b85820d94b07d0f
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/TeamsStatDisplay.java
+@@ -0,0 +1,171 @@
++package mindustryX.features.ui;
++
++import arc.*;
++import arc.func.*;
++import arc.graphics.g2d.*;
++import arc.scene.event.*;
++import arc.scene.ui.layout.*;
++import arc.struct.*;
++import arc.util.*;
++import mindustry.*;
++import mindustry.arcModule.*;
++import mindustry.content.*;
++import mindustry.core.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.type.*;
++import mindustryX.features.*;
++
++import static mindustry.Vars.*;
++import static mindustry.ui.Styles.*;
++
++//moved from mindustry.arcModule.ui.OtherCoreItemDisplay
++public class TeamsStatDisplay extends Table{
++    private final float fontScl = 0.8f;
++    private final SimpleCollapser teamsColl = new SimpleCollapser();
++
++    private final Seq<Teams.TeamData> forceShowTeam = new Seq<>();
++    public final Seq<Teams.TeamData> teams = new Seq<>();
++    private final Interval timer = new Interval();
++    private boolean showStat = true, showItem = true, showUnit = true;
++
++
++    public TeamsStatDisplay(){
++        table(buttons -> {
++            buttons.button("[red]+", flatTogglet, teamsColl::toggle).update(t -> {
++                t.setChecked(false);
++                t.setText(teamsColl.getCollapsed() ? "[red]+" : "[red]×");
++            }).size(40).row();
++            buttons.collapser(t -> {
++                t.button("T", flatTogglet, () -> UIExt.teamSelect.select(team -> teams.contains(team.data()), team -> {
++                    if(forceShowTeam.contains(team.data())) forceShowTeam.remove(team.data());
++                    else forceShowTeam.add(team.data());
++                    teamsRebuild();
++                })).checked(gg -> false).size(40).row();
++                t.button(Blocks.worldProcessor.emoji(), flatTogglet, () -> {
++                    showStat = !showStat;
++                    teamsRebuild();
++                }).checked(a -> showStat).size(40).row();
++                t.button(content.items().get(0).emoji(), flatTogglet, () -> {
++                    showItem = !showItem;
++                    teamsRebuild();
++                }).checked(a -> showItem).size(40).row();
++                t.button(UnitTypes.mono.emoji(), flatTogglet, () -> {
++                    showUnit = !showUnit;
++                    teamsRebuild();
++                }).checked(a -> showUnit).size(40).row();
++            }, () -> !teamsColl.getCollapsed());
++        });
++        add(teamsColl).touchable(Touchable.disabled);
++        var teamsTable = teamsColl.getTable();
++        teamsTable.background(black6);
++        teamsTable.update(() -> {
++            if(timer.get(120f))
++                teamsRebuild();
++        });
++
++        Events.on(EventType.ResetEvent.class, e -> {
++            forceShowTeam.clear();
++            teams.clear();
++            teamsTable.clearChildren();
++        });
++    }
++
++    private void teamsRebuild(){
++        teams.clear();
++        teams.addAll(Vars.state.teams.getActive());
++        if(state.rules.waveTimer) teams.addUnique(state.rules.waveTeam.data());
++        forceShowTeam.each(teams::addUnique);
++        teams.sort(teamData -> -teamData.cores.size);
++
++        var teamsTable = teamsColl.getTable();
++        teamsTable.clear();
++
++        //name + cores + units
++        addTeamData(teamsTable, Icon.players.getRegion(), team -> team.team.id < 6 ? team.team.localized() : String.valueOf(team.team.id));
++        addTeamData(teamsTable, Blocks.coreNucleus.uiIcon, team -> UI.formatAmount(team.cores.size));
++        addTeamData(teamsTable, UnitTypes.mono.uiIcon, team -> UI.formatAmount(team.units.size));
++        addTeamData(teamsTable, UnitTypes.gamma.uiIcon, team -> String.valueOf(team.players.size));
++
++        if(showStat){
++            teamsTable.image().color(Pal.accent).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
++            addTeamDataCheckB(teamsTable, Blocks.siliconSmelter.uiIcon, team -> team.team.rules().cheat);
++            addTeamDataCheck(teamsTable, Blocks.arc.uiIcon, team -> state.rules.blockDamage(team.team));
++            addTeamDataCheck(teamsTable, Blocks.titaniumWall.uiIcon, team -> state.rules.blockHealth(team.team));
++            addTeamDataCheck(teamsTable, Blocks.buildTower.uiIcon, team -> state.rules.buildSpeed(team.team));
++            addTeamDataCheck(teamsTable, UnitTypes.corvus.uiIcon, team -> state.rules.unitDamage(team.team));
++            addTeamDataCheck(teamsTable, UnitTypes.oct.uiIcon, team -> state.rules.unitHealth(team.team));
++            addTeamDataCheck(teamsTable, UnitTypes.zenith.uiIcon, team -> state.rules.unitCrashDamage(team.team));
++            addTeamDataCheck(teamsTable, Blocks.tetrativeReconstructor.uiIcon, team -> state.rules.unitBuildSpeed(team.team));
++            addTeamDataCheck(teamsTable, Blocks.basicAssemblerModule.uiIcon, team -> state.rules.unitCost(team.team));
++            teamsTable.row();
++        }
++
++        if(showItem){
++            teamsTable.image().color(Pal.accent).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
++            for(Item item : content.items()){
++                boolean show = false;
++                for(Teams.TeamData team : teams){
++                    if(team.hasCore() && team.core().items.get(item) > 0)
++                        show = true;
++                }
++                if(show){
++                    addTeamData(teamsTable, item.uiIcon, team -> (team.hasCore() && team.core().items.get(item) > 0) ? UI.formatAmount(team.core().items.get(item)) : "-");
++                }
++            }
++        }
++
++        if(showUnit){
++            teamsTable.image().color(Pal.accent).fillX().height(1).colspan(999).padTop(3).padBottom(3).row();
++            for(UnitType unit : content.units()){
++                boolean show = false;
++                for(Teams.TeamData team : teams){
++                    if(team.countType(unit) > 0)
++                        show = true;
++                }
++                if(show){
++                    addTeamData(teamsTable, unit.uiIcon, team -> team.countType(unit) > 0 ? String.valueOf(team.countType(unit)) : "-");
++                }
++            }
++        }
++    }
++
++    private void addTeamDataCheck(Table table, TextureRegion icon, Floatf<Teams.TeamData> checked){
++        if(teams.isEmpty() || teams.allMatch(it -> checked.get(it) == 1f)) return;
++        //check allSame
++        float value = checked.get(teams.get(0));
++        if(teams.allMatch(it -> checked.get(it) == value)){
++            addTeamData(table, icon, FormatDefault.format(value));
++            return;
++        }
++        addTeamData(table, icon, team -> FormatDefault.format(checked.get(team)));
++    }
++
++    private void addTeamDataCheckB(Table table, TextureRegion icon, Boolf<Teams.TeamData> checked){
++        if(teams.isEmpty() || teams.allMatch(it -> !checked.get(it))) return;
++        //check allSame
++        boolean value = checked.get(teams.get(0));
++        if(teams.allMatch(it -> checked.get(it) == value)){
++            addTeamData(table, icon, value ? "+" : "x");
++            return;
++        }
++        addTeamData(table, icon, team -> checked.get(team) ? "+" : "×");
++    }
++
++    private void addTeamData(Table table, TextureRegion icon, String value){
++        // 只显示一个数值
++        table.image(icon).size(15, 15).left();
++        table.label(() -> "[#" + Pal.accent + "]" + value).align(Align.center).fontScale(fontScl).colspan(table.getColumns() - 1);
++        table.row();
++    }
++
++    private void addTeamData(Table table, TextureRegion icon, RFuncs.Stringf<Teams.TeamData> teamDataStringf){
++        // 通用情况
++        table.image(icon).size(15, 15).left();
++        for(Teams.TeamData teamData : teams){
++            table.label(() -> "[#" + teamData.team.color + "]" + teamDataStringf.get(teamData)).fontScale(fontScl);
++        }
++        table.row();
++    }
++}
+\ No newline at end of file
+diff --git a/core/src/mindustryX/features/ui/ToolTableBase.java b/core/src/mindustryX/features/ui/ToolTableBase.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..726972db14897a81e6f26efddc0404a029d1bd46
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/ToolTableBase.java
+@@ -0,0 +1,24 @@
++package mindustryX.features.ui;
++
++import arc.scene.ui.layout.*;
++import mindustry.ui.*;
++
++public abstract class ToolTableBase extends Table{
++    public String icon = "";
++    public boolean expand = false;
++
++
++    public void rebuild(){
++        clear();
++        table().growX().left();
++        if(expand){
++            buildTable();
++        }
++        button((expand ? "" : "[lightgray]") + icon, Styles.flatBordert, () -> {
++            expand = !expand;
++            rebuild();
++        }).right().width(40f).minHeight(40f).fillY();
++    }
++
++    protected abstract void buildTable();
++}
