@@ -46,13 +46,13 @@ index 593d8e2bfbb8c1e156b998dc44d3554317e171bf..cdf4295a544656573aea87416e8957b2
          //info icon
          if(mobile){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 292ff3468d5ec0a0b1f8e6d147fc1de7244c7155..3c181a34c201a6641d4aba6cd0e00b30253d43bd 100644
+index 8170e5afbfd3f19bf6f5b8f500155a7269c2ae02..ba7364be22aacccc3a9beb617aaafa094bbdaec6 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -14,6 +14,8 @@ public class Hooks implements ApplicationListener{
+@@ -21,6 +21,8 @@ public class Hooks implements ApplicationListener{
+     public void init(){
          Log.infoTag("MindustryX", "Hooks.init");
          RenderExt.init();
-         ArcOld.addSettings();
 +        if(AutoUpdate.INSTANCE.getActive())
 +            AutoUpdate.INSTANCE.checkUpdate();
          if(!Vars.headless){

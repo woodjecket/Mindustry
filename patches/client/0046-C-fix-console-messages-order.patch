@@ -8,10 +8,10 @@ Subject: [PATCH] C: fix console messages order
  1 file changed, 4 insertions(+)
 
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index 498e222893f7e224cf87ba4d983df99efd181ae1..313874de35d6cf5cc7a2cc5b06e7950fca2eede2 100644
+index a74612c7ba97056cbaf6cd998ed10aaad973a8a5..c7692170f49fae761dc659225330c43c3ee04e3e 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -377,6 +377,10 @@ public class Vars implements Loadable{
+@@ -378,6 +378,10 @@ public class Vars implements Loadable{
                  if(!headless && (ui == null || ui.consolefrag == null)){
                      logBuffer.add(result);
                  }else if(!headless){

@@ -9,7 +9,7 @@ Subject: [PATCH] API: Hooks.beforeInit
  2 files changed, 7 insertions(+)
 
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index 313874de35d6cf5cc7a2cc5b06e7950fca2eede2..c7692170f49fae761dc659225330c43c3ee04e3e 100644
+index 498e222893f7e224cf87ba4d983df99efd181ae1..a74612c7ba97056cbaf6cd998ed10aaad973a8a5 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -259,6 +259,7 @@ public class Vars implements Loadable{
@@ -21,7 +21,7 @@ index 313874de35d6cf5cc7a2cc5b06e7950fca2eede2..c7692170f49fae761dc659225330c43c
  
          if(loadLocales){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 3c181a34c201a6641d4aba6cd0e00b30253d43bd..2d1aea2c9da5a511d34b2d7c6dde6993d6ff1518 100644
+index 35a8ced5c36d6e17fb3ea98033b34555f7163ffa..2c545360078991096d7fc16ecb84aa278fd3ad60 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -9,6 +9,12 @@ import mindustryX.features.*;

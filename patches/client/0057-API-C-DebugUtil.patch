@@ -95,13 +95,13 @@ index e964aa5fdf02e5a606a6b3ca51babc5c03790799..58978ef3586f170c75d562cb203e5000
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index c7d6da1293da79105ffd3adf8b1a47db3d04b58a..aa7da585a40a45bddf749ab4e3371fdcf656b252 100644
+index 7e0a8341675ffe6c3cce423141a3654f604565b0..c871d23a2e4855b115ee1b411d7c91f36438acaa 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
      public static void beforeInit(){
          Log.infoTag("MindustryX", "Hooks.beforeInit");
-         Settings.baseSettings();
+         Settings.addSettings();
 +        DebugUtil.init();//this is safe, and better at beforeInit,
      }
  

@@ -23,7 +23,7 @@ index 7c1c17300aa5088e1c9f4dc8078f33aadcd634f0..3a9f9845adbb5679a899e5c154349414
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index f93bcf3ed1eee7d14f579eb527140ac696b80cdd..41bd37f7aa552b1c98512dfb8504f16dbd551f4d 100644
+index ba7364be22aacccc3a9beb617aaafa094bbdaec6..0271b93974c79e5630148d2615ed81fe20800d97 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -4,8 +4,8 @@ import arc.*;
@@ -36,7 +36,7 @@ index f93bcf3ed1eee7d14f579eb527140ac696b80cdd..41bd37f7aa552b1c98512dfb8504f16d
  
  import java.net.*;
  
-@@ -52,4 +52,13 @@ public class Hooks implements ApplicationListener{
+@@ -50,4 +50,13 @@ public class Hooks implements ApplicationListener{
          if(message == null) return null;
          return message;
      }

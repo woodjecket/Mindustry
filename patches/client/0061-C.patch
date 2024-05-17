@@ -11,10 +11,16 @@ Content-Transfer-Encoding: 8bit
 
 优化代码与显示；修复Plan灰框bug；移除物品平均值
 way-zer <himc.wicp@gmail.com> on 2024/4/30 at 0:09
+
+拆除建筑，续建建筑显示oh no图标
+MinRi2 <2275045670@qq.com> on 2024/5/4 at 15:25
+
+优化显示效果;更紧凑的Item布局
+way-zer <himc.wicp@gmail.com> on 2024/5/17 at 20:50
 ---
  .../mindustry/ui/fragments/HudFragment.java   |  11 +-
- .../features/ui/NewCoreItemsDisplay.java      | 228 ++++++++++++++++++
- 2 files changed, 232 insertions(+), 7 deletions(-)
+ .../features/ui/NewCoreItemsDisplay.java      | 245 ++++++++++++++++++
+ 2 files changed, 249 insertions(+), 7 deletions(-)
  create mode 100644 core/src/mindustryX/features/ui/NewCoreItemsDisplay.java
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
@@ -63,10 +69,10 @@ index 58978ef3586f170c75d562cb203e5000a3804377..0ca6c56396cd161c0633321302579f76
                  float[] coreAttackTime = {0};
 diff --git a/core/src/mindustryX/features/ui/NewCoreItemsDisplay.java b/core/src/mindustryX/features/ui/NewCoreItemsDisplay.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7d745ed95
+index 0000000000000000000000000000000000000000..d51e2f8f410239be0924c45ea5471edbda7d71ee
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/NewCoreItemsDisplay.java
-@@ -0,0 +1,228 @@
+@@ -0,0 +1,245 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -82,6 +88,7 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +import mindustry.type.*;
 +import mindustry.ui.*;
 +import mindustry.world.*;
++import mindustry.world.blocks.ConstructBlock.*;
 +import mindustry.world.blocks.power.*;
 +import mindustry.world.blocks.storage.*;
 +
@@ -114,6 +121,9 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +            usedUnits.clear();
 +            Arrays.fill(itemDelta, 0);
 +            Arrays.fill(lastItemAmount, 0);
++            itemsTable.clearChildren();
++            unitsTable.clearChildren();
++            plansTable.clearChildren();
 +        });
 +
 +        setup();
@@ -123,17 +133,22 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +        itemsTable = new Table(Styles.black3);
 +        unitsTable = new Table(Styles.black3);
 +        plansTable = new Table(Styles.black3);
-+        plansTable.marginTop(12f);
 +
 +        var itemCol = add(new SimpleCollapser(itemsTable, true)).growX().get();
 +        var unitsCol = row().add(new SimpleCollapser(unitsTable, true)).growX().get();
++        var emptyLine = row().add();
 +        var plansCol = row().add(new SimpleCollapser(plansTable, true)).growX().get();
 +        update(() -> {
 +            var columns = Core.settings.getInt("arcCoreItemsCol");
 +            int displayType = Core.settings.getInt("arccoreitems");
-+            itemCol.setCollapsed(!itemCol.hasChildren() || displayType != 1 && displayType != 3);
-+            unitsCol.setCollapsed(!unitsCol.hasChildren() || displayType != 2 && displayType != 3);
-+            plansCol.setCollapsed(!plansCol.hasChildren() || displayType < 1);
++            itemCol.setCollapsed(displayType != 1 && displayType != 3);
++            unitsCol.setCollapsed(displayType != 2 && displayType != 3);
++            plansCol.setCollapsed(displayType < 1);
++            var newHeight = plansTable.hasChildren() ? 12f : 0f;
++            if(emptyLine.maxHeight() != newHeight){
++                emptyLine.height(newHeight);
++                emptyLine.getTable().invalidate();
++            }
 +
 +            if(this.columns != columns){
 +                this.columns = columns;
@@ -185,7 +200,7 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +
 +            itemsTable.stack(
 +            new Table(t ->
-+            t.image(item.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f)
++            t.image(item.uiIcon).size(iconMed - 4).scaling(Scaling.fit).pad(2f)
 +            .tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel))
 +            ),
 +            new Table(t -> t.label(() -> {
@@ -193,40 +208,44 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +                if(update == 0) return "";
 +                return (update < 0 ? "[red]" : "[green]+") + UI.formatAmount(update);
 +            }).fontScale(0.85f)).top().left()
-+            ).pad(4f);
++            );
 +
 +            itemsTable.table(amountTable -> {
 +                amountTable.defaults().expand().left();
 +
-+                Label amountLabel = amountTable.add("").get();
++                Label amountLabel = amountTable.add("").growY().get();
 +                amountTable.row();
-+                Label planLabel = amountTable.add("").fontScale(0.85f).get();
++                var planLabel = amountTable.add("").fontScale(0.6f).height(0.01f);
 +
 +                amountTable.update(() -> {
 +                    int planAmount = planItems.get(item);
 +                    int amount = player.team().items().get(item);
 +
++                    float newFontScale = 1f;
 +                    Color amountColor = Color.white;
 +                    if(planAmount == 0){
 +                        var core = player.team().core();
 +                        if(core != null && amount >= core.storageCapacity * 0.99){
 +                            amountColor = Pal.accent;
 +                        }
-+
-+                        planLabel.setText("");
++                        planLabel.height(0.01f);//can't use 0 as maxHeight;
++                        planLabel.get().setText("");
 +                    }else{
 +                        amountColor = (amount > planAmount ? Color.green
 +                        : amount > planAmount / 2 ? Pal.stat
 +                        : Color.scarlet);
-+
-+                        planLabel.setColor(planAmount > 0 ? Color.scarlet : Color.green);
-+                        planLabel.setText(UI.formatAmount(planAmount));
++                        planLabel.height(Float.NEGATIVE_INFINITY);
++                        planLabel.color(planAmount > 0 ? Color.scarlet : Color.green);
++                        planLabel.get().setText(UI.formatAmount(planAmount));
++                        newFontScale = 0.7f;
 +                    }
 +
++                    if(amountLabel.getFontScaleX() != newFontScale)
++                        amountLabel.setFontScale(newFontScale);
 +                    amountLabel.setColor(amountColor);
 +                    amountLabel.setText(UI.formatAmount(amount));
 +                });
-+            }).padRight(4f).minWidth(MIN_WIDTH).left();
++            }).minWidth(MIN_WIDTH).left();
 +
 +            if(++i % columns == 0){
 +                itemsTable.row();
@@ -240,12 +259,12 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +        int i = 0;
 +        for(UnitType unit : content.units()){
 +            if(usedUnits.contains(unit)){
-+                unitsTable.image(unit.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f)
++                unitsTable.image(unit.uiIcon).size(iconSmall).scaling(Scaling.fit).pad(2f)
 +                .tooltip(t -> t.background(Styles.black6).margin(4f).add(unit.localizedName).style(Styles.outlineLabel));
 +                unitsTable.label(() -> {
 +                    int typeCount = player.team().data().countType(unit);
 +                    return (typeCount == Units.getCap(player.team()) ? "[stat]" : "") + typeCount;
-+                }).padRight(4f).minWidth(MIN_WIDTH).left();
++                }).minWidth(MIN_WIDTH).left();
 +
 +                if(++i % columns == 0){
 +                    unitsTable.row();
@@ -262,6 +281,10 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +            Block block = plan.block;
 +
 +            if(block instanceof CoreBlock) return;
++
++            if(plan.build() instanceof ConstructBuild build){
++                block = build.current;
++            }
 +
 +            planCounter.increment(block, plan.breaking ? -1 : 1);
 +
@@ -282,8 +305,8 @@ index 0000000000000000000000000000000000000000..725b6fa31921527bad88330e8bad6ad7
 +            || block instanceof PowerNode
 +            || block instanceof BeamNode) continue;
 +
-+            plansTable.image(block.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f);
-+            plansTable.label(() -> (count > 0 ? "[green]+" : "[red]") + count).padRight(3).minWidth(MIN_WIDTH).left();
++            plansTable.image(block.uiIcon).size(iconSmall).scaling(Scaling.fit).pad(2f);
++            plansTable.label(() -> (count > 0 ? "[green]+" : "[red]") + count).minWidth(MIN_WIDTH).left();
 +
 +            if(++i % columns == 0){
 +                plansTable.row();

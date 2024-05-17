@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 16 May 2024 21:57:23 +0800
+Subject: [PATCH] =?UTF-8?q?C:=20=E4=BC=98=E5=8C=96=E9=9B=B7=E8=BE=BE?=
+ =?UTF-8?q?=E7=9B=B4=E7=BA=BF=E6=94=BE=E7=BD=AE?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/world/blocks/defense/Radar.java | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/core/src/mindustry/world/blocks/defense/Radar.java b/core/src/mindustry/world/blocks/defense/Radar.java
+index e24a3368d190f64fdaf002130a76f4799834c9a5..dc1cc82c0e5e9cdc340cb4801c1334b178c88558 100644
+--- a/core/src/mindustry/world/blocks/defense/Radar.java
++++ b/core/src/mindustry/world/blocks/defense/Radar.java
+@@ -3,12 +3,14 @@ package mindustry.world.blocks.defense;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
++import arc.math.geom.*;
+ import arc.struct.*;
+ import arc.util.io.*;
+ import mindustry.*;
+ import mindustry.annotations.Annotations.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
++import mindustry.input.*;
+ import mindustry.world.*;
+ import mindustry.world.meta.*;
+ 
+@@ -45,6 +47,12 @@ public class Radar extends Block{
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, fogRadius * tilesize, Pal.accent);
+     }
+ 
++    @Override
++    public void changePlacementPath(Seq<Point2> points, int rotation){
++        var placeRadius2 = Mathf.pow(fogRadius, 2f) * 3;//*2/sqrt(3)/2
++        Placement.calculateNodes(points, this, rotation, (point, other) -> point.dst2(other) <= placeRadius2);
++    }
++
+     public class RadarBuild extends Building{
+         public float progress;
+         public float lastRadius = 0f;

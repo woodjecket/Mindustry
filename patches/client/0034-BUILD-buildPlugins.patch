@@ -13,10 +13,10 @@ way-zer <himc.wicp@gmail.com> on 2024/4/27 at 18:57
  buildPlugins/build.gradle.kts                 |  23 +++
  .../plugins/mindustryX/buildExt.gradle.kts    |  31 ++++
  .../plugins/mindustryX/loaderMod.gradle.kts   | 135 ++++++++++++++++++
- .../plugins/mindustryX/patchArc.gradle.kts    |  91 ++++++++++++
+ .../plugins/mindustryX/patchArc.gradle.kts    |  97 +++++++++++++
  core/build.gradle.kts                         |   1 +
  settings.gradle                               |   2 +
- 7 files changed, 285 insertions(+), 4 deletions(-)
+ 7 files changed, 291 insertions(+), 4 deletions(-)
  create mode 100644 buildPlugins/build.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/buildExt.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
@@ -256,10 +256,10 @@ index 0000000000000000000000000000000000000000..0991a7b64651323ddd767cccc8fdf263
 \ No newline at end of file
 diff --git a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..19c7a9d241a187f985e0709e395847acc37786df
+index 0000000000000000000000000000000000000000..75ab3b5813b4a279c5134a7cf316e367ef778d37
 --- /dev/null
 +++ b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-@@ -0,0 +1,91 @@
+@@ -0,0 +1,97 @@
 +package mindustryX
 +
 +import javassist.ClassPool
@@ -330,25 +330,31 @@ index 0000000000000000000000000000000000000000..19c7a9d241a187f985e0709e395847ac
 +
 +val artifactType = Attribute.of("artifactType", String::class.java)
 +val patched = Attribute.of("patched", Boolean::class.javaObjectType)
-+tasks {
-+    dependencies {
-+        attributesSchema {
-+            attribute(patched)
++dependencies {
++    attributesSchema {
++        attribute(patched)
++    }
++    artifactTypes.getByName("jar") {
++        attributes.attribute(patched, false)
++    }
++    registerTransform(PatchArc::class) {
++        from.attribute(artifactType, "jar").attribute(patched, false)
++        to.attribute(artifactType, "jar").attribute(patched, true)
++    }
++
++    val api by configurations
++    val patchSrc by configurations.creating {
++        attributes {
++            attribute(patched, true)
 +        }
-+        artifactTypes.getByName("jar") {
-+            attributes.attribute(patched, false)
-+        }
-+        configurations.named("api") {
-+            val arcLib = dependencies.find { it.name == "arc-core" }
-+                ?: error("Can't find arc-core")
-+            (arcLib as ExternalModuleDependency).attributes {
-+                attribute(patched, true)
-+            }
-+        }
-+        registerTransform(PatchArc::class) {
-+            from.attribute(artifactType, "jar").attribute(patched, false)
-+            to.attribute(artifactType, "jar").attribute(patched, true)
-+        }
++    }
++    val arcLib = api.dependencies.find { it.name == "arc-core" }
++        ?: error("Can't find arc-core")
++    api.dependencies.remove(arcLib)
++    api(files(patchSrc))
++
++    patchSrc(arcLib as ExternalModuleDependency){
++        isTransitive = false
 +    }
 +}
 \ No newline at end of file

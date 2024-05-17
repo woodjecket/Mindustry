@@ -15,8 +15,8 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  core/src/mindustry/core/NetClient.java        |   3 +
  core/src/mindustry/net/Net.java               |   2 +
  core/src/mindustryX/Hooks.java                |   1 +
- .../mindustryX/features/ReplayController.java | 231 ++++++++++++++++++
- 4 files changed, 237 insertions(+)
+ .../mindustryX/features/ReplayController.java | 239 ++++++++++++++++++
+ 4 files changed, 245 insertions(+)
  create mode 100644 core/src/mindustryX/features/ReplayController.java
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
@@ -81,10 +81,10 @@ index 59e606e4744893f0d3441e650f7fc26e3e7220c3..35a8ced5c36d6e17fb3ea98033b34555
  
 diff --git a/core/src/mindustryX/features/ReplayController.java b/core/src/mindustryX/features/ReplayController.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb4427baeb
+index 0000000000000000000000000000000000000000..5f3ba9615f3e53aa83c970d0c593f14e53fe3750
 --- /dev/null
 +++ b/core/src/mindustryX/features/ReplayController.java
-@@ -0,0 +1,231 @@
+@@ -0,0 +1,239 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -191,6 +191,12 @@ index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb
 +        writes = null;
 +    }
 +
++    private static Net fakeServer = new Net(null){
++        @Override
++        public boolean server(){
++            return true;
++        }
++    };
 +    public static void onClientPacket(Packet p){
 +        if(!recording || p instanceof Streamable) return;
 +        if(p instanceof Disconnect){
@@ -204,7 +210,10 @@ index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb
 +                writes.f(Time.time - startTime);
 +                writes.b(id);
 +                tmpBuf.position(0);
++                var bak = net;
++                net = fakeServer;
 +                p.write(tmpWr);
++                net = bak;
 +                int l = tmpBuf.position();
 +                writes.s(l);
 +                writes.b(tmpBuf.array(), 0, l);
@@ -268,7 +277,6 @@ index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb
 +        net.reset();
 +        netClient.beginConnecting();
 +        Reflect.set(net, "active", true);
-+        Reflect.set(net, "server", true);
 +
 +        startTime = Time.time;
 +        Threads.daemon("Replay Controller", () -> {
@@ -279,7 +287,7 @@ index 0000000000000000000000000000000000000000..0d31cf67ed77cd1edebd64a476a67cbb
 +                    Packet p = Net.newPacket(reads.b());
 +                    p.read(reads, reads.us());
 +                    while(Time.time - startTime < nextTime)
-+                        Thread.yield();
++                        Thread.sleep(1);
 +                    Core.app.post(() -> net.handleClientReceived(p));
 +                }
 +            }catch(Exception e){

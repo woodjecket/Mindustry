@@ -140,7 +140,7 @@ index 1a2843e8297dff49b8fb8bb87da27985690b5aec..7e3645814d96cd2497332bbfcb2c9d28
          }
  
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index aa7da585a40a45bddf749ab4e3371fdcf656b252..b8392034f5c9a50bb386ddd96f9bf0f25a413ff3 100644
+index c871d23a2e4855b115ee1b411d7c91f36438acaa..9f35d0b5260b6db0fb76c9574741301e172e3060 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -10,6 +10,8 @@ import mindustryX.features.*;
@@ -152,7 +152,7 @@ index aa7da585a40a45bddf749ab4e3371fdcf656b252..b8392034f5c9a50bb386ddd96f9bf0f2
  public class Hooks implements ApplicationListener{
      /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
      public static void beforeInit(){
-@@ -74,5 +76,8 @@ public class Hooks implements ApplicationListener{
+@@ -72,5 +74,8 @@ public class Hooks implements ApplicationListener{
          if(Core.input.keyTap(Binding.point)){
              MarkerType.selected.markWithMessage(Core.input.mouseWorld());
          }
