@@ -49,7 +49,7 @@ index 75ab3b5813b4a279c5134a7cf316e367ef778d37..f0d75573ae7cdc5ace00ce9faae05e11
      )
  
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 9dd96dade62133fa140cdce0a6a42fea77e7e401..c341ed754cdc92da0bd15594c0db772a94b39211 100644
+index 7ca012ef185da0e91072a8d1ac5e6f4d87ccc39d..367dc918d02cb329361a2cee190982319e54aa91 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -67,6 +67,9 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
@@ -61,8 +61,8 @@ index 9dd96dade62133fa140cdce0a6a42fea77e7e401..c341ed754cdc92da0bd15594c0db772a
 +setting.renderSort.name = 渲染排序 [grey]实验性功能，能够提升50%渲染性能，但可能造成渲染错误
  #end Settings
  
- stat.reloadDetail = 装填：{0}%
-@@ -173,7 +176,6 @@ category.arcShareinfo.name = 多人游玩设置
+ bar.reloadDetail = 装填：{0}%
+@@ -170,7 +173,6 @@ category.arcShareinfo.name = 多人游玩设置
  category.arcStrongCheat.name = [red]强作弊功能
  category.arcWeakCheat.name = 弱作弊功能
  category.combat = 战斗

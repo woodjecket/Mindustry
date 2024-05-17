@@ -18,7 +18,7 @@ Content-Transfer-Encoding: 8bit
  create mode 100644 core/src/mindustryX/features/ui/ModsRecommendDialog.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index c341ed754cdc92da0bd15594c0db772a94b39211..ef8cd05c12526ae5724b976b3d656ff298260c06 100644
+index 367dc918d02cb329361a2cee190982319e54aa91..38ae78a4cf04c2d2037faf3b74d27d5943fee9c0 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -1,3 +1,22 @@

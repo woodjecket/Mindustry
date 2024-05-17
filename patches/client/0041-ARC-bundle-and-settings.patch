@@ -9,28 +9,25 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 464 ++++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 244 +++++++++++++++++
  .../ui/dialogs/SettingsMenuDialog.java        |  29 +-
- core/src/mindustryX/features/ArcOld.java      | 258 ++++++++++
+ core/src/mindustryX/features/ArcOld.java      | 257 ++++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 737 insertions(+), 15 deletions(-)
+ 4 files changed, 516 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 2dddf7df609c90e43ca5810c27b77c337819d90e..9dd96dade62133fa140cdce0a6a42fea77e7e401 100644
+index 2dddf7df609c90e43ca5810c27b77c337819d90e..7ca012ef185da0e91072a8d1ac5e6f4d87ccc39d 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -68,3 +68,467 @@ category.entitySettings.name = 实体相关设置
+@@ -68,3 +68,247 @@ category.entitySettings.name = 实体相关设置
  setting.bulletShow.name = 显示子弹
  setting.showminebeam.name = 显示单位挖掘光束
  #end Settings
 +
-+stat.reloadDetail = 装填：{0}%
-+stat.warmupDetail = 充能：{0}%
-+stat.ammoDetail = 弹药：{0}/{1}
-+
-+mods.info = [cyan]定制|推荐mod~~移除重复功能及适配ui\nPVPnotifs_arc_version (author:?、klp、miner、blac8、lc)      [cyan]AI功能\ntesting_utilities_lc_version  (author：MEEP、lc)    [orange]仅用于高级作图大师，一般不推荐使用\nwz-contentloader-mod 允许适配其他参数游玩\n\n[acid]可使用mod\n中文输入法修复\nLogic Debugger\nPictoLogic              [yellow]来多点涩图秋梨膏\nUnit Factory            [orange]仅用于高级作图大师，一般不推荐使用\nTime Extender\n\n[yellow]对大型mod的支持     [white]请各位帮忙反馈支持情况，如果有定制函数需要也可以找我\n对mod现支持更大的物品选择框！还挣扎于寻找几十种材料和工厂吗？\n创世神      --[green]支持\nExtra Utilities|EUE     --[green]支持\n\n[orange]不建议使用（可能有功能覆盖/明确不匹配）\n吐槽语言、中文翻译等mod     [red]会覆盖强化核心数据库\n透视类mod       [red]已包含\n隐藏物品解锁mod       [red]已包含\n更多兵种建筑等属性显示类mod       [red]已包含\n修改缩放类mod       [red]已包含\nMI2tool_lc_version (author:MI2->miner)   [red]已合并\n显示电量                 [red]已由miner合并进pvpnotifs
-+settings.info = 特殊设置说明\n[cyan]cyan[white]标识的为覆盖原版设置\n[acid]acid[white]标识的为MindustryX端设置\n[red]red[white]涉及作弊相关的设置\n透明度实际上指的是显示程度，透明度为0不显示，为100全显示
++bar.reloadDetail = 装填：{0}%
++bar.warmupDetail = 充能：{0}%
++bar.ammoDetail = 弹药：{0}/{1}
 +
 +marker.Mark.name = 标记
 +marker.Gather.name = 集合
@@ -271,229 +268,11 @@ index 2dddf7df609c90e43ca5810c27b77c337819d90e..9dd96dade62133fa140cdce0a6a42fea
 +waves.group.effect = 添加状态
 +waves.group.items = 添加物品
 +waves.group.payloads = 添加载荷
-+
-+
-+# 学术成就
-+achievement.active100Units.desc = 同时拥有 100 个单位
-+achievement.active100Units.name = 人山人海
-+achievement.active10Polys.desc = 同时拥有 10 个幻型
-+achievement.active10Polys.name = 建造队
-+achievement.allBlocksErekir.desc = 在埃里克尔中建造所有对应方块
-+achievement.allBlocksErekir.name = 埃里克尔建筑大师
-+achievement.allBlocksSerpulo.desc = 在塞普罗中建造所有对应方块
-+achievement.allBlocksSerpulo.name = 塞普罗建筑大师
-+achievement.allTransportOneMap.desc =  在一张地图中使用对应星球科技的所有运输元件
-+achievement.allTransportOneMap.name = 运输大师
-+achievement.becomeRouter.desc = 加入他们
-+achievement.becomeRouter.name = 最终形态
-+achievement.blastFrozenUnit.desc = 对具有冰冻效果的单位造成额外的爆炸伤害
-+achievement.blastFrozenUnit.name = 嘎嘣脆
-+achievement.blastGenerator.desc = 往火力发电机中塞入爆炸混合物
-+achievement.blastGenerator.name = 鬼点子
-+achievement.boostBuildingFloor.desc = 在建筑放在合适的地形上以提高效率
-+achievement.boostBuildingFloor.name = 因地制宜
-+achievement.boostUnit.desc = 使用地面单位的助推功能
-+achievement.boostUnit.name = 飞行模式
-+achievement.break10000Boulders.desc = 清理10000块岩石
-+achievement.break10000Boulders.name = 一尘不染
-+achievement.break100Boulders.desc = 清理100块岩石
-+achievement.break100Boulders.name = 大扫除
-+achievement.breakForceProjector.desc = 击破敌方力场投影的力场
-+achievement.breakForceProjector.name = 破盾
-+achievement.build1000Units.desc = 总共制造 1,000 个单位
-+achievement.build1000Units.name = 军团
-+achievement.buildAllUnits.desc = 制造所有类型的单位
-+achievement.buildAllUnits.name = 机器人学家
-+achievement.buildGroundFactory.desc = 建造一个陆军工厂
-+achievement.buildGroundFactory.name = 从第一个单位开始
-+achievement.buildMeltdownSpectre.desc = 建造 熔毁 幽灵 厄兆
-+achievement.buildMeltdownSpectre.name = 无懈可击
-+achievement.buildMendProjector.desc = 建造修复投影
-+achievement.buildMendProjector.name = 修复
-+achievement.buildOverdriveProjector.desc = 建造超速投影
-+achievement.buildOverdriveProjector.name = GKDGKD
-+achievement.buildT5.desc = 制造一个 无量级 单位
-+achievement.buildT5.name = 进化！
-+achievement.buildWexWater.desc = 在水上建造抽水机而不是用泵
-+achievement.buildWexWater.name = 水上抽水
-+achievement.captureAllSectors.desc = 占领塞普罗星球上的所有区块
-+achievement.captureAllSectors.name = 征服全球
-+achievement.captureBackground.desc = 在不同的区块游玩时占领另一个区块
-+achievement.captureBackground.name = 胜券在握
-+achievement.captureNoBlocksBroken.desc = 在没有一个方块被摧毁的情况下占领区块
-+achievement.captureNoBlocksBroken.name = 全面完胜
-+achievement.chainRouters.desc = 建造两个相邻的路由器
-+achievement.chainRouters.name = 路由器邪教
-+achievement.circleConveyor.desc = 转啊转啊转~~
-+achievement.circleConveyor.name = 螺旋
-+achievement.completeErekir.desc = 占领埃里克尔的最终地图
-+achievement.completeErekir.name = 埃里克尔通关
-+achievement.completeSerpulo.desc = 占领塞普罗的最终地图
-+achievement.completeSerpulo.name = 塞普罗通关
-+achievement.control10Sectors.desc = 占领 10 个区块
-+achievement.control10Sectors.name = 迷你帝国
-+achievement.controlTurret.desc = 手动操控炮台。[cyan]前线炮台顺时针旋转0.5°
-+achievement.controlTurret.name = mdt常凯申
-+achievement.coolTurret.desc = 使用 水 或 冷却液 冷却一个炮塔
-+achievement.coolTurret.name = 水冷剂
-+achievement.create20Schematics.desc = 创建 20 个蓝图
-+achievement.create20Schematics.name = 能工巧匠
-+achievement.create500Schematics.desc = 创建 500 个蓝图
-+achievement.create500Schematics.name = 规则创造者
-+achievement.defeatAttack5Waves.desc = 在攻击模式中，于 5 波内摧毁敌方核心
-+achievement.defeatAttack5Waves.name = 闪电战
-+achievement.defeatBoss.desc = 击败一个BOSS
-+achievement.defeatBoss.name = 杀戮者
-+achievement.destroy1kBlocks.desc = 拆除 1,000 个方块
-+achievement.destroy1kBlocks.name = 夷为平地
-+achievement.destroyScatterFlare.desc = 使用星辉摧毁分裂
-+achievement.destroyScatterFlare.name = 报仇雪恨
-+achievement.dieExclusion.desc = 在敌方出生点被摧毁
-+achievement.dieExclusion.name = 下次要听话~
-+achievement.downloadMapWorkshop.desc = 在创意工坊下载 10 个地图
-+achievement.downloadMapWorkshop.name = 鉴赏师
-+achievement.drop10kitems.desc = 携带 10,000 以上资源进入一个区块
-+achievement.drop10kitems.name = 万事俱备
-+achievement.dropUnitsCoreZone.desc = 在敌方核心的保护区内投放单位
-+achievement.dropUnitsCoreZone.name = 深入敌后
-+achievement.drown.desc = 被淹死
-+achievement.drown.name = 这不是海军单位！
-+achievement.enablePixelation.desc = 启用 像素化
-+achievement.enablePixelation.name = 经典模式
-+achievement.fillCoreAllCampaign.desc = 用所有材料装满核心
-+achievement.fillCoreAllCampaign.name = 收藏家
-+achievement.have10mItems.desc = 在战役模式中收集一千万个物品
-+achievement.have10mItems.name = 物资积压
-+achievement.hostServer10.desc = 主持一个 10 人服务器
-+achievement.hostServer10.name = 拥挤
-+achievement.hoverUnitLiquid.desc = 使用挣脱走过液体池
-+achievement.hoverUnitLiquid.name = 悬浮模式
-+achievement.installMod.desc = 安装一个模组
-+achievement.installMod.name = 稍作改进
-+achievement.issueAttackCommand.desc = 使用 指挥中心 发出攻击指令
-+achievement.issueAttackCommand.name = 全军突击
-+achievement.joinCommunityServer.desc = 加入一个社区服务器
-+achievement.joinCommunityServer.name = 完整体验
-+achievement.kill100kEnemies.desc = 摧毁 100,000 个敌方单位
-+achievement.kill100kEnemies.name = 固若金汤
-+achievement.kill1kEnemies.desc = 摧毁 1000 个敌方单位
-+achievement.kill1kEnemies.name = 横扫千军
-+achievement.killEclipseDuo.desc = 使用双管击落日蚀
-+achievement.killEclipseDuo.name = 以小博大
-+achievement.killEnemyPhaseWall.desc = 使用敌方单位反弹的子弹摧毁它
-+achievement.killEnemyPhaseWall.name = 我没有动手
-+achievement.launch100kItems.desc = 总共发射 100,000 个物品
-+achievement.launch100kItems.name = 行星物流中心
-+achievement.launch30Times.desc = 发射 30 次你的核心
-+achievement.launch30Times.name = 核心雨
-+achievement.launchCoreSchematic.desc = 在塞普罗中使用核心蓝图发射
-+achievement.launchCoreSchematic.name = 一键导出
-+achievement.launchItemPad.desc = 使用 发射台
-+achievement.launchItemPad.name = 资源发射！
-+achievement.make10maps.desc = 创建 10 个新地图
-+achievement.make10maps.name = 创世神
-+achievement.negative10kPower.desc = 电网达到-10k/秒
-+achievement.negative10kPower.name = 电力停摆
-+achievement.neoplasiaExplosion.desc = 使瘤变反应堆因瘤液过多而爆炸
-+achievement.neoplasiaExplosion.name = 恶性肿瘤
-+achievement.neoplasmWater.desc = 使瘤液传播到任意含水方块
-+achievement.neoplasmWater.name = 瘤液爆发
-+achievement.nucleusGroundZero.desc = 在零号地区中把核心升级到终代核心
-+achievement.nucleusGroundZero.name = 过度准备
-+achievement.obtainThorium.desc = 解锁 钍
-+achievement.obtainThorium.name = 材料学 II
-+achievement.obtainTitanium.desc = 解锁 钛
-+achievement.obtainTitanium.name = 材料学 I
-+achievement.openConsole.desc = 打开控制台
-+achievement.openConsole.name = 黑客
-+achievement.openWiki.desc = 在游戏内打开 MindustryWiki
-+achievement.openWiki.name = 学者
-+achievement.overheatReactor.desc = 让钍反应堆过热爆炸
-+achievement.overheatReactor.name = 壮观的灾难
-+achievement.pickupT5.desc = 使用 要塞 拾起一个无量级单位
-+achievement.pickupT5.name = 空运
-+achievement.place10kBlocks.desc = 放置 10,000 个方块
-+achievement.place10kBlocks.name = 大肆建造
-+achievement.positive100kPower.desc = 电网达到100k/秒
-+achievement.positive100kPower.name = 构电中心
-+achievement.powerupImpactReactor.desc = 启用一个 冲击反应堆
-+achievement.powerupImpactReactor.name = 点火！
-+achievement.produce50kMin.desc = 在战役模式中达到 50,000 物品每分钟的生产速度
-+achievement.produce50kMin.name = 世界工厂
-+achievement.produce5kMin.desc = 在战役模式中达到 5,000 物品每分钟的生产速度
-+achievement.produce5kMin.name = 大工厂
-+achievement.publishMap.desc = 在创意工坊发布 1 个地图
-+achievement.publishMap.name = 分享
-+achievement.researchAll.desc = 完成你的科技树
-+achievement.researchAll.name = 研究者
-+achievement.researchLogic.desc = 研究微型处理器
-+achievement.researchLogic.name = 哪里有说明书?
-+achievement.researchRouter.desc = 研究 路由器
-+achievement.researchRouter.name = 潘多拉魔盒
-+achievement.routerLanguage.desc = router router router
-+achievement.routerLanguage.name = router
-+achievement.shockWetEnemy.desc = 使用 闪电 攻击一个 湿润 的敌人
-+achievement.shockWetEnemy.name = 还上网吗
-+achievement.shockwaveTowerUse.desc = 使用震爆塔抵消来袭的子弹
-+achievement.shockwaveTowerUse.name = 范围清除
-+achievement.store1milPower.desc = 电网中的储存达到了1M电力
-+achievement.store1milPower.name = 电池海
-+achievement.suicideBomb.desc = 将你的单位装满易爆物品并自爆
-+achievement.suicideBomb.name = 神风特攻队
-+achievement.survive100Waves.desc = 存活 100 波
-+achievement.survive100Waves.name = 顽强抵抗
-+achievement.survive10WavesNoBlocks.desc = 在没有一个方块被建造的情况下占领区块
-+achievement.survive10WavesNoBlocks.name = 孤独的守卫者
-+achievement.unlockAllZones.desc = 在战役模式中解锁全部区块
-+achievement.unlockAllZones.name = 探险家
-+achievement.unlocked = 新成就:
-+achievement.useAccelerator.desc = 启用 行星际加速器
-+achievement.useAccelerator.name = 加速
-+achievement.useAnimdustryEmoji.desc = 在多人聊天中使用:alphachan:表情符号，这取决于你
-+achievement.useAnimdustryEmoji.name = alphaaa实在是太可爱了~
-+achievement.useFlameAmmo.desc = 在任意炮塔内使用 硫 作为弹药
-+achievement.useFlameAmmo.name = 燃起来吧！
-+achievement.win10Attack.desc = 在 10 次攻击模式中获胜
-+achievement.win10Attack.name = 征服者
-+achievement.win10PvP.desc = 在 10 次多人对战模式中获胜
-+achievement.win10PvP.name = 冠军
-+achievements = 统计与成就
-+achievements.browser = 成绩列表
-+
-+sstat.arcBlocksBuilt.name = [cyan]arc[white]——建造方块数
-+sstat.arcBlocksDestroyed.name = [cyan]arc[white]——摧毁方块数
-+sstat.arcMapsPlayed.name =  [cyan]arc[white]——地图游玩数
-+sstat.arcPlayTime.name = [cyan]arc[white]——游戏时间(s)
-+sstat.arcReactorsOverheated.name = [cyan]arc[white]——核爆炸
-+sstat.arcUnitsBuilt.name = [cyan]arc[white]——建造单位数
-+sstat.arcUnitsDestroyed.name = [cyan]arc[white]——摧毁单位数
-+sstat.attacksWon.name = 摧毁的敌军基地
-+sstat.blocksBuilt.name = 建造的建筑
-+sstat.blocksDestroyed.name = 摧毁的方块
-+sstat.bossesDefeated.name = 摧毁的boss
-+sstat.bouldersDeconstructed.name = 拆除的巨石
-+sstat.itemsLaunched.name = 发送的资源
-+sstat.mapsMade.name = 制作的地图
-+sstat.mapsPublished.name = (创意工坊)发布的地图
-+sstat.maxPlayersServer.name = 最多在线玩家
-+sstat.maxProduction.name = 最高每秒生产的资源
-+sstat.maxUnitActive.name = 最多单位数
-+sstat.maxWavesSurvived.name = 最高生存波次
-+sstat.pvpsWon.name = PVP胜利场次
-+sstat.reactorsOverheated.name = 核爆炸
-+sstat.schematicsCreated.name = 制作的蓝图
-+sstat.sectorsControlled.name = 控制区块数
-+sstat.timesLaunched.name = 核心着陆次数
-+sstat.totalCampaignItems.name = 战役总物品数
-+sstat.unitTypesBuilt.name = 建造的单位
-+sstat.unitsBuilt.name = 建造单位数
-+sstat.unitsDestroyed.name = 摧毁的单位
-\ No newline at end of file
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956c4518d72 100644
+index 9bc85ef9d3b45ece271aaea02dce05dc7b634b74..7daf541be6206723289729418c99fb9c96c9e2cd 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-@@ -303,11 +303,12 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -299,11 +299,12 @@ public class SettingsMenuDialog extends BaseDialog{
          sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
@@ -507,7 +286,7 @@ index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956
              if(!ios){
                  game.checkPref("keyboard", false, val -> {
                      control.setInput(val ? new DesktopInput() : new MobileInput());
-@@ -341,11 +342,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -337,11 +338,9 @@ public class SettingsMenuDialog extends BaseDialog{
          game.checkPref("hints", true);
          game.checkPref("logichints", true);
  
@@ -522,7 +301,7 @@ index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956
  
          game.checkPref("doubletapmine", false);
          game.checkPref("commandmodehold", true);
-@@ -367,9 +366,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -363,9 +362,9 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -535,7 +314,7 @@ index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956
  
          int[] lastUiScale = {settings.getInt("uiscale", 100)};
  
-@@ -448,18 +447,18 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -444,18 +443,18 @@ public class SettingsMenuDialog extends BaseDialog{
          graphics.checkPref("destroyedblocks", true);
          graphics.checkPref("blockstatus", false);
          graphics.checkPref("playerchat", true);
@@ -562,10 +341,10 @@ index 03b4643f17a13d2eee68574c6b07f8a4c1fbf9fd..2f82ca3778131a94df4ec6264512e956
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..18d8a8ab03f4dc16b27d9928878884a151e30f15
+index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90d6f47f3a
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,257 @@
 +package mindustryX.features;
 +
 +import arc.struct.*;
@@ -768,7 +547,6 @@ index 0000000000000000000000000000000000000000..18d8a8ab03f4dc16b27d9928878884a1
 +            c.checkPref("showOtherTeamResource", false);
 +            c.checkPref("showOtherTeamState", false);
 +            c.checkPref("playerNeedShooting", false);
-+            c.checkPref("otherCheat", false);
 +        }));
 +        categories.add(new LazySettingsCategory("@settings.specmode", () -> Icon.info, (c) -> {
 +            c.addCategory("moreContent");
