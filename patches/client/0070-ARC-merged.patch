@@ -55,7 +55,6 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
  .../mindustry/arcModule/draw/ARCBuilds.java   |  127 ++
  .../mindustry/arcModule/draw/ARCUnits.java    |  324 ++++
  .../arcModule/toolpack/arcChatPicture.java    |  205 +++
- .../arcModule/toolpack/arcScanMode.java       |  437 ++++++
  .../arcModule/toolpack/arcScanner.java        |  240 +++
  .../arcModule/toolpack/arcWaveSpawner.java    |  240 +++
  .../arcModule/toolpack/picToMindustry.java    |  343 +++++
@@ -85,8 +84,8 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
  .../mindustry/graphics/MinimapRenderer.java   |   51 +-
  .../mindustry/graphics/OverlayRenderer.java   |   84 +-
  core/src/mindustry/input/Binding.java         |   12 +-
- core/src/mindustry/input/DesktopInput.java    |  112 +-
- core/src/mindustry/input/InputHandler.java    |  103 +-
+ core/src/mindustry/input/DesktopInput.java    |  110 +-
+ core/src/mindustry/input/InputHandler.java    |  102 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
  core/src/mindustry/logic/LCanvas.java         |   95 +-
  core/src/mindustry/logic/LExecutor.java       |   14 +-
@@ -100,7 +99,6 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
  .../ui/dialogs/ContentInfoDialog.java         |   51 +-
  .../ui/dialogs/CustomRulesDialog.java         |  115 +-
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   12 +-
- core/src/mindustry/ui/dialogs/JoinDialog.java |   39 +-
  .../mindustry/ui/dialogs/KeybindDialog.java   |    9 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |   12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  117 +-
@@ -124,9 +122,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
  .../blocks/defense/turrets/PowerTurret.java   |   24 +
  .../blocks/defense/turrets/ReloadTurret.java  |   13 +
  .../world/blocks/defense/turrets/Turret.java  |   23 +
- .../blocks/distribution/DirectionBridge.java  |    8 +
- .../world/blocks/distribution/ItemBridge.java |   12 +
- .../world/blocks/distribution/MassDriver.java |   48 +
+ .../world/blocks/distribution/MassDriver.java |   44 +
  .../world/blocks/logic/LogicBlock.java        |   96 +-
  .../world/blocks/logic/MemoryBlock.java       |  107 ++
  .../world/blocks/power/PowerGraph.java        |    3 +
@@ -136,16 +132,16 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
  .../world/blocks/units/Reconstructor.java     |   17 +
  .../world/blocks/units/UnitAssembler.java     |   16 +
  .../world/blocks/units/UnitFactory.java       |   19 +-
- core/src/mindustryX/Hooks.java                |    9 +
+ core/src/mindustryX/Hooks.java                |   13 +
  core/src/mindustryX/features/RenderExt.java   |   10 +
- 90 files changed, 9225 insertions(+), 388 deletions(-)
+ .../features/ui/HudSettingsTable.java         |    5 +-
+ 87 files changed, 8748 insertions(+), 371 deletions(-)
  create mode 100644 core/src/mindustry/arcModule/ARCVars.java
  create mode 100644 core/src/mindustry/arcModule/DrawUtilities.java
  create mode 100644 core/src/mindustry/arcModule/RFuncs.java
  create mode 100644 core/src/mindustry/arcModule/draw/ARCBuilds.java
  create mode 100644 core/src/mindustry/arcModule/draw/ARCUnits.java
  create mode 100644 core/src/mindustry/arcModule/toolpack/arcChatPicture.java
- create mode 100644 core/src/mindustry/arcModule/toolpack/arcScanMode.java
  create mode 100644 core/src/mindustry/arcModule/toolpack/arcScanner.java
  create mode 100644 core/src/mindustry/arcModule/toolpack/arcWaveSpawner.java
  create mode 100644 core/src/mindustry/arcModule/toolpack/picToMindustry.java
@@ -1194,7 +1190,7 @@ index 0000000000000000000000000000000000000000..5464edcffbd8b08e5d942240b2b9cd4d
 +}
 diff --git a/core/src/mindustry/arcModule/toolpack/arcChatPicture.java b/core/src/mindustry/arcModule/toolpack/arcChatPicture.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..42c442b48f7d5f7f0fda60c081738a13ab58a28a
+index 0000000000000000000000000000000000000000..7f785ed2226f68c15c7b686f95bee4a03a6407bd
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/toolpack/arcChatPicture.java
 @@ -0,0 +1,205 @@
@@ -1380,7 +1376,7 @@ index 0000000000000000000000000000000000000000..42c442b48f7d5f7f0fda60c081738a13
 +                    }).size(40);
 +                    tpa.button("[red]x", Styles.cleart, this::clear).size(40);
 +                });
-+            }).visible(() -> mobile || control.input.arcScanMode);
++            }).visible(() -> mobile || ArcScanMode.enabled);
 +            t.addListener(new ElementGestureListener(){
 +                @Override
 +                public void pan(InputEvent event, float x, float y, float deltaX, float deltaY){
@@ -1402,449 +1398,6 @@ index 0000000000000000000000000000000000000000..42c442b48f7d5f7f0fda60c081738a13
 +        }
 +    }
 +
-+}
-diff --git a/core/src/mindustry/arcModule/toolpack/arcScanMode.java b/core/src/mindustry/arcModule/toolpack/arcScanMode.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..04880873c7b0418f1b93384e765800f35897b94d
---- /dev/null
-+++ b/core/src/mindustry/arcModule/toolpack/arcScanMode.java
-@@ -0,0 +1,437 @@
-+package mindustry.arcModule.toolpack;
-+
-+import arc.*;
-+import arc.func.*;
-+import arc.graphics.*;
-+import arc.graphics.g2d.*;
-+import arc.math.*;
-+import arc.math.geom.*;
-+import arc.scene.event.*;
-+import arc.scene.ui.layout.*;
-+import arc.struct.*;
-+import arc.util.*;
-+import mindustry.ai.types.*;
-+import mindustry.gen.*;
-+import mindustry.graphics.*;
-+import mindustry.input.*;
-+import mindustry.type.*;
-+import mindustry.ui.*;
-+import mindustry.world.*;
-+import mindustry.world.blocks.distribution.*;
-+import mindustry.world.blocks.liquid.*;
-+import mindustry.world.blocks.production.*;
-+import mindustry.world.blocks.storage.*;
-+import mindustry.world.meta.*;
-+
-+import static mindustry.Vars.*;
-+import static mindustry.arcModule.RFuncs.*;
-+import static mindustry.arcModule.toolpack.arcWaveSpawner.*;
-+
-+public class arcScanMode{
-+    private static final Table ct = new Table(Styles.none);
-+    private static final Table ctTable = new Table();
-+    /** spawner */
-+    private static final Table spt;
-+    private static final Table sfpt;
-+    private static final Table spawnerTable = new Table();
-+    private static final Table flyerTable = new Table();
-+
-+    /**
-+     * conveyor
-+     */
-+    static final int maxLoop = 200;
-+
-+
-+    static{
-+        {
-+            ct.touchable = Touchable.disabled;
-+            ct.visible = false;
-+            ct.add(ctTable).margin(8f);
-+            ct.pack();
-+            ct.update(() -> ct.visible = ct.visible && state.isPlaying());
-+            Core.scene.add(ct);
-+        }
-+        {
-+            spt = new Table();
-+            spt.touchable = Touchable.disabled;
-+            spt.visible = false;
-+            spt.add(spawnerTable).margin(8f);
-+            spt.pack();
-+            spt.update(() -> spt.visible = spt.visible && state.isPlaying());
-+            Core.scene.add(spt);
-+
-+            sfpt = new Table();
-+            sfpt.touchable = Touchable.disabled;
-+            sfpt.visible = false;
-+            sfpt.add(flyerTable).margin(8f);
-+            sfpt.pack();
-+            sfpt.update(() -> sfpt.visible = sfpt.visible && state.isPlaying());
-+            Core.scene.add(sfpt);
-+        }
-+    }
-+
-+    public static void arcScan(){
-+        detailCursor();
-+        detailSpawner();
-+        //detailTransporter();
-+        detailTransporter2();
-+        findLogic();
-+    }
-+
-+    private static void detailCursor(){
-+        ct.visible = ct.visible && state.isPlaying();
-+        ctTable.clear();
-+        if(!control.input.arcScanMode){
-+            ct.visible = false;
-+            return;
-+        }
-+        ct.setPosition(Core.input.mouseX(), Core.input.mouseY());
-+        ct.visible = true;
-+        ctTable.table(ctt -> {
-+            ctt.add((int)(Core.input.mouseWorldX() / 8) + "," + (int)(Core.input.mouseWorldY() / 8));
-+            ctt.row();
-+            ctt.add("距离：" + (int)(Mathf.dst(player.x, player.y, Core.input.mouseWorldX(), Core.input.mouseWorldY()) / 8));
-+        });
-+    }
-+
-+    private static void detailSpawner(){
-+        spt.visible = spt.visible && state.isPlaying();
-+        sfpt.visible = sfpt.visible && state.isPlaying();
-+        spawnerTable.clear();
-+        flyerTable.clear();
-+        if(!control.input.arcScanMode || arcWave.isEmpty()){
-+            spt.visible = false;
-+            sfpt.visible = false;
-+            return;
-+        }
-+        waveInfo thisWave = arcWave.get(Math.min(state.wave - 1, arcWave.size - 1));
-+        for(Tile tile : spawner.getSpawns()){
-+            if(Mathf.dst(tile.worldx(), tile.worldy(), Core.input.mouseWorldX(), Core.input.mouseWorldY()) < state.rules.dropZoneRadius){
-+                float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
-+                Draw.z(Layer.effect - 2f);
-+                Draw.color(state.rules.waveTeam.color);
-+                Lines.stroke(4f);
-+                //flyer
-+                float flyerAngle = Angles.angle(world.width() / 2f, world.height() / 2f, tile.x, tile.y);
-+                float trns = Math.max(world.width(), world.height()) * Mathf.sqrt2 * tilesize;
-+                float spawnX = Mathf.clamp(world.width() * tilesize / 2f + Angles.trnsx(flyerAngle, trns), 0, world.width() * tilesize);
-+                float spawnY = Mathf.clamp(world.height() * tilesize / 2f + Angles.trnsy(flyerAngle, trns), 0, world.height() * tilesize);
-+
-+                if(hasFlyer){
-+                    Lines.line(tile.worldx(), tile.worldy(), spawnX, spawnY);
-+                    Tmp.v1.set(spawnX - tile.worldx(), spawnY - tile.worldy());
-+                    Tmp.v1.setLength(Tmp.v1.len() * curve);
-+                    Fill.circle(tile.worldx() + Tmp.v1.x, tile.worldy() + Tmp.v1.y, 8f);
-+
-+                    Vec2 v = Core.camera.project(spawnX, spawnY);
-+                    sfpt.setPosition(v.x, v.y);
-+                    sfpt.visible = true;
-+
-+                    flyerTable.table(Styles.black3, tt -> {
-+                        tt.add(calWaveTimer()).row();
-+                        thisWave.specLoc(tile.pos(), group -> group.type.flying);
-+                        tt.add(thisWave.proTable(false));
-+                        tt.row();
-+                        tt.add(thisWave.unitTable(tile.pos(), group -> group.type.flying)).maxWidth(mobile ? 400f : 750f).growX();
-+                    });
-+                }
-+                //ground
-+
-+                if(curve > 0)
-+                    Lines.circle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius * Interp.pow3Out.apply(curve));
-+                Lines.circle(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius);
-+                Lines.arc(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius - 3f, state.wavetime / state.rules.waveSpacing, 90f);
-+                float angle = Mathf.pi / 2 + state.wavetime / state.rules.waveSpacing * 2 * Mathf.pi;
-+                Draw.color(state.rules.waveTeam.color);
-+                Fill.circle(tile.worldx() + state.rules.dropZoneRadius * Mathf.cos(angle), tile.worldy() + state.rules.dropZoneRadius * Mathf.sin(angle), 8f);
-+
-+                Vec2 v = Core.camera.project(tile.worldx(), tile.worldy());
-+                spt.setPosition(v.x, v.y);
-+                spt.visible = true;
-+                spawnerTable.table(Styles.black3, tt -> {
-+                    tt.add(calWaveTimer()).row();
-+                    thisWave.specLoc(tile.pos(), group -> !group.type.flying);
-+                    tt.add(thisWave.proTable(false));
-+                    tt.row();
-+                    tt.add(thisWave.unitTable(tile.pos(), group -> !group.type.flying)).maxWidth(mobile ? 400f : 750f).growX();
-+                });
-+                return;
-+            }
-+        }
-+
-+        spt.visible = false;
-+        spawnerTable.clear();
-+    }
-+
-+    private static void findLogic(){
-+        if(!Core.input.keyTap(Binding.select) || !control.input.arcScanMode) return;
-+        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-+        if(hoverTile != null){
-+            //if the tile has a building, display it
-+            if(hoverTile.build != null && hoverTile.build.displayable() && !hoverTile.build.inFogTo(player.team())
-+            && hoverTile.build.lastLogicController != null){
-+                arcSetCamera(hoverTile.build.lastLogicController);
-+            }
-+        }
-+        Unit u = control.input.selectedUnit();
-+        if(u != null && u.controller() instanceof LogicAI ai && ai.controller != null && ai.controller.isValid()){
-+            arcSetCamera(ai.controller);
-+        }
-+    }
-+
-+    private static boolean canAccept(Block block){
-+        if(block.group == BlockGroup.transportation) return true;
-+        for(Item item : content.items()){
-+            if(block.consumesItem(item) || block.itemCapacity > 0){
-+                return true;
-+            }
-+        }
-+        return false;
-+    }
-+
-+    public static final Seq<Point> path = new Seq<>();
-+
-+    public static void detailTransporter2(){
-+        if(!control.input.arcScanMode) return;
-+
-+        //check tile being hovered over
-+        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-+        if(hoverTile == null || hoverTile.build == null || !hoverTile.build.isDiscovered(player.team())){
-+            return;
-+        }
-+
-+        path.clear();
-+        travelPath(new Point(hoverTile.build, null), arcScanMode::getPrevious);
-+        drawPath(false);
-+
-+        path.clear();
-+        travelPath(new Point(hoverTile.build, null), arcScanMode::getNext);
-+        drawPath(true);
-+    }
-+
-+    public static void travelPath(Point point, Func<Point, Seq<Point>> getNext){
-+        if(point.build == null || path.size > maxLoop) return;
-+        if(!point.trans) return;
-+
-+        Point same = path.find(other -> point.build == other.build && (other.from == null || point.from.build == other.from.build));
-+        if(same != null){
-+            if(point.conduit >= same.conduit) return;
-+            else path.replace(same, point);
-+        }else path.add(point);
-+
-+        getNext.get(point).each(p -> travelPath(p, getNext));
-+    }
-+
-+    public static Seq<Point> getPrevious(Point point){
-+        Building build = point.build;
-+        if(build == null) return new Seq<>();
-+        Seq<Point> previous = new Seq<>();
-+        //质驱
-+        if(build instanceof MassDriver.MassDriverBuild){
-+            //暂时搞不定
-+        }//桥
-+        else if(build instanceof ItemBridge.ItemBridgeBuild bridge && !(build instanceof LiquidBridge.LiquidBridgeBuild)){
-+            bridge.incoming.each(pos -> previous.add(new Point(world.tile(pos).build, point)));
-+        }//导管桥
-+        else if(build instanceof DirectionBridge.DirectionBridgeBuild bridge){
-+            for(Building b : bridge.occupied){
-+                if(b != null){
-+                    previous.add(new Point(b, point));
-+                }
-+            }
-+        }
-+        for(Building b : build.proximity){
-+            Point from = new Point(b, b.relativeTo(build), b.block.instantTransfer ? point.conduit + 1 : 0, point);
-+            if(canInput(point, b, true) && canOutput(from, build, false)){
-+                previous.add(from);
-+            }else if(canOutput(from, build, false)){
-+                from.trans = false;
-+                previous.add(from);
-+            }
-+        }
-+        return previous;
-+    }
-+
-+    public static Seq<Point> getNext(Point point){
-+        Building build = point.build;
-+        if(build == null) return new Seq<>();
-+        Seq<Point> next = new Seq<>();
-+        //质驱
-+        if(build instanceof MassDriver.MassDriverBuild massDriverBuild){
-+            if(massDriverBuild.arcLinkValid()){
-+                next.add(new Point(world.build(massDriverBuild.link), point));
-+            }
-+        }//桥
-+        else if(build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild && !(build instanceof LiquidBridge.LiquidBridgeBuild)){
-+            if(itemBridgeBuild.arcLinkValid()){
-+                next.add(new Point(world.build(itemBridgeBuild.link), point));
-+            }
-+        }//导管桥
-+        else if(build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild){
-+            DirectionBridge.DirectionBridgeBuild link = directionBridgeBuild.findLink();
-+            if(link != null){
-+                next.add(new Point(link, point));
-+            }
-+        }
-+
-+        for(Building b : build.proximity){
-+            Point to = new Point(b, build.relativeTo(b), b.block.instantTransfer ? point.conduit + 1 : 0, point);
-+            if(canInput(to, build, false) && canOutput(point, b, true)){
-+                next.add(to);
-+            }else if(canInput(to, build, false)){
-+                to.trans = false;
-+                next.add(to);
-+            }
-+        }
-+        return next;
-+    }
-+
-+    public static boolean canInput(Point point, Building from, boolean active){
-+        Building build = point.build;
-+        if(build == null || from == null) return false;
-+        if(from.block.instantTransfer && point.conduit > 2) return false;
-+        //装甲传送带
-+        if(build instanceof ArmoredConveyor.ArmoredConveyorBuild){
-+            return from != build.front() && (from instanceof Conveyor.ConveyorBuild || from == build.back());
-+        }//装甲导管
-+        else if(build instanceof Duct.DuctBuild ductBuild && ((Duct)ductBuild.block).armored){
-+            return from != build.front() && (from.block.isDuct || from == build.back());
-+        }//传送带和导管
-+        else if(build instanceof Conveyor.ConveyorBuild || build instanceof Duct.DuctBuild){
-+            return from != build.front();
-+        }//塑钢带
-+        else if(build instanceof StackConveyor.StackConveyorBuild stackConveyorBuild){
-+            return switch(stackConveyorBuild.state){
-+                case 2 -> from == build.back() && from instanceof StackConveyor.StackConveyorBuild;
-+                case 1 -> from != build.front();
-+                default -> from instanceof StackConveyor.StackConveyorBuild;
-+            };
-+        }//交叉器
-+        else if(build instanceof Junction.JunctionBuild){
-+            return point.facing == -1 || from.relativeTo(build) == point.facing;
-+        }//分类
-+        else if(build instanceof Sorter.SorterBuild sorterBuild){
-+            return !active || build.relativeTo(from) != point.facing && (sorterBuild.sortItem != null || (from.relativeTo(build) == point.facing) == ((Sorter)sorterBuild.block).invert);
-+        }//溢流
-+        else if(build instanceof OverflowGate.OverflowGateBuild){
-+            return !active || build.relativeTo(from) != point.facing;
-+        }//导管路由器与导管溢流
-+        else if(build instanceof DuctRouter.DuctRouterBuild || build instanceof OverflowDuct.OverflowDuctBuild){
-+            return from == build.back();
-+        }//桥
-+        else if(build instanceof ItemBridge.ItemBridgeBuild itemBridgeBuild){
-+            return itemBridgeBuild.arcCheckAccept(from);
-+        }//导管桥
-+        else if(build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild){
-+            return directionBridgeBuild.arcCheckAccept(from);
-+        }else if(build instanceof Router.RouterBuild){
-+            return true;
-+        }else if(canAccept(build.block)){
-+            point.trans = false;
-+            return true;
-+        }
-+        return false;
-+    }
-+
-+    public static boolean canOutput(Point point, Building to, boolean active){
-+        Building build = point.build;
-+        if(build == null || to == null) return false;
-+        if(to.block.instantTransfer && point.conduit > 2) return false;
-+        //传送带和导管
-+        if(build instanceof Conveyor.ConveyorBuild || build instanceof Duct.DuctBuild){
-+            return to == build.front();
-+        }//塑钢带
-+        else if(build instanceof StackConveyor.StackConveyorBuild stackConveyor){
-+            if(stackConveyor.state == 2 && ((StackConveyor)stackConveyor.block).outputRouter){
-+                return to != build.back();
-+            }
-+            return to == build.front();
-+        }//交叉器
-+        else if(build instanceof Junction.JunctionBuild){
-+            return point.facing == -1 || build.relativeTo(to) == point.facing;
-+        }//分类
-+        else if(build instanceof Sorter.SorterBuild sorterBuild){
-+            return !active || to.relativeTo(build) != point.facing && (sorterBuild.sortItem != null || (build.relativeTo(to) == point.facing) == ((Sorter)sorterBuild.block).invert);
-+        }//溢流
-+        else if(build instanceof OverflowGate.OverflowGateBuild){
-+            return !active || to.relativeTo(build) != point.facing;
-+        }//导管路由器与导管溢流
-+        else if(build instanceof DuctRouter.DuctRouterBuild || build instanceof OverflowDuct.OverflowDuctBuild){
-+            return to != build.back();
-+        }//桥
-+        else if(build instanceof ItemBridge.ItemBridgeBuild bridge){
-+            return bridge.arcCheckDump(to);
-+        }//导管桥
-+        else if(build instanceof DirectionBridge.DirectionBridgeBuild directionBridgeBuild){
-+            DirectionBridge.DirectionBridgeBuild link = directionBridgeBuild.findLink();
-+            return link == null && build.relativeTo(to) == build.rotation;
-+        }else if(build instanceof Router.RouterBuild || build instanceof Unloader.UnloaderBuild){
-+            return true;
-+        }else if(build instanceof GenericCrafter.GenericCrafterBuild){
-+            point.trans = false;
-+            return true;
-+        }
-+        return false;
-+    }
-+
-+    public static void drawPath(boolean forward){
-+        Color mainColor = forward ? Color.valueOf("80ff00") : Color.valueOf("ff8000");
-+        Color highlightColor = forward ? Color.valueOf("00cc00") : Color.red;
-+        path.each(p -> {
-+            if(p.from != null && p.trans){
-+                float x1 = p.build.tile.drawx(), y1 = p.build.tile.drawy();
-+                float x2 = p.from.build.tile.drawx(), y2 = p.from.build.tile.drawy();
-+
-+                Draw.color(mainColor);
-+                Draw.color(Tmp.c1.set(mainColor).a(Mathf.absin(4f, 1f) * 0.4f + 0.6f));
-+                Lines.stroke(1.5f);
-+                Lines.line(x1, y1, x2, y2);
-+            }else{
-+                Drawf.selected(p.build, Tmp.c1.set(highlightColor).a(Mathf.absin(4f, 1f) * 0.5f + 0.5f));
-+            }
-+            Draw.reset();
-+        });
-+        path.each(p -> {
-+            if(p.from != null && p.trans){
-+                float x1 = p.build.tile.drawx(), y1 = p.build.tile.drawy();
-+                float x2 = p.from.build.tile.drawx(), y2 = p.from.build.tile.drawy();
-+                float dst = Mathf.dst(x1, y1, x2, y2);
-+
-+                Draw.color(highlightColor);
-+                Fill.circle(x1, y1, 1.8f);
-+
-+                if(dst > tilesize){
-+                    Draw.color(highlightColor);
-+                    if(forward){
-+                        Drawf.simpleArrow(x2, y2, x1, y1, dst / 2, 3f);
-+                    }else{
-+                        Drawf.simpleArrow(x1, y1, x2, y2, dst / 2, 3f);
-+                    }
-+                }
-+            }
-+            Draw.reset();
-+        });
-+    }
-+
-+    public static class Point{
-+        public final Building build;
-+        public byte facing = -1;
-+        public int conduit = 0;
-+        //用于记录端点方块
-+        public boolean trans = true;
-+
-+        public final Point from;
-+
-+        public Point(Building build, Point from){
-+            this.build = build;
-+            this.from = from;
-+        }
-+
-+        public Point(Building build, byte facing, int conduit, Point from){
-+            this.build = build;
-+            this.facing = facing;
-+            this.conduit = conduit;
-+            this.from = from;
-+        }
-+    }
 +}
 diff --git a/core/src/mindustry/arcModule/toolpack/arcScanner.java b/core/src/mindustry/arcModule/toolpack/arcScanner.java
 new file mode 100644
@@ -7194,7 +6747,7 @@ index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e
          float dy = (Core.camera.position.y / tilesize);
          dx = Mathf.clamp(dx, sz, world.width() - sz);
 diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
-index cd452ca24acfa985edb46f995f9a880da0bc3dbd..13edabcdd60cce831fc89d1c842bcf4addec359c 100644
+index cd452ca24acfa985edb46f995f9a880da0bc3dbd..0e78a3c3583fb57a9f949a0426a2af3f0437c1c1 100644
 --- a/core/src/mindustry/graphics/OverlayRenderer.java
 +++ b/core/src/mindustry/graphics/OverlayRenderer.java
 @@ -9,13 +9,13 @@ import arc.struct.*;
@@ -7336,7 +6889,7 @@ index cd452ca24acfa985edb46f995f9a880da0bc3dbd..13edabcdd60cce831fc89d1c842bcf4a
          }
 +
 +        arcScanner.drawScanner();
-+        arcScanMode.arcScan();
++        ArcScanMode.draw();
 +        if(player.unit() instanceof BlockUnitc unitc){
 +            unitc.tile().drawSelect();
 +        }
@@ -7369,7 +6922,7 @@ index 41167e477c4705288195bc159995d5a19a9fb52b..142157357a2494c1ecc8963d0257ca05
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b8f9aa199 100644
+index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a55fddc85f 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -13,17 +13,25 @@ import arc.scene.ui.layout.*;
@@ -7430,16 +6983,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
          }
  
          if(!locked){
-@@ -265,6 +282,8 @@ public class DesktopInput extends InputHandler{
-             commandMode = false;
-         }
- 
-+        if(input.keyTap(Binding.arcScanMode)) arcScanMode = !arcScanMode;
-+
-         //validate commanding units
-         selectedUnits.removeAll(u -> !u.isCommandable() || !u.isValid());
- 
-@@ -403,7 +422,8 @@ public class DesktopInput extends InputHandler{
+@@ -403,7 +420,8 @@ public class DesktopInput extends InputHandler{
              }
          }
  
@@ -7449,7 +6993,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
              cursorType = SystemCursor.arrow;
              if(!Core.scene.hasMouse()){
                  Core.graphics.cursor(cursorType);
-@@ -477,7 +497,7 @@ public class DesktopInput extends InputHandler{
+@@ -477,7 +495,7 @@ public class DesktopInput extends InputHandler{
                  cursorType = SystemCursor.hand;
              }
  
@@ -7458,7 +7002,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
                  cursorType = ui.unloadCursor;
              }
  
-@@ -633,6 +653,10 @@ public class DesktopInput extends InputHandler{
+@@ -633,6 +651,10 @@ public class DesktopInput extends InputHandler{
              }
          }
  
@@ -7469,7 +7013,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
          if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
              updateLine(selectX, selectY);
              lastLineX = cursorX;
-@@ -763,6 +787,20 @@ public class DesktopInput extends InputHandler{
+@@ -763,6 +785,20 @@ public class DesktopInput extends InputHandler{
                  Core.settings.put("lasersopacity", 0);
              }
          }
@@ -7490,7 +7034,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
      }
  
      @Override
-@@ -833,7 +871,7 @@ public class DesktopInput extends InputHandler{
+@@ -833,7 +869,7 @@ public class DesktopInput extends InputHandler{
      }
  
      protected void updateMovement(Unit unit){
@@ -7499,7 +7043,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
  
          float speed = unit.speed();
          float xa = Core.input.axis(Binding.move_x);
-@@ -845,23 +883,69 @@ public class DesktopInput extends InputHandler{
+@@ -845,23 +881,69 @@ public class DesktopInput extends InputHandler{
              movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);
          }
  
@@ -7580,7 +7124,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..f75190348b93dda3b86b2d36f27d8c0b
          //update payload input
          if(unit instanceof Payloadc){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664aae152af 100644
+index 6ad644550ad940c9be203835cc83e635ffa486a0..197d1ca1f3b5e44d6e49a25dcb0fce96ec44c0c6 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -17,6 +17,7 @@ import mindustry.*;
@@ -7608,16 +7152,15 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      final static Binding[] controlGroupBindings = {
      Binding.block_select_01,
      Binding.block_select_02,
-@@ -103,6 +107,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -103,6 +107,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      /** Groups of units saved to different hotkeys */
      public IntSeq[] controlGroups = new IntSeq[controlGroupBindings.length];
  
 +    public Rect lastSelection = new Rect();
-+    public boolean arcScanMode = false;
      private Seq<BuildPlan> plansOut = new Seq<>(BuildPlan.class);
      private QuadTree<BuildPlan> playerPlanTree = new QuadTree<>(new Rect());
  
-@@ -262,7 +268,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -262,7 +267,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  }
  
                  unit.lastCommanded = player.coloredName();
@@ -7626,7 +7169,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
                  //remove when other player command
                  if(!headless && player != Vars.player){
                      control.input.selectedUnits.remove(unit);
-@@ -495,7 +501,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -495,7 +500,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build == null) return;
  
          if(net.server() && (!Units.canInteract(player, build) ||
@@ -7635,7 +7178,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              throw new ValidateException(player, "Player cannot rotate a block.");
          }
  
-@@ -514,7 +520,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -514,7 +519,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build == null) return;
  
          if(net.server() && (!Units.canInteract(player, build) ||
@@ -7644,7 +7187,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
  
              if(player.con != null){
                  var packet = new TileConfigCallPacket(); //undo the config on the client
-@@ -524,7 +530,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -524,7 +529,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  player.con.send(packet, true);
              }
  
@@ -7653,7 +7196,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
          }
          build.configured(player == null || player.dead() ? null : player.unit(), value);
          Events.fire(new ConfigEvent(build, player, value));
-@@ -548,9 +554,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -548,9 +553,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              throw new ValidateException(player, "Player cannot control a building.");
          }
  
@@ -7664,7 +7207,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              build.onControlSelect(player.unit());
  
              if(!before.dead && before.spawnedByCore && !before.isPlayer()){
-@@ -747,6 +752,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -747,6 +751,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  }
              }
          }
@@ -7675,7 +7218,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      }
  
      public void checkUnit(){
-@@ -896,6 +905,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -896,6 +904,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                      attack = selectedEnemyUnit(target.x, target.y);
                  }
  
@@ -7684,7 +7227,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
                  int[] ids = new int[selectedUnits.size];
                  for(int i = 0; i < ids.length; i++){
                      ids[i] = selectedUnits.get(i).id;
-@@ -1019,10 +1030,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1019,10 +1029,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  Drawf.selected(blocker, Pal.remove);
                  Tmp.v1.set(cursorX, cursorY).scl(tilesize).add(block.offset, block.offset).sub(blocker).scl(-1f).nor();
                  Drawf.dashLineDst(Pal.remove,
@@ -7699,7 +7242,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
                  );
              }
          }
-@@ -1069,6 +1080,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1069,6 +1079,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          });
      }
  
@@ -7711,7 +7254,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      public void rotatePlans(Seq<BuildPlan> plans, int direction){
          int ox = schemOriginX(), oy = schemOriginY();
  
-@@ -1102,6 +1118,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1102,6 +1117,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              plan.x = World.toTile(wx - plan.block.offset) + ox;
              plan.y = World.toTile(wy - plan.block.offset) + oy;
              plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));
@@ -7731,7 +7274,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
          });
      }
  
-@@ -1120,7 +1149,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1120,7 +1148,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              }
  
              plan.pointConfig(p -> {
@@ -7740,7 +7283,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
                  int nvalue = -(x ? p.x : p.y);
                  if(x){
                      plan.originalX = -(plan.originalX - corigin) + corigin;
-@@ -1133,6 +1162,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1133,6 +1161,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              //flip rotation
              plan.block.flipRotation(plan, x);
@@ -7755,7 +7298,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
          });
      }
  
-@@ -1257,12 +1294,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1257,12 +1293,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength, Color col1, Color col2){
          NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
  
@@ -7775,7 +7318,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      }
  
      protected void flushSelectPlans(Seq<BuildPlan> plans){
-@@ -1448,7 +1492,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1448,7 +1491,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build.block.commandable && commandMode){
              //TODO handled in tap.
              consumed = true;
@@ -7784,7 +7327,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              consumed = true;
              if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
              //alternatively, the current selected block can 'agree' to switch config tiles
-@@ -1477,7 +1521,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1477,7 +1520,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          //consume tap event if necessary
          if(build.interactable(player.team()) && build.block.consumesTap){
              consumed = true;
@@ -7793,7 +7336,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              if(build.block.hasItems && build.items.total() > 0){
                  inv.showFor(build);
                  consumed = true;
-@@ -1494,7 +1538,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1494,7 +1537,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      /** Tries to select the player to drop off items, returns true if successful. */
      boolean tryTapPlayer(float x, float y){
@@ -7802,7 +7345,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              droppingItem = true;
              return true;
          }
-@@ -1533,9 +1577,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1533,9 +1576,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      boolean canMine(Tile tile){
          return !Core.scene.hasMouse()
@@ -7815,7 +7358,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      }
  
      /** Returns the tile at the specified MOUSE coordinates. */
-@@ -1615,7 +1659,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1615,7 +1658,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){
          Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
@@ -7824,7 +7367,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              return build;
          }
          return null;
-@@ -1625,8 +1669,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1625,8 +1668,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          var tree = player.team().data().tree();
          tmpUnits.clear();
          float rad = 4f;
@@ -7835,7 +7378,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      }
  
      public @Nullable Unit selectedEnemyUnit(float x, float y){
-@@ -1640,14 +1684,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1640,14 +1683,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              }
          }
  
@@ -7852,7 +7395,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
          tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
          return tmpUnits;
      }
-@@ -1701,8 +1745,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1701,8 +1744,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public boolean canShoot(){
@@ -7865,7 +7408,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
      }
  
      public boolean onConfigurable(){
-@@ -1718,7 +1765,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1718,7 +1764,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public void tryDropItems(@Nullable Building build, float x, float y){
@@ -7874,7 +7417,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              droppingItem = false;
              return;
          }
-@@ -1728,7 +1775,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1728,7 +1774,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          ItemStack stack = player.unit().stack;
  
          if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
@@ -7883,7 +7426,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
              if(!(state.rules.onlyDepositCore && !(build instanceof CoreBuild))){
                  Call.transferInventory(player, build);
              }
-@@ -1798,8 +1845,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1798,8 +1844,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      public void drawArrow(Block block, int x, int y, int rotation, boolean valid){
          float trns = (block.size / 2) * tilesize;
          int dx = Geometry.d4(rotation).x, dy = Geometry.d4(rotation).y;
@@ -7894,7 +7437,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..3e758eb466d19851f5402df883a6d664
  
          Draw.color(!valid ? Pal.removeBack : Pal.accentBack);
          TextureRegion regionArrow = Core.atlas.find("place-arrow");
-@@ -1837,7 +1884,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1837,7 +1883,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          var end = world.build(endX, endY);
          if(diagonal && (block == null || block.allowDiagonal)){
              if(block != null && start instanceof ChainedBuilding && end instanceof ChainedBuilding
@@ -9319,130 +8862,6 @@ index 9ef878c280d567340d9fc4753d310b73be3397a2..41f4c1d4d2d578ac16604c3224d25c17
 +        return true;
      }
  }
-diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index ed8e57c5b3e74c1ada08e8941a1e43a62a724a05..cedf5d7cb4b1c657fae8ac7428bef2b28cf87ac2 100644
---- a/core/src/mindustry/ui/dialogs/JoinDialog.java
-+++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
-@@ -63,6 +63,7 @@ public class JoinDialog extends BaseDialog{
-         buttons.add().width(Float.MIN_NORMAL).pad(0);
- 
-         addCloseButton(mobile ? 190f : 210f);
-+
-         buttons.button("@server.add", Icon.add, () -> {
-             renaming = null;
-             add.show();
-@@ -134,7 +135,7 @@ public class JoinDialog extends BaseDialog{
-     }
- 
-     void refreshAll(){
--        refreshes++;
-+        refreshes ++;
- 
-         refreshLocal();
-         refreshRemote();
-@@ -150,6 +151,7 @@ public class JoinDialog extends BaseDialog{
- 
-             Button button = buttons[0] = remote.button(b -> {}, style, () -> {
-                 if(!buttons[0].childrenPressed()){
-+                    if(net.client()) netClient.disconnectQuietly();
-                     if(server.lastHost != null){
-                         Events.fire(new ClientPreConnectEvent(server.lastHost));
-                         safeConnect(server.lastHost.address, server.lastHost.port, server.lastHost.version);
-@@ -284,7 +286,7 @@ public class JoinDialog extends BaseDialog{
-                 for(int i = 0; i < host.description.length(); i++){
-                     char c = host.description.charAt(i);
-                     if(c == '\n'){
--                        count++;
-+                        count ++;
-                         if(count < 3) result.append(c);
-                     }else{
-                         result.append(c);
-@@ -295,7 +297,7 @@ public class JoinDialog extends BaseDialog{
-             }
- 
-             t.add("[lightgray]" + (Core.bundle.format("players" + (host.players == 1 && host.playerLimit <= 0 ? ".single" : ""),
--            (host.players == 0 ? "[lightgray]" : "[accent]") + host.players + (host.playerLimit > 0 ? "[lightgray]/[accent]" + host.playerLimit : "") + "[lightgray]"))).left().row();
-+                (host.players == 0 ? "[lightgray]" : "[accent]") + host.players + (host.playerLimit > 0 ? "[lightgray]/[accent]" + host.playerLimit : "")+ "[lightgray]"))).left().row();
- 
-             t.add("[lightgray]" + Core.bundle.format("save.map", host.mapname) + "[lightgray] / " + (host.modeName == null ? host.mode.toString() : host.modeName)).width(twidth).left().ellipsis(true).row();
- 
-@@ -358,7 +360,7 @@ public class JoinDialog extends BaseDialog{
-                     showHidden = !showHidden;
-                     refreshCommunity();
-                 }).update(i -> i.getStyle().imageUp = (showHidden ? Icon.eyeSmall : Icon.eyeOffSmall))
--                .size(40f).right().padRight(3).tooltip("@servers.showhidden");
-+                    .size(40f).right().padRight(3).tooltip("@servers.showhidden");
-             }
- 
-             name.button(Icon.downOpen, Styles.emptyi, () -> {
-@@ -391,13 +393,13 @@ public class JoinDialog extends BaseDialog{
-         global.table(t -> {
-             t.add("@search").padRight(10);
-             t.field(serverSearch, text ->
--            serverSearch = text.trim().replaceAll(" +", " ").toLowerCase()
-+                serverSearch = text.trim().replaceAll(" +", " ").toLowerCase()
-             ).grow().pad(8).get().keyDown(KeyCode.enter, this::refreshCommunity);
-             t.button(Icon.zoom, Styles.emptyi, this::refreshCommunity).size(54f);
-         }).width((targetWidth() + 5f) * columns()).height(70f).pad(4).row();
- 
--        for(int i = 0; i < defaultServers.size; i++){
--            ServerGroup group = defaultServers.get((i + defaultServers.size / 2) % defaultServers.size);
-+        for(int i = 0; i < defaultServers.size; i ++){
-+            ServerGroup group = defaultServers.get((i + defaultServers.size/2) % defaultServers.size);
-             boolean hidden = group.hidden();
-             if(hidden && !showHidden){
-                 continue;
-@@ -416,10 +418,10 @@ public class JoinDialog extends BaseDialog{
-                     if(refreshes != cur) return;
- 
-                     if(!serverSearch.isEmpty() && !(group.name.toLowerCase().contains(serverSearch)
--                    || res.name.toLowerCase().contains(serverSearch)
--                    || res.description.toLowerCase().contains(serverSearch)
--                    || res.mapname.toLowerCase().contains(serverSearch)
--                    || (res.modeName != null && res.modeName.toLowerCase().contains(serverSearch)))) return;
-+                        || res.name.toLowerCase().contains(serverSearch)
-+                        || res.description.toLowerCase().contains(serverSearch)
-+                        || res.mapname.toLowerCase().contains(serverSearch)
-+                        || (res.modeName != null && res.modeName.toLowerCase().contains(serverSearch)))) return;
- 
-                     if(groupTable[0] == null){
-                         addHeader(groupTable, group, hidden, true);
-@@ -455,11 +457,11 @@ public class JoinDialog extends BaseDialog{
-             //button for showing/hiding servers
-             ImageButton[] image = {null};
-             image[0] = head.button(hidden ? Icon.eyeOffSmall : Icon.eyeSmall, Styles.grayi, () -> {
--                group.setHidden(!group.hidden());
--                image[0].getStyle().imageUp = group.hidden() ? Icon.eyeOffSmall : Icon.eyeSmall;
--                if(group.hidden() && !showHidden){
--                    groupTable[0].remove();
--                }
-+               group.setHidden(!group.hidden());
-+               image[0].getStyle().imageUp = group.hidden() ? Icon.eyeOffSmall : Icon.eyeSmall;
-+               if(group.hidden() && !showHidden){
-+                   groupTable[0].remove();
-+               }
-             }).size(40f).get();
-             image[0].addListener(new Tooltip(t -> t.background(Styles.black6).margin(4).label(() -> !group.hidden() ? "@server.shown" : "@server.hidden")));
-         }).width(targetWidth() * columns()).padBottom(-2).row();
-@@ -588,8 +590,7 @@ public class JoinDialog extends BaseDialog{
-                 ping.cancel();
-                 ping = null;
-                 connect(lastIp, lastPort);
--            }, exception -> {
--            });
-+            }, exception -> {});
-         }, 1, 1);
- 
-         ui.loadfrag.setButton(() -> {
-@@ -603,7 +604,7 @@ public class JoinDialog extends BaseDialog{
-     void safeConnect(String ip, int port, int version){
-         if(version != Version.build && Version.build != -1 && version != -1){
-             ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
--            Core.bundle.format("server.versions", Version.build, version));
-+                Core.bundle.format("server.versions", Version.build, version));
-         }else{
-             connect(ip, port);
-         }
 diff --git a/core/src/mindustry/ui/dialogs/KeybindDialog.java b/core/src/mindustry/ui/dialogs/KeybindDialog.java
 index 1f9ead9a31e94f8a4380c53889d31b229904ecc9..ec6ae607dffd5a4484c4e5d51a042e8b1d6051fe 100644
 --- a/core/src/mindustry/ui/dialogs/KeybindDialog.java
@@ -12539,48 +11958,8 @@ index f6866128bc39fdbf40d8e1b853ecc533ab5b9880..7698efa12152546dd679e93a3afa2a63
      }
  
      public static class BulletEntry{
-diff --git a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-index 2c0077cc99557c80f49d0cf496c92309b31e482e..c35e132dabe255b98ebb264e5612ad47a38801e2 100644
---- a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-+++ b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-@@ -215,5 +215,13 @@ public class DirectionBridge extends Block{
-             }
-             return null;
-         }
-+
-+        public boolean arcCheckAccept(Building source) {
-+            //only accept if there's an output point.
-+            if(findLink() == null) return false;
-+
-+            int rel = this.relativeToEdge(source.tile);
-+            return rel != rotation && occupied[(rel + 2) % 4] == null;
-+        }
-     }
- }
-diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 304cbed8fd5b3149816fc1fbcd1fe7715befecaa..81299269eca7b02ad70944078ffa5fbf4b05f71f 100644
---- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-+++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-@@ -521,5 +521,17 @@ public class ItemBridge extends Block{
-                 wasMoved = moved = read.bool();
-             }
-         }
-+
-+        public boolean arcLinkValid() {
-+            return linkValid(this.tile, world.tile(link));
-+        }
-+
-+        public boolean arcCheckDump(Building to){
-+            return checkDump(to);
-+        }
-+
-+        public boolean arcCheckAccept(Building source) {
-+            return checkAccept(source, world.tile(link));
-+        }
-     }
- }
 diff --git a/core/src/mindustry/world/blocks/distribution/MassDriver.java b/core/src/mindustry/world/blocks/distribution/MassDriver.java
-index 636641924280a51603b22a7b5d777a3100d21b24..63bb7cb893d39237ad37486605280afe90f25989 100644
+index 196b343e60cc046a270cc8f02c906d7276252fda..4c99a62c784f1c5fe5de62e70988cc9f292f05b9 100644
 --- a/core/src/mindustry/world/blocks/distribution/MassDriver.java
 +++ b/core/src/mindustry/world/blocks/distribution/MassDriver.java
 @@ -1,6 +1,8 @@
@@ -12628,18 +12007,7 @@ index 636641924280a51603b22a7b5d777a3100d21b24..63bb7cb893d39237ad37486605280afe
          }
  
          @Override
-@@ -329,6 +360,10 @@ public class MassDriver extends Block{
-             return other instanceof MassDriverBuild entity && other.isValid() && other.efficiency > 0 && entity.block == block && entity.link == pos() && within(other, range);
-         }
- 
-+        public boolean arcLinkValid(){
-+            return linkValid();
-+        }
-+
-         protected boolean linkValid(){
-             if(link == -1) return false;
-             return world.build(this.link) instanceof MassDriverBuild other && other.block == block && other.team == team && within(other, range);
-@@ -364,4 +399,17 @@ public class MassDriver extends Block{
+@@ -367,4 +398,17 @@ public class MassDriver extends Block{
  
          public static final DriverState[] all = values();
      }
@@ -13259,18 +12627,19 @@ index 4a506b9b82f59ba7e34c6136b4cb07e40761448f..231316c852178af96658a6574b50e3b1
          public void draw(){
              Draw.rect(region, x, y);
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 9f35d0b5260b6db0fb76c9574741301e172e3060..16738ac686198d861a42db4dded73fd3c8f8ac92 100644
+index 9f35d0b5260b6db0fb76c9574741301e172e3060..88bf5c81ffadf870432a844741e2df848f6f3357 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -3,6 +3,7 @@ package mindustryX;
+@@ -3,6 +3,8 @@ package mindustryX;
  import arc.*;
  import arc.util.*;
  import mindustry.*;
 +import mindustry.arcModule.*;
++import mindustry.arcModule.toolpack.*;
  import mindustry.gen.*;
  import mindustry.input.*;
  import mindustryX.features.Settings;
-@@ -54,6 +55,14 @@ public class Hooks implements ApplicationListener{
+@@ -54,6 +56,14 @@ public class Hooks implements ApplicationListener{
          if(message == null) return null;
          if(Vars.ui != null){
              if(MarkerType.resolveMessage(message)) return message;
@@ -13285,6 +12654,15 @@ index 9f35d0b5260b6db0fb76c9574741301e172e3060..16738ac686198d861a42db4dded73fd3
          }
          return message;
      }
+@@ -77,5 +87,8 @@ public class Hooks implements ApplicationListener{
+         if(input.keyTap(Binding.toggle_block_render)){
+             settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+         }
++        if(input.keyTap(Binding.arcScanMode)){
++            ArcScanMode.enabled = !ArcScanMode.enabled;
++        }
+     }
+ }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
 index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..e617e43034ffe5648e2ea4271ab67ed6208715c4 100644
 --- a/core/src/mindustryX/features/RenderExt.java
@@ -13319,3 +12697,26 @@ index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..e617e43034ffe5648e2ea4271ab67ed6
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
          placementEffect.lifetime = lifetime;
          placementEffect.at(x, y, range, color);
+diff --git a/core/src/mindustryX/features/ui/HudSettingsTable.java b/core/src/mindustryX/features/ui/HudSettingsTable.java
+index 38e307e1898596b82ccd0c9ad84f12181b1a7721..ec58de885ab86a2ed859d9390938e8707d166977 100644
+--- a/core/src/mindustryX/features/ui/HudSettingsTable.java
++++ b/core/src/mindustryX/features/ui/HudSettingsTable.java
+@@ -7,6 +7,7 @@ import arc.scene.event.*;
+ import arc.scene.ui.*;
+ import arc.scene.ui.layout.*;
+ import arc.struct.*;
++import mindustry.arcModule.toolpack.*;
+ import mindustry.content.*;
+ import mindustry.game.*;
+ import mindustry.gen.*;
+@@ -143,8 +144,8 @@ public class HudSettingsTable extends ToolTableBase{
+                 if(settings.getBool("developMode"))
+                     t.button(StatusEffects.burning.emoji(), Styles.flatTogglet, () -> state.rules.fire = !state.rules.fire)
+                     .checked(a -> state.rules.fire).size(30, 30).tooltip("太燃了");
+-                t.button("[cyan]扫", Styles.flatTogglet, () -> control.input.arcScanMode = !control.input.arcScanMode)
+-                .checked(a -> control.input.arcScanMode).size(30, 30).tooltip("扫描模式");
++                t.button("[cyan]扫", Styles.flatTogglet, () -> ArcScanMode.enabled = !ArcScanMode.enabled)
++                .checked(a -> ArcScanMode.enabled).size(30, 30).tooltip("扫描模式");
+ 
+             }).left();
+             sp.row();
