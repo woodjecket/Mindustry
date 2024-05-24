@@ -78,7 +78,7 @@ index 423462318a31075f047a39d07caee50e031c1390..89b28401796d1d560330328e4bea54f2
  
              Draw.color(baseColor, phaseColor, phaseHeat);
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 1efdd1cb3db6413387c4f19cb4a8fe7d03569039..09d1447047fb8d87423d5bf10bee7bdf4ce8874e 100644
+index 1a8ced7fce69797f516d0ae48c2f6a856519debe..77a3c165a4fcaef06f51258271ab887cebd3c55d 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -12,6 +12,7 @@ public class RenderExt{
@@ -88,7 +88,7 @@ index 1efdd1cb3db6413387c4f19cb4a8fe7d03569039..09d1447047fb8d87423d5bf10bee7bdf
 +    public static float overdriveZoneTransparency;
  
      public static void init(){
-         Events.run(Trigger.update, () -> {
+         Events.run(Trigger.preDraw, () -> {
 @@ -21,6 +22,7 @@ public class RenderExt{
              arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
              researchViewer = Core.settings.getBool("researchViewer");

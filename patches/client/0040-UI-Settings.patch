@@ -280,7 +280,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
                  table.row();
              }
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 2c545360078991096d7fc16ecb84aa278fd3ad60..8170e5afbfd3f19bf6f5b8f500155a7269c2ae02 100644
+index 27bf6d34b21c289a516ecc94e1cc13bfbfbdfd2a..eccd7532122ec7461e24202230a6300c3e027249 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -5,6 +5,7 @@ import arc.util.*;
@@ -301,7 +301,7 @@ index 2c545360078991096d7fc16ecb84aa278fd3ad60..8170e5afbfd3f19bf6f5b8f500155a72
      /** invoke after loading, just before `Mod::init` */
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..01c8d7eb6217295e62051088f45090b790b1b654
+index 0000000000000000000000000000000000000000..288a378c4adf14e9a856c47e5d796848ff39523d
 --- /dev/null
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -0,0 +1,69 @@
@@ -358,10 +358,10 @@ index 0000000000000000000000000000000000000000..01c8d7eb6217295e62051088f45090b7
 +            c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.checkPref("arcPlacementEffect", false);
 +            c.sliderPref("blockbarminhealth", 0, 0, 4000, 50, i -> i + "[red]HP");
-+            c.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> {
-+                if(s > 1) return "全部显示";
-+                if(s > 0) return "只显示建筑状态";
-+                return "隐藏全部建筑";
++            c.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> switch(s){
++                case 0 -> "隐藏全部建筑";
++                case 1 -> "只显示建筑状态";
++                default -> "全部显示";
 +            });
 +
 +            c.addCategory("entitySettings");

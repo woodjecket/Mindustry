@@ -9,15 +9,15 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 244 +++++++++++++++++
- .../ui/dialogs/SettingsMenuDialog.java        |  29 +-
- core/src/mindustryX/features/ArcOld.java      | 257 ++++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 244 ++++++++++++++++++
+ .../ui/dialogs/SettingsMenuDialog.java        |  29 +--
+ core/src/mindustryX/features/ArcOld.java      | 213 +++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 516 insertions(+), 15 deletions(-)
+ 4 files changed, 472 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 2dddf7df609c90e43ca5810c27b77c337819d90e..7ca012ef185da0e91072a8d1ac5e6f4d87ccc39d 100644
+index 2dddf7df609c90e43ca5810c27b77c337819d90e..9d211bed4097a51647058a405f773c9c0f410b35 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -68,3 +68,247 @@ category.entitySettings.name = 实体相关设置
@@ -193,7 +193,7 @@ index 2dddf7df609c90e43ca5810c27b77c337819d90e..7ca012ef185da0e91072a8d1ac5e6f4d
 +setting.fontSet.name = [cyan]字体设置！
 +setting.fontSize.name = [cyan]字体大小！
 +setting.forceConfigInventory.name = [acid]功能[white]：强制拿取资源
-+setting.forceEnableDarkness.name = [cyan]厚墙体阴影
++setting.forceEnableDarkness.name = [cyan]墙体阴影显示
 +setting.forceIgnoreAttack.name = [violet]战役[white]：忽视遭受攻击警告强行切换区块
 +setting.hoveredTileInfo.name = [acid]显示鼠标指针地块/建筑名称
 +setting.itemSelectionHeight.name = [cyan]建筑选择框行数
@@ -341,10 +341,10 @@ index 9bc85ef9d3b45ece271aaea02dce05dc7b634b74..7daf541be6206723289729418c99fb9c
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90d6f47f3a
+index 0000000000000000000000000000000000000000..dbcd0a302f490a2b3d86543fddbfbb63beef3e18
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,213 @@
 +package mindustryX.features;
 +
 +import arc.struct.*;
@@ -361,34 +361,23 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +    public static void init(Seq<LazySettingsCategory> categories){
 +        categories.add(new LazySettingsCategory("@settings.arc", () -> Icon.star, (c) -> {
 +            c.addCategory("arcHudToolbox");
-+            c.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> {
-+                if(s == 0){
-+                    return "关闭";
-+                }else if(s == 1){
-+                    return "左上-右";
-+                }else if(s == 2){
-+                    return "左上-下";
-+                }else if(s == 3){
-+                    return "右上-下";
-+                }else{
-+                    return "";
-+                }
++            c.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 1 -> "左上-右";
++                case 2 -> "左上-下";
++                case 3 -> "右上-下";
++                default -> "";
 +            });
 +            c.checkPref("showAdvanceToolTable", false);
 +            c.checkPref("minimapTools", !mobile);
 +            c.checkPref("arcSpecificTable", true);
 +            c.checkPref("logicSupport", true);
 +            c.checkPref("powerStatistic", true);
-+            c.sliderPref("arccoreitems", 3, 0, 3, 1, s -> {
-+                if(s == 0){
-+                    return "不显示";
-+                }else if(s == 1){
-+                    return "资源状态";
-+                }else if(s == 2){
-+                    return "兵种状态";
-+                }else{
-+                    return "显示资源和兵种";
-+                }
++            c.sliderPref("arccoreitems", 3, 0, 3, 1, s -> switch(s){
++                case 0 -> "不显示";
++                case 1 -> "资源状态";
++                case 2 -> "兵种状态";
++                default -> "显示资源和兵种";
 +            });
 +            c.sliderPref("arcCoreItemsCol", 5, 4, 15, 1, i -> i + "列");
 +            c.checkPref("showQuickToolTable", true);
@@ -404,12 +393,12 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +            }
 +
 +            c.addCategory("arcCDisplayBlock");
-+            c.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> {
-+                if(s > 1) return "全部显示";
-+                if(s > 0) return "只显示建筑状态";
-+                return "隐藏全部建筑";
++            c.sliderPref("blockRenderLevel", 2, 0, 2, 1, s -> switch(s){
++                case 0 -> "隐藏全部建筑";
++                case 1 -> "只显示建筑状态";
++                default -> "全部显示";
 +            });
-+            c.checkPref("forceEnableDarkness", true);
++            c.checkPref("forceEnableDarkness", true, (b) -> enableDarkness = b);
 +            c.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
@@ -432,18 +421,12 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +            c.checkPref("showTurretAmmoAmount", false);
 +            c.checkPref("arcTurretPlacementItem", false);
 +            c.checkPref("arcTurretPlaceCheck", false);
-+            c.sliderPref("turretShowRange", 0, 0, 3, 1, s -> {
-+                if(s == 0){
-+                    return "关闭";
-+                }else if(s == 1){
-+                    return "仅对地";
-+                }else if(s == 2){
-+                    return "仅对空";
-+                }else if(s == 3){
-+                    return "全部";
-+                }else{
-+                    return "";
-+                }
++            c.sliderPref("turretShowRange", 0, 0, 3, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 1 -> "仅对地";
++                case 2 -> "仅对空";
++                case 3 -> "全部";
++                default -> "";
 +            });
 +            c.checkPref("turretForceShowRange", false);
 +            c.sliderPref("turretAlertRange", 0, 0, 30, 1, i -> i > 0 ? i + "格" : "关闭");
@@ -460,14 +443,10 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +            c.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown", 0), 0, 2500, 100, i -> i + "[red]HP");
 +
 +
-+            c.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange", 0), 0, 30, 1, s -> {
-+                if(s == 0){
-+                    return "关闭";
-+                }else if(s == 30){
-+                    return "一直开启";
-+                }else{
-+                    return s + "格";
-+                }
++            c.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange", 0), 0, 30, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 30 -> "一直开启";
++                default -> s + "格";
 +            });
 +            c.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range", 0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 +
@@ -485,50 +464,31 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +
 +            c.addCategory("arcPlayerEffect");
 +            c.textPref("playerEffectColor", "ffd37f");
-+            c.sliderPref("unitTargetType", 0, 0, 5, 1, s -> {
-+                if(s == 0){
-+                    return "关闭";
-+                }else if(s == 1){
-+                    return "虚圆";
-+                }else if(s == 2){
-+                    return "攻击";
-+                }else if(s == 3){
-+                    return "攻击去边框";
-+                }else if(s == 4){
-+                    return "圆十字";
-+                }else if(s == 5){
-+                    return "十字";
-+                }else{
-+                    return s + "";
-+                }
++            c.sliderPref("unitTargetType", 0, 0, 5, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 1 -> "虚圆";
++                case 2 -> "攻击";
++                case 3 -> "攻击去边框";
++                case 4 -> "圆十字";
++                case 5 -> "十字";
++                default -> s + "";
 +            });
-+            c.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> {
-+                if(s == 0){
-+                    return "关闭";
-+                }else if(s == 1){
-+                    return "独一无二";
-+                }else if(s == 2){
-+                    return "全部玩家";
-+                }else{
-+                    return s + "";
-+                }
++            c.sliderPref("superUnitEffect", 0, 0, 2, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 1 -> "独一无二";
++                case 2 -> "全部玩家";
++                default -> s + "";
 +            });
 +            c.sliderPref("playerEffectCurStroke", 0, 1, 30, 1, i -> (float)i / 10f + "Pixel(s)");
 +
 +
 +            c.addCategory("arcShareinfo");
-+            c.sliderPref("chatValidType", 0, 0, 3, 1, s -> {
-+                if(s == 0){
-+                    return "原版模式";
-+                }else if(s == 1){
-+                    return "纯净聊天";
-+                }else if(s == 2){
-+                    return "服务器记录";
-+                }else if(s == 3){
-+                    return "全部记录";
-+                }else{
-+                    return s + "";
-+                }
++            c.sliderPref("chatValidType", 0, 0, 3, 1, s -> switch(s){
++                case 0 -> "原版模式";
++                case 1 -> "纯净聊天";
++                case 2 -> "服务器记录";
++                case 3 -> "全部记录";
++                default -> s + "";
 +            });
 +            c.checkPref("arcPlayerList", true);
 +            c.checkPref("ShowInfoPopup", true);
@@ -566,18 +526,14 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +
 +
 +            c.addCategory("arcRadar");
-+            c.sliderPref("radarMode", 0, 0, 30, 1, s -> {
-+                if(s == 0) return "关闭";
-+                else if(s == 30) return "一键开关";
-+                else{
-+                    return "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f, 1) + "倍搜索";
-+                }
++            c.sliderPref("radarMode", 0, 0, 30, 1, s -> switch(s){
++                case 0 -> "关闭";
++                case 30 -> "一键开关";
++                default -> "[lightgray]x[white]" + Strings.autoFixed(s * 0.2f, 1) + "倍搜索";
 +            });
 +            c.sliderPref("radarSize", 0, 0, 50, 1, s -> {
 +                if(s == 0) return "固定大小";
-+                else{
-+                    return "[lightgray]x[white]" + Strings.autoFixed(s * 0.1f, 1) + "倍";
-+                }
++                return "[lightgray]x[white]" + Strings.autoFixed(s * 0.1f, 1) + "倍";
 +            });
 +
 +            c.addCategory("personalized");
@@ -591,7 +547,7 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +            c.addCategory("developerMode");
 +            c.checkPref("rotateCanvas", false);
 +            c.checkPref("limitupdate", false, v -> {
-+                if(!v) return;
++                if(!v || !clientLoaded) return;
 +                settings.put("limitupdate", false);
 +                ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
 +                    settings.put("limitupdate", true);
@@ -603,7 +559,7 @@ index 0000000000000000000000000000000000000000..6db06c1b82a01cbcc1a5f027d0cfcf90
 +    }
 +}
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 01c8d7eb6217295e62051088f45090b790b1b654..72e4c685b12f4071f7b0ed6f2d912e3e14f8cfe6 100644
+index 288a378c4adf14e9a856c47e5d796848ff39523d..7c0e4efbe4a5754d525fe120e9c5c8312d608a52 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -61,6 +61,7 @@ public class Settings{

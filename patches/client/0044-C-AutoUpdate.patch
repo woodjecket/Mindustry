@@ -46,18 +46,18 @@ index 593d8e2bfbb8c1e156b998dc44d3554317e171bf..cdf4295a544656573aea87416e8957b2
          //info icon
          if(mobile){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 8170e5afbfd3f19bf6f5b8f500155a7269c2ae02..ba7364be22aacccc3a9beb617aaafa094bbdaec6 100644
+index eccd7532122ec7461e24202230a6300c3e027249..e8382f995d3fb459ce641065d1d5c1d9ddca9d58 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -21,6 +21,8 @@ public class Hooks implements ApplicationListener{
+@@ -20,6 +20,8 @@ public class Hooks implements ApplicationListener{
+     @Override
      public void init(){
          Log.infoTag("MindustryX", "Hooks.init");
-         RenderExt.init();
 +        if(AutoUpdate.INSTANCE.getActive())
 +            AutoUpdate.INSTANCE.checkUpdate();
          if(!Vars.headless){
+             RenderExt.init();
              TimeControl.init();
-             UIExt.init();
 diff --git a/core/src/mindustryX/features/AutoUpdate.kt b/core/src/mindustryX/features/AutoUpdate.kt
 new file mode 100644
 index 0000000000000000000000000000000000000000..c02764dfee2fefc4b6cb3d351672c9e939de19bf

@@ -46,7 +46,7 @@ index 96b504d3b549dfbae79d4e649f4313393cec807f..8d9665398a71d86da90f94a87e046a74
                  }
              });
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 23216764d050d0fa3969a18ff54c14145da841b8..9012693e9e0c9d7951f4d9b517c37fa9c14bd170 100644
+index 8d3390adfdc803c7dec6bb6cfb1f0fa45bbed879..93693a897b603611988ec6d8264fb47fb0a6456b 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -23,6 +23,7 @@ public class RenderExt{

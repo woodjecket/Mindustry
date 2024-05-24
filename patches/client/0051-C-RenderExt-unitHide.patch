@@ -5,10 +5,10 @@ Subject: [PATCH] C(RenderExt) unitHide
 
 ---
  core/src/mindustry/input/Binding.java       | 2 +-
- core/src/mindustry/input/InputHandler.java  | 2 ++
+ core/src/mindustry/input/InputHandler.java  | 3 ++-
  core/src/mindustryX/Hooks.java              | 4 ++++
- core/src/mindustryX/features/RenderExt.java | 4 ++++
- 4 files changed, 11 insertions(+), 1 deletion(-)
+ core/src/mindustryX/features/RenderExt.java | 5 ++++-
+ 4 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
 index 3a9f9845adbb5679a899e5c154349414942f1ed6..b4ddb5af181ffd4515f59b267b6558f1e84a337a 100644
@@ -24,7 +24,7 @@ index 3a9f9845adbb5679a899e5c154349414942f1ed6..b4ddb5af181ffd4515f59b267b6558f1
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 0f86972de21272412e19b347ff3bae7a32dff502..6ad644550ad940c9be203835cc83e635ffa486a0 100644
+index 0f86972de21272412e19b347ff3bae7a32dff502..a6f07dbb04fbc900f17e0d8512b3d14045fa6929 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -39,6 +39,7 @@ import mindustry.world.blocks.payloads.*;
@@ -35,16 +35,17 @@ index 0f86972de21272412e19b347ff3bae7a32dff502..6ad644550ad940c9be203835cc83e635
  
  import java.util.*;
  
-@@ -1594,6 +1595,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-     }
+@@ -1595,7 +1596,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Unit selectedUnit(){
-+        if(RenderExt.unitHide) return null;
          Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
-         if(unit != null){
+-        if(unit != null){
++        if(!RenderExt.unitHide && unit != null){
              unit.hitbox(Tmp.r1);
+             Tmp.r1.grow(6f);
+             if(Tmp.r1.contains(Core.input.mouseWorld())){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 0271b93974c79e5630148d2615ed81fe20800d97..b384d7525b403e589542379c62760c39e4f6e998 100644
+index fed44831672e254a909e112214b32df1094fccef..086c6a80d21baca2103b9b8796ae849af988d4c4 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -65,7 +66,7 @@ index 0271b93974c79e5630148d2615ed81fe20800d97..b384d7525b403e589542379c62760c39
      }
  }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 949ca69aa54504b8ec3e88c9f536a90396e605b4..23216764d050d0fa3969a18ff54c14145da841b8 100644
+index ec66e8e0e9718ab3719edf9f8c4dbad44ad50a11..8d3390adfdc803c7dec6bb6cfb1f0fa45bbed879 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -23,6 +23,9 @@ public class RenderExt{
@@ -78,11 +79,12 @@ index 949ca69aa54504b8ec3e88c9f536a90396e605b4..23216764d050d0fa3969a18ff54c1414
      private static Effect placementEffect;
  
      public static void init(){
-@@ -57,6 +60,7 @@ public class RenderExt{
-     }
+@@ -39,7 +42,7 @@ public class RenderExt{
  
-     public static void onGroupDraw(Drawc t){
-+        if(unitHide && t instanceof Minerc) return;
-         if(!bulletShow && t instanceof Bulletc) return;
-         if(!showMineBeam && t instanceof Minerc) return;
-         t.draw();
+         Events.run(Trigger.preDraw, () -> {
+             bulletShow = Core.settings.getBool("bulletShow");
+-            showMineBeam = Core.settings.getBool("showminebeam");
++            showMineBeam = !unitHide && Core.settings.getBool("showminebeam");
+             displayAllMessage = Core.settings.getBool("displayallmessage");
+             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
+             researchViewer = Core.settings.getBool("researchViewer");

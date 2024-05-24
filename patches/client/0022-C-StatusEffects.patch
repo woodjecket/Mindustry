@@ -41,7 +41,7 @@ index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..87ca026cadc01f80b5e927ed210bc78f
 +status.fast.name = 迅捷
 +
 diff --git a/core/src/mindustry/content/StatusEffects.java b/core/src/mindustry/content/StatusEffects.java
-index 8daf52a5bbdaaed7f4336a4af05b836e63b65323..57bb86720f9e1da8f4ccf8b919089963044e4cd3 100644
+index a8206160e418dae59adb7aaeed67661640be24d3..cdf55c6e3becbfb020cf2f99c7afea20768f4b1d 100644
 --- a/core/src/mindustry/content/StatusEffects.java
 +++ b/core/src/mindustry/content/StatusEffects.java
 @@ -204,6 +204,7 @@ public class StatusEffects{
@@ -51,4 +51,4 @@ index 8daf52a5bbdaaed7f4336a4af05b836e63b65323..57bb86720f9e1da8f4ccf8b919089963
 +            color = Color.red;
          }};
  
-         dynamic = new StatusEffect("dynamic"){{
+ //        dynamic = new StatusEffect("dynamic"){{

@@ -14,10 +14,10 @@ way-zer <himc.wicp@gmail.com> on 2024/4/10 at 19:52
  core/src/mindustryX/features/UIExt.java       |  50 ++
  core/src/mindustryX/features/UnitExt.java     |  21 +
  .../features/ui/AdvanceToolTable.kt           | 178 +++++++
- .../features/ui/ArcUnitFactoryDialog.java     | 483 ++++++++++++++++++
+ .../features/ui/ArcUnitFactoryDialog.java     | 478 ++++++++++++++++++
  .../mindustryX/features/ui/SimpleCollapse.kt  |  43 ++
  .../features/ui/TeamSelectDialog.java         |  51 ++
- 8 files changed, 829 insertions(+)
+ 8 files changed, 824 insertions(+)
  create mode 100644 core/src/mindustryX/features/UIExt.java
  create mode 100644 core/src/mindustryX/features/UnitExt.java
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
@@ -46,12 +46,12 @@ index 966520f5c00e34e56f3f1cd8e315e338d4812a61..be2e0724973bd8011561d90393e3835f
  
                  //rebuilds the category table with the correct recipes
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index d90d5a98ae523cbc08d9f2911050fb162282681f..59e606e4744893f0d3441e650f7fc26e3e7220c3 100644
+index 5f15cc3b9f470523c214adfdd8d1f5f6e332cc55..7d38820522e521e55a4881da586aeffd36e46f60 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
-         RenderExt.init();
          if(!Vars.headless){
+             RenderExt.init();
              TimeControl.init();
 +            UIExt.init();
          }
@@ -327,10 +327,10 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a44e5f559ede909bf21d3ad6f852ccf4189b7c27
+index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd73737befe
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
-@@ -0,0 +1,483 @@
+@@ -0,0 +1,478 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -401,18 +401,16 @@ index 0000000000000000000000000000000000000000..a44e5f559ede909bf21d3ad6f852ccf4
 +        cont.add(unitFabricator).row();
 +
 +        cont.button("[orange]生成！", Icon.modeAttack, () -> {
++            Vec2 pos = Tmp.v1.set(unitLoc).scl(tilesize);
 +            for(var n = 0; n < unitCount; n++){
-+                Tmp.v1.rnd(Mathf.random(unitRandDst * tilesize));
++                Tmp.v2.rnd(Mathf.random(unitRandDst * tilesize));
 +                Unit unit = cloneUnit(spawnUnit);
 +                if(elevation) unit.elevation = 1f;
-+                unit.set(unitLoc.x * tilesize + Tmp.v1.x, unitLoc.y * tilesize + Tmp.v1.y);
++                unit.set(Tmp.v2.add(pos));
 +                UnitExt.getStatuses(unit).addAll(unitStatus);
 +                unit.add();
 +            }
-+            if(control.input instanceof DesktopInput input){
-+                input.panning = true;
-+            }
-+            Core.camera.position.set(unitLoc.x * tilesize, unitLoc.y * tilesize);
++            control.input.panCamera(pos);
 +        }).fillX().row();
 +
 +        cont.button("[orange] 生成！(/js)", Icon.modeAttack, () -> {
@@ -457,10 +455,7 @@ index 0000000000000000000000000000000000000000..a44e5f559ede909bf21d3ad6f852ccf4
 +            sendFormatChat("/js u.add()");
 +            sendFormatChat("/js delete u");
 +            Time.run(chatTime, () -> chatTime = 0f);
-+            if(control.input instanceof DesktopInput input){
-+                input.panning = true;
-+            }
-+            Core.camera.position.set(unitLoc.x * tilesize, unitLoc.y * tilesize);
++            control.input.panCamera(Tmp.v1.set(unitLoc).scl(tilesize));
 +        }).fillX().visible(() -> Core.settings.getBool("easyJS")).row();
 +
 +        cont.button("RTS价格代码生成", Icon.logic, this::generateRTSCode).fillX().visible(() -> enableRTSCode);

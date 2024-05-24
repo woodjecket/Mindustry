@@ -53,11 +53,14 @@ way-zer <himc.wicp@gmail.com> on 2024/5/11
 * 从ARC同步MusicDialog(API更新)
 * 重制炮台子弹范围显示
 way-zer <himc.wicp@gmail.com> on 2024/5/19
+
+arcSetCamera -> control.input.panCamera
+way-zer <himc.wicp@gmail.com> on 2024/5/19
 ---
  core/src/mindustry/ai/BlockIndexer.java       |  116 ++
- core/src/mindustry/arcModule/ARCVars.java     |   42 +
+ core/src/mindustry/arcModule/ARCVars.java     |   39 +
  .../mindustry/arcModule/DrawUtilities.java    |  111 ++
- core/src/mindustry/arcModule/RFuncs.java      |  236 +++
+ core/src/mindustry/arcModule/RFuncs.java      |  226 +++
  .../mindustry/arcModule/draw/ARCBuilds.java   |  165 ++
  .../mindustry/arcModule/draw/ARCUnits.java    |  324 ++++
  .../arcModule/toolpack/arcChatPicture.java    |  205 +++
@@ -69,30 +72,27 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
  .../src/mindustry/arcModule/ui/PowerInfo.java |   93 ++
  core/src/mindustry/arcModule/ui/RStyles.java  |   86 ++
  .../ui/dialogs/BlockSelectDialog.java         |   58 +
- .../arcModule/ui/dialogs/MessageDialog.java   |  425 +++++
+ .../arcModule/ui/dialogs/MessageDialog.java   |  420 +++++
  .../arcModule/ui/dialogs/MusicDialog.java     | 1365 +++++++++++++++++
- core/src/mindustry/core/NetClient.java        |    3 +
- core/src/mindustry/core/Renderer.java         |   13 +-
- core/src/mindustry/core/UI.java               |   29 +-
+ core/src/mindustry/core/Renderer.java         |    5 +-
+ core/src/mindustry/core/UI.java               |    9 +
  core/src/mindustry/editor/MapInfoDialog.java  |  148 +-
- core/src/mindustry/entities/EntityGroup.java  |   19 +-
  .../entities/abilities/ShieldArcAbility.java  |    3 +-
  .../mindustry/entities/comp/BuildingComp.java |   33 +-
- .../mindustry/entities/comp/MinerComp.java    |    2 +
  .../mindustry/entities/comp/PlayerComp.java   |   26 +-
  .../mindustry/entities/comp/ShieldComp.java   |    6 +
  .../mindustry/entities/comp/StatusComp.java   |   12 +
  core/src/mindustry/game/Schematic.java        |  163 ++
- core/src/mindustry/game/Schematics.java       |   11 +-
+ core/src/mindustry/game/Schematics.java       |    4 +-
  core/src/mindustry/game/Universe.java         |    2 +-
  .../src/mindustry/graphics/BlockRenderer.java |   19 +-
  core/src/mindustry/graphics/Drawf.java        |   54 +
  core/src/mindustry/graphics/MenuRenderer.java |  114 +-
- .../mindustry/graphics/MinimapRenderer.java   |   51 +-
+ .../mindustry/graphics/MinimapRenderer.java   |   47 +-
  .../mindustry/graphics/OverlayRenderer.java   |   84 +-
  core/src/mindustry/input/Binding.java         |   12 +-
  core/src/mindustry/input/DesktopInput.java    |  110 +-
- core/src/mindustry/input/InputHandler.java    |  105 +-
+ core/src/mindustry/input/InputHandler.java    |  102 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
  core/src/mindustry/logic/LCanvas.java         |   95 +-
  core/src/mindustry/logic/LExecutor.java       |   14 +-
@@ -100,13 +100,11 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
  core/src/mindustry/type/UnitType.java         |  160 +-
  core/src/mindustry/type/Weapon.java           |   27 +-
  core/src/mindustry/ui/Fonts.java              |    2 +-
- core/src/mindustry/ui/GridImage.java          |    5 +-
  core/src/mindustry/ui/ItemImage.java          |   13 +
- core/src/mindustry/ui/Minimap.java            |   17 +-
+ core/src/mindustry/ui/Minimap.java            |   12 +-
  .../ui/dialogs/ContentInfoDialog.java         |   51 +-
  .../ui/dialogs/CustomRulesDialog.java         |  115 +-
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   12 +-
- .../mindustry/ui/dialogs/KeybindDialog.java   |    9 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |   12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  117 +-
  .../ui/dialogs/SchematicsDialog.java          |  391 ++++-
@@ -115,7 +113,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
  .../mindustry/ui/fragments/HudFragment.java   |  260 +++-
  .../mindustry/ui/fragments/MenuFragment.java  |   94 +-
  .../ui/fragments/PlacementFragment.java       |  321 +++-
- .../ui/fragments/PlayerListFragment.java      |  204 ++-
+ .../ui/fragments/PlayerListFragment.java      |  209 ++-
  core/src/mindustry/world/Block.java           |   18 +-
  core/src/mindustry/world/Build.java           |   50 +
  .../world/blocks/ConstructBlock.java          |   44 +-
@@ -137,9 +135,8 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
  .../world/blocks/units/UnitAssembler.java     |   16 +
  .../world/blocks/units/UnitFactory.java       |   19 +-
  core/src/mindustryX/Hooks.java                |   13 +
- core/src/mindustryX/features/RenderExt.java   |   40 +-
- .../features/ui/HudSettingsTable.java         |    5 +-
- 85 files changed, 8626 insertions(+), 376 deletions(-)
+ core/src/mindustryX/features/RenderExt.java   |   36 +
+ 79 files changed, 8556 insertions(+), 339 deletions(-)
  create mode 100644 core/src/mindustry/arcModule/ARCVars.java
  create mode 100644 core/src/mindustry/arcModule/DrawUtilities.java
  create mode 100644 core/src/mindustry/arcModule/RFuncs.java
@@ -324,10 +321,10 @@ index 60bcca661ec27bbd5dc718ab9b4d7e1fc69d40dc..5d84409f8baaa5179027f3ff5bff31c5
          //only process entity changes with centered tiles
 diff --git a/core/src/mindustry/arcModule/ARCVars.java b/core/src/mindustry/arcModule/ARCVars.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..bab604ce9e130f3b82f1b81a0203a04208d5309e
+index 0000000000000000000000000000000000000000..f6493d302a2aaecdde39ef72bbb637a99f8b6baf
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ARCVars.java
-@@ -0,0 +1,42 @@
+@@ -0,0 +1,39 @@
 +package mindustry.arcModule;
 +
 +import arc.*;
@@ -342,8 +339,6 @@ index 0000000000000000000000000000000000000000..bab604ce9e130f3b82f1b81a0203a042
 +
 +public class ARCVars{
 +    public static final ARCUI arcui = new ARCUI();
-+    public static boolean limitUpdate = false;
-+    public static int limitDst = 0;
 +    public static final int maxBuildPlans = 100;
 +    public static final String arcVersionPrefix = "<ARC~" + Version.mdtXBuild + ">";
 +
@@ -353,7 +348,6 @@ index 0000000000000000000000000000000000000000..bab604ce9e130f3b82f1b81a0203a042
 +        // 减少性能开销
 +        Events.run(EventType.Trigger.update, () -> {
 +            arcInfoControl = Core.settings.getBool("showOtherTeamState");
-+            limitUpdate = Core.settings.getBool("limitUpdate");
 +        });
 +    }
 +
@@ -489,10 +483,10 @@ index 0000000000000000000000000000000000000000..5e03bf73d27b01ac1c27620e8a81ac9f
 +}
 diff --git a/core/src/mindustry/arcModule/RFuncs.java b/core/src/mindustry/arcModule/RFuncs.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..cb8aa6278b7ef1da1ec67cd1602b28b0b53993c9
+index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca7348850736fe9433
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/RFuncs.java
-@@ -0,0 +1,236 @@
+@@ -0,0 +1,226 @@
 +package mindustry.arcModule;
 +
 +import arc.*;
@@ -500,20 +494,17 @@ index 0000000000000000000000000000000000000000..cb8aa6278b7ef1da1ec67cd1602b28b0
 +import arc.func.*;
 +import arc.graphics.*;
 +import arc.graphics.g2d.*;
-+import arc.math.geom.*;
 +import arc.util.*;
 +import mindustry.*;
 +import mindustry.content.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
-+import mindustry.input.*;
 +import mindustry.ui.*;
 +import mindustry.ui.fragments.*;
 +import mindustry.world.*;
 +import mindustry.world.blocks.logic.*;
 +import mindustryX.features.ui.*;
 +
-+import static arc.Core.camera;
 +import static arc.graphics.Color.RGBtoHSV;
 +import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
@@ -523,13 +514,6 @@ index 0000000000000000000000000000000000000000..cb8aa6278b7ef1da1ec67cd1602b28b0
 +
 +    public interface Stringf<T>{
 +        String get(T i);
-+    }
-+
-+    public static void arcSetCamera(Position pos){
-+        if(control.input instanceof DesktopInput input){
-+            input.panning = true;
-+        }
-+        camera.position.set(pos);
 +    }
 +
 +    public static void sendChatMsg(String msg){
@@ -3707,10 +3691,10 @@ index 0000000000000000000000000000000000000000..0dc036fb94f2f259341ac19227cd1b47
 +}
 diff --git a/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java b/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..86e16e9caf7d426c419c850c39d64f20acb958fa
+index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388d32d1bf8
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java
-@@ -0,0 +1,425 @@
+@@ -0,0 +1,420 @@
 +package mindustry.arcModule.ui.dialogs;
 +
 +import arc.*;
@@ -3815,12 +3799,7 @@ index 0000000000000000000000000000000000000000..86e16e9caf7d426c419c850c39d64f20
 +
 +                    if(thisMsg.msgLoc.x != -1){
 +                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), RStyles.logicButton, () -> {
-+                            if(Vars.control.input instanceof DesktopInput input){
-+                                input.panning = true;
-+                            }
-+
-+                            Core.camera.position.set(thisMsg.msgLoc);
-+
++                            control.input.panCamera(thisMsg.msgLoc);
 +                            MarkerType.mark.at(Tmp.v1.scl(thisMsg.msgLoc.x, thisMsg.msgLoc.y)).color = color;
 +                            hide();
 +                        }).padLeft(50f).height(24f).width(150f);
@@ -5508,22 +5487,8 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +        }
 +    }
 +}
-diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 89ac0f575dafcf3602ec5b8b2ec2db47d5f3a584..2ed04b553ecd55946672ab6d616386fbf1637c77 100644
---- a/core/src/mindustry/core/NetClient.java
-+++ b/core/src/mindustry/core/NetClient.java
-@@ -62,6 +62,9 @@ public class NetClient implements ApplicationListener{
-     public NetClient(){
- 
-         net.handleClient(Connect.class, packet -> {
-+            player.name = Core.settings.getString("name");
-+            player.color.set(Core.settings.getInt("color-0"));
-+
-             Log.info("Connecting to server: @", packet.addressTCP);
- 
-             player.admin = false;
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index cabc19671d3393a933e64a5f451a0079beafa2b3..1ad2818fe1d0c40a40f5b49293af0566beaf1e07 100644
+index 88308fb7d5b39c82207ea4b19f58705b086d62f0..601aa8527ad5e11a9a99b8e071a9bad715f5030d 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
 @@ -28,6 +28,7 @@ import static arc.Core.*;
@@ -5534,7 +5499,7 @@ index cabc19671d3393a933e64a5f451a0079beafa2b3..1ad2818fe1d0c40a40f5b49293af0566
      /** These are global variables, for headless access. Cached. */
      public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
  
-@@ -47,10 +48,11 @@ public class Renderer implements ApplicationListener{
+@@ -47,6 +48,7 @@ public class Renderer implements ApplicationListener{
      public @Nullable Bloom bloom;
      public @Nullable FrameBuffer backgroundBuffer;
      public FrameBuffer effectBuffer = new FrameBuffer();
@@ -5542,20 +5507,6 @@ index cabc19671d3393a933e64a5f451a0079beafa2b3..1ad2818fe1d0c40a40f5b49293af0566
      public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true, pixelate = false;
      public float weatherAlpha;
      /** minZoom = zooming out, maxZoom = zooming in */
--    public float minZoom = 1.5f, maxZoom = 6f;
-+    public float minZoom = 0.25f, maxZoom = 20f;
-     public Seq<EnvRenderer> envRenderers = new Seq<>();
-     public ObjectMap<String, Runnable> customBackgrounds = new ObjectMap<>();
-     public TextureRegion[] bubbles = new TextureRegion[16], splashes = new TextureRegion[12];
-@@ -172,7 +174,7 @@ public class Renderer implements ApplicationListener{
-             baseTarget = Mathf.lerp(minZoom, maxZoom, control.input.logicCutsceneZoom);
-         }
- 
--        float dest = Mathf.clamp(Mathf.round(baseTarget, 0.5f), minScale(), maxScale());
-+        float dest = Mathf.clamp(Mathf.round(baseTarget, 0.1f), minScale(), maxScale());
-         camerascale = Mathf.lerpDelta(camerascale, dest, 0.1f);
-         if(Mathf.equal(camerascale, dest, 0.001f)) camerascale = dest;
-         laserOpacity = settings.getInt("lasersopacity") / 100f;
 @@ -181,6 +183,7 @@ public class Renderer implements ApplicationListener{
          drawStatus = settings.getBool("blockstatus");
          enableEffects = settings.getBool("effects");
@@ -5563,15 +5514,6 @@ index cabc19671d3393a933e64a5f451a0079beafa2b3..1ad2818fe1d0c40a40f5b49293af0566
 +        drawBars = Core.settings.getBool("blockBars");
          drawLight = settings.getBool("drawlight", true);
          pixelate = Core.settings.getBool("pixelate");
- 
-@@ -347,7 +350,7 @@ public class Renderer implements ApplicationListener{
-             Draw.draw(Layer.light, lights::draw);
-         }
- 
--        if(enableDarkness){
-+        if(Core.settings.getBool("forceEnableDarkness")&&enableDarkness){
-             Draw.draw(Layer.darkness, blocks::drawDarkness);
-         }
  
 @@ -380,7 +383,7 @@ public class Renderer implements ApplicationListener{
          }
@@ -5582,17 +5524,8 @@ index cabc19671d3393a933e64a5f451a0079beafa2b3..1ad2818fe1d0c40a40f5b49293af0566
          Draw.draw(Layer.space, this::drawLanding);
  
          Events.fire(Trigger.drawOver);
-@@ -528,7 +531,7 @@ public class Renderer implements ApplicationListener{
-     }
- 
-     public void scaleCamera(float amount){
--        targetscale *= (amount / 4) + 1;
-+        targetscale *= (amount / 6) + 1;
-         clampScale();
-     }
- 
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index c5b749e3802b85e30de6eb10dc470455700aa5ba..d50b6a17303711e1ae92c4a794e8515fb53850c7 100644
+index 182bbc6a26564ba516fe442889615ad1fc338482..d50b6a17303711e1ae92c4a794e8515fb53850c7 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -20,6 +20,8 @@ import arc.scene.ui.Tooltip.*;
@@ -5646,40 +5579,6 @@ index c5b749e3802b85e30de6eb10dc470455700aa5ba..d50b6a17303711e1ae92c4a794e8515f
          Table table = new Table();
          table.setFillParent(true);
          table.touchable = Touchable.disabled;
-@@ -586,7 +595,7 @@ public class UI implements ApplicationListener, Loadable{
-         t.touchable = Touchable.disabled;
-         t.margin(8f).add(text).style(Styles.outlineLabel).labelAlign(Align.center);
-         t.update(() -> t.setPosition(Core.graphics.getWidth()/2f, Core.graphics.getHeight()/2f, Align.center));
--        t.actions(Actions.fadeOut(duration, Interp.pow4In), Actions.remove());
-+        t.actions(Actions.fadeOut(Math.min(duration,30f), Interp.pow4In), Actions.remove());
-         t.pack();
-         t.act(0.1f);
-         Core.scene.add(t);
-@@ -690,23 +699,7 @@ public class UI implements ApplicationListener, Loadable{
-     }
- 
-     public static String formatAmount(long number){
--        //prevent things like bars displaying erroneous representations of casted infinities
--        if(number == Long.MAX_VALUE) return "∞";
--        if(number == Long.MIN_VALUE) return "-∞";
--
--        long mag = Math.abs(number);
--        String sign = number < 0 ? "-" : "";
--        if(mag >= 1_000_000_000){
--            return sign + Strings.fixed(mag / 1_000_000_000f, 1) + "[gray]" + billions + "[]";
--        }else if(mag >= 1_000_000){
--            return sign + Strings.fixed(mag / 1_000_000f, 1) + "[gray]" + millions + "[]";
--        }else if(mag >= 10_000){
--            return number / 1000 + "[gray]" + thousands + "[]";
--        }else if(mag >= 1000){
--            return sign + Strings.fixed(mag / 1000f, 1) + "[gray]" + thousands + "[]";
--        }else{
--            return number + "";
--        }
-+        return FormatDefault.format(number);
-     }
- 
-     public static int roundAmount(int number){
 diff --git a/core/src/mindustry/editor/MapInfoDialog.java b/core/src/mindustry/editor/MapInfoDialog.java
 index 2c7e4e46ab46b6634ee9d6cca90e9c19784cadaf..9301f01951f26052c74720f41bb0417678a4caaa 100644
 --- a/core/src/mindustry/editor/MapInfoDialog.java
@@ -5888,43 +5787,6 @@ index 2c7e4e46ab46b6634ee9d6cca90e9c19784cadaf..9301f01951f26052c74720f41bb04176
 +        }
      }
  }
-diff --git a/core/src/mindustry/entities/EntityGroup.java b/core/src/mindustry/entities/EntityGroup.java
-index 9fdfda3d08ba6497d424fd19af7068f1f10622af..b03aeca6a53bb6a8cfecfc3047aef74ad33a8a9b 100644
---- a/core/src/mindustry/entities/EntityGroup.java
-+++ b/core/src/mindustry/entities/EntityGroup.java
-@@ -5,6 +5,7 @@ import arc.func.*;
- import arc.math.geom.*;
- import arc.struct.*;
- import arc.util.*;
-+import mindustry.arcModule.ARCVars;
- import mindustry.gen.*;
- 
- import java.util.*;
-@@ -80,8 +81,22 @@ public class EntityGroup<T extends Entityc> implements Iterable<T>{
-     }
- 
-     public void update(){
--        for(index = 0; index < array.size; index++){
--            array.items[index].update();
-+        if (!ARCVars.limitUpdate) {
-+            for (index = 0; index < array.size; index++) {
-+                array.items[index].update();
-+            }
-+            return;
-+        }
-+        float x = Core.camera.position.x - Core.camera.width / 2 - ARCVars.limitDst, y = Core.camera.position.y - Core.camera.height / 2 - ARCVars.limitDst;
-+        float dx = x + Core.camera.width + ARCVars.limitDst * 2, dy = y + Core.camera.height + ARCVars.limitDst * 2;
-+        for (index = 0; index < array.size; index++) {
-+            Entityc e = array.items[index];
-+            if (e instanceof Posc p) {
-+                float ex = p.x(), ey = p.y();
-+                if (x < ex && ex < dx && y < ey && ey < dy) e.update();
-+                continue;
-+            }
-+            e.update();
-         }
-     }
- 
 diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 index 12d631908b9e7a8bfda95bfcf3294afda87b54d0..c901efb6a86873f5e65166e4dc89947d3292b910 100644
 --- a/core/src/mindustry/entities/abilities/ShieldArcAbility.java
@@ -6031,26 +5893,6 @@ index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b
      }
  
      /**
-diff --git a/core/src/mindustry/entities/comp/MinerComp.java b/core/src/mindustry/entities/comp/MinerComp.java
-index 0e1caeb7283ae45f57c55825affe28a2b644bac0..65a55cc0a5c6601241d7bfc404bd0eaa259dc164 100644
---- a/core/src/mindustry/entities/comp/MinerComp.java
-+++ b/core/src/mindustry/entities/comp/MinerComp.java
-@@ -12,6 +12,7 @@ import mindustry.graphics.*;
- import mindustry.input.*;
- import mindustry.type.*;
- import mindustry.world.*;
-+import mindustryX.features.*;
- 
- import static mindustry.Vars.*;
- 
-@@ -126,6 +127,7 @@ abstract class MinerComp implements Itemsc, Posc, Teamc, Rotc, Drawc{
- 
-     @Override
-     public void draw(){
-+        if(!RenderExt.showMineBeam) return;
-         if(!mining()) return;
-         float focusLen = hitSize / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
-         float swingScl = 12f, swingMag = tilesize / 8f;
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
 index fe787a8336d78710c6d4b9cfbdcf8dd45bc83c2c..62893fbae22d8ed1dbf083859afbdb0b9c3c5aec 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
@@ -6356,7 +6198,7 @@ index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..b96abdfe1253f3b01e28060ec62d005c
              block = other.block;
              x = other.x;
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index 32b304f3e9e708aed49ad1c43b3165dbfcb23873..ab05df5b9e0e70f714cc96adefb58e4f534b4d1e 100644
+index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e7f822ecb12b11467b1d000e003a8b2cbd52d8aa 100644
 --- a/core/src/mindustry/game/Schematics.java
 +++ b/core/src/mindustry/game/Schematics.java
 @@ -15,6 +15,7 @@ import arc.util.io.Streams.*;
@@ -6375,17 +6217,7 @@ index 32b304f3e9e708aed49ad1c43b3165dbfcb23873..ab05df5b9e0e70f714cc96adefb58e4f
  
  import java.io.*;
  import java.util.zip.*;
-@@ -97,7 +99,8 @@ public class Schematics implements Loadable{
-         all.sort();
- 
-         if(shadowBuffer == null){
--            Core.app.post(() -> shadowBuffer = new FrameBuffer(maxSchematicSize + padding + 8, maxSchematicSize + padding + 8));
-+            var size = Math.min(maxSchematicSize, 1024) + padding + 8;
-+            Core.app.post(() -> shadowBuffer = new FrameBuffer(size, size));
-         }
-     }
- 
-@@ -276,7 +279,7 @@ public class Schematics implements Loadable{
+@@ -278,7 +280,7 @@ public class Schematics implements Loadable{
      /** Creates an array of build plans from a schematic's data, centered on the provided x+y coordinates. */
      public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
          return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
@@ -6394,24 +6226,6 @@ index 32b304f3e9e708aed49ad1c43b3165dbfcb23873..ab05df5b9e0e70f714cc96adefb58e4f
      }
  
      /** @return all the valid loadouts for a specific core type. */
-@@ -542,7 +545,7 @@ public class Schematics implements Loadable{
-         try(DataInputStream stream = new DataInputStream(new InflaterInputStream(input))){
-             short width = stream.readShort(), height = stream.readShort();
- 
--            if(width > 128 || height > 128) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
-+            if(width > 1024 || height > 1024) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
- 
-             StringMap map = new StringMap();
-             int tags = stream.readUnsignedByte();
-@@ -568,7 +571,7 @@ public class Schematics implements Loadable{
- 
-             int total = stream.readInt();
- 
--            if(total > 128 * 128) throw new IOException("Invalid schematic: Too many blocks.");
-+            if(maxSchematicSize != Integer.MAX_VALUE && total > maxSchematicSize * maxSchematicSize) throw new IOException("Invalid schematic: Too many blocks.");
- 
-             Seq<Stile> tiles = new Seq<>(total);
-             for(int i = 0; i < total; i++){
 diff --git a/core/src/mindustry/game/Universe.java b/core/src/mindustry/game/Universe.java
 index 4aa77d8be7d4876022746b93046e0e8587b9052b..849a46f6bae96b5a65e4874b2621acfcc7e4ded9 100644
 --- a/core/src/mindustry/game/Universe.java
@@ -6707,7 +6521,7 @@ index 949d03f914d70c9bb9826ebeb033458fbeb19cc8..fd2e601e673dfcd266a9501db7121dd8
  
              cons.get(
 diff --git a/core/src/mindustry/graphics/MinimapRenderer.java b/core/src/mindustry/graphics/MinimapRenderer.java
-index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e46fbc1f1 100644
+index 86fb76cb830064ef04e575dc96fc1991e656518d..117bf2594016d4eab70818816e2b944a3243e828 100644
 --- a/core/src/mindustry/graphics/MinimapRenderer.java
 +++ b/core/src/mindustry/graphics/MinimapRenderer.java
 @@ -10,6 +10,7 @@ import arc.scene.ui.layout.*;
@@ -6727,16 +6541,7 @@ index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e
      private IntSet updates = new IntSet();
      private float updateCounter = 0f;
  
-@@ -104,7 +107,7 @@ public class MinimapRenderer{
-     }
- 
-     public void setZoom(float amount){
--        zoom = Mathf.clamp(amount, 1f, Math.min(world.width(), world.height()) / baseSize / 2f);
-+        zoom = Mathf.clamp(amount, 1f, Math.max(world.width(), world.height()) / baseSize / 2f);
-     }
- 
-     public float getZoom(){
-@@ -146,12 +149,41 @@ public class MinimapRenderer{
+@@ -147,12 +150,41 @@ public class MinimapRenderer{
  
          rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);
  
@@ -6778,7 +6583,7 @@ index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e
              Draw.mixcol(unit.team.color, 1f);
              float scale = Scl.scl(1f) / 2f * scaling * 32f;
              var region = unit.icon();
-@@ -159,11 +191,11 @@ public class MinimapRenderer{
+@@ -160,11 +192,11 @@ public class MinimapRenderer{
              Draw.reset();
          }
  
@@ -6793,7 +6598,7 @@ index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e
  
                      drawLabel(x + rx, y + ry, player.name, player.color);
                  }
-@@ -260,8 +292,15 @@ public class MinimapRenderer{
+@@ -261,8 +293,15 @@ public class MinimapRenderer{
          });
      }
  
@@ -6810,15 +6615,6 @@ index e19cb5fb99d1013911ad892249a67b0575dcb1f6..2a3d3b92e5419286d1aba257e66c264e
  
          TextureRegion icon = Icon.units.getRegion();
  
-@@ -302,7 +341,7 @@ public class MinimapRenderer{
-     public @Nullable TextureRegion getRegion(){
-         if(texture == null) return null;
- 
--        float sz = Mathf.clamp(baseSize * zoom, baseSize, Math.min(world.width(), world.height()));
-+        float sz = Mathf.clamp(baseSize * zoom, baseSize, Math.max(world.width(), world.height()));
-         float dx = (Core.camera.position.x / tilesize);
-         float dy = (Core.camera.position.y / tilesize);
-         dx = Mathf.clamp(dx, sz, world.width() - sz);
 diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
 index cd452ca24acfa985edb46f995f9a880da0bc3dbd..0e78a3c3583fb57a9f949a0426a2af3f0437c1c1 100644
 --- a/core/src/mindustry/graphics/OverlayRenderer.java
@@ -7197,7 +6993,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a5
          //update payload input
          if(unit instanceof Payloadc){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd61b7c5adf 100644
+index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd61b7c5adf 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -17,6 +17,7 @@ import mindustry.*;
@@ -7431,18 +7227,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
      }
  
      /** Returns the tile at the specified MOUSE coordinates. */
-@@ -1595,9 +1638,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-     }
- 
-     public @Nullable Unit selectedUnit(){
--        if(RenderExt.unitHide) return null;
-         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
--        if(unit != null){
-+        if(!RenderExt.unitHide && unit != null){
-             unit.hitbox(Tmp.r1);
-             Tmp.r1.grow(6f);
-             if(Tmp.r1.contains(Core.input.mouseWorld())){
-@@ -1615,7 +1657,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1614,7 +1657,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){
          Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
@@ -7451,7 +7236,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
              return build;
          }
          return null;
-@@ -1625,8 +1667,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1624,8 +1667,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          var tree = player.team().data().tree();
          tmpUnits.clear();
          float rad = 4f;
@@ -7462,7 +7247,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
      }
  
      public @Nullable Unit selectedEnemyUnit(float x, float y){
-@@ -1640,14 +1682,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1639,14 +1682,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              }
          }
  
@@ -7479,7 +7264,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
          tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
          return tmpUnits;
      }
-@@ -1701,8 +1743,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1700,8 +1743,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public boolean canShoot(){
@@ -7492,7 +7277,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
      }
  
      public boolean onConfigurable(){
-@@ -1718,7 +1763,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1717,7 +1763,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public void tryDropItems(@Nullable Building build, float x, float y){
@@ -7501,7 +7286,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
              droppingItem = false;
              return;
          }
-@@ -1728,7 +1773,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1727,7 +1773,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          ItemStack stack = player.unit().stack;
  
          if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
@@ -7510,7 +7295,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
              if(!(state.rules.onlyDepositCore && !(build instanceof CoreBuild))){
                  Call.transferInventory(player, build);
              }
-@@ -1798,8 +1843,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1797,8 +1843,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      public void drawArrow(Block block, int x, int y, int rotation, boolean valid){
          float trns = (block.size / 2) * tilesize;
          int dx = Geometry.d4(rotation).x, dy = Geometry.d4(rotation).y;
@@ -7521,7 +7306,7 @@ index 6ad644550ad940c9be203835cc83e635ffa486a0..b16c765c5fa008d7d449393c08b2dcd6
  
          Draw.color(!valid ? Pal.removeBack : Pal.accentBack);
          TextureRegion regionArrow = Core.atlas.find("place-arrow");
-@@ -1837,7 +1882,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1836,7 +1882,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          var end = world.build(endX, endY);
          if(diagonal && (block == null || block.allowDiagonal)){
              if(block != null && start instanceof ChainedBuilding && end instanceof ChainedBuilding
@@ -8466,29 +8251,6 @@ index b32847a353f8d9cda2424b17ecadd43be99afc5f..29474ba53b983f170284ea840fecc4f6
      private static ObjectMap<String, TextureRegion> largeIcons = new ObjectMap<>();
      private static TextureRegion[] iconTable;
      private static int lastCid;
-diff --git a/core/src/mindustry/ui/GridImage.java b/core/src/mindustry/ui/GridImage.java
-index f80262d5ac469cfb71659def42077d47db38e971..f3ae89881256ad8ade8e4a570c941c5a372f26ef 100644
---- a/core/src/mindustry/ui/GridImage.java
-+++ b/core/src/mindustry/ui/GridImage.java
-@@ -5,6 +5,7 @@ import arc.scene.*;
- 
- public class GridImage extends Element{
-     private int imageWidth, imageHeight;
-+    public int interval = 1;
- 
-     public GridImage(int w, int h){
-         this.imageWidth = w;
-@@ -19,8 +20,8 @@ public class GridImage extends Element{
- 
-         int minspace = 10;
- 
--        int jumpx = (int)(Math.max(minspace, xspace) / xspace);
--        int jumpy = (int)(Math.max(minspace, yspace) / yspace);
-+        int jumpx = (int)(Math.max(minspace, xspace * interval) / xspace);
-+        int jumpy = (int)(Math.max(minspace, yspace * interval) / yspace);
- 
-         for(int x = 0; x <= imageWidth; x += jumpx){
-             Fill.crect((int)(this.x + xspace * x - s), y - s, 2, getHeight() + (x == imageWidth ? 1 : 0));
 diff --git a/core/src/mindustry/ui/ItemImage.java b/core/src/mindustry/ui/ItemImage.java
 index 6f20b9cd229a15a67d629e56762d86df3ec97012..c86a5349acf70c8eb52addba48b45de70bb831ce 100644
 --- a/core/src/mindustry/ui/ItemImage.java
@@ -8514,7 +8276,7 @@ index 6f20b9cd229a15a67d629e56762d86df3ec97012..c86a5349acf70c8eb52addba48b45de7
          this(stack.item.uiIcon, stack.amount);
      }
 diff --git a/core/src/mindustry/ui/Minimap.java b/core/src/mindustry/ui/Minimap.java
-index 770b034943c7a043d50f6191b8d3b6df4e228196..b076d1f3ead935623c3182376f5d51375be4be94 100644
+index 770b034943c7a043d50f6191b8d3b6df4e228196..c3b394dc36dae64eaafcdd80da303aa44f435eb0 100644
 --- a/core/src/mindustry/ui/Minimap.java
 +++ b/core/src/mindustry/ui/Minimap.java
 @@ -3,10 +3,14 @@ package mindustry.ui;
@@ -8532,7 +8294,7 @@ index 770b034943c7a043d50f6191b8d3b6df4e228196..b076d1f3ead935623c3182376f5d5137
  
  import static mindustry.Vars.*;
  
-@@ -93,7 +97,18 @@ public class Minimap extends Table{
+@@ -93,7 +97,13 @@ public class Minimap extends Table{
  
              @Override
              public void clicked(InputEvent event, float x, float y){
@@ -8543,12 +8305,7 @@ index 770b034943c7a043d50f6191b8d3b6df4e228196..b076d1f3ead935623c3182376f5d5137
 +
 +                float ptilex = sz * 2 / width, ptiley = sz * 2 / height;
 +                Vec2 pos = Tmp.v1.set(dx, dy).sub(sz, sz).add(x * ptilex, y * ptiley).scl(8);
-+
-+                if(control.input instanceof DesktopInput input){
-+                    input.panning = true;
-+                }
-+
-+                Core.camera.position.set(pos);
++                control.input.panCamera(pos);
              }
          });
  
@@ -8946,34 +8703,6 @@ index 9ef878c280d567340d9fc4753d310b73be3397a2..41f4c1d4d2d578ac16604c3224d25c17
 +        return true;
      }
  }
-diff --git a/core/src/mindustry/ui/dialogs/KeybindDialog.java b/core/src/mindustry/ui/dialogs/KeybindDialog.java
-index 1f9ead9a31e94f8a4380c53889d31b229904ecc9..ec6ae607dffd5a4484c4e5d51a042e8b1d6051fe 100644
---- a/core/src/mindustry/ui/dialogs/KeybindDialog.java
-+++ b/core/src/mindustry/ui/dialogs/KeybindDialog.java
-@@ -143,7 +143,7 @@ public class KeybindDialog extends Dialog{
-                         rebindAxis = true;
-                         rebindMin = true;
-                         openDialog(section, keybind);
--                    }).width(130f);
-+                    }).width(100f);
-                 }else{
-                     table.add(bundle.get("keybind." + keybind.name() + ".name", Strings.capitalize(keybind.name())), Color.white).left().padRight(40).padLeft(8);
-                     table.label(() -> keybinds.get(section, keybind).key.toString()).color(Pal.accent).left().minWidth(90).padRight(20);
-@@ -152,9 +152,12 @@ public class KeybindDialog extends Dialog{
-                         rebindAxis = false;
-                         rebindMin = false;
-                         openDialog(section, keybind);
--                    }).width(130f);
-+                    }).width(100f);
-                 }
--                table.button("@settings.resetKey", tstyle, () -> keybinds.resetToDefault(section, keybind)).width(130f).pad(2f).padLeft(4f);
-+                table.button("取消绑定", tstyle, () -> {
-+                    section.binds.get(section.device.type(), OrderedMap::new).put(keybind, new Axis(KeyCode.unset));
-+                }).width(100f).pad(2f).padLeft(4f);
-+                table.button("@settings.resetKey", tstyle, () -> keybinds.resetToDefault(section, keybind)).width(100f).pad(2f).padLeft(4f);
-                 table.row();
-             }
- 
 diff --git a/core/src/mindustry/ui/dialogs/PausedDialog.java b/core/src/mindustry/ui/dialogs/PausedDialog.java
 index 129e64d65876b8282e74e333e2ed320c44566a5f..83908f9aa063e0f83a2208aba43782a13e3cdbe6 100644
 --- a/core/src/mindustry/ui/dialogs/PausedDialog.java
@@ -10973,7 +10702,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
 +    }
  }
 diff --git a/core/src/mindustry/ui/fragments/PlayerListFragment.java b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859386b105c 100644
+index 9286aab19502b5cf40556311572157b20c60fef4..40f1567012cffa1aa295922d7c345eb54b92122f 100644
 --- a/core/src/mindustry/ui/fragments/PlayerListFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlayerListFragment.java
 @@ -10,23 +10,30 @@ import arc.scene.ui.ImageButton.*;
@@ -11046,7 +10775,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
  
              Table button = new Table();
              button.left();
-@@ -121,7 +129,6 @@ public class PlayerListFragment{
+@@ -121,28 +129,16 @@ public class PlayerListFragment{
                  iconTable.addListener(new HandCursorListener());
              }
              iconTable.margin(8);
@@ -11054,7 +10783,14 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
              iconTable.name = user.name();
              iconTable.touchable = Touchable.enabled;
  
-@@ -135,14 +142,6 @@ public class PlayerListFragment{
+             iconTable.tapped(() -> {
+                 if(!user.dead() && clickable){
+-                    Core.camera.position.set(user.unit());
+                     ui.showInfoFade(Core.bundle.format("viewplayer", user.name), 1f);
+-                    if(control.input instanceof DesktopInput input){
+-                        input.panning = true;
+-                    }
++                    control.input.panCamera(Tmp.v1.set(user.unit()));
                  }
              });
  
@@ -11069,7 +10805,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
              var ustyle = new ImageButtonStyle(){{
                  down = Styles.none;
                  up = Styles.none;
-@@ -151,10 +150,106 @@ public class PlayerListFragment{
+@@ -151,10 +147,106 @@ public class PlayerListFragment{
                  imageOverColor = Color.lightGray;
              }};
  
@@ -11179,7 +10915,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
                      button.button(Icon.menu, ustyle, () -> {
                          var dialog = new BaseDialog(user.coloredName());
  
-@@ -181,43 +276,42 @@ public class PlayerListFragment{
+@@ -181,43 +273,42 @@ public class PlayerListFragment{
                                      ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick, null));
                                      dialog.hide();
                                  }).row();
@@ -11246,7 +10982,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
  
                              if(!net.client() && !user.isLocal()){
                                  t.button("@player.admin", Icon.admin, Styles.togglet, () -> {
-@@ -242,20 +336,21 @@ public class PlayerListFragment{
+@@ -242,20 +333,21 @@ public class PlayerListFragment{
                          dialog.cont.button("@back", Icon.left, dialog::hide).padTop(-1f).size(220f, 55f);
  
                          dialog.show();
@@ -11277,7 +11013,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4a0150c92531cf85f32aa90e026f6859
              content.row();
          }
  
-@@ -276,4 +371,9 @@ public class PlayerListFragment{
+@@ -276,4 +368,9 @@ public class PlayerListFragment{
          }
      }
  
@@ -12421,7 +12157,7 @@ index 4a506b9b82f59ba7e34c6136b4cb07e40761448f..231316c852178af96658a6574b50e3b1
          public void draw(){
              Draw.rect(region, x, y);
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 9f35d0b5260b6db0fb76c9574741301e172e3060..88bf5c81ffadf870432a844741e2df848f6f3357 100644
+index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..6d26c86c9de7169ffc4e90dbcb87572f5685c5d8 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -3,6 +3,8 @@ package mindustryX;
@@ -12433,7 +12169,7 @@ index 9f35d0b5260b6db0fb76c9574741301e172e3060..88bf5c81ffadf870432a844741e2df84
  import mindustry.gen.*;
  import mindustry.input.*;
  import mindustryX.features.Settings;
-@@ -54,6 +56,14 @@ public class Hooks implements ApplicationListener{
+@@ -55,6 +57,14 @@ public class Hooks implements ApplicationListener{
          if(message == null) return null;
          if(Vars.ui != null){
              if(MarkerType.resolveMessage(message)) return message;
@@ -12448,7 +12184,7 @@ index 9f35d0b5260b6db0fb76c9574741301e172e3060..88bf5c81ffadf870432a844741e2df84
          }
          return message;
      }
-@@ -77,5 +87,8 @@ public class Hooks implements ApplicationListener{
+@@ -78,5 +88,8 @@ public class Hooks implements ApplicationListener{
          if(input.keyTap(Binding.toggle_block_render)){
              settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
          }
@@ -12458,7 +12194,7 @@ index 9f35d0b5260b6db0fb76c9574741301e172e3060..88bf5c81ffadf870432a844741e2df84
      }
  }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..b19481ae4c46b93852d3923b2dd84ffa1f35bf8a 100644
+index c54ff7a77b16a5b97bfc4b78fa0f9289ff5e06b5..391865d061fed7437363f47ce4892858e4a13399 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -3,14 +3,20 @@ package mindustryX.features;
@@ -12490,15 +12226,6 @@ index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..b19481ae4c46b93852d3923b2dd84ffa
  
      public static boolean unitHide = false;
  
-@@ -45,7 +52,7 @@ public class RenderExt{
- 
-         Events.run(Trigger.update, () -> {
-             bulletShow = Core.settings.getBool("bulletShow");
--            showMineBeam = Core.settings.getBool("showminebeam");
-+            showMineBeam = !unitHide && Core.settings.getBool("showminebeam");
-             displayAllMessage = Core.settings.getBool("displayallmessage");
-             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-             researchViewer = Core.settings.getBool("researchViewer");
 @@ -57,6 +64,7 @@ public class RenderExt{
              arcDrillMode = Core.settings.getBool("arcdrillmode");
              blockRenderLevel = Core.settings.getInt("blockRenderLevel");
@@ -12507,16 +12234,7 @@ index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..b19481ae4c46b93852d3923b2dd84ffa
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -67,15 +75,22 @@ public class RenderExt{
-     }
- 
-     public static void onGroupDraw(Drawc t){
--        if(unitHide && t instanceof Minerc) return;
-         if(!bulletShow && t instanceof Bulletc) return;
--        if(!showMineBeam && t instanceof Minerc) return;
-         t.draw();
-         if(displayAllMessage && t instanceof MessageBuild build){
-             Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
+@@ -74,6 +82,15 @@ public class RenderExt{
          }
      }
  
@@ -12532,7 +12250,7 @@ index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..b19481ae4c46b93852d3923b2dd84ffa
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
          placementEffect.lifetime = lifetime;
          placementEffect.at(x, y, range, color);
-@@ -98,4 +113,23 @@ public class RenderExt{
+@@ -96,4 +113,23 @@ public class RenderExt{
                  placementEffect(build.x, build.y, 120f, t.range, t.mapColor);
          }
      }
@@ -12556,26 +12274,3 @@ index 3cfd7cc0fbd54e53fa156591ebc49d53ac50749e..b19481ae4c46b93852d3923b2dd84ffa
 +        }
 +    }
  }
-diff --git a/core/src/mindustryX/features/ui/HudSettingsTable.java b/core/src/mindustryX/features/ui/HudSettingsTable.java
-index 38e307e1898596b82ccd0c9ad84f12181b1a7721..ec58de885ab86a2ed859d9390938e8707d166977 100644
---- a/core/src/mindustryX/features/ui/HudSettingsTable.java
-+++ b/core/src/mindustryX/features/ui/HudSettingsTable.java
-@@ -7,6 +7,7 @@ import arc.scene.event.*;
- import arc.scene.ui.*;
- import arc.scene.ui.layout.*;
- import arc.struct.*;
-+import mindustry.arcModule.toolpack.*;
- import mindustry.content.*;
- import mindustry.game.*;
- import mindustry.gen.*;
-@@ -143,8 +144,8 @@ public class HudSettingsTable extends ToolTableBase{
-                 if(settings.getBool("developMode"))
-                     t.button(StatusEffects.burning.emoji(), Styles.flatTogglet, () -> state.rules.fire = !state.rules.fire)
-                     .checked(a -> state.rules.fire).size(30, 30).tooltip("太燃了");
--                t.button("[cyan]扫", Styles.flatTogglet, () -> control.input.arcScanMode = !control.input.arcScanMode)
--                .checked(a -> control.input.arcScanMode).size(30, 30).tooltip("扫描模式");
-+                t.button("[cyan]扫", Styles.flatTogglet, () -> ArcScanMode.enabled = !ArcScanMode.enabled)
-+                .checked(a -> ArcScanMode.enabled).size(30, 30).tooltip("扫描模式");
- 
-             }).left();
-             sp.row();

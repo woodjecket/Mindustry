@@ -49,7 +49,7 @@ index 75ab3b5813b4a279c5134a7cf316e367ef778d37..f0d75573ae7cdc5ace00ce9faae05e11
      )
  
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 7ca012ef185da0e91072a8d1ac5e6f4d87ccc39d..367dc918d02cb329361a2cee190982319e54aa91 100644
+index 9d211bed4097a51647058a405f773c9c0f410b35..954b7a329834b3eb7e7bbd74025c2940ce62632a 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -67,6 +67,9 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
@@ -929,7 +929,7 @@ index a7a4f4cff7641ef3d75741902c8c7da575ed66fe..9149555fa6a1125d6c45b30a5c4d7284
          assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
  
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 68a8bcb2789d5ead726596677689b44190714fff..3cfd7cc0fbd54e53fa156591ebc49d53ac50749e 100644
+index f33a8b26d6478020b974fb085cad53b00a458460..c54ff7a77b16a5b97bfc4b78fa0f9289ff5e06b5 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -25,6 +25,7 @@ public class RenderExt{
@@ -949,7 +949,7 @@ index 68a8bcb2789d5ead726596677689b44190714fff..3cfd7cc0fbd54e53fa156591ebc49d53
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 72e4c685b12f4071f7b0ed6f2d912e3e14f8cfe6..cbf930d504101732c1739a15204991bc0fec5ef0 100644
+index 7c0e4efbe4a5754d525fe120e9c5c8312d608a52..daf11fe904ee1f451219e4fc8b28042c0963be57 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -60,6 +60,9 @@ public class Settings{

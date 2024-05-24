@@ -5,10 +5,31 @@ Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
  arcTurretPlaceCheck
 
 ---
- .../world/blocks/defense/turrets/BaseTurret.java    |  6 ++++++
- core/src/mindustryX/features/RenderExt.java         | 13 +++++++++++++
- 2 files changed, 19 insertions(+)
+ core/src/mindustry/entities/comp/MinerComp.java      |  2 ++
+ .../world/blocks/defense/turrets/BaseTurret.java     |  6 ++++++
+ core/src/mindustryX/features/RenderExt.java          | 12 ++++++++++++
+ 3 files changed, 20 insertions(+)
 
+diff --git a/core/src/mindustry/entities/comp/MinerComp.java b/core/src/mindustry/entities/comp/MinerComp.java
+index 0e1caeb7283ae45f57c55825affe28a2b644bac0..65a55cc0a5c6601241d7bfc404bd0eaa259dc164 100644
+--- a/core/src/mindustry/entities/comp/MinerComp.java
++++ b/core/src/mindustry/entities/comp/MinerComp.java
+@@ -12,6 +12,7 @@ import mindustry.graphics.*;
+ import mindustry.input.*;
+ import mindustry.type.*;
+ import mindustry.world.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -126,6 +127,7 @@ abstract class MinerComp implements Itemsc, Posc, Teamc, Rotc, Drawc{
+ 
+     @Override
+     public void draw(){
++        if(!RenderExt.showMineBeam) return;
+         if(!mining()) return;
+         float focusLen = hitSize / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
+         float swingScl = 12f, swingMag = tilesize / 8f;
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
 index a959c00ba2d01957c499fe3b9447cb200e3bf8e1..60193cd29f30f90ebf58bbe93e621fa71db4fe53 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
@@ -33,7 +54,7 @@ index a959c00ba2d01957c499fe3b9447cb200e3bf8e1..60193cd29f30f90ebf58bbe93e621fa7
              Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
          }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index ad060e73b146b784247e059b45df8369b390c6d5..9ffd2daff427480bf8f1f051e7aa68be15b2007b 100644
+index b080177aeea03fb54f34d77cfddc0222bc80d6bb..d3f2cc85070e141fa4a6186f6b24f88cdddcb275 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -1,12 +1,20 @@
@@ -50,19 +71,18 @@ index ad060e73b146b784247e059b45df8369b390c6d5..9ffd2daff427480bf8f1f051e7aa68be
 +    public static boolean bulletShow, showMineBeam, displayAllMessage;
 +
      public static void init(){
-         Events.run(Trigger.update, () -> {
+         Events.run(Trigger.preDraw, () -> {
 +            bulletShow = Core.settings.getBool("bulletShow");
 +            showMineBeam = Core.settings.getBool("showminebeam");
 +            displayAllMessage = Core.settings.getBool("displayallmessage");
          });
          Events.run(Trigger.draw, RenderExt::draw);
      }
-@@ -16,6 +24,11 @@ public class RenderExt{
+@@ -16,6 +24,10 @@ public class RenderExt{
      }
  
      public static void onGroupDraw(Drawc t){
 +        if(!bulletShow && t instanceof Bulletc) return;
-+        if(!showMineBeam && t instanceof Minerc) return;
          t.draw();
 +        if(displayAllMessage && t instanceof MessageBuild build){
 +            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
