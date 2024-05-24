@@ -14,10 +14,11 @@ Content-Transfer-Encoding: 8bit
  .../src/mindustry/editor/MapEditorDialog.java | 26 +++++++++++----
  .../src/mindustry/editor/MapResizeDialog.java |  4 +--
  core/src/mindustry/editor/MapView.java        | 32 +++++++++++++++----
- 6 files changed, 61 insertions(+), 20 deletions(-)
+ core/src/mindustry/ui/GridImage.java          |  5 +--
+ 7 files changed, 64 insertions(+), 22 deletions(-)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 38ae78a4cf04c2d2037faf3b74d27d5943fee9c0..ab011d4b6fd1db100ec1b395d48c438fa951dfb5 100644
+index 85f9ccfe75a72020d09d415e26e5ab27f2341a6e..9024b058c2509f771745a663924b0a6dfa454fdb 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -91,6 +91,11 @@ category.developerMode.name = 特殊设置
@@ -248,3 +249,26 @@ index dd1c447f6192caa90dfc39d3cdce89368e148f3c..98f3f31e284a04c5fd3ac35fd625cc52
                  }
              }
          }else{
+diff --git a/core/src/mindustry/ui/GridImage.java b/core/src/mindustry/ui/GridImage.java
+index f80262d5ac469cfb71659def42077d47db38e971..f3ae89881256ad8ade8e4a570c941c5a372f26ef 100644
+--- a/core/src/mindustry/ui/GridImage.java
++++ b/core/src/mindustry/ui/GridImage.java
+@@ -5,6 +5,7 @@ import arc.scene.*;
+ 
+ public class GridImage extends Element{
+     private int imageWidth, imageHeight;
++    public int interval = 1;
+ 
+     public GridImage(int w, int h){
+         this.imageWidth = w;
+@@ -19,8 +20,8 @@ public class GridImage extends Element{
+ 
+         int minspace = 10;
+ 
+-        int jumpx = (int)(Math.max(minspace, xspace) / xspace);
+-        int jumpy = (int)(Math.max(minspace, yspace) / yspace);
++        int jumpx = (int)(Math.max(minspace, xspace * interval) / xspace);
++        int jumpy = (int)(Math.max(minspace, yspace * interval) / yspace);
+ 
+         for(int x = 0; x <= imageWidth; x += jumpx){
+             Fill.crect((int)(this.x + xspace * x - s), y - s, 2, getHeight() + (x == imageWidth ? 1 : 0));

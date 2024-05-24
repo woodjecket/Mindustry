@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 18 May 2024 12:46:49 +0800
+Subject: [PATCH] =?UTF-8?q?C:=20=E5=8F=96=E6=B6=88=E7=8E=A9=E5=AE=B6?=
+ =?UTF-8?q?=E8=87=AA=E8=BA=AB=E7=9A=84=E7=A2=B0=E6=92=9E?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/assets/bundles/bundle-mdtx.properties   | 1 +
+ core/src/mindustry/async/PhysicsProcess.java | 3 +++
+ core/src/mindustryX/features/Settings.java   | 1 +
+ 3 files changed, 5 insertions(+)
+
+diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
+index 9024b058c2509f771745a663924b0a6dfa454fdb..c8b3458b46c86c6fe331a22b62a359aa1f80efd9 100644
+--- a/core/assets/bundles/bundle-mdtx.properties
++++ b/core/assets/bundles/bundle-mdtx.properties
+@@ -86,6 +86,7 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
+ category.entitySettings.name = 实体相关设置
+ setting.bulletShow.name = 显示子弹
+ setting.showminebeam.name = 显示单位挖掘光束
++setting.noPlayerHitBox.name = 取消玩家自身的碰撞 [gray]轻微作弊
+ 
+ category.developerMode.name = 特殊设置
+ setting.renderSort.name = 渲染排序 [grey]实验性功能，能够提升50%渲染性能，但可能造成渲染错误
+diff --git a/core/src/mindustry/async/PhysicsProcess.java b/core/src/mindustry/async/PhysicsProcess.java
+index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692aef1eff361 100644
+--- a/core/src/mindustry/async/PhysicsProcess.java
++++ b/core/src/mindustry/async/PhysicsProcess.java
+@@ -1,5 +1,6 @@
+ package mindustry.async;
+ 
++import arc.*;
+ import arc.math.*;
+ import arc.math.geom.*;
+ import arc.math.geom.QuadTree.*;
+@@ -87,6 +88,8 @@ public class PhysicsProcess implements AsyncProcess{
+         for(PhysicRef ref : refs){
+             Physicsc entity = ref.entity;
+ 
++            if(entity instanceof Unitc unit && unit.isLocal() && Core.settings.getBool("noPlayerHitBox")) continue;
++
+             //move by delta
+             entity.move(ref.body.x - ref.x, ref.body.y - ref.y);
+         }
+diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
+index daf11fe904ee1f451219e4fc8b28042c0963be57..0e282d9c678ff7ae72d3620b8720dd1c96b84b67 100644
+--- a/core/src/mindustryX/features/Settings.java
++++ b/core/src/mindustryX/features/Settings.java
+@@ -60,6 +60,7 @@ public class Settings{
+             c.addCategory("entitySettings");
+             c.checkPref("bulletShow", true);
+             c.checkPref("showMineBeam".toLowerCase(), true);
++            c.checkPref("noPlayerHitBox", false);
+ 
+             c.addCategory("developerMode");
+             c.checkPref("renderSort", false);

@@ -28,7 +28,7 @@ index b4ddb5af181ffd4515f59b267b6558f1e84a337a..efd2697aac27d4f14ee51de2f9b8cfee
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index b384d7525b403e589542379c62760c39e4f6e998..7e0a8341675ffe6c3cce423141a3654f604565b0 100644
+index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0daff7fbbab 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -49,6 +49,9 @@ public class Hooks implements ApplicationListener{
@@ -55,7 +55,7 @@ index b384d7525b403e589542379c62760c39e4f6e998..7e0a8341675ffe6c3cce423141a3654f
  }
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6aab0394e2062c06bbc03b7559a03c9ffeb78c99
+index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f876edba18
 --- /dev/null
 +++ b/core/src/mindustryX/features/MarkerType.java
 @@ -0,0 +1,212 @@
@@ -230,7 +230,7 @@ index 0000000000000000000000000000000000000000..6aab0394e2062c06bbc03b7559a03c9f
 +
 +    public static void lockOnLastMark(){
 +        if(last == null) return;
-+        RFuncs.arcSetCamera(last);
++        control.input.panCamera(Tmp.v1.set(last));
 +        last.show();
 +    }
 +

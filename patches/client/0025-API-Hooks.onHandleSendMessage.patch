@@ -31,18 +31,18 @@ index a25b52a1bc41ef870cf09527ce9c7f7677927674..3fe5e439e13396d08eb239e5d3f041e1
              Vars.ui.chatfrag.addMessage(message);
              Sounds.chatMessage.play();
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index cb7b9f19d279eec171a0f07a20243bbbb95d9b92..226299c7267bf8323cc9973392b853fdb0c073a1 100644
+index c399832fd28e50e3f6464380fca916cf5539d213..8e17b92678d8f8a844dc0395af6cbefbc20ca70e 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -2,6 +2,7 @@ package mindustryX;
- 
+@@ -3,6 +3,7 @@ package mindustryX;
  import arc.*;
  import arc.util.*;
+ import mindustry.*;
 +import mindustry.gen.*;
  import mindustryX.features.*;
  
  import java.net.*;
-@@ -28,4 +29,9 @@ public class Hooks implements ApplicationListener{
+@@ -31,4 +32,9 @@ public class Hooks implements ApplicationListener{
              }
          }
      }

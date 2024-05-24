@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 24 May 2024 19:44:57 +0800
+Subject: [PATCH] API: LogicExt
+
+---
+ core/src/mindustryX/Hooks.java             |  1 +
+ core/src/mindustryX/features/LogicExt.java | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
+ create mode 100644 core/src/mindustryX/features/LogicExt.java
+
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 26a9f9a2789c36f4d5cd3af57a0c540d90019937..5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -24,6 +24,7 @@ public class Hooks implements ApplicationListener{
+     @Override
+     public void init(){
+         Log.infoTag("MindustryX", "Hooks.init");
++        LogicExt.init();
+         if(AutoUpdate.INSTANCE.getActive())
+             AutoUpdate.INSTANCE.checkUpdate();
+         if(!Vars.headless){
+diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e71f51b27d8576727f19b3273a9a6f0536e610c7
+--- /dev/null
++++ b/core/src/mindustryX/features/LogicExt.java
+@@ -0,0 +1,11 @@
++package mindustryX.features;
++
++import arc.*;
++import mindustry.game.EventType.*;
++
++public class LogicExt{
++    public static void init(){
++        Events.run(Trigger.update, () -> {
++        });
++    }
++}
+\ No newline at end of file

@@ -5,9 +5,9 @@ Subject: [PATCH] API: RenderExt
 
 ---
  core/src/mindustry/core/Renderer.java       |  3 ++-
- core/src/mindustryX/Hooks.java              |  2 ++
+ core/src/mindustryX/Hooks.java              |  5 +++++
  core/src/mindustryX/features/RenderExt.java | 21 +++++++++++++++++++++
- 3 files changed, 25 insertions(+), 1 deletion(-)
+ 3 files changed, 28 insertions(+), 1 deletion(-)
  create mode 100644 core/src/mindustryX/features/RenderExt.java
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
@@ -32,28 +32,31 @@ index 7769d3be7687ac8db960bef392a144410a1cc124..bab0738bca0a8b40d556bc3bfe36e679
          Draw.reset();
          Draw.flush();
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index ddb597d4389659c823a28f965434ed5be233215b..cb7b9f19d279eec171a0f07a20243bbbb95d9b92 100644
+index ddb597d4389659c823a28f965434ed5be233215b..c399832fd28e50e3f6464380fca916cf5539d213 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -2,6 +2,7 @@ package mindustryX;
+@@ -2,6 +2,8 @@ package mindustryX;
  
  import arc.*;
  import arc.util.*;
++import mindustry.*;
 +import mindustryX.features.*;
  
  import java.net.*;
  
-@@ -9,6 +10,7 @@ public class Hooks implements ApplicationListener{
+@@ -9,6 +11,9 @@ public class Hooks implements ApplicationListener{
      @Override
      public void init(){
          Log.infoTag("MindustryX", "Hooks.init");
-+        RenderExt.init();
++        if(!Vars.headless){
++            RenderExt.init();
++        }
      }
  
      @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ad060e73b146b784247e059b45df8369b390c6d5
+index 0000000000000000000000000000000000000000..b080177aeea03fb54f34d77cfddc0222bc80d6bb
 --- /dev/null
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -0,0 +1,21 @@
@@ -65,7 +68,7 @@ index 0000000000000000000000000000000000000000..ad060e73b146b784247e059b45df8369
 +
 +public class RenderExt{
 +    public static void init(){
-+        Events.run(Trigger.update, () -> {
++        Events.run(Trigger.preDraw, () -> {
 +        });
 +        Events.run(Trigger.draw, RenderExt::draw);
 +    }

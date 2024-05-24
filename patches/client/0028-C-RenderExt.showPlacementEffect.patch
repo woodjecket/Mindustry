@@ -8,7 +8,7 @@ Subject: [PATCH] C: RenderExt.showPlacementEffect
  1 file changed, 48 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 09d1447047fb8d87423d5bf10bee7bdf4ce8874e..949ca69aa54504b8ec3e88c9f536a90396e605b4 100644
+index 77a3c165a4fcaef06f51258271ab887cebd3c55d..ec66e8e0e9718ab3719edf9f8c4dbad44ad50a11 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -1,30 +1,55 @@
@@ -51,7 +51,7 @@ index 09d1447047fb8d87423d5bf10bee7bdf4ce8874e..949ca69aa54504b8ec3e88c9f536a903
 +            }
 +        });
 +
-         Events.run(Trigger.update, () -> {
+         Events.run(Trigger.preDraw, () -> {
              bulletShow = Core.settings.getBool("bulletShow");
              showMineBeam = Core.settings.getBool("showminebeam");
              displayAllMessage = Core.settings.getBool("displayallmessage");
@@ -67,7 +67,7 @@ index 09d1447047fb8d87423d5bf10bee7bdf4ce8874e..949ca69aa54504b8ec3e88c9f536a903
      }
  
      private static void draw(){
-@@ -39,4 +64,27 @@ public class RenderExt{
+@@ -38,4 +63,27 @@ public class RenderExt{
              Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
          }
      }

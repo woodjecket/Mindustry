@@ -14,7 +14,7 @@ Subject: [PATCH] C(RenderExt) blockRenderLevel
  7 files changed, 22 insertions(+), 7 deletions(-)
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 6ed4bb3d08571aab42e7ed7059cf3b6ca43190e3..cabc19671d3393a933e64a5f451a0079beafa2b3 100644
+index 25f812a5c38e95ec66d70188f057a4cb4f66f675..88308fb7d5b39c82207ea4b19f58705b086d62f0 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
 @@ -326,7 +326,8 @@ public class Renderer implements ApplicationListener{
@@ -140,7 +140,7 @@ index 1a2843e8297dff49b8fb8bb87da27985690b5aec..7e3645814d96cd2497332bbfcb2c9d28
          }
  
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index c871d23a2e4855b115ee1b411d7c91f36438acaa..9f35d0b5260b6db0fb76c9574741301e172e3060 100644
+index 9a5a1986cb631aa169bec0df832e0410f2c88909..26a9f9a2789c36f4d5cd3af57a0c540d90019937 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -10,6 +10,8 @@ import mindustryX.features.*;
@@ -162,7 +162,7 @@ index c871d23a2e4855b115ee1b411d7c91f36438acaa..9f35d0b5260b6db0fb76c9574741301e
      }
  }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 9012693e9e0c9d7951f4d9b517c37fa9c14bd170..68a8bcb2789d5ead726596677689b44190714fff 100644
+index 93693a897b603611988ec6d8264fb47fb0a6456b..f33a8b26d6478020b974fb085cad53b00a458460 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -24,6 +24,7 @@ public class RenderExt{

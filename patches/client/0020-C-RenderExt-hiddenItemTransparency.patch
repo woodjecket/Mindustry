@@ -217,7 +217,7 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..48de8e94b971603c88b51cb5b101bee4
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 89c94f0da33d750dd88827189d777d8f1f8e8927..1efdd1cb3db6413387c4f19cb4a8fe7d03569039 100644
+index fe555a40dd05ff9bfdb9819b590269232dd175a0..1a8ced7fce69797f516d0ae48c2f6a856519debe 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -11,6 +11,7 @@ public class RenderExt{
@@ -227,7 +227,7 @@ index 89c94f0da33d750dd88827189d777d8f1f8e8927..1efdd1cb3db6413387c4f19cb4a8fe7d
 +    public static int hiddenItemTransparency;
  
      public static void init(){
-         Events.run(Trigger.update, () -> {
+         Events.run(Trigger.preDraw, () -> {
 @@ -19,6 +20,7 @@ public class RenderExt{
              displayAllMessage = Core.settings.getBool("displayallmessage");
              arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");

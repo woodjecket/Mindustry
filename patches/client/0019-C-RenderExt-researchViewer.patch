@@ -89,7 +89,7 @@ index a251419f31092b68aca9fd756f19e8c3602263d4..59e3d7507a1161e9120b71d9f11ba02a
                      if(locked(node) || debugShowRequirements){
  
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 32021d1fcc48d6731715170eef6db29b6a007766..89c94f0da33d750dd88827189d777d8f1f8e8927 100644
+index 002da2e34c2e3f0afc77f9440f8758c1f43cde6c..fe555a40dd05ff9bfdb9819b590269232dd175a0 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -10,6 +10,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
@@ -99,7 +99,7 @@ index 32021d1fcc48d6731715170eef6db29b6a007766..89c94f0da33d750dd88827189d777d8f
 +    public static boolean researchViewer;
  
      public static void init(){
-         Events.run(Trigger.update, () -> {
+         Events.run(Trigger.preDraw, () -> {
 @@ -17,6 +18,7 @@ public class RenderExt{
              showMineBeam = Core.settings.getBool("showminebeam");
              displayAllMessage = Core.settings.getBool("displayallmessage");

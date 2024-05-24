@@ -10,10 +10,10 @@ Content-Transfer-Encoding: 8bit
 ---
  core/src/mindustryX/features/UIExt.java       |  19 +
  .../features/ui/AdvanceBuildTool.java         | 434 ++++++++++++++++++
- .../features/ui/HudSettingsTable.java         | 319 +++++++++++++
+ .../features/ui/HudSettingsTable.java         | 320 +++++++++++++
  .../features/ui/TeamsStatDisplay.java         | 171 +++++++
  .../mindustryX/features/ui/ToolTableBase.java |  24 +
- 5 files changed, 967 insertions(+)
+ 5 files changed, 968 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/AdvanceBuildTool.java
  create mode 100644 core/src/mindustryX/features/ui/HudSettingsTable.java
  create mode 100644 core/src/mindustryX/features/ui/TeamsStatDisplay.java
@@ -58,7 +58,7 @@ index 8a7332b9e3e6c432aa415bd3d5e7402df18ac419..5263fa6ab78a412a743fa566d8df7947
      public static void buildPositionRow(Table tt, Vec2 vec){
 diff --git a/core/src/mindustryX/features/ui/AdvanceBuildTool.java b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2f0422d42fc2e99f490c793547a7253879904457
+index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e4de41747
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
 @@ -0,0 +1,434 @@
@@ -327,7 +327,7 @@ index 0000000000000000000000000000000000000000..2f0422d42fc2e99f490c793547a72538
 +        searchBlockIndex = (searchBlockIndex + 1) % buildingSeq.size;
 +        searchBuild = buildingSeq.get(searchBlockIndex);
 +
-+        RFuncs.arcSetCamera(searchBuild);
++        control.input.panCamera(Tmp.v1.set(searchBuild));
 +        ui.announce("[violet]方块搜索\n[acid]找到方块[cyan]" + (searchBlockIndex + 1) + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
 +    }
 +
@@ -498,10 +498,10 @@ index 0000000000000000000000000000000000000000..2f0422d42fc2e99f490c793547a72538
 +}
 diff --git a/core/src/mindustryX/features/ui/HudSettingsTable.java b/core/src/mindustryX/features/ui/HudSettingsTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..38e307e1898596b82ccd0c9ad84f12181b1a7721
+index 0000000000000000000000000000000000000000..3801da645c4c11a3f01d43da94ab1e05621a8127
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/HudSettingsTable.java
-@@ -0,0 +1,319 @@
+@@ -0,0 +1,320 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -511,6 +511,7 @@ index 0000000000000000000000000000000000000000..38e307e1898596b82ccd0c9ad84f1218
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
++import mindustry.arcModule.toolpack.*;
 +import mindustry.content.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
@@ -640,15 +641,15 @@ index 0000000000000000000000000000000000000000..38e307e1898596b82ccd0c9ad84f1218
 +                    Core.settings.put("bloom", !Core.settings.getBool("bloom"));
 +                    renderer.toggleBloom(settings.getBool("bloom"));
 +                }).checked(a -> Core.settings.getBool("bloom")).size(30, 30).tooltip("光效显示");
-+                t.button("[acid]墙", Styles.flatTogglet, () -> Core.settings.put("forceEnableDarkness", !Core.settings.getBool("forceEnableDarkness")))
-+                .checked(a -> Core.settings.getBool("forceEnableDarkness")).size(30, 30).tooltip("墙体阴影显示");
++                t.button("[acid]墙", Styles.flatTogglet, () -> enableDarkness ^= true)
++                .checked(a -> enableDarkness).size(30, 30).tooltip("墙体阴影显示");
 +                t.button("[acid]天", Styles.flatTogglet, () -> Core.settings.put("showweather", !Core.settings.getBool("showweather")))
 +                .checked(a -> Core.settings.getBool("showweather")).size(30, 30).tooltip("天气显示");
 +                if(settings.getBool("developMode"))
 +                    t.button(StatusEffects.burning.emoji(), Styles.flatTogglet, () -> state.rules.fire = !state.rules.fire)
 +                    .checked(a -> state.rules.fire).size(30, 30).tooltip("太燃了");
-+                t.button("[cyan]扫", Styles.flatTogglet, () -> control.input.arcScanMode = !control.input.arcScanMode)
-+                .checked(a -> control.input.arcScanMode).size(30, 30).tooltip("扫描模式");
++                t.button("[cyan]扫", Styles.flatTogglet, () -> ArcScanMode.enabled = !ArcScanMode.enabled)
++                .checked(a -> ArcScanMode.enabled).size(30, 30).tooltip("扫描模式");
 +
 +            }).left();
 +            sp.row();
