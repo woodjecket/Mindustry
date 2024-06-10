@@ -10,11 +10,11 @@ Content-Transfer-Encoding: 8bit
 ---
  .../world/DirectionalItemBuffer.java          | 11 +++++
  core/src/mindustry/world/ItemBuffer.java      |  9 ++++
- .../distribution/BufferedItemBridge.java      | 45 +++++++++++++++++++
- .../world/blocks/distribution/ItemBridge.java | 15 +++++++
- .../world/blocks/distribution/Junction.java   | 30 +++++++++++++
+ .../distribution/BufferedItemBridge.java      | 47 +++++++++++++++++++
+ .../world/blocks/distribution/ItemBridge.java | 15 ++++++
+ .../world/blocks/distribution/Junction.java   | 30 ++++++++++++
  core/src/mindustryX/features/RenderExt.java   |  2 +
- 6 files changed, 112 insertions(+)
+ 6 files changed, 114 insertions(+)
 
 diff --git a/core/src/mindustry/world/DirectionalItemBuffer.java b/core/src/mindustry/world/DirectionalItemBuffer.java
 index 48cbdc84c09863a52f82282a70b3882e36fbed00..a55e582e7f670494adce17090e209caa7db3972f 100644
@@ -59,10 +59,10 @@ index d91da022ce4ca749164958cf8fc4438ddf777b23..1b8ac44e8773af0b69e40f284a1dfff5
          return index < buffer.length;
      }
 diff --git a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9bce70943f 100644
+index 6fe8e90722ef740148d337a09754febd47a7ab10..cf4602f09a5e5e6dfd86eef88ace838ea0309fbf 100644
 --- a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-@@ -1,9 +1,16 @@
+@@ -1,9 +1,17 @@
  package mindustry.world.blocks.distribution;
  
 +import arc.graphics.g2d.*;
@@ -71,6 +71,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9b
 +import arc.util.*;
  import arc.util.io.*;
  import mindustry.gen.*;
++import mindustry.graphics.*;
  import mindustry.type.*;
  import mindustry.world.*;
 +import mindustryX.features.*;
@@ -79,7 +80,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9b
  
  public class BufferedItemBridge extends ItemBridge{
      public final int timerAccept = timers++;
-@@ -40,6 +47,44 @@ public class BufferedItemBridge extends ItemBridge{
+@@ -40,6 +48,45 @@ public class BufferedItemBridge extends ItemBridge{
              dump();
          }
  
@@ -88,6 +89,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9b
 +            super.draw();
 +
 +            if(RenderExt.hiddenItemTransparency > 0){
++                Draw.z(Layer.power + 0.1f);
 +                Tile other = world.tile(link);
 +
 +                float begx, begy, endx, endy;
@@ -125,17 +127,10 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..f7fc8ea5c754acded073ce062d6d0e9b
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 4577524eff635398f18be119caa89a63079a2f64..304cbed8fd5b3149816fc1fbcd1fe7715befecaa 100644
+index 4577524eff635398f18be119caa89a63079a2f64..b83589bc8746b33c29503092a1da618fecc789b0 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-@@ -1,5 +1,6 @@
- package mindustry.world.blocks.distribution;
- 
-+import arc.*;
- import arc.graphics.*;
- import arc.graphics.g2d.*;
- import arc.math.*;
-@@ -17,6 +18,7 @@ import mindustry.input.*;
+@@ -17,6 +17,7 @@ import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.world.*;
  import mindustry.world.meta.*;
@@ -143,12 +138,13 @@ index 4577524eff635398f18be119caa89a63079a2f64..304cbed8fd5b3149816fc1fbcd1fe771
  
  import static mindustry.Vars.*;
  
-@@ -356,6 +358,19 @@ public class ItemBridge extends Block{
- 
-             Draw.z(Layer.power);
+@@ -354,6 +355,20 @@ public class ItemBridge extends Block{
+         public void draw(){
+             super.draw();
  
 +            //draw each item this bridge have
 +            if(items != null && RenderExt.hiddenItemTransparency > 0){
++                Draw.z(Layer.power + 0.1f);
 +                Draw.color(Color.white, RenderExt.hiddenItemTransparency / 100f);
 +                int loti = 0;
 +                for(int iid = 0; iid < items.length(); iid++){
@@ -160,24 +156,23 @@ index 4577524eff635398f18be119caa89a63079a2f64..304cbed8fd5b3149816fc1fbcd1fe771
 +                }
 +            }
 +
-             Tile other = world.tile(link);
-             if(!linkValid(tile, other)) return;
+             Draw.z(Layer.power);
  
+             Tile other = world.tile(link);
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index d02fb844045f4cf7b11050e86661ae6f5529e0dc..48de8e94b971603c88b51cb5b101bee4d1a3c262 100644
+index d02fb844045f4cf7b11050e86661ae6f5529e0dc..698e95ac696a3267bba1eb4bb3da2852154b71a4 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
-@@ -1,11 +1,18 @@
+@@ -1,11 +1,17 @@
  package mindustry.world.blocks.distribution;
  
-+import arc.*;
++import arc.graphics.*;
 +import arc.graphics.g2d.*;
 +import arc.math.*;
 +import arc.math.geom.*;
  import arc.util.*;
  import arc.util.io.*;
-+
-+import mindustry.ui.*;
++import mindustry.graphics.*;
  import mindustry.gen.*;
  import mindustry.type.*;
  import mindustry.world.*;
@@ -186,7 +181,7 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..48de8e94b971603c88b51cb5b101bee4
  
  import static mindustry.Vars.*;
  
-@@ -79,6 +86,29 @@ public class Junction extends Block{
+@@ -79,6 +85,30 @@ public class Junction extends Block{
              return to != null && to.team == team;
          }
  
@@ -194,18 +189,19 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..48de8e94b971603c88b51cb5b101bee4
 +        public void draw(){
 +            super.draw();
 +            if(RenderExt.hiddenItemTransparency > 0){
-+                float begx, begy, endx, endy;
++                Draw.z(Layer.power + 0.1f);
++                Draw.color(Color.white, RenderExt.hiddenItemTransparency / 100f);
 +                for(int dir = 0; dir < 4; dir++){
-+                    endx = x + Geometry.d4(dir).x * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f;
-+                    endy = y + Geometry.d4(dir).y * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).y * tilesize / 4f;
-+                    begx = x - Geometry.d4(dir).x * tilesize / 4f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f;
++                    float
++                    endx = x + Geometry.d4(dir).x * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f,
++                    endy = y + Geometry.d4(dir).y * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).y * tilesize / 4f,
++                    begx = x - Geometry.d4(dir).x * tilesize / 4f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f,
 +                    begy = y - Geometry.d4(dir).y * tilesize / 4f + Geometry.d4(Math.floorMod(dir + 1, 4)).y * tilesize / 4f;
 +
 +                    Item item;
 +                    for(int i = 0; (item = buffer.getItem(dir, i)) != null; i++){
 +                        float time = buffer.getTime(dir, i);
 +                        float p = Math.min(((Time.time - time) * timeScale / speed), (float)(capacity - i) / capacity);
-+                        Draw.alpha(RenderExt.hiddenItemTransparency / 100f);
 +                        Draw.rect(item.uiIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
 +                    }
 +                }
@@ -217,10 +213,10 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..48de8e94b971603c88b51cb5b101bee4
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index fe555a40dd05ff9bfdb9819b590269232dd175a0..1a8ced7fce69797f516d0ae48c2f6a856519debe 100644
+index d08e081e7ae0bdaa67d903d97116d0c714e015bc..62100afee7c0df3fd36781244ccd02cb318316c3 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -11,6 +11,7 @@ public class RenderExt{
+@@ -13,6 +13,7 @@ public class RenderExt{
      public static boolean bulletShow, showMineBeam, displayAllMessage;
      public static boolean arcChoiceUiIcon;
      public static boolean researchViewer;
@@ -228,7 +224,7 @@ index fe555a40dd05ff9bfdb9819b590269232dd175a0..1a8ced7fce69797f516d0ae48c2f6a85
  
      public static void init(){
          Events.run(Trigger.preDraw, () -> {
-@@ -19,6 +20,7 @@ public class RenderExt{
+@@ -21,6 +22,7 @@ public class RenderExt{
              displayAllMessage = Core.settings.getBool("displayallmessage");
              arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
              researchViewer = Core.settings.getBool("researchViewer");

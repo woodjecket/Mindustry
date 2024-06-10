@@ -1,17 +1,21 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Tue, 16 Apr 2024 21:44:18 +0800
-Subject: [PATCH] =?UTF-8?q?CF:=20MarkerType=20=E6=A0=87=E8=AE=B0=E5=8A=9F?=
+Subject: [PATCH] =?UTF-8?q?FC:=20MarkerType=20=E6=A0=87=E8=AE=B0=E5=8A=9F?=
  =?UTF-8?q?=E8=83=BD(=E9=87=8D=E5=88=B6)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
+支持\t前缀
+way-zer <himc.wicp@gmail.com> on 2024/6/10
 ---
- core/src/mindustry/input/Binding.java        |   2 +
- core/src/mindustryX/Hooks.java               |   9 +
- core/src/mindustryX/features/MarkerType.java | 212 +++++++++++++++++++
- 3 files changed, 223 insertions(+)
+ core/src/mindustry/input/Binding.java         |   2 +
+ .../mindustry/ui/fragments/ChatFragment.java  |   4 +-
+ core/src/mindustryX/Hooks.java                |   9 +
+ core/src/mindustryX/features/MarkerType.java  | 215 ++++++++++++++++++
+ core/src/mindustryX/features/UIExt.java       |  23 +-
+ 5 files changed, 245 insertions(+), 8 deletions(-)
  create mode 100644 core/src/mindustryX/features/MarkerType.java
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
@@ -27,6 +31,28 @@ index b4ddb5af181ffd4515f59b267b6558f1e84a337a..efd2697aac27d4f14ee51de2f9b8cfee
      ;
  
      private final KeybindValue defaultValue;
+diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
+index 7a968f1c21275eb4a571350adfcf59df1fa37df9..89b9a23ce2bb850df5c7ae99a5f964753a807662 100644
+--- a/core/src/mindustry/ui/fragments/ChatFragment.java
++++ b/core/src/mindustry/ui/fragments/ChatFragment.java
+@@ -30,7 +30,7 @@ public class ChatFragment extends Table{
+     private boolean shown = false;
+     private TextField chatfield;
+     private Label fieldlabel = new Label(">");
+-    private ChatMode mode = ChatMode.normal;
++    public ChatMode mode = ChatMode.normal;
+     private Font font;
+     private GlyphLayout layout = new GlyphLayout();
+     private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
+@@ -290,7 +290,7 @@ public class ChatFragment extends Table{
+         if(scrollPos > 0) scrollPos++;
+     }
+ 
+-    private enum ChatMode{
++    public enum ChatMode{
+         normal(""),
+         team("/t"),
+         admin("/a", player::admin)
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
 index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0daff7fbbab 100644
 --- a/core/src/mindustryX/Hooks.java
@@ -55,10 +81,10 @@ index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0da
  }
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f876edba18
+index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d701681ffb
 --- /dev/null
 +++ b/core/src/mindustryX/features/MarkerType.java
-@@ -0,0 +1,212 @@
+@@ -0,0 +1,215 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -72,18 +98,17 @@ index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f8
 +import mindustry.*;
 +import mindustry.arcModule.*;
 +import mindustry.arcModule.ui.dialogs.*;
-+import mindustry.core.*;
 +import mindustry.entities.*;
 +import mindustry.game.EventType.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
++import mindustryX.features.ui.*;
 +
 +import java.util.regex.*;
 +
 +import static arc.graphics.g2d.Draw.color;
 +import static arc.graphics.g2d.Lines.stroke;
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.DrawUtilities.drawText;
 +
 +public class MarkerType{
 +    private static final Pattern posPattern = Pattern.compile("(?<type><[A-Za-z]+>)?\\((?<x>\\d+),(?<y>\\d+)\\)");
@@ -194,7 +219,7 @@ index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f8
 +            return;
 +        }
 +        last = at(pos);
-+        Call.sendChatMessage(Strings.format("<ARCxMDTX>[#@]<@>[](@,@)", color, name, World.toTile(pos.x), World.toTile(pos.y)));
++        UIExt.sendChatMessage(Strings.format("<ARCxMDTX>[#@]<@>[]@", color, name, FormatDefault.formatTile(pos)));
 +    }
 +
 +    public static boolean resolveMessage(String text){
@@ -234,6 +259,10 @@ index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f8
 +        last.show();
 +    }
 +
++    public static @Nullable Position getLastPos(){
++        return last;
++    }
++
 +
 +    public static class MarkElement extends EffectState{
 +        public final MarkerType type;
@@ -267,7 +296,47 @@ index 0000000000000000000000000000000000000000..bfddbcae91ee408f99b5f42058c114f8
 +            Drawf.arrow(player.x, player.y, x, y, 5f * tilesize, 4f, color);
 +
 +            var p = Tmp.v1.set(this).sub(player).limit(4.5f * tilesize).add(player);
-+            drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
++            DrawUtilities.drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
 +        }
 +    }
 +}
+diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
+index d73cc555f9dfd3b4248707351e1ecfd6c261e686..a8740bc693f27bbfd3917a69c78417919eed6cad 100644
+--- a/core/src/mindustryX/features/UIExt.java
++++ b/core/src/mindustryX/features/UIExt.java
+@@ -5,6 +5,8 @@ import arc.scene.ui.*;
+ import arc.scene.ui.layout.*;
+ import arc.util.*;
+ import mindustry.content.*;
++import mindustry.core.*;
++import mindustry.gen.*;
+ import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+@@ -33,11 +35,20 @@ public class UIExt{
+             y.setText(String.valueOf(vec.y));
+         }).tooltip(b -> b.label(() -> "选择玩家当前位置：" + player.tileX() + "," + player.tileY())).height(50f);
+ 
+-//            tt.button(StatusEffects.blasted.emoji(), () -> {
+-//                if(Marker.markList.size == 0) return;
+-//                vec.set(World.toTile(Marker.markList.peek().markPos.x), World.toTile(Marker.markList.peek().markPos.y));
+-//                x.setText(World.toTile(Marker.markList.peek().markPos.x) + "");
+-//                y.setText(World.toTile(Marker.markList.peek().markPos.y) + "");
+-//            }).tooltip(Marker.markList.size == 0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," + World.toTile(Marker.markList.peek().markPos.y))).height(50f);
++        tt.button(StatusEffects.blasted.emoji(), () -> {
++            var last = MarkerType.getLastPos();
++            if(last == null) return;
++            vec.set(World.toTile(last.getX()), World.toTile(last.getY()));
++            x.setText(String.valueOf(vec.x));
++            y.setText(String.valueOf(vec.y));
++        }).height(50f).tooltip((t) -> t.label(() -> {
++            var last = MarkerType.getLastPos();
++            if(last == null) return "[red]未标记";
++            return "选择上个标记点：" + FormatDefault.formatTile(last);
++        }));
++    }
++
++    public static void sendChatMessage(String message){
++        Call.sendChatMessage(ui.chatfrag.mode.normalizedPrefix() + message);
+     }
+ }

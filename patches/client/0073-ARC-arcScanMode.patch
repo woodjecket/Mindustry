@@ -432,7 +432,7 @@ index 2c0077cc99557c80f49d0cf496c92309b31e482e..341b81c8ec8cae795b3e5c3872e253f9
      }
  }
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 304cbed8fd5b3149816fc1fbcd1fe7715befecaa..81299269eca7b02ad70944078ffa5fbf4b05f71f 100644
+index b83589bc8746b33c29503092a1da618fecc789b0..49256c50bdf4237c0970c67d9e83ca396abda19b 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 @@ -521,5 +521,17 @@ public class ItemBridge extends Block{

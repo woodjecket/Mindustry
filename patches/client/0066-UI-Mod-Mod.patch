@@ -18,7 +18,7 @@ Content-Transfer-Encoding: 8bit
  create mode 100644 core/src/mindustryX/features/ui/ModsRecommendDialog.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 954b7a329834b3eb7e7bbd74025c2940ce62632a..85f9ccfe75a72020d09d415e26e5ab27f2341a6e 100644
+index 73d44853f9615430d7d462591f0ccbe5d381e3e5..86fd6840328a5bb56841d4d90833d322ab88769e 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -1,3 +1,22 @@
@@ -407,12 +407,12 @@ index cfc64166ab474960ad13e1784605e9078c33d16e..5a4e034deba4bb29890ffd5edcd1ecdb
  
      private @Nullable String getStateText(LoadedMod item){
 diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
-index b2576d865d48a096dea0ec18fb65e499caef8bea..8a7332b9e3e6c432aa415bd3d5e7402df18ac419 100644
+index a8740bc693f27bbfd3917a69c78417919eed6cad..27409ae7886370c9dc9b29a71c13e12e71f8b3d2 100644
 --- a/core/src/mindustryX/features/UIExt.java
 +++ b/core/src/mindustryX/features/UIExt.java
-@@ -13,6 +13,7 @@ import static mindustry.content.UnitTypes.gamma;
+@@ -13,6 +13,7 @@ import static mindustry.Vars.*;
+ 
  public class UIExt{
-     public static AdvanceToolTable advanceToolTable;
      public static TeamSelectDialog teamSelect;
 +    public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
  

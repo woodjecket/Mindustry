@@ -6,12 +6,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
+添加`icon.png`
+way-zer <himc.wicp@gmail.com> on 2024/6/9
 ---
  .../src/mindustryX/loader/AndroidImpl.java    | 277 ++++++++++++++++++
  core/src/mindustryX/loader/DesktopImpl.java   | 131 +++++++++
  .../src/mindustryX/loader/LoaderPlatform.java |  45 +++
- core/src/mindustryX/loader/Main.java          | 130 ++++++++
- 4 files changed, 583 insertions(+)
+ core/src/mindustryX/loader/Main.java          | 133 +++++++++
+ 4 files changed, 586 insertions(+)
  create mode 100644 android/src/mindustryX/loader/AndroidImpl.java
  create mode 100644 core/src/mindustryX/loader/DesktopImpl.java
  create mode 100644 core/src/mindustryX/loader/LoaderPlatform.java
@@ -19,7 +21,7 @@ Content-Transfer-Encoding: 8bit
 
 diff --git a/android/src/mindustryX/loader/AndroidImpl.java b/android/src/mindustryX/loader/AndroidImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d0a9c75d7b7ea328d7f73f3d6d22a782f15dfc65
+index 0000000000000000000000000000000000000000..7e9a04a89c63b8f6d7408eedf7cfb98e120a8314
 --- /dev/null
 +++ b/android/src/mindustryX/loader/AndroidImpl.java
 @@ -0,0 +1,277 @@
@@ -116,7 +118,7 @@ index 0000000000000000000000000000000000000000..d0a9c75d7b7ea328d7f73f3d6d22a782
 +            public URL getResource(String name){
 +                if(name.equals("MindustryX.hjson"))
 +                    return findResource("mod.hjson");
-+                if(name.equals("mod.hjson")) return null;
++                if(name.equals("mod.hjson") || name.equals("icon.png")) return null;
 +                //self first
 +                URL url = findResource(name);
 +                if(url == null)
@@ -302,7 +304,7 @@ index 0000000000000000000000000000000000000000..d0a9c75d7b7ea328d7f73f3d6d22a782
 +}
 diff --git a/core/src/mindustryX/loader/DesktopImpl.java b/core/src/mindustryX/loader/DesktopImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6ad76a14f44eabc68d3f75ebd5d6ba56361cf1f2
+index 0000000000000000000000000000000000000000..899cc211a839ccbcae714654d15e1e22fc8d6dd5
 --- /dev/null
 +++ b/core/src/mindustryX/loader/DesktopImpl.java
 @@ -0,0 +1,131 @@
@@ -413,7 +415,7 @@ index 0000000000000000000000000000000000000000..6ad76a14f44eabc68d3f75ebd5d6ba56
 +            public URL getResource(String name){
 +                if(name.equals("MindustryX.hjson"))
 +                    return findResource("mod.hjson");
-+                if(name.equals("mod.hjson")) return null;
++                if(name.equals("mod.hjson") || name.equals("icon.png")) return null;
 +                //self first
 +                URL url = findResource(name);
 +                if(url == null)
@@ -490,10 +492,10 @@ index 0000000000000000000000000000000000000000..7214a64cd3d4e93503c1ed50e1514db9
 +}
 diff --git a/core/src/mindustryX/loader/Main.java b/core/src/mindustryX/loader/Main.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c0f7d4a491a480763bee18139bbc13f896670bb4
+index 0000000000000000000000000000000000000000..9e19822ac2a4f6cee4306c62cfacd2e526f9c57c
 --- /dev/null
 +++ b/core/src/mindustryX/loader/Main.java
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,133 @@
 +package mindustryX.loader;
 +
 +import arc.*;
@@ -524,7 +526,9 @@ index 0000000000000000000000000000000000000000..c0f7d4a491a480763bee18139bbc13f8
 +        }
 +        return null;
 +    }
++
 +    public Main(){
++        //When import mod, the constructor will be invoked.
 +        if(System.getProperty("MDTX-loaded") == null){
 +            System.setProperty("MDTX-loaded", "true");
 +            LoaderPlatform impl = getLoaderPlatform();
@@ -554,6 +558,7 @@ index 0000000000000000000000000000000000000000..c0f7d4a491a480763bee18139bbc13f8
 +
 +    @SuppressWarnings("unused")//invoke in safe classloader
 +    static void preload(){
++        if(Vars.clientLoaded) return;
 +        impl = getLoaderPlatform();
 +        if(!checkVersion()) return;
 +        Core.app.post(Main::load);

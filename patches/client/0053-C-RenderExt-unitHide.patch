@@ -66,10 +66,10 @@ index fed44831672e254a909e112214b32df1094fccef..086c6a80d21baca2103b9b8796ae849a
      }
  }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index ec66e8e0e9718ab3719edf9f8c4dbad44ad50a11..8d3390adfdc803c7dec6bb6cfb1f0fa45bbed879 100644
+index f2dc213e01b2f8114a3d4ca7e018b4c231019dde..9c981c82076b7ff94256f198eaeb6cef07b3b9a8 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -23,6 +23,9 @@ public class RenderExt{
+@@ -25,6 +25,9 @@ public class RenderExt{
      public static int hiddenItemTransparency;
      public static int blockBarMinHealth;
      public static float overdriveZoneTransparency;
@@ -79,7 +79,7 @@ index ec66e8e0e9718ab3719edf9f8c4dbad44ad50a11..8d3390adfdc803c7dec6bb6cfb1f0fa4
      private static Effect placementEffect;
  
      public static void init(){
-@@ -39,7 +42,7 @@ public class RenderExt{
+@@ -41,7 +44,7 @@ public class RenderExt{
  
          Events.run(Trigger.preDraw, () -> {
              bulletShow = Core.settings.getBool("bulletShow");

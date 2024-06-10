@@ -20,7 +20,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  create mode 100644 core/src/mindustryX/features/ReplayController.java
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 3fe5e439e13396d08eb239e5d3f041e182807b69..89ac0f575dafcf3602ec5b8b2ec2db47d5f3a584 100644
+index dcca3b910e100d508955cf96681a793f6055f114..f370490430116780a4481cadbb17e0bdd51f078f 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -24,6 +24,7 @@ import mindustry.net.*;
@@ -31,15 +31,14 @@ index 3fe5e439e13396d08eb239e5d3f041e182807b69..89ac0f575dafcf3602ec5b8b2ec2db47
  
  import java.io.*;
  import java.util.*;
-@@ -104,6 +105,7 @@ public class NetClient implements ApplicationListener{
+@@ -104,12 +105,14 @@ public class NetClient implements ApplicationListener{
                  return;
              }
  
 +            ReplayController.onConnect(packet.addressTCP);
              net.send(c, true);
-             Call.serverPacketReliable("ARC", Version.mdtXBuild);
-             Call.serverPacketReliable("ARC-build", Version.mdtXBuild);
-@@ -112,6 +114,7 @@ public class NetClient implements ApplicationListener{
+         });
+ 
          net.handleClient(Disconnect.class, packet -> {
              if(quietReset) return;
  

@@ -56,43 +56,46 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
 
 arcSetCamera -> control.input.panCamera
 way-zer <himc.wicp@gmail.com> on 2024/5/19
+
+remove blockDrop and minimapTools(小地图工具)
+way-zer <himc.wicp@gmail.com> on 2024/6/10 at 14:27
 ---
  core/src/mindustry/ai/BlockIndexer.java       |  116 ++
  core/src/mindustry/arcModule/ARCVars.java     |   39 +
  .../mindustry/arcModule/DrawUtilities.java    |  111 ++
- core/src/mindustry/arcModule/RFuncs.java      |  226 +++
+ core/src/mindustry/arcModule/RFuncs.java      |  219 +++
  .../mindustry/arcModule/draw/ARCBuilds.java   |  165 ++
- .../mindustry/arcModule/draw/ARCUnits.java    |  324 ++++
- .../arcModule/toolpack/arcChatPicture.java    |  205 +++
+ .../mindustry/arcModule/draw/ARCUnits.java    |  323 ++++
+ .../arcModule/toolpack/arcChatPicture.java    |  204 +++
  .../arcModule/toolpack/arcScanner.java        |  240 +++
  .../arcModule/toolpack/arcWaveSpawner.java    |  240 +++
  .../arcModule/toolpack/picToMindustry.java    |  343 +++++
  core/src/mindustry/arcModule/ui/ARCUI.java    |   37 +
  .../arcModule/ui/ArcWaveInfoDialog.java       | 1117 ++++++++++++++
- .../src/mindustry/arcModule/ui/PowerInfo.java |   93 ++
- core/src/mindustry/arcModule/ui/RStyles.java  |   86 ++
+ .../src/mindustry/arcModule/ui/PowerInfo.java |   94 ++
+ core/src/mindustry/arcModule/ui/RStyles.java  |   70 +
  .../ui/dialogs/BlockSelectDialog.java         |   58 +
- .../arcModule/ui/dialogs/MessageDialog.java   |  420 +++++
- .../arcModule/ui/dialogs/MusicDialog.java     | 1365 +++++++++++++++++
- core/src/mindustry/core/Renderer.java         |    5 +-
+ .../arcModule/ui/dialogs/MessageDialog.java   |  416 +++++
+ .../arcModule/ui/dialogs/MusicDialog.java     | 1364 +++++++++++++++++
+ core/src/mindustry/core/Renderer.java         |    3 +-
  core/src/mindustry/core/UI.java               |    9 +
  core/src/mindustry/editor/MapInfoDialog.java  |  148 +-
  .../entities/abilities/ShieldArcAbility.java  |    3 +-
- .../mindustry/entities/comp/BuildingComp.java |   33 +-
+ .../mindustry/entities/comp/BuildingComp.java |   20 +-
  .../mindustry/entities/comp/PlayerComp.java   |   26 +-
  .../mindustry/entities/comp/ShieldComp.java   |    6 +
  .../mindustry/entities/comp/StatusComp.java   |   12 +
  core/src/mindustry/game/Schematic.java        |  163 ++
  core/src/mindustry/game/Schematics.java       |    4 +-
  core/src/mindustry/game/Universe.java         |    2 +-
- .../src/mindustry/graphics/BlockRenderer.java |   19 +-
+ .../src/mindustry/graphics/BlockRenderer.java |   12 +-
  core/src/mindustry/graphics/Drawf.java        |   54 +
  core/src/mindustry/graphics/MenuRenderer.java |  114 +-
  .../mindustry/graphics/MinimapRenderer.java   |   47 +-
  .../mindustry/graphics/OverlayRenderer.java   |   84 +-
  core/src/mindustry/input/Binding.java         |   12 +-
- core/src/mindustry/input/DesktopInput.java    |  110 +-
- core/src/mindustry/input/InputHandler.java    |  102 +-
+ core/src/mindustry/input/DesktopInput.java    |   98 +-
+ core/src/mindustry/input/InputHandler.java    |   64 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
  core/src/mindustry/logic/LCanvas.java         |   95 +-
  core/src/mindustry/logic/LExecutor.java       |   14 +-
@@ -107,36 +110,32 @@ way-zer <himc.wicp@gmail.com> on 2024/5/19
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   12 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |   12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  117 +-
- .../ui/dialogs/SchematicsDialog.java          |  391 ++++-
- .../mindustry/ui/fragments/ChatFragment.java  |   29 +-
+ .../ui/dialogs/SchematicsDialog.java          |  390 ++++-
+ .../mindustry/ui/fragments/ChatFragment.java  |   25 +-
  .../ui/fragments/ConsoleFragment.java         |    2 +
- .../mindustry/ui/fragments/HudFragment.java   |  260 +++-
- .../mindustry/ui/fragments/MenuFragment.java  |   94 +-
+ .../mindustry/ui/fragments/HudFragment.java   |  255 ++-
+ .../mindustry/ui/fragments/MenuFragment.java  |   59 +-
  .../ui/fragments/PlacementFragment.java       |  321 +++-
  .../ui/fragments/PlayerListFragment.java      |  209 ++-
  core/src/mindustry/world/Block.java           |   18 +-
  core/src/mindustry/world/Build.java           |   50 +
  .../world/blocks/ConstructBlock.java          |   44 +-
  .../mindustry/world/blocks/ItemSelection.java |    3 +-
- .../world/blocks/defense/ForceProjector.java  |   20 +
- .../world/blocks/defense/MendProjector.java   |   32 +-
+ .../world/blocks/defense/ForceProjector.java  |    4 +
+ .../world/blocks/defense/MendProjector.java   |   16 +-
  .../blocks/defense/OverdriveProjector.java    |    7 +-
  .../blocks/defense/turrets/BaseTurret.java    |    5 +-
  .../blocks/defense/turrets/ReloadTurret.java  |   13 +
  .../world/blocks/defense/turrets/Turret.java  |   21 +
- .../world/blocks/distribution/MassDriver.java |   44 +
  .../world/blocks/logic/LogicBlock.java        |   96 +-
  .../world/blocks/logic/MemoryBlock.java       |  107 ++
- .../world/blocks/power/PowerGraph.java        |    3 +
- .../world/blocks/production/Drill.java        |   24 +-
+ .../world/blocks/production/Drill.java        |   23 +-
  .../blocks/production/GenericCrafter.java     |   29 +
  .../world/blocks/storage/CoreBlock.java       |    9 +
- .../world/blocks/units/Reconstructor.java     |   17 +
- .../world/blocks/units/UnitAssembler.java     |   16 +
- .../world/blocks/units/UnitFactory.java       |   19 +-
- core/src/mindustryX/Hooks.java                |   13 +
- core/src/mindustryX/features/RenderExt.java   |   36 +
- 79 files changed, 8556 insertions(+), 339 deletions(-)
+ .../world/blocks/units/UnitFactory.java       |    3 +-
+ core/src/mindustryX/Hooks.java                |   26 +-
+ core/src/mindustryX/features/RenderExt.java   |    5 +
+ 75 files changed, 8306 insertions(+), 296 deletions(-)
  create mode 100644 core/src/mindustry/arcModule/ARCVars.java
  create mode 100644 core/src/mindustry/arcModule/DrawUtilities.java
  create mode 100644 core/src/mindustry/arcModule/RFuncs.java
@@ -483,10 +482,10 @@ index 0000000000000000000000000000000000000000..5e03bf73d27b01ac1c27620e8a81ac9f
 +}
 diff --git a/core/src/mindustry/arcModule/RFuncs.java b/core/src/mindustry/arcModule/RFuncs.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca7348850736fe9433
+index 0000000000000000000000000000000000000000..273d55f5fb274cfa3d563830d4e6dd1f661693a0
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/RFuncs.java
-@@ -0,0 +1,226 @@
+@@ -0,0 +1,219 @@
 +package mindustry.arcModule;
 +
 +import arc.*;
@@ -497,6 +496,7 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +import arc.util.*;
 +import mindustry.*;
 +import mindustry.content.*;
++import mindustry.ctype.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
 +import mindustry.ui.*;
@@ -510,11 +510,7 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +import static mindustry.arcModule.ARCVars.arcui;
 +
 +public class RFuncs{
-+    static final int msgSeperator = 145;
-+
-+    public interface Stringf<T>{
-+        String get(T i);
-+    }
++    private static final int msgSeperator = 145;
 +
 +    public static void sendChatMsg(String msg){
 +        for(int i = 0; i < msg.length() / (float)msgSeperator; i++){
@@ -524,18 +520,18 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +
 +    public static void colorizeContent(){
 +        if(!Core.settings.getBool("colorizedContent")) return;
-+        content.items().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-+        content.liquids().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-+        content.statusEffects().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-+        content.planets().each(c -> c.localizedName = colorized(c.atmosphereColor, c.localizedName));
++        content.items().each(c -> colorizeContent(c, c.color));
++        content.liquids().each(c -> colorizeContent(c, c.color));
++        content.statusEffects().each(c -> colorizeContent(c, c.color));
++        content.planets().each(c -> colorizeContent(c, c.atmosphereColor));
 +        content.blocks().each(c -> {
-+            if(c.hasColor) c.localizedName = colorized(blockColor(c), c.localizedName);
-+            else if(c.itemDrop != null) c.localizedName = colorized(c.itemDrop.color, c.localizedName);
++            if(c.hasColor) colorizeContent(c, blockColor(c));
++            else if(c.itemDrop != null) colorizeContent(c, c.itemDrop.color);
 +        });
 +    }
 +
-+    private static String colorized(Color color, String name){
-+        return "[#" + color + "]" + name + "[]";
++    private static void colorizeContent(UnlockableContent c, Color color){
++        c.localizedName = "[#" + color + "]" + c.localizedName + "[]";
 +    }
 +
 +    private static Color blockColor(Block block){
@@ -559,8 +555,8 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +        return bestColor;
 +    }
 +
-+    public static String arcShareWaveInfo(int waves){
-+        if(!state.rules.waves) return " ";
++    public static void shareWaveInfo(int waves){
++        if(!state.rules.waves) return;
 +        StringBuilder builder = new StringBuilder(getPrefix("orange", "Wave"));
 +        builder.append("标记了第").append(waves).append("波");
 +        if(waves < state.wave){
@@ -574,7 +570,7 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +        }
 +
 +        builder.append(arcWaveInfo(waves));
-+        return builder.toString();
++        sendChatMsg(builder.toString());
 +    }
 +
 +    public static String calWaveTimer(){
@@ -667,10 +663,6 @@ index 0000000000000000000000000000000000000000..5263e657c9ca4afa382232ca73488507
 +
 +    public static String fixedTime(int timer){
 +        return fixedTime(timer, true);
-+    }
-+
-+    public static StringBuilder getPrefix(Color color, String type){
-+        return getPrefix("#" + color, type);
 +    }
 +
 +    public static StringBuilder getPrefix(String color, String type){
@@ -886,10 +878,10 @@ index 0000000000000000000000000000000000000000..bea28c839c511c1c30ff4d3d25eeb724
 +}
 diff --git a/core/src/mindustry/arcModule/draw/ARCUnits.java b/core/src/mindustry/arcModule/draw/ARCUnits.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f0556946b074
+index 0000000000000000000000000000000000000000..254a65618b6c66d16a23680b9d7bd5d3d14150ae
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/draw/ARCUnits.java
-@@ -0,0 +1,324 @@
+@@ -0,0 +1,323 @@
 +package mindustry.arcModule.draw;
 +
 +import arc.*;
@@ -907,8 +899,6 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +import mindustryX.features.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.ARCVars.maxBuildPlans;
-+import static mindustry.arcModule.DrawUtilities.drawNSideRegion;
 +
 +public class ARCUnits{
 +    private static boolean alwaysShowPlayerUnit, alwaysShowUnitRTSAi, unitHealthBar, unitLogicMoveLine, unitLogicTimerBars, unithitbox, unitBuildPlan;
@@ -966,6 +956,7 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +    }
 +
 +    private static void drawUnitBar(Unit unit){
++        Draw.z(Draw.z() + 0.1f);
 +        if(ARCVars.arcInfoControl(unit.team())){
 +            drawWeaponRange(unit);
 +            drawRTSAI(unit);
@@ -1155,7 +1146,7 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +                for(BuildPlan b : unit.plans()){
 +                    unit.drawPlan(b, 0.5f);
 +                    counter += 1;
-+                    if(counter >= maxBuildPlans) break;
++                    if(counter >= ARCVars.maxBuildPlans) break;
 +                }
 +            }
 +            counter = 0;
@@ -1171,7 +1162,7 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +                y = b.drawy();
 +                s = b.block.size * 2f;
 +                counter += 1;
-+                if(counter >= maxBuildPlans) break;
++                if(counter >= ARCVars.maxBuildPlans) break;
 +            }
 +
 +            counter = 0;
@@ -1190,7 +1181,7 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +                y = b.drawy();
 +                s = b.block.size * 2f;
 +                counter += 1;
-+                if(counter >= maxBuildPlans) break;
++                if(counter >= ARCVars.maxBuildPlans) break;
 +            }
 +            Draw.reset();
 +        }
@@ -1208,18 +1199,18 @@ index 0000000000000000000000000000000000000000..1decc8195f39681f466aef892508f055
 +        if(!arcBuildInfo) return;
 +        if(control.input.droppingItem){
 +            Color color = player.within(Core.input.mouseWorld(control.input.getMouseX(), control.input.getMouseY()), itemTransferRange) ? Color.gold : Color.red;
-+            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
++            DrawUtilities.drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
 +        }else if(control.input.isBuilding || control.input.selectedBlock() || !player.unit().plans().isEmpty()){
-+            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(), true);
++            DrawUtilities.drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(), true);
 +        }
 +    }
 +}
 diff --git a/core/src/mindustry/arcModule/toolpack/arcChatPicture.java b/core/src/mindustry/arcModule/toolpack/arcChatPicture.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7f785ed2226f68c15c7b686f95bee4a03a6407bd
+index 0000000000000000000000000000000000000000..479d09ae3ed65bac4652d42c93f117fcb62274ec
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/toolpack/arcChatPicture.java
-@@ -0,0 +1,205 @@
+@@ -0,0 +1,204 @@
 +package mindustry.arcModule.toolpack;
 +
 +import arc.*;
@@ -1239,7 +1230,6 @@ index 0000000000000000000000000000000000000000..7f785ed2226f68c15c7b686f95bee4a0
 +
 +import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
-+import static mindustry.arcModule.RFuncs.getPrefix;
 +
 +public class arcChatPicture{
 +
@@ -1303,7 +1293,7 @@ index 0000000000000000000000000000000000000000..7f785ed2226f68c15c7b686f95bee4a0
 +            figureLink = t.field("在此输入图片网址api", text -> {
 +            }).width(400f).get();
 +            t.button("♐", () -> {
-+                Call.sendChatMessage(getPrefix("yellow", "Picture").append(figureLink.getText()).toString().replace(" ", ""));
++                Call.sendChatMessage(RFuncs.getPrefix("yellow", "Picture").append(figureLink.getText()).toString().replace(" ", ""));
 +                figureLink.clear();
 +            }).disabled(disable -> !figureLink.getText().startsWith("http"));
 +            t.row();
@@ -1427,7 +1417,7 @@ index 0000000000000000000000000000000000000000..7f785ed2226f68c15c7b686f95bee4a0
 +}
 diff --git a/core/src/mindustry/arcModule/toolpack/arcScanner.java b/core/src/mindustry/arcModule/toolpack/arcScanner.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4ff7eab889b34f5f879c2484ea8029b3b6263c0b
+index 0000000000000000000000000000000000000000..274c3ecd77a4bf591ca07d3caec0bf6af6197a33
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/toolpack/arcScanner.java
 @@ -0,0 +1,240 @@
@@ -1440,6 +1430,7 @@ index 0000000000000000000000000000000000000000..4ff7eab889b34f5f879c2484ea8029b3
 +import arc.scene.event.*;
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
++import mindustry.arcModule.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
@@ -1450,7 +1441,6 @@ index 0000000000000000000000000000000000000000..4ff7eab889b34f5f879c2484ea8029b3
 +import mindustryX.features.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.DrawUtilities.drawText;
 +
 +public class arcScanner{
 +
@@ -1554,9 +1544,9 @@ index 0000000000000000000000000000000000000000..4ff7eab889b34f5f879c2484ea8029b3
 +            Lines.stroke(expandRate * 0.75f);
 +            Lines.circle(player.x, player.y, (radarCir * i * tilesize) / rRatio);
 +            float cirRatio = (radarCir * i * tilesize) / rRatio + 2f;
-+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, Pal.accent, Align.center);
-+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), Pal.accent, Align.center);
-+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), Pal.accent, Align.center);
++            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, Pal.accent, Align.center);
++            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), Pal.accent, Align.center);
++            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), Pal.accent, Align.center);
 +        }
 +
 +        if(scanRate < 1f){
@@ -1673,7 +1663,7 @@ index 0000000000000000000000000000000000000000..4ff7eab889b34f5f879c2484ea8029b3
 +}
 diff --git a/core/src/mindustry/arcModule/toolpack/arcWaveSpawner.java b/core/src/mindustry/arcModule/toolpack/arcWaveSpawner.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..39896ab5a964e8229f0d49bc729bd86e19d27f87
+index 0000000000000000000000000000000000000000..9c51fa5de98791a3e300b372921e591eb79831ae
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/toolpack/arcWaveSpawner.java
 @@ -0,0 +1,240 @@
@@ -1687,6 +1677,7 @@ index 0000000000000000000000000000000000000000..39896ab5a964e8229f0d49bc729bd86e
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
++import mindustry.arcModule.*;
 +import mindustry.content.*;
 +import mindustry.core.*;
 +import mindustry.game.*;
@@ -1694,7 +1685,6 @@ index 0000000000000000000000000000000000000000..39896ab5a964e8229f0d49bc729bd86e
 +import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.DrawUtilities.arcDashCircling;
 +
 +public class arcWaveSpawner{
 +
@@ -1730,7 +1720,7 @@ index 0000000000000000000000000000000000000000..39896ab5a964e8229f0d49bc729bd86e
 +            if(Core.settings.getBool("alwaysshowdropzone")){
 +                Draw.alpha(0.8f);
 +                for(Tile tile : spawner.getSpawns()){
-+                    arcDashCircling(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius, -flyerSpawnerRadius / state.rules.dropZoneRadius * 0.1f);
++                    DrawUtilities.arcDashCircling(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius, -flyerSpawnerRadius / state.rules.dropZoneRadius * 0.1f);
 +                }
 +            }else{
 +                for(Tile tile : spawner.getSpawns()){
@@ -1752,7 +1742,7 @@ index 0000000000000000000000000000000000000000..39896ab5a964e8229f0d49bc729bd86e
 +                    }
 +                    Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
 +                    Draw.alpha(0.8f);
-+                    arcDashCircling(spawnX, spawnY, flyerSpawnerRadius, 0.1f);
++                    DrawUtilities.arcDashCircling(spawnX, spawnY, flyerSpawnerRadius, 0.1f);
 +
 +                    Draw.color();
 +                    Draw.alpha(0.5f);
@@ -2312,7 +2302,7 @@ index 0000000000000000000000000000000000000000..c99c158a94e8cf4562ef78f68f1b578b
 +}
 diff --git a/core/src/mindustry/arcModule/ui/ArcWaveInfoDialog.java b/core/src/mindustry/arcModule/ui/ArcWaveInfoDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a1f06a616b5c73456728e32c1ceffaafe3488abc
+index 0000000000000000000000000000000000000000..34e13e609b24ed46afed7943f7713f2c0017f013
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/ArcWaveInfoDialog.java
 @@ -0,0 +1,1117 @@
@@ -2330,6 +2320,7 @@ index 0000000000000000000000000000000000000000..a1f06a616b5c73456728e32c1ceffaaf
 +import arc.struct.*;
 +import arc.util.*;
 +import mindustry.ai.types.*;
++import mindustry.arcModule.*;
 +import mindustry.arcModule.toolpack.*;
 +import mindustry.content.*;
 +import mindustry.core.*;
@@ -2346,7 +2337,6 @@ index 0000000000000000000000000000000000000000..a1f06a616b5c73456728e32c1ceffaaf
 +import java.util.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.RFuncs.*;
 +import static mindustry.arcModule.toolpack.arcWaveSpawner.calWinWave;
 +import static mindustry.game.SpawnGroup.never;
 +import static mindustry.ui.Styles.*;
@@ -2651,13 +2641,13 @@ index 0000000000000000000000000000000000000000..a1f06a616b5c73456728e32c1ceffaaf
 +                                tt.row();
 +                                float firstWaveTime = state.rules.initialWaveSpacing <= 0 ? (2 * state.rules.waveSpacing) : state.rules.initialWaveSpacing;
 +                                int thisTime = (int)(finalWave * state.rules.waveSpacing + firstWaveTime);
-+                                tt.add(fixedTime(thisTime, false)).row();
++                                tt.add(RFuncs.fixedTime(thisTime, false)).row();
 +                                Label waveTime = tt.add("").get();
 +                                tt.update(() -> {
 +                                    if(!state.isGame()) waveTime.setText("");
 +                                    else{
 +                                        int deltaTime = thisTime - (int)(state.wave <= 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * (state.wave - 1) - state.wavetime));
-+                                        waveTime.setText(arcColorTime(deltaTime, false));
++                                        waveTime.setText(RFuncs.arcColorTime(deltaTime, false));
 +                                    }
 +                                });
 +                            }).width(120f).left();
@@ -3435,10 +3425,10 @@ index 0000000000000000000000000000000000000000..a1f06a616b5c73456728e32c1ceffaaf
 +}
 diff --git a/core/src/mindustry/arcModule/ui/PowerInfo.java b/core/src/mindustry/arcModule/ui/PowerInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..de4860d6732221c934b89eff3b33ee5673d8587c
+index 0000000000000000000000000000000000000000..5441bb90c6f5bd2d68811d487e43d95bef481197
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/PowerInfo.java
-@@ -0,0 +1,93 @@
+@@ -0,0 +1,94 @@
 +package mindustry.arcModule.ui;
 +
 +import arc.*;
@@ -3501,8 +3491,9 @@ index 0000000000000000000000000000000000000000..de4860d6732221c934b89eff3b33ee56
 +    public static void update(){
 +        info.clear();
 +        Groups.powerGraph.each(item -> {
-+            if(item.graph().team == Vars.player.team())
-+                info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
++            var graph = item.graph();
++            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
++            info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
 +        });
 +    }
 +
@@ -3535,10 +3526,10 @@ index 0000000000000000000000000000000000000000..de4860d6732221c934b89eff3b33ee56
 \ No newline at end of file
 diff --git a/core/src/mindustry/arcModule/ui/RStyles.java b/core/src/mindustry/arcModule/ui/RStyles.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8a283c2cbcd741967b2a4d650a6db309b4fe5724
+index 0000000000000000000000000000000000000000..2f7e2cd740e6c9f08ef67bb52f57062df69857bf
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/RStyles.java
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,70 @@
 +package mindustry.arcModule.ui;
 +
 +import arc.graphics.*;
@@ -3552,12 +3543,9 @@ index 0000000000000000000000000000000000000000..8a283c2cbcd741967b2a4d650a6db309
 +import static mindustry.ui.Styles.*;
 +
 +public class RStyles{
-+    public static TextureRegionDrawable whiteuir;
 +    public static Drawable black1;
 +
 +    public static TextButtonStyle
-+    logicButton,
-+    flatt,
 +    clearLineNonet,
 +    clearLineNoneTogglet;
 +
@@ -3568,28 +3556,15 @@ index 0000000000000000000000000000000000000000..8a283c2cbcd741967b2a4d650a6db309
 +    clearLineNoneTogglei;
 +
 +    public static void load(){
-+        whiteuir = (TextureRegionDrawable)Tex.whiteui;
++        var whiteuir = (TextureRegionDrawable)Tex.whiteui;
 +
 +        black1 = whiteuir.tint(0f, 0f, 0f, 0.1f);
 +
-+        logicButton = new TextButtonStyle(){{
-+            up = none;
-+            over = flatOver;
-+            font = Fonts.outline;
-+            fontColor = Color.white;
-+        }};
-+
-+        flatt = new TextButtonStyle(){{
++        clearLineNonet = new TextButtonStyle(){{
 +            font = Fonts.def;
 +            fontColor = Color.white;
-+            down = flatOver;
-+            up = black;
-+            over = flatOver;
 +            disabled = black;
 +            disabledFontColor = Color.gray;
-+        }};
-+
-+        clearLineNonet = new TextButtonStyle(flatt){{
 +            up = none;
 +            over = accentDrawable;
 +            down = underlineWhite;
@@ -3691,10 +3666,10 @@ index 0000000000000000000000000000000000000000..0dc036fb94f2f259341ac19227cd1b47
 +}
 diff --git a/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java b/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388d32d1bf8
+index 0000000000000000000000000000000000000000..244022f9a680132e03f9ccef5f3a15954f46385d
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/dialogs/MessageDialog.java
-@@ -0,0 +1,420 @@
+@@ -0,0 +1,416 @@
 +package mindustry.arcModule.ui.dialogs;
 +
 +import arc.*;
@@ -3704,14 +3679,11 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
-+import mindustry.*;
 +import mindustry.arcModule.*;
 +import mindustry.arcModule.toolpack.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.core.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
-+import mindustry.input.*;
 +import mindustry.ui.*;
 +import mindustry.ui.dialogs.*;
 +import mindustry.world.blocks.storage.*;
@@ -3722,7 +3694,6 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 +
 +import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
-+import static mindustry.ui.Styles.*;
 +
 +public class MessageDialog extends BaseDialog{
 +
@@ -3798,7 +3769,7 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 +                    tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
 +
 +                    if(thisMsg.msgLoc.x != -1){
-+                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), RStyles.logicButton, () -> {
++                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), Styles.logict, () -> {
 +                            control.input.panCamera(thisMsg.msgLoc);
 +                            MarkerType.mark.at(Tmp.v1.scl(thisMsg.msgLoc.x, thisMsg.msgLoc.y)).color = color;
 +                            hide();
@@ -3825,7 +3796,7 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 +                    tt.left();
 +                    tt.marginLeft(4);
 +                    tt.setColor(thisMsg.msgType.color);
-+                    if(fieldMode) tt.field(thisMsg.message, nodeArea, text -> {
++                    if(fieldMode) tt.field(thisMsg.message, Styles.nodeArea, text -> {
 +                    }).growX();
 +                    else tt.labelWrap(getPlayerMsg(thisMsg)).growX();
 +                }).pad(4).padTop(2).growX().grow();
@@ -3873,10 +3844,10 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 +            t.add("调整显示的信息").height(50f);
 +            t.row();
 +            t.table(tt -> {
-+                tt.button("关闭全部", cleart, () -> {
++                tt.button("关闭全部", Styles.cleart, () -> {
 +                    for(arcMsgType type : arcMsgType.values()) type.show = false;
 +                }).width(200f).height(50f);
-+                tt.button("默认", cleart, () -> {
++                tt.button("默认", Styles.cleart, () -> {
 +                    for(arcMsgType type : arcMsgType.values()) type.show = true;
 +                    arcMsgType.serverTips.show = false;
 +                }).width(200f).height(50f);
@@ -4118,10 +4089,10 @@ index 0000000000000000000000000000000000000000..b07f93af725b6ba94d45a1dfd62e2388
 \ No newline at end of file
 diff --git a/core/src/mindustry/arcModule/ui/dialogs/MusicDialog.java b/core/src/mindustry/arcModule/ui/dialogs/MusicDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b9c462bf2
+index 0000000000000000000000000000000000000000..a272ad98a34f9b62b1b34cddae61583b7ff590d6
 --- /dev/null
 +++ b/core/src/mindustry/arcModule/ui/dialogs/MusicDialog.java
-@@ -0,0 +1,1365 @@
+@@ -0,0 +1,1364 @@
 +package mindustry.arcModule.ui.dialogs;
 +
 +import arc.*;
@@ -4159,7 +4130,6 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +
 +import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
-+import static mindustry.arcModule.RFuncs.getPrefix;
 +
 +public class MusicDialog extends BaseDialog{
 +    public static final String version = "1.2.4";
@@ -4611,7 +4581,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +        }
 +
 +        public void share(MusicInfo info){
-+            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id), true));
++            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id), true));
 +        }
 +
 +        public void share(MusicList list){
@@ -4621,7 +4591,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), E));
 +                    req.submit(r -> {
 +                        String code = r.getResultAsString();
-+                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
++                        Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
 +                    });
 +                    req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
 +                }catch(Exception e){
@@ -4904,7 +4874,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +                float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
 +                t.top();
 +                for(String str : tips){
-+                    t.button(str, RStyles.flatt, () -> {
++                    t.button(str, Styles.flatt, () -> {
 +                        searchUI.setText(queryString = str);
 +                        search();
 +                    }).width(width);
@@ -5251,7 +5221,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +        public void share(MusicInfo info){
 +            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> {
 +                try{
-+                    Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, E) + "\uf6aa" + URLEncoder.encode(fullInfo.author, E));
++                    Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, E) + "\uf6aa" + URLEncoder.encode(fullInfo.author, E));
 +                }catch(Exception ignored){
 +                }
 +            }));
@@ -5265,7 +5235,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +                    Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(buildList(list), E));
 +                    req.submit(r -> {
 +                        String code = r.getResultAsString();
-+                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
++                        Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
 +                    });
 +                    req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
 +                }catch(Exception e){
@@ -5488,7 +5458,7 @@ index 0000000000000000000000000000000000000000..53ad81898f5b540b6b1bdaca4fbbb34b
 +    }
 +}
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 88308fb7d5b39c82207ea4b19f58705b086d62f0..601aa8527ad5e11a9a99b8e071a9bad715f5030d 100644
+index 88308fb7d5b39c82207ea4b19f58705b086d62f0..400d9a5669b25aaee828b8fa9815cf9036bb7278 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
 @@ -28,6 +28,7 @@ import static arc.Core.*;
@@ -5499,23 +5469,7 @@ index 88308fb7d5b39c82207ea4b19f58705b086d62f0..601aa8527ad5e11a9a99b8e071a9bad7
      /** These are global variables, for headless access. Cached. */
      public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
  
-@@ -47,6 +48,7 @@ public class Renderer implements ApplicationListener{
-     public @Nullable Bloom bloom;
-     public @Nullable FrameBuffer backgroundBuffer;
-     public FrameBuffer effectBuffer = new FrameBuffer();
-+    public boolean drawBars = true;
-     public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true, pixelate = false;
-     public float weatherAlpha;
-     /** minZoom = zooming out, maxZoom = zooming in */
-@@ -181,6 +183,7 @@ public class Renderer implements ApplicationListener{
-         drawStatus = settings.getBool("blockstatus");
-         enableEffects = settings.getBool("effects");
-         drawDisplays = !settings.getBool("hidedisplays");
-+        drawBars = Core.settings.getBool("blockBars");
-         drawLight = settings.getBool("drawlight", true);
-         pixelate = Core.settings.getBool("pixelate");
- 
-@@ -380,7 +383,7 @@ public class Renderer implements ApplicationListener{
+@@ -380,7 +381,7 @@ public class Renderer implements ApplicationListener{
          }
  
          Draw.draw(Layer.overlayUI, overlays::drawTop);
@@ -5808,7 +5762,7 @@ index 12d631908b9e7a8bfda95bfcf3294afda87b54d0..c901efb6a86873f5e65166e4dc89947d
      }
  }
 diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
-index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b45af9662 100644
+index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..cef1e2001c1d94be9964c493736cbc10481433ef 100644
 --- a/core/src/mindustry/entities/comp/BuildingComp.java
 +++ b/core/src/mindustry/entities/comp/BuildingComp.java
 @@ -16,6 +16,7 @@ import arc.util.*;
@@ -5827,27 +5781,7 @@ index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b
  
      @Nullable PowerModule power;
      @Nullable ItemModule items;
-@@ -1166,6 +1168,19 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
-         }
-     }
- 
-+    public void drawBars(){
-+        if(maxHealth < Core.settings.getInt("blockbarminhealth") || (health / maxHealth > 0.9f )) return;
-+        Draw.color(team.color, 0.3f);
-+        Lines.stroke(4f);
-+        Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+            x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+        Draw.color(Pal.health ,0.6f);
-+        Lines.stroke(2f);
-+        Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+            x + 0.6f * (Mathf.clamp(health / maxHealth, 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+        Draw.color();
-+    }
-+
-     public void drawCracks(){
-         if(!block.drawCracks || !damaged() || block.size > BlockRenderer.maxCrackSize) return;
-         int id = pos();
-@@ -1392,7 +1407,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1392,7 +1394,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          //derelict team icon currently doesn't display
          return team == Team.derelict ?
              block.localizedName + "\n" + Core.bundle.get("block.derelict") :
@@ -5857,7 +5791,7 @@ index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b
      }
  
      public TextureRegion getDisplayIcon(){
-@@ -1415,8 +1431,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1415,8 +1418,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
  
          table.row();
  
@@ -5868,7 +5802,7 @@ index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b
              table.table(bars -> {
                  bars.defaults().growX().height(18f).pad(4);
  
-@@ -1517,6 +1533,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1517,6 +1520,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
              table.add(result).growX();
              table.row();
          }
@@ -5884,7 +5818,7 @@ index ab6a22b7a5dca3858ec49d7d51270fbb6abe9c53..267fe7074c82e8868a3ebf3de9710a7b
      }
  
       /** Called when this block is tapped to build a UI on the table.
-@@ -1532,7 +1557,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1532,7 +1544,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
  
      /** Returns whether a hand cursor should be shown over this block. */
      public Cursor getCursor(){
@@ -6240,7 +6174,7 @@ index 4aa77d8be7d4876022746b93046e0e8587b9052b..849a46f6bae96b5a65e4874b2621acfc
      private @Nullable Schematic lastLoadout;
      private ItemSeq lastLaunchResources = new ItemSeq();
 diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
-index e92b22e0fcd239254fbc14b82af2a95721543480..09a8ea217fa1e5db776879ac5a77d81c515cfd6e 100644
+index ea5060298da5e478b234e8d0575ab2ceedb5b6e6..5886be91270917a49de91928a2750c2b36a9f4ed 100644
 --- a/core/src/mindustry/graphics/BlockRenderer.java
 +++ b/core/src/mindustry/graphics/BlockRenderer.java
 @@ -10,6 +10,7 @@ import arc.math.geom.*;
@@ -6251,16 +6185,7 @@ index e92b22e0fcd239254fbc14b82af2a95721543480..09a8ea217fa1e5db776879ac5a77d81c
  import mindustry.content.*;
  import mindustry.game.EventType.*;
  import mindustry.game.*;
-@@ -418,7 +419,7 @@ public class BlockRenderer{
- 
-             //comment wasVisible part for hiding?
-             if(block != Blocks.air && (visible || build.wasVisible)){
--                if(RenderExt.blockRenderLevel > 1) block.drawBase(tile);
-+                RenderExt.onBlockDraw(tile, block, build);
-                 Draw.reset();
-                 Draw.z(Layer.block);
- 
-@@ -446,12 +447,24 @@ public class BlockRenderer{
+@@ -446,12 +447,19 @@ public class BlockRenderer{
  
                      if(build.team != pteam){
                          if(build.block.drawTeamOverlay){
@@ -6278,11 +6203,6 @@ index e92b22e0fcd239254fbc14b82af2a95721543480..09a8ea217fa1e5db776879ac5a77d81c
 +                    if(RenderExt.drawBlockDisabled && ARCVars.arcInfoControl(build.team) && !build.enabled()){
 +                        Draw.z(Layer.power + 1);
 +                        build.drawDisabled();
-+                    }
-+
-+                    if(renderer.drawBars){
-+                        Draw.z(Layer.turret + 4f);
-+                        build.drawBars();
 +                    }
                  }
                  Draw.reset();
@@ -6791,7 +6711,7 @@ index 41167e477c4705288195bc159995d5a19a9fb52b..142157357a2494c1ecc8963d0257ca05
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a55fddc85f 100644
+index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..2e194a65c2953b4bb0dd4fff7b9ed34cc833ad93 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -13,17 +13,25 @@ import arc.scene.ui.layout.*;
@@ -6862,36 +6782,10 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a5
              cursorType = SystemCursor.arrow;
              if(!Core.scene.hasMouse()){
                  Core.graphics.cursor(cursorType);
-@@ -477,7 +495,7 @@ public class DesktopInput extends InputHandler{
-                 cursorType = SystemCursor.hand;
-             }
- 
--            if(canTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y)){
-+            if(canTapPlayer(Core.input.mouseWorld().x, Core.input.mouseWorld().y) && !settings.getBool("blockDrop", false)){
-                 cursorType = ui.unloadCursor;
-             }
- 
-@@ -633,6 +651,10 @@ public class DesktopInput extends InputHandler{
-             }
-         }
- 
-+        if(Core.input.keyTap(Binding.showRTSAi)){
-+            settings.put("alwaysShowUnitRTSAi",!settings.getBool("alwaysShowUnitRTSAi"));
-+        }
-+
-         if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
-             updateLine(selectX, selectY);
-             lastLineX = cursorX;
-@@ -763,6 +785,20 @@ public class DesktopInput extends InputHandler{
+@@ -763,6 +781,14 @@ public class DesktopInput extends InputHandler{
                  Core.settings.put("lasersopacity", 0);
              }
          }
-+
-+        if (input.keyTap(Binding.superUnitEffect)) {
-+            int level = settings.getInt("superUnitEffect");
-+            settings.put("superUnitEffect", (level + 1) % 3);
-+        }
-+
 +        if (input.keyDown(Binding.oreAdsorption) && player.unit().tileOn() != null) {
 +            player.unit().tileOn().circle(Mathf.ceil(player.unit().type.mineRange / 8f), tile -> {
 +                Tile ptile = player.unit().mineTile;
@@ -6903,7 +6797,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a5
      }
  
      @Override
-@@ -833,7 +869,7 @@ public class DesktopInput extends InputHandler{
+@@ -833,7 +859,7 @@ public class DesktopInput extends InputHandler{
      }
  
      protected void updateMovement(Unit unit){
@@ -6912,7 +6806,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a5
  
          float speed = unit.speed();
          float xa = Core.input.axis(Binding.move_x);
-@@ -845,23 +881,69 @@ public class DesktopInput extends InputHandler{
+@@ -845,23 +871,69 @@ public class DesktopInput extends InputHandler{
              movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);
          }
  
@@ -6993,7 +6887,7 @@ index 2dfd03352c965a11af6c6f2bf451a72e4a1ffede..ae4434858f5848b8db833c56897a65a5
          //update payload input
          if(unit instanceof Payloadc){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd61b7c5adf 100644
+index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..4363aa7b107a9843e142b1c63259797067227e30 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -17,6 +17,7 @@ import mindustry.*;
@@ -7096,21 +6990,6 @@ index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd6
                  int[] ids = new int[selectedUnits.size];
                  for(int i = 0; i < ids.length; i++){
                      ids[i] = selectedUnits.get(i).id;
-@@ -1019,10 +1029,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-                 Drawf.selected(blocker, Pal.remove);
-                 Tmp.v1.set(cursorX, cursorY).scl(tilesize).add(block.offset, block.offset).sub(blocker).scl(-1f).nor();
-                 Drawf.dashLineDst(Pal.remove,
--                cursorX * tilesize + block.offset + Tmp.v1.x * block.size * tilesize/2f,
--                cursorY * tilesize + block.offset + Tmp.v1.y * block.size * tilesize/2f,
--                blocker.x + Tmp.v1.x * -blocker.block.size * tilesize/2f,
--                blocker.y + Tmp.v1.y * -blocker.block.size * tilesize/2f
-+                cursorX * tilesize + block.offset + Tmp.v1.x * block.size * tilesize / 2f,
-+                cursorY * tilesize + block.offset + Tmp.v1.y * block.size * tilesize / 2f,
-+                blocker.x + Tmp.v1.x * -blocker.block.size * tilesize / 2f,
-+                blocker.y + Tmp.v1.y * -blocker.block.size * tilesize / 2f
-                 );
-             }
-         }
 @@ -1069,6 +1079,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          });
      }
@@ -7143,15 +7022,6 @@ index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd6
          });
      }
  
-@@ -1120,7 +1148,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-             }
- 
-             plan.pointConfig(p -> {
--                int corigin = x ? plan.originalWidth/2 : plan.originalHeight/2;
-+                int corigin = x ? plan.originalWidth / 2 : plan.originalHeight / 2;
-                 int nvalue = -(x ? p.x : p.y);
-                 if(x){
-                     plan.originalX = -(plan.originalX - corigin) + corigin;
 @@ -1133,6 +1161,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              //flip rotation
@@ -7205,28 +7075,6 @@ index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd6
              if(build.block.hasItems && build.items.total() > 0){
                  inv.showFor(build);
                  consumed = true;
-@@ -1494,7 +1537,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
- 
-     /** Tries to select the player to drop off items, returns true if successful. */
-     boolean tryTapPlayer(float x, float y){
--        if(canTapPlayer(x, y)){
-+        if(canTapPlayer(x, y) && !settings.getBool("blockDrop", false)){
-             droppingItem = true;
-             return true;
-         }
-@@ -1533,9 +1576,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
- 
-     boolean canMine(Tile tile){
-         return !Core.scene.hasMouse()
--            && player.unit().validMine(tile)
--            && player.unit().acceptsItem(player.unit().getMineResult(tile))
--            && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
-+        && player.unit().validMine(tile)
-+        && player.unit().acceptsItem(player.unit().getMineResult(tile))
-+        && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
-     }
- 
-     /** Returns the tile at the specified MOUSE coordinates. */
 @@ -1614,7 +1657,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){
@@ -7236,35 +7084,7 @@ index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd6
              return build;
          }
          return null;
-@@ -1624,8 +1667,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-         var tree = player.team().data().tree();
-         tmpUnits.clear();
-         float rad = 4f;
--        tree.intersect(x - rad/2f, y - rad/2f, rad, rad, tmpUnits);
--        return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize/2f);
-+        tree.intersect(x - rad / 2f, y - rad / 2f, rad, rad, tmpUnits);
-+        return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize / 2f);
-     }
- 
-     public @Nullable Unit selectedEnemyUnit(float x, float y){
-@@ -1639,14 +1682,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-             }
-         }
- 
--        return tmpUnits.min(u -> !u.inFogTo(player.team()), u -> u.dst(x, y) - u.hitSize/2f);
-+        return tmpUnits.min(u -> !u.inFogTo(player.team()), u -> u.dst(x, y) - u.hitSize / 2f);
-     }
- 
-     public Seq<Unit> selectedCommandUnits(float x, float y, float w, float h, Boolf<Unit> predicate){
-         var tree = player.team().data().tree();
-         tmpUnits.clear();
-         float rad = 4f;
--        tree.intersect(Tmp.r1.set(x - rad/2f, y - rad/2f, rad*2f + w, rad*2f + h).normalize(), tmpUnits);
-+        tree.intersect(Tmp.r1.set(x - rad / 2f, y - rad / 2f, rad * 2f + w, rad * 2f + h).normalize(), tmpUnits);
-         tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
-         return tmpUnits;
-     }
-@@ -1700,8 +1743,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1700,6 +1743,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public boolean canShoot(){
@@ -7272,49 +7092,8 @@ index a6f07dbb04fbc900f17e0d8512b3d14045fa6929..b16c765c5fa008d7d449393c08b2dcd6
 +            return block == null && !onConfigurable() && !isDroppingItem() && !commandMode;
 +        }
          return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
--            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
-+        !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
+             !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
      }
- 
-     public boolean onConfigurable(){
-@@ -1717,7 +1763,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-     }
- 
-     public void tryDropItems(@Nullable Building build, float x, float y){
--        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() ){
-+        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() || settings.getBool("blockDrop", false)){
-             droppingItem = false;
-             return;
-         }
-@@ -1727,7 +1773,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-         ItemStack stack = player.unit().stack;
- 
-         if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
--                build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
-+        build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
-             if(!(state.rules.onlyDepositCore && !(build instanceof CoreBuild))){
-                 Call.transferInventory(player, build);
-             }
-@@ -1797,8 +1843,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-     public void drawArrow(Block block, int x, int y, int rotation, boolean valid){
-         float trns = (block.size / 2) * tilesize;
-         int dx = Geometry.d4(rotation).x, dy = Geometry.d4(rotation).y;
--        float offsetx = x * tilesize + block.offset + dx*trns;
--        float offsety = y * tilesize + block.offset + dy*trns;
-+        float offsetx = x * tilesize + block.offset + dx * trns;
-+        float offsety = y * tilesize + block.offset + dy * trns;
- 
-         Draw.color(!valid ? Pal.removeBack : Pal.accentBack);
-         TextureRegion regionArrow = Core.atlas.find("place-arrow");
-@@ -1836,7 +1882,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-         var end = world.build(endX, endY);
-         if(diagonal && (block == null || block.allowDiagonal)){
-             if(block != null && start instanceof ChainedBuilding && end instanceof ChainedBuilding
--                    && block.canReplace(end.block) && block.canReplace(start.block)){
-+            && block.canReplace(end.block) && block.canReplace(start.block)){
-                 points = Placement.upgradeLine(startX, startY, endX, endY);
-             }else{
-                 points = Placement.pathfindLine(block != null && block.conveyorPlacement, startX, startY, endX, endY);
 diff --git a/core/src/mindustry/input/MobileInput.java b/core/src/mindustry/input/MobileInput.java
 index dfac50b02c171c61b02f4e7da4d20ce7e5e00c1a..9d1cc972026994e22f65e5dc770786ebcaf16ed9 100644
 --- a/core/src/mindustry/input/MobileInput.java
@@ -7552,7 +7331,7 @@ index dc6716375964ec579572888ff572f2803798e9d9..fdf241aa1c5b10f7ab8f7d1083873be0
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d192d0af352 100644
+index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..ee1cf2685341b5cb698eec4019a1db50f7ce1fc1 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -7563,7 +7342,7 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
  import arc.scene.ui.*;
  import arc.scene.ui.TextButton.*;
  import arc.scene.ui.layout.*;
-@@ -19,14 +20,25 @@ import mindustry.ui.*;
+@@ -19,6 +20,7 @@ import mindustry.ui.*;
  import mindustry.ui.dialogs.*;
  
  import static mindustry.Vars.*;
@@ -7571,8 +7350,9 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
  import static mindustry.logic.LCanvas.*;
  
  public class LogicDialog extends BaseDialog{
-     public LCanvas canvas;
+@@ -26,8 +28,18 @@ public class LogicDialog extends BaseDialog{
      Cons<String> consumer = s -> {};
+     GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
      boolean privileged;
 +    public static float period = 15f;
 +    float counter = 0f;
@@ -7589,7 +7369,7 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
      public LogicDialog(){
          super("logic");
  
-@@ -38,20 +50,164 @@ public class LogicDialog extends BaseDialog{
+@@ -39,20 +51,164 @@ public class LogicDialog extends BaseDialog{
          addCloseListener();
  
          shown(this::setup);
@@ -7757,7 +7537,7 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
          return color.set(
              !s.isobj ? Pal.place :
              s.objval == null ? Color.darkGray :
-@@ -104,6 +260,19 @@ public class LogicDialog extends BaseDialog{
+@@ -105,6 +261,19 @@ public class LogicDialog extends BaseDialog{
                              ui.showException(e);
                          }
                      }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
@@ -7777,7 +7557,7 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
                  });
              });
  
-@@ -144,7 +313,6 @@ public class LogicDialog extends BaseDialog{
+@@ -145,7 +314,6 @@ public class LogicDialog extends BaseDialog{
  
                          t.add(new Image(Tex.whiteui, Pal.gray.cpy().mul(mul))).width(stub);
                          t.table(Tex.pane, out -> {
@@ -7785,7 +7565,7 @@ index ac2fd249a8a3a7032c358ec3c7a9ea4366012e86..e70837545f8c4f40ae07c100dae94d19
                              float[] counter = {-1f};
                              Label label = out.add("").style(Styles.outlineLabel).padLeft(4).padRight(4).width(140f).wrap().get();
                              label.update(() -> {
-@@ -244,7 +412,7 @@ public class LogicDialog extends BaseDialog{
+@@ -247,7 +415,7 @@ public class LogicDialog extends BaseDialog{
                  modified.get(result);
              }
          };
@@ -8310,22 +8090,20 @@ index 770b034943c7a043d50f6191b8d3b6df4e228196..c3b394dc36dae64eaafcdd80da303aa4
          });
  
 diff --git a/core/src/mindustry/ui/dialogs/ContentInfoDialog.java b/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
-index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..9d6a3199037a4e33f114056124c62223dcfc7981 100644
+index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..4891ded3cc374429c647d9c8b0b41bf8ca70c94f 100644
 --- a/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
 +++ b/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
-@@ -8,11 +8,13 @@ import arc.util.*;
+@@ -5,9 +5,11 @@ import arc.scene.ui.*;
+ import arc.scene.ui.layout.*;
+ import arc.struct.*;
+ import arc.util.*;
++import mindustry.arcModule.*;
  import mindustry.ctype.*;
  import mindustry.gen.*;
  import mindustry.graphics.*;
 +import mindustry.ui.Styles;
  import mindustry.input.*;
  import mindustry.world.meta.*;
- 
- import static arc.Core.*;
- import static mindustry.Vars.*;
-+import static mindustry.arcModule.RFuncs.getPrefix;
- 
- public class ContentInfoDialog extends BaseDialog{
  
 @@ -38,8 +40,9 @@ public class ContentInfoDialog extends BaseDialog{
          content.checkStats();
@@ -8389,7 +8167,7 @@ index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..9d6a3199037a4e33f114056124c62223
      }
  
 +    private String arcItemInfo(UnlockableContent content, boolean description) {
-+        StringBuilder builder = getPrefix("sky", "Content");
++        StringBuilder builder = RFuncs.getPrefix("sky", "Content");
 +        builder.append("标记了" + content.localizedName + content.emoji());
 +        builder.append("(" + content.name + ")");
 +        if (content.description != null && description) {
@@ -9041,7 +8819,7 @@ index 16d5d9e304dacd2ae477e26d5094e6cdfc87e605..c3a0db4af3b618f3c0b116486b6f7e3c
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9aad3ad564 100644
+index ff444b8991e2aa4d892bee3ab75757a5b1420c10..63684f483fbab1ba21d44b93ac39c81ffe7d45ba 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 @@ -15,6 +15,14 @@ import arc.scene.ui.layout.*;
@@ -9059,7 +8837,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
  import mindustry.ctype.*;
  import mindustry.game.*;
  import mindustry.gen.*;
-@@ -22,10 +30,16 @@ import mindustry.graphics.*;
+@@ -22,10 +30,15 @@ import mindustry.graphics.*;
  import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
@@ -9071,12 +8849,11 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
  
  import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
-+import static mindustry.arcModule.RFuncs.getPrefix;
 +import static mindustry.content.Items.*;
  
  public class SchematicsDialog extends BaseDialog{
      private static final float tagh = 42f;
-@@ -37,9 +51,37 @@ public class SchematicsDialog extends BaseDialog{
+@@ -37,9 +50,37 @@ public class SchematicsDialog extends BaseDialog{
      private Pattern ignoreSymbols = Pattern.compile("[`~!@#$%^&*()\\-_=+{}|;:'\",<.>/?]");
      private Seq<String> tags, selectedTags = new Seq<>();
      private boolean checkedTags;
@@ -9114,7 +8891,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
          Core.assets.load("sprites/schematic-background.png", Texture.class).loaded = t -> t.setWrap(TextureWrap.repeat);
  
          tags = Core.settings.getJson("schematic-tags", Seq.class, String.class, Seq::new);
-@@ -47,6 +89,14 @@ public class SchematicsDialog extends BaseDialog{
+@@ -47,6 +88,14 @@ public class SchematicsDialog extends BaseDialog{
          shouldPause = true;
          addCloseButton();
          buttons.button("@schematic.import", Icon.download, this::showImport);
@@ -9129,7 +8906,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
          makeButtonOverlay();
          shown(this::setup);
          onResize(this::setup);
-@@ -105,6 +155,48 @@ public class SchematicsDialog extends BaseDialog{
+@@ -105,6 +154,48 @@ public class SchematicsDialog extends BaseDialog{
  
          cont.row();
  
@@ -9178,7 +8955,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
          cont.pane(t -> {
              t.top();
  
-@@ -133,6 +225,9 @@ public class SchematicsDialog extends BaseDialog{
+@@ -133,6 +224,9 @@ public class SchematicsDialog extends BaseDialog{
                      if(selectedTags.any() && !s.labels.containsAll(selectedTags)) continue;
                      //make sure search fits
                      if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
@@ -9188,7 +8965,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
                      if(firstSchematic == null) firstSchematic = s;
  
                      Button[] sel = {null};
-@@ -205,6 +300,10 @@ public class SchematicsDialog extends BaseDialog{
+@@ -205,6 +299,10 @@ public class SchematicsDialog extends BaseDialog{
  
              rebuildPane.run();
          }).grow().scrollX(false);
@@ -9199,7 +8976,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
      }
  
      public void showInfo(Schematic schematic){
-@@ -275,23 +374,136 @@ public class SchematicsDialog extends BaseDialog{
+@@ -275,23 +373,136 @@ public class SchematicsDialog extends BaseDialog{
                      t.row();
                      dialog.hide();
                  }
@@ -9238,7 +9015,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
 +                        req.submit(r -> {
 +                            String code = r.getResultAsString();
 +                            if (clipbroad) arcSendClipBroadMsg(s, code);
-+                            else RFuncs.sendChatMsg(getPrefix("blue", "Schem") + " " + code.substring(code.lastIndexOf('/') + 1));
++                            else RFuncs.sendChatMsg(RFuncs.getPrefix("blue", "Schem") + " " + code.substring(code.lastIndexOf('/') + 1));
 +                        });
 +                        req.error(e -> Core.app.post(() -> {ui.showException("分享失败", e);if (clipbroad) arcSendClipBroadMsg(s, "x");}));
 +                    } catch (Exception e) {
@@ -9342,7 +9119,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
      public void showEdit(Schematic s){
          new BaseDialog("@schematic.edit"){{
              setFillParent(true);
-@@ -571,6 +783,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -571,6 +782,11 @@ public class SchematicsDialog extends BaseDialog{
                      t.button("@schematic.texttag", Icon.add, () -> showNewTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                      t.button("@schematic.icontag", Icon.add, () -> showNewIconTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                  });
@@ -9354,7 +9131,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
  
              };
  
-@@ -579,6 +796,135 @@ public class SchematicsDialog extends BaseDialog{
+@@ -579,6 +795,135 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -9490,7 +9267,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -789,13 +1135,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -789,13 +1134,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
@@ -9537,18 +9314,9 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..8eb128793ef7c8c5552e664af2e96a9a
          }
      }
 diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
-index 7a968f1c21275eb4a571350adfcf59df1fa37df9..03bbbbfca69229893fc097479f4078843ea0c56d 100644
+index 89b9a23ce2bb850df5c7ae99a5f964753a807662..03bbbbfca69229893fc097479f4078843ea0c56d 100644
 --- a/core/src/mindustry/ui/fragments/ChatFragment.java
 +++ b/core/src/mindustry/ui/fragments/ChatFragment.java
-@@ -30,7 +30,7 @@ public class ChatFragment extends Table{
-     private boolean shown = false;
-     private TextField chatfield;
-     private Label fieldlabel = new Label(">");
--    private ChatMode mode = ChatMode.normal;
-+    public ChatMode mode = ChatMode.normal;
-     private Font font;
-     private GlyphLayout layout = new GlyphLayout();
-     private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
 @@ -163,7 +163,10 @@ public class ChatFragment extends Table{
          Draw.alpha(shadowColor.a * opacity);
  
@@ -9602,15 +9370,6 @@ index 7a968f1c21275eb4a571350adfcf59df1fa37df9..03bbbbfca69229893fc097479f407884
          updateCursor();
      }
  
-@@ -290,7 +311,7 @@ public class ChatFragment extends Table{
-         if(scrollPos > 0) scrollPos++;
-     }
- 
--    private enum ChatMode{
-+    public enum ChatMode{
-         normal(""),
-         team("/t"),
-         admin("/a", player::admin)
 diff --git a/core/src/mindustry/ui/fragments/ConsoleFragment.java b/core/src/mindustry/ui/fragments/ConsoleFragment.java
 index e74e6a12e3da57eb58598eb4e679a7990c109def..476b5ac3794d6eb1d9ae5a4392d886f206bff7d3 100644
 --- a/core/src/mindustry/ui/fragments/ConsoleFragment.java
@@ -9632,24 +9391,23 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..476b5ac3794d6eb1d9ae5a4392d886f2
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a6874df8eeac 100644
+index dfd556da1c134e5949f1e14ec26a83b0290466c3..1a802d05053b9949d6a7aa37fd7db5cb3138b26e 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
-@@ -14,7 +14,9 @@ import arc.scene.ui.ImageButton.*;
+@@ -14,7 +14,10 @@ import arc.scene.ui.ImageButton.*;
  import arc.scene.ui.layout.*;
  import arc.struct.*;
  import arc.util.*;
 +import mindustry.*;
  import mindustry.annotations.Annotations.*;
++import mindustry.arcModule.*;
 +import mindustry.arcModule.ui.*;
  import mindustry.content.*;
  import mindustry.core.GameState.*;
  import mindustry.core.*;
-@@ -31,7 +33,9 @@ import mindustryX.features.*;
- import mindustryX.features.ui.*;
+@@ -32,6 +35,7 @@ import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
-+import static mindustry.arcModule.RFuncs.arcColorTime;
  import static mindustry.gen.Tex.*;
 +import static mindustry.ui.Styles.*;
  
@@ -9689,7 +9447,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -113,14 +130,36 @@ public class HudFragment{
+@@ -113,14 +130,31 @@ public class HudFragment{
              //minimap
              t.add(new Minimap()).name("minimap");
              t.row();
@@ -9721,19 +9479,14 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
 +                        .touchable(Touchable.disabled)
 +                        .style(Styles.outlineLabel)
 +                        .name("position");
-+                    if(Core.settings.getBool("minimapTools")){
-+                        tt.button(Iconc.cancel + "",cleart,()->Core.settings.put("minimap",!Core.settings.getBool("minimap"))).size(30,30).tooltip("关闭小地图(再次打开去设置里开)");
-+                        tt.button("+",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") * 1.2))).size(30,30).tooltip("增加小地图大小");
-+                        tt.button("-",cleart,()->Core.settings.put("minimapSize",(int)(Core.settings.getInt("minimapSize") / 1.2))).size(30,30).tooltip("减少小地图大小");
-+                        tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30).tooltip("开关玩家名显示");
-+                        tt.button(Iconc.alphaaaa + "",cleart,() -> renderer.minimap.unitDetailsIcon = !renderer.minimap.unitDetailsIcon).size(30,30).tooltip("单位图标细节");
-+                    }
-+                    tt.button("♐",cleart,()-> MarkerType.lockOnLastMark()).size(30,30).tooltip("锁定上个标记点");
++                tt.button(Iconc.players + "",cleart,()-> renderer.minimap.forceShowPlayer = !renderer.minimap.forceShowPlayer).size(30,30).tooltip("开关玩家名显示");
++                tt.button(Iconc.alphaaaa + "",cleart,() -> renderer.minimap.unitDetailsIcon = !renderer.minimap.unitDetailsIcon).size(30,30).tooltip("单位图标细节");
++                tt.button("♐",cleart,()-> MarkerType.lockOnLastMark()).size(30,30).tooltip("锁定上个标记点");
 +            }).style(Styles.outlineLabel);
              if(Core.settings.getInt("AuxiliaryTable") == 3){
                  t.row();
                  t.table(infoWave -> {
-@@ -217,12 +256,16 @@ public class HudFragment{
+@@ -217,12 +251,16 @@ public class HudFragment{
              Table wavesMain, editorMain;
  
              cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
@@ -9751,7 +9504,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
                  //wave info button with text
                  s.add(makeStatusTable()).grow().name("status");
  
-@@ -243,7 +286,13 @@ public class HudFragment{
+@@ -243,7 +281,13 @@ public class HudFragment{
                          logic.skipWave();
                      }
                  }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
@@ -9766,15 +9519,15 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
  
              wavesMain.row();
  
-@@ -259,6 +308,7 @@ public class HudFragment{
+@@ -259,6 +303,7 @@ public class HudFragment{
  
              editorMain.name = "editor";
              editorMain.table(Tex.buttonEdge4, t -> {
-+                t.visible(() -> UIExt.advanceToolTable != null && UIExt.advanceToolTable.visible);
++                t.visible(() -> UIExt.advanceToolTable != null && UIExt.advanceToolTable.parent.visible);
                  //t.margin(0f);
                  t.name = "teams";
                  t.add("@editor.teams").growX().left();
-@@ -277,6 +327,7 @@ public class HudFragment{
+@@ -277,6 +322,7 @@ public class HudFragment{
                              teams.row();
                          }
                      }
@@ -9782,7 +9535,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
                  }).left();
              }).width(dsize * 5 + 4f);
              editorMain.visible(() -> shown && state.isEditor());
-@@ -301,6 +352,8 @@ public class HudFragment{
+@@ -301,6 +347,8 @@ public class HudFragment{
                  IntFormat mem = new IntFormat("memory");
                  IntFormat memnative = new IntFormat("memory2");
  
@@ -9791,7 +9544,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -308,6 +361,10 @@ public class HudFragment{
+@@ -308,6 +356,10 @@ public class HudFragment{
                  info.row();
                  info.label(() -> "Draws: " + DebugUtil.lastDrawRequests).left().style(Styles.outlineLabel).name("draw");
                  info.row();
@@ -9802,7 +9555,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -387,7 +444,7 @@ public class HudFragment{
+@@ -387,7 +439,7 @@ public class HudFragment{
                  }
                  return max == 0f ? 0f : val / max;
              }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
@@ -9811,7 +9564,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
  
              t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
                  p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
-@@ -914,6 +971,143 @@ public class HudFragment{
+@@ -914,6 +966,143 @@ public class HudFragment{
          return table;
      }
  
@@ -9900,7 +9653,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
 +                            else return 1f;
 +                        })).height(18).growX().row();
 +                tt.add(new Bar(
-+                        () -> arcColorTime(state.rules.waveTimer? (int)state.wavetime : (int) state.tick),
++                        () -> RFuncs.arcColorTime(state.rules.waveTimer? (int)state.wavetime : (int) state.tick),
 +                        () -> Color.valueOf("F5DEB3"),
 +                        () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
 +                tt.add(new Bar(
@@ -9955,7 +9708,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -958,7 +1152,51 @@ public class HudFragment{
+@@ -958,7 +1147,51 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){
@@ -10009,7 +9762,7 @@ index dfd556da1c134e5949f1e14ec26a83b0290466c3..3c918e9b83efb4ba472223976bb7a687
  
  }
 diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
-index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2d02b2b5a 100644
+index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae3241b0805b 100644
 --- a/core/src/mindustry/ui/fragments/MenuFragment.java
 +++ b/core/src/mindustry/ui/fragments/MenuFragment.java
 @@ -1,6 +1,7 @@
@@ -10055,55 +9808,10 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
  
          parent.fill(c -> {
              c.pane(Styles.noBarPane, cont -> {
-@@ -64,19 +84,9 @@ public class MenuFragment{
-             }).grow();
-         });
- 
--//        parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
--//            up = discordBanner;
--//        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
--
--
--        if(AutoUpdate.INSTANCE.getActive()){
--            parent.fill(c -> c.bottom().right().button("更新", Icon.refresh, () -> {
--                AutoUpdate.INSTANCE.showDialog();
--            }).size(200, 60).name("更新").update(t -> {
--                t.getLabel().setColor(AutoUpdate.INSTANCE.getNewVersion() != null ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
--            }));
--        }
--
-+        parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
-+            up = discordBanner;
-+        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
- 
-         //info icon
-         if(mobile){
-@@ -91,20 +101,22 @@ public class MenuFragment{
-                     Tex.paneTop.draw(0, 0, Core.graphics.getWidth(), Core.scene.marginBottom);
-                 }
-             });
--        }else if(becontrol.active()){
--            parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
--                ui.loadfrag.show();
--                becontrol.checkUpdate(result -> {
--                    ui.loadfrag.hide();
--                    if(!result){
--                        ui.showInfo("@be.noupdates");
--                    }
--                });
--            }).size(200, 60).name("becheck").update(t -> {
--                t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
-+        }
-+
-+        if(AutoUpdate.INSTANCE.getActive()){
-+            parent.fill(c -> c.bottom().right().button("更新", Icon.refresh, () -> {
-+                AutoUpdate.INSTANCE.showDialog();
-+            }).size(200, 60).name("更新").update(t -> {
-+                t.getLabel().setColor(AutoUpdate.INSTANCE.getNewVersion() != null ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
+@@ -105,6 +125,11 @@ public class MenuFragment{
              }));
          }
  
-+
 +        parent.fill(c -> c.bottom().left().table(t -> {
 +            t.background(Tex.buttonEdge3);
 +            t.button("\uE83D", Styles.cleart, this::nextBackGroundImg).width(50f);
@@ -10112,7 +9820,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
          String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
          parent.fill((x, y, w, h) -> {
              TextureRegion logo = Core.atlas.find("logo");
-@@ -130,6 +142,22 @@ public class MenuFragment{
+@@ -130,6 +155,22 @@ public class MenuFragment{
          }).touchable = Touchable.disabled;
      }
  
@@ -10135,7 +9843,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
      private void buildMobile(){
          container.clear();
          container.name = "buttons";
-@@ -147,7 +175,7 @@ public class MenuFragment{
+@@ -147,7 +188,7 @@ public class MenuFragment{
              tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
              mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
              exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
@@ -10144,7 +9852,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
  
          Seq<MobileButton> customs = customButtons.map(b -> new MobileButton(b.icon, b.text, b.runnable == null ? () -> {} : b.runnable));
  
-@@ -166,11 +194,12 @@ public class MenuFragment{
+@@ -166,11 +207,12 @@ public class MenuFragment{
              container.add(editor);
              container.add(tools);
              container.add(mods);
@@ -10158,7 +9866,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
          }else{
              container.marginTop(0f);
              container.add(play);
-@@ -188,7 +217,9 @@ public class MenuFragment{
+@@ -188,7 +230,9 @@ public class MenuFragment{
                  container.add(customs.get(i));
                  if(i % 2 == 0) container.row();
              }
@@ -10169,7 +9877,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
          }
      }
  
-@@ -210,14 +241,15 @@ public class MenuFragment{
+@@ -210,14 +254,15 @@ public class MenuFragment{
                      new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
                      new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
                      new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
@@ -10189,7 +9897,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..42917c3d74966f9faf037e90afbac1a2
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b440ea6db6 100644
+index 966520f5c00e34e56f3f1cd8e315e338d4812a61..ae613a9dcdf84e20dbe549a2bf24dfb3520fbb2f 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -10208,13 +9916,12 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
  import mindustry.content.*;
  import mindustry.core.*;
  import mindustry.entities.*;
-@@ -24,23 +26,28 @@ import mindustry.input.*;
+@@ -24,22 +26,27 @@ import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.world.*;
 +import mindustry.world.blocks.ConstructBlock;
  import mindustry.world.blocks.ConstructBlock.*;
- import mindustryX.features.*;
 +import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
@@ -10240,7 +9947,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
      @Nullable Building lastFlowBuild, nextFlowBuild;
      @Nullable Object lastDisplayState;
      @Nullable Team lastTeam;
-@@ -107,6 +114,10 @@ public class PlacementFragment{
+@@ -106,6 +113,10 @@ public class PlacementFragment{
                  if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
                  if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
              }
@@ -10251,7 +9958,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
          });
      }
  
-@@ -129,6 +140,27 @@ public class PlacementFragment{
+@@ -128,6 +139,27 @@ public class PlacementFragment{
          if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
              var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
  
@@ -10279,7 +9986,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
              //can't middle click buildings in fog
              if(build != null && build.inFogTo(player.team())){
                  build = null;
-@@ -243,6 +275,8 @@ public class PlacementFragment{
+@@ -242,6 +274,8 @@ public class PlacementFragment{
      }
  
      public void build(Group parent){
@@ -10288,7 +9995,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
          parent.fill(full -> {
              toggler = full;
              full.bottom().right().visible(() -> ui.hudfrag.shown);
-@@ -261,13 +295,14 @@ public class PlacementFragment{
+@@ -259,13 +293,14 @@ public class PlacementFragment{
                      group.setMinCheckCount(0);
  
                      for(Block block : getUnlockedByCategory(currentCategory)){
@@ -10305,7 +10012,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                                  if((Core.input.keyDown(KeyCode.shiftLeft) || Core.input.keyDown(KeyCode.controlLeft)) && Fonts.getUnicode(block.name) != 0){
                                      Core.app.setClipboardText((char)Fonts.getUnicode(block.name) + "");
                                      ui.showInfoFade("@copied");
-@@ -319,19 +354,22 @@ public class PlacementFragment{
+@@ -317,19 +352,22 @@ public class PlacementFragment{
  
                          //find current hovered thing
                          Displayable hovered = hover;
@@ -10329,7 +10036,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                          lastTeam = player.team();
  
                          //show details of selected block, with costs
-@@ -353,10 +391,10 @@ public class PlacementFragment{
+@@ -351,10 +389,10 @@ public class PlacementFragment{
                                  final String keyComboFinal = keyCombo;
                                  header.left();
                                  header.add(new Image(displayBlock.uiIcon)).size(8 * 4);
@@ -10342,7 +10049,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                                      header.button("?", Styles.flatBordert, () -> {
                                          ui.content.show(displayBlock);
                                          Events.fire(new BlockInfoEvent());
-@@ -372,7 +410,7 @@ public class PlacementFragment{
+@@ -370,7 +408,7 @@ public class PlacementFragment{
                                      req.table(line -> {
                                          line.left();
                                          line.image(stack.item.uiIcon).size(8 * 2);
@@ -10351,7 +10058,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                                          line.labelWrap(() -> {
                                              Building core = player.core();
                                              int stackamount = Math.round(stack.amount * state.rules.buildCostMultiplier);
-@@ -400,7 +438,26 @@ public class PlacementFragment{
+@@ -398,7 +436,26 @@ public class PlacementFragment{
                          }else if(hovered != null){
                              //show hovered item, whatever that may be
                              hovered.display(topTable);
@@ -10378,7 +10085,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                      });
                  }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
  
-@@ -436,7 +493,7 @@ public class PlacementFragment{
+@@ -434,7 +491,7 @@ public class PlacementFragment{
                  }).colspan(3).fillX().row();
  
                  //commandTable: commanded units
@@ -10387,7 +10094,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                      commandTable.touchable = Touchable.enabled;
                      commandTable.add(Core.bundle.get("commandmode.name")).fill().center().labelAlign(Align.center).row();
                      commandTable.image().color(Pal.accent).growX().pad(20f).padTop(0f).padBottom(4f).row();
-@@ -501,6 +558,7 @@ public class PlacementFragment{
+@@ -499,6 +556,7 @@ public class PlacementFragment{
                                      u.row();
  
                                      u.table(coms -> {
@@ -10395,7 +10102,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                                          for(var command : commands){
                                              coms.button(Icon.icons.get(command.icon, Icon.cancel), Styles.clearNoneTogglei, () -> {
                                                  IntSeq ids = new IntSeq();
-@@ -513,9 +571,62 @@ public class PlacementFragment{
+@@ -511,9 +569,62 @@ public class PlacementFragment{
                                          }
                                      }).fillX().padTop(4f).left();
                                  }
@@ -10458,7 +10165,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                          };
  
                          u.update(() -> {
-@@ -555,13 +666,121 @@ public class PlacementFragment{
+@@ -553,13 +664,121 @@ public class PlacementFragment{
                          });
                          rebuildCommand.run();
                      }).grow();
@@ -10581,7 +10288,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                              if(pane.hasScroll()){
                                  Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
                                  if(result == null || !result.isDescendantOf(pane)){
-@@ -595,6 +814,17 @@ public class PlacementFragment{
+@@ -593,6 +812,17 @@ public class PlacementFragment{
                          boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
  
                          int f = 0;
@@ -10599,7 +10306,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
                          for(Category cat : getCategories()){
                              if(f++ % 2 == 0) categories.row();
  
-@@ -640,7 +870,7 @@ public class PlacementFragment{
+@@ -638,7 +868,7 @@ public class PlacementFragment{
      }
  
      Seq<Block> getUnlockedByCategory(Category cat){
@@ -10608,7 +10315,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
      }
  
      Block getSelectedBlock(Category cat){
-@@ -654,7 +884,9 @@ public class PlacementFragment{
+@@ -652,7 +882,9 @@ public class PlacementFragment{
  
      boolean hasInfoBox(){
          hover = hovered();
@@ -10619,7 +10326,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
      }
  
      /** Returns the thing being hovered over. */
-@@ -666,24 +898,75 @@ public class PlacementFragment{
+@@ -664,24 +896,75 @@ public class PlacementFragment{
          if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
  
          //check for a unit
@@ -10702,7 +10409,7 @@ index be2e0724973bd8011561d90393e3835fea59eba4..b0ab3be676e6be2ec0a1d681ba5455b4
 +    }
  }
 diff --git a/core/src/mindustry/ui/fragments/PlayerListFragment.java b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-index 9286aab19502b5cf40556311572157b20c60fef4..40f1567012cffa1aa295922d7c345eb54b92122f 100644
+index 9286aab19502b5cf40556311572157b20c60fef4..462b30db16512c2cf126b6a4bef181fd6f1eb14a 100644
 --- a/core/src/mindustry/ui/fragments/PlayerListFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlayerListFragment.java
 @@ -10,23 +10,30 @@ import arc.scene.ui.ImageButton.*;
@@ -10710,6 +10417,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..40f1567012cffa1aa295922d7c345eb5
  import arc.struct.*;
  import arc.util.*;
 -import mindustry.game.*;
++import mindustry.arcModule.*;
 +import mindustry.game.Team;
 +import mindustry.input.*;
  import mindustry.gen.*;
@@ -10723,7 +10431,6 @@ index 9286aab19502b5cf40556311572157b20c60fef4..40f1567012cffa1aa295922d7c345eb5
  
  import static mindustry.Vars.*;
 +import static mindustry.arcModule.ARCVars.arcui;
-+import static mindustry.arcModule.RFuncs.getPrefix;
 +import static mindustry.input.InputHandler.follow;
  
  public class PlayerListFragment{
@@ -11018,7 +10725,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..40f1567012cffa1aa295922d7c345eb5
      }
  
 +    private String arcAtPlayer(String name){
-+        StringBuilder builder = new StringBuilder(getPrefix("coral","AT"));
++        StringBuilder builder = new StringBuilder(RFuncs.getPrefix("coral","AT"));
 +        builder.append("戳了").append(name).append("[white]一下，并提醒你留意对话框");
 +        return builder.toString();
 +    }
@@ -11267,7 +10974,7 @@ index 483ba2813465888e23bbc60bd5bada94d237897c..930cc3cd4585ccaf969f57a59607be53
                  ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
                      if(closeSelect) control.input.config.hideConfig();
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index 5cc4088121fd85ccb4971465494b2f00ee59a878..bd4b0586de82d01df161282c0ae13f889aa90a33 100644
+index 5cc4088121fd85ccb4971465494b2f00ee59a878..b60cb85af6bba587c027b93c2affa527d6d32334 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
 @@ -1,6 +1,7 @@
@@ -11288,31 +10995,8 @@ index 5cc4088121fd85ccb4971465494b2f00ee59a878..bd4b0586de82d01df161282c0ae13f88
          Draw.color();
      }
  
-@@ -274,6 +278,22 @@ public class ForceProjector extends Block{
-             Draw.reset();
-         }
- 
-+        @Override
-+        public void drawBars() {
-+            super.drawBars();
-+            if (Core.settings.getBool("blockBars_mend") && buildup > 0) {
-+                Draw.color(Color.black, 0.3f);
-+                Lines.stroke(4f);
-+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                        x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+                Draw.color(broken ? Pal.remove : Pal.stat, 1f);
-+                Lines.stroke(2f);
-+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                        x + 0.6f * (0.5f - buildup / (shieldHealth + phaseShieldBoost * phaseHeat)) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+                Draw.color();
-+            }
-+        }
-+
-         @Override
-         public void write(Writes write){
-             super.write(write);
 diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
-index f52a5307bdd8c79fbccb82b7ff74dc856d615edb..0cc77922f40c0886defdb4ee3d6001897f44adad 100644
+index f52a5307bdd8c79fbccb82b7ff74dc856d615edb..e4016bff4dc6ba33e9debe56dc871c622527c03d 100644
 --- a/core/src/mindustry/world/blocks/defense/MendProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
 @@ -1,5 +1,6 @@
@@ -11358,29 +11042,6 @@ index f52a5307bdd8c79fbccb82b7ff74dc856d615edb..0cc77922f40c0886defdb4ee3d600189
              float f = 1f - (Time.time / 100f) % 1f;
  
              Draw.color(baseColor, phaseColor, phaseHeat);
-@@ -148,6 +162,22 @@ public class MendProjector extends Block{
-             Draw.reset();
-         }
- 
-+        @Override
-+        public void drawBars() {
-+            super.drawBars();
-+            if (Core.settings.getBool("blockBars_mend")) {
-+                Draw.color(Color.black, 0.3f);
-+                Lines.stroke(4f);
-+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                        x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+                Draw.color(Pal.heal, 1f);
-+                Lines.stroke(2f);
-+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                        x + 0.6f * (charge / reload - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+                Draw.color();
-+            }
-+        }
-+
-         @Override
-         public void drawLight(){
-             Drawf.light(x, y, lightRadius * smoothEfficiency, baseColor, 0.7f * smoothEfficiency);
 diff --git a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
 index 11cd57fb65dcac2eb118cd7d584dd83be20b7c0f..f47ac3f5ecb8f64caf2d1a50910a60fa7cf8c98a 100644
 --- a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
@@ -11511,75 +11172,8 @@ index f6866128bc39fdbf40d8e1b853ecc533ab5b9880..df3d89abe26584d9c9250e1f3868f9b9
      }
  
      public static class BulletEntry{
-diff --git a/core/src/mindustry/world/blocks/distribution/MassDriver.java b/core/src/mindustry/world/blocks/distribution/MassDriver.java
-index 196b343e60cc046a270cc8f02c906d7276252fda..4c99a62c784f1c5fe5de62e70988cc9f292f05b9 100644
---- a/core/src/mindustry/world/blocks/distribution/MassDriver.java
-+++ b/core/src/mindustry/world/blocks/distribution/MassDriver.java
-@@ -1,6 +1,8 @@
- package mindustry.world.blocks.distribution;
- 
-+import arc.*;
- import arc.audio.*;
-+import arc.graphics.*;
- import arc.graphics.g2d.*;
- import arc.math.*;
- import arc.math.geom.*;
-@@ -225,6 +227,35 @@ public class MassDriver extends Block{
-             Draw.rect(region,
-             x + Angles.trnsx(rotation + 180f, reloadCounter * knockback),
-             y + Angles.trnsy(rotation + 180f, reloadCounter * knockback), rotation - 90);
-+
-+            float sin = Mathf.absin(Time.time, 6f, 1f);
-+            Draw.z(Layer.effect);
-+            if (Core.settings.getInt("mass_driver_line_alpha")>=2f){
-+                for(var shooter : waitingShooters){
-+                    Lines.stroke(2f, Pal.placing);
-+
-+                    float alpha = Core.settings.getInt("mass_driver_line_alpha") / 100f;
-+                    Draw.alpha(alpha);
-+                    Drawf.dashLine(getmass_driver_line_color(),shooter.x, shooter.y, x, y);
-+                    Draw.alpha(alpha);
-+                    Drawf.arrow(shooter.x, shooter.y, x, y, size * tilesize + sin, 4f + sin, Pal.place);
-+                    float shooter_length = Mathf.dst(shooter.x, shooter.y, x, y);
-+                    float shooter_angle = (float) Math.acos((x-shooter.x)/shooter_length);
-+                    float reverty = 1f;
-+                    if (y<shooter.y) {reverty=-1;}
-+                    float mass_driver_line_interval = (float)Core.settings.getInt("mass_driver_line_interval");
-+                    float slice = shooter_length / mass_driver_line_interval -1f;
-+                    if (slice>1){
-+                        for (int slicer = 1; slicer < slice; slicer++) {
-+                            Draw.alpha(alpha);
-+                            Drawf.arrow(shooter.x + mass_driver_line_interval*Mathf.cos(shooter_angle)*slicer, shooter.y + mass_driver_line_interval*Mathf.sin(shooter_angle)*slicer*reverty, x, y, size * tilesize + sin, 4f + sin, Pal.place);
-+                          }
-+                    }
-+
-+            }
-+
-+            }
-+
-         }
- 
-         @Override
-@@ -367,4 +398,17 @@ public class MassDriver extends Block{
- 
-         public static final DriverState[] all = values();
-     }
-+
-+    public static Color getmass_driver_line_color(){
-+        String color = Core.settings.getString("mass_driver_line_color");
-+        if(color != null && color.length() == 6){
-+            for (char c : color.toCharArray()) {
-+                if (!Character.isDigit(c) && (!Character.isLetter(c) || (Character.toLowerCase(c) - 'a' > 'f' - 'a'))) {
-+                    return Color.valueOf("ff8c66");
-+                }
-+            }
-+            return Color.valueOf(color);
-+        }
-+        return Color.valueOf("ff8c66");
-+    }
- }
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 6f9a06a92dd76d03a2078d143d5a20d3223b478c..8ebac709f69d844e8e2d93b1eb0f37d08eccbabd 100644
+index 753688265a060d519686d49a24eac6627cd21991..4090d730343ad930dca20803b9bb0cb1d320b8ce 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -4,15 +4,19 @@ import arc.*;
@@ -11636,7 +11230,7 @@ index 6f9a06a92dd76d03a2078d143d5a20d3223b478c..8ebac709f69d844e8e2d93b1eb0f37d0
          /** Block of code to run after load. */
          public @Nullable Runnable loadBlock;
  
-@@ -563,10 +578,12 @@ public class LogicBlock extends Block{
+@@ -561,10 +576,12 @@ public class LogicBlock extends Block{
              }
  
              //draw top text on separate layer
@@ -11650,7 +11244,7 @@ index 6f9a06a92dd76d03a2078d143d5a20d3223b478c..8ebac709f69d844e8e2d93b1eb0f37d0
                  }
              }
          }
-@@ -582,6 +599,61 @@ public class LogicBlock extends Block{
+@@ -580,6 +597,61 @@ public class LogicBlock extends Block{
              return other != null && other.isValid() && (privileged || (!other.block.privileged && other.team == team && other.within(this, range + other.block.size*tilesize/2f))) && !(other instanceof ConstructBuild);
          }
  
@@ -11712,7 +11306,7 @@ index 6f9a06a92dd76d03a2078d143d5a20d3223b478c..8ebac709f69d844e8e2d93b1eb0f37d0
          @Override
          public boolean shouldShowConfigure(Player player){
              return accessible();
-@@ -589,9 +661,23 @@ public class LogicBlock extends Block{
+@@ -587,9 +659,23 @@ public class LogicBlock extends Block{
  
          @Override
          public void buildConfiguration(Table table){
@@ -11887,36 +11481,8 @@ index 37a6c2af615665c5179c6df5d57e053a07ce4c72..daae7aabba8340291ad58178dd53af1a
          @Override
          public void read(Reads read, byte revision){
              super.read(read, revision);
-diff --git a/core/src/mindustry/world/blocks/power/PowerGraph.java b/core/src/mindustry/world/blocks/power/PowerGraph.java
-index 563af123453c8f3c11a3aacabfe77a6460d14fbd..4818ab977c238ae1568555c620aa3797f526f4c5 100644
---- a/core/src/mindustry/world/blocks/power/PowerGraph.java
-+++ b/core/src/mindustry/world/blocks/power/PowerGraph.java
-@@ -5,6 +5,7 @@ import arc.struct.*;
- import arc.util.*;
- import mindustry.gen.*;
- import mindustry.world.consumers.*;
-+import mindustry.game.Team;
- 
- public class PowerGraph{
-     private static final Queue<Building> queue = new Queue<>();
-@@ -22,6 +23,7 @@ public class PowerGraph{
-     private final WindowedMean powerBalance = new WindowedMean(60);
-     private float lastPowerProduced, lastPowerNeeded, lastPowerStored;
-     private float lastScaledPowerIn, lastScaledPowerOut, lastCapacity;
-+    public Team team;
-     //diodes workaround for correct energy production info
-     private float energyDelta = 0f;
- 
-@@ -215,6 +217,7 @@ public class PowerGraph{
-     }
- 
-     public void update(){
-+        team = all.size == 0 ? null : all.first().team;
-         if(!consumers.isEmpty() && consumers.first().cheating()){
-             //when cheating, just set status to 1
-             for(Building tile : consumers){
 diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
-index 48fc9ec8be0701be3babcc14943383b7afd6f8f7..97b8404dba179b441685c2361fd1c601a5e0f214 100644
+index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601a5e0f214 100644
 --- a/core/src/mindustry/world/blocks/production/Drill.java
 +++ b/core/src/mindustry/world/blocks/production/Drill.java
 @@ -18,7 +18,6 @@ import mindustry.logic.*;
@@ -11970,14 +11536,6 @@ index 48fc9ec8be0701be3babcc14943383b7afd6f8f7..97b8404dba179b441685c2361fd1c601
      protected void countOre(Tile tile){
          returnItem = null;
          returnCount = 0;
-@@ -257,6 +264,7 @@ public class Drill extends Block{
- 
-         @Override
-         public void drawSelect(){
-+            if(RenderExt.arcDrillMode) return;
-             if(dominantItem != null){
-                 float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;
-                 Draw.mixcol(Color.darkGray, 1f);
 diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
 index 7e3645814d96cd2497332bbfcb2c9d286bbed5b0..d9929146c4f121301e2e5dd48c4360357c788c31 100644
 --- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
@@ -12057,70 +11615,8 @@ index a7199929351d4ec311ba34d81b3b0e2601ad04fe..22a95dcbb5642659b98096de45f33ac0
              Draw.reset();
          }
  
-diff --git a/core/src/mindustry/world/blocks/units/Reconstructor.java b/core/src/mindustry/world/blocks/units/Reconstructor.java
-index 9d93309425be6b6d00cfd8a1b042596053b86c94..dc0b7d6ccc033a3ec230c1adc6285d2d372361da 100644
---- a/core/src/mindustry/world/blocks/units/Reconstructor.java
-+++ b/core/src/mindustry/world/blocks/units/Reconstructor.java
-@@ -1,6 +1,7 @@
- package mindustry.world.blocks.units;
- 
- import arc.*;
-+import arc.graphics.*;
- import arc.Graphics.*;
- import arc.Graphics.Cursor.*;
- import arc.graphics.g2d.*;
-@@ -292,6 +293,22 @@ public class Reconstructor extends UnitBlock{
-             return super.senseObject(sensor);
-         }
- 
-+        @Override
-+        public void drawBars(){
-+            super.drawBars();
-+            Draw.color(Color.black, 0.3f);
-+            Lines.stroke(4f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+            Draw.color(Pal.accent, 1f);
-+            Lines.stroke(2f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                x + 0.6f * (Mathf.clamp(fraction(), 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+            Draw.color();
-+            String progressT = Strings.format("[stat]@% | @s", (int)(Mathf.clamp(fraction(), 0f, 1f) * 100), Strings.fixed((constructTime - progress) / (60f * Vars.state.rules.unitBuildSpeed(team) * timeScale), 0));
-+            WorldLabel.drawAt(progressT, x, y + block.size * tilesize / 2.5f - 5f, Draw.z(), WorldLabel.flagOutline, 0.9f);
-+        }
-+
-         @Override
-         public void updateTile(){
-             boolean valid = false;
-diff --git a/core/src/mindustry/world/blocks/units/UnitAssembler.java b/core/src/mindustry/world/blocks/units/UnitAssembler.java
-index 0dfd86871738edcd4feda4a3fd20af19897c37bc..7c79b8b83af9dfdbb857e00af7787f1a27bb0d07 100644
---- a/core/src/mindustry/world/blocks/units/UnitAssembler.java
-+++ b/core/src/mindustry/world/blocks/units/UnitAssembler.java
-@@ -461,6 +461,22 @@ public class UnitAssembler extends PayloadBlock{
-             blocks.clear();
-         }
- 
-+        @Override
-+        public void drawBars(){
-+            super.drawBars();
-+            Draw.color(Color.black, 0.3f);
-+            Lines.stroke(4f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                    x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+            Draw.color(Pal.accent, 1f);
-+            Lines.stroke(2f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                    x + 0.6f * (Mathf.clamp(progress, 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+            Draw.color();
-+            String progressT = Strings.format("[stat]@% | @s", (int)(progress * 100), Strings.fixed((plan().time * (1 - progress)) / (60f * Vars.state.rules.unitBuildSpeed(team) * timeScale()), 0));
-+            WorldLabel.drawAt(progressT, x, y + block.size * tilesize / 2.5f - 5f, Draw.z(), WorldLabel.flagOutline, 0.9f);
-+        }
-+
-         @Override
-         public void draw(){
-             Draw.rect(region, x, y);
 diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
-index 4a506b9b82f59ba7e34c6136b4cb07e40761448f..231316c852178af96658a6574b50e3b1520d8a6b 100644
+index 4a506b9b82f59ba7e34c6136b4cb07e40761448f..bc7b3143129833213730f53899981d7f0c25bfc0 100644
 --- a/core/src/mindustry/world/blocks/units/UnitFactory.java
 +++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
 @@ -249,7 +249,7 @@ public class UnitFactory extends UnitBlock{
@@ -12132,32 +11628,16 @@ index 4a506b9b82f59ba7e34c6136b4cb07e40761448f..231316c852178af96658a6574b50e3b1
              }).left();
          }
  
-@@ -258,6 +258,23 @@ public class UnitFactory extends UnitBlock{
+@@ -258,6 +258,7 @@ public class UnitFactory extends UnitBlock{
              return currentPlan;
          }
  
-+        @Override
-+        public void drawBars(){
-+            super.drawBars();
-+            Draw.color(Color.black, 0.3f);
-+            Lines.stroke(4f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-+            Draw.color(Pal.accent, 1f);
-+            Lines.stroke(2f);
-+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-+                x + 0.6f * (Mathf.clamp(fraction(), 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-+            Draw.color();
-+            String progressT = Strings.format("[stat]@% | @", (int)(Mathf.clamp(fraction(), 0f, 1f) * 100), currentPlan == -1 ? Iconc.cancel : Strings.fixed((plans.get(currentPlan).time - progress) / (60f * Vars.state.rules.unitBuildSpeed(team) * timeScale), 0));
-+            WorldLabel.drawAt(progressT, x, y + block.size * tilesize / 2.5f - 5f, Draw.z(), WorldLabel.flagOutline, 0.9f);
-+        }
-+
 +
          @Override
          public void draw(){
              Draw.rect(region, x, y);
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..6d26c86c9de7169ffc4e90dbcb87572f5685c5d8 100644
+index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..82b617d37b6fe77eb744a6d4854faf97ee99fe4c 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -3,6 +3,8 @@ package mindustryX;
@@ -12169,7 +11649,16 @@ index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..6d26c86c9de7169ffc4e90dbcb87572f
  import mindustry.gen.*;
  import mindustry.input.*;
  import mindustryX.features.Settings;
-@@ -55,6 +57,14 @@ public class Hooks implements ApplicationListener{
+@@ -10,8 +12,6 @@ import mindustryX.features.*;
+ 
+ import java.net.*;
+ 
+-import static arc.Core.*;
+-
+ public class Hooks implements ApplicationListener{
+     /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
+     public static void beforeInit(){
+@@ -55,6 +55,14 @@ public class Hooks implements ApplicationListener{
          if(message == null) return null;
          if(Vars.ui != null){
              if(MarkerType.resolveMessage(message)) return message;
@@ -12184,93 +11673,61 @@ index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..6d26c86c9de7169ffc4e90dbcb87572f
          }
          return message;
      }
-@@ -78,5 +88,8 @@ public class Hooks implements ApplicationListener{
-         if(input.keyTap(Binding.toggle_block_render)){
-             settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+@@ -75,8 +83,18 @@ public class Hooks implements ApplicationListener{
+         if(Core.input.keyTap(Binding.point)){
+             MarkerType.selected.markWithMessage(Core.input.mouseWorld());
          }
-+        if(input.keyTap(Binding.arcScanMode)){
+-        if(input.keyTap(Binding.toggle_block_render)){
+-            settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
++        if(Core.input.keyTap(Binding.toggle_block_render)){
++            Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
++        }
++        if(Core.input.keyTap(Binding.arcScanMode)){
 +            ArcScanMode.enabled = !ArcScanMode.enabled;
 +        }
++        if(Core.input.keyTap(Binding.showRTSAi)){
++            Core.settings.put("alwaysShowUnitRTSAi", !Core.settings.getBool("alwaysShowUnitRTSAi"));
++        }
++        if(Core.input.keyTap(Binding.superUnitEffect)){
++            int level = Core.settings.getInt("superUnitEffect");
++            Core.settings.put("superUnitEffect", (level + 1) % 3);
+         }
      }
  }
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index c54ff7a77b16a5b97bfc4b78fa0f9289ff5e06b5..391865d061fed7437363f47ce4892858e4a13399 100644
+index 5e5190b95b68b37423a9d6beaf7d2215cba32e97..e5007c76ec71d488a8dd3dae6dbfdabd452f7900 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -3,14 +3,20 @@ package mindustryX.features;
- import arc.*;
- import arc.graphics.*;
- import arc.graphics.g2d.*;
-+import arc.math.*;
-+import mindustry.arcModule.draw.*;
- import mindustry.entities.*;
- import mindustry.game.EventType.*;
- import mindustry.gen.*;
- import mindustry.graphics.*;
-+import mindustry.type.*;
-+import mindustry.world.*;
+@@ -16,6 +16,7 @@ import mindustry.type.*;
+ import mindustry.world.*;
  import mindustry.world.blocks.defense.*;
  import mindustry.world.blocks.defense.turrets.*;
 +import mindustry.world.blocks.defense.turrets.BaseTurret.*;
+ import mindustry.world.blocks.distribution.MassDriver.*;
  import mindustry.world.blocks.logic.*;
  import mindustry.world.blocks.logic.MessageBlock.*;
-+import mindustry.world.blocks.production.Drill.*;
- import mindustry.world.blocks.storage.*;
- 
- import static mindustry.Vars.tilesize;
-@@ -26,6 +32,7 @@ public class RenderExt{
-     public static boolean logicDisplayNoBorder, arcDrillMode;
-     public static int blockRenderLevel;
-     public static boolean renderSort;
+@@ -40,6 +41,7 @@ public class RenderExt{
+     public static int massDriverLineInterval;
+     public static boolean drawBars, drawBarsMend;
+     public static float healthBarMinHealth;
 +    public static boolean drawBlockDisabled;
  
      public static boolean unitHide = false;
- 
-@@ -57,6 +64,7 @@ public class RenderExt{
-             arcDrillMode = Core.settings.getBool("arcdrillmode");
-             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
-             renderSort = Core.settings.getBool("renderSort");
+     public static Color massDriverLineColor = Color.clear;
+@@ -77,6 +79,7 @@ public class RenderExt{
+             drawBars = Core.settings.getBool("blockBars");
+             drawBarsMend = Core.settings.getBool("blockBars_mend");
+             healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
 +            drawBlockDisabled = Core.settings.getBool("blockdisabled");
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -74,6 +82,15 @@ public class RenderExt{
-         }
-     }
- 
-+    public static void onBlockDraw(Tile tile, Block block, Building build){
-+        if(blockRenderLevel < 2) return;
-+        block.drawBase(tile);
+@@ -102,6 +105,8 @@ public class RenderExt{
+             drawMassDriverLine(b);
+         if(build != null && drawBars)
+             drawBars(build);
 +        if(build instanceof BaseTurretBuild turretBuild)
 +            ARCBuilds.arcTurret(turretBuild);
-+        if(arcDrillMode && build instanceof DrillBuild drill)
-+            arcDrillModeDraw(block, drill);
-+    }
-+
-     private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-         placementEffect.lifetime = lifetime;
-         placementEffect.at(x, y, range, color);
-@@ -96,4 +113,23 @@ public class RenderExt{
-                 placementEffect(build.x, build.y, 120f, t.range, t.mapColor);
-         }
      }
-+
-+    /** 在转头旁边显示矿物类型 */
-+    private static void arcDrillModeDraw(Block block, DrillBuild build){
-+        Item dominantItem = build.dominantItem;
-+        if(dominantItem == null) return;
-+        int size = block.size;
-+        float dx = build.x - size * tilesize / 2f + 5, dy = build.y - size * tilesize / 2f + 5;
-+        float iconSize = 5f;
-+        Draw.rect(dominantItem.fullIcon, dx, dy, iconSize, iconSize);
-+        Draw.reset();
-+
-+        float eff = Mathf.lerp(0, 1, Math.min(1f, (float)build.dominantItems / (size * size)));
-+        if(eff < 0.9f){
-+            Draw.alpha(0.5f);
-+            Draw.color(dominantItem.color);
-+            Lines.stroke(1f);
-+            Lines.arc(dx, dy, iconSize * 0.75f, eff);
-+        }
-+    }
- }
+ 
+     private static void placementEffect(float x, float y, float lifetime, float range, Color color){

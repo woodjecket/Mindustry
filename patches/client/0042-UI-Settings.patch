@@ -12,18 +12,18 @@ Content-Transfer-Encoding: 8bit
 提前Settings加载时机，优化性能
 570bcd0b way-zer <himc.wicp@gmail.com> on 2024/5/3 at 14:18
 ---
- core/assets/bundles/bundle-mdtx.properties    | 28 ++++++
+ core/assets/bundles/bundle-mdtx.properties    | 27 ++++++
  .../ui/dialogs/SettingsMenuDialog.java        | 89 ++++++++++++++-----
  core/src/mindustryX/Hooks.java                |  2 +
- core/src/mindustryX/features/Settings.java    | 69 ++++++++++++++
- 4 files changed, 164 insertions(+), 24 deletions(-)
+ core/src/mindustryX/features/Settings.java    | 68 ++++++++++++++
+ 4 files changed, 162 insertions(+), 24 deletions(-)
  create mode 100644 core/src/mindustryX/features/Settings.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 0cb666446175aa5e952ceaa07669e10a3a023d10..2dddf7df609c90e43ca5810c27b77c337819d90e 100644
+index 0cb666446175aa5e952ceaa07669e10a3a023d10..cc639cd1a79b62e9ac252efee35f01f10bfcdff7 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -40,3 +40,31 @@ stat.ammo_type = 子弹类型
+@@ -40,3 +40,30 @@ stat.ammo_type = 子弹类型
  stat.ammo_capacity = 子弹容量
  
  #end StatExt
@@ -36,7 +36,6 @@ index 0cb666446175aa5e952ceaa07669e10a3a023d10..2dddf7df609c90e43ca5810c27b77c33
 +category.arcReWork.name = Arc功能重置
 +setting.replayRecord.name = 多人游戏录像    [gray]自动录制游玩过程，输出在saves文件夹
 +setting.menuFloatText.name = 首页悬浮文字
-+setting.showAdvanceToolTable.name = 工具箱(物品选择区左边)
 +setting.researchViewer.name = 科技树透视器
 +setting.minimapSize.name = 小地图大小
 +setting.maxSchematicSize.name = 最大蓝图大小
@@ -301,10 +300,10 @@ index 27bf6d34b21c289a516ecc94e1cc13bfbfbdfd2a..eccd7532122ec7461e24202230a6300c
      /** invoke after loading, just before `Mod::init` */
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..288a378c4adf14e9a856c47e5d796848ff39523d
+index 0000000000000000000000000000000000000000..62e961ec7066c2051c8e5217cefdd9001c1fa764
 --- /dev/null
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -0,0 +1,69 @@
+@@ -0,0 +1,68 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -342,7 +341,6 @@ index 0000000000000000000000000000000000000000..288a378c4adf14e9a856c47e5d796848
 +            c.addCategory("arcReWork");
 +            c.checkPref("replayRecord", false);
 +            c.checkPref("menuFloatText", true);
-+            c.checkPref("showAdvanceToolTable", false);
 +            c.checkPref("researchViewer", false);
 +            c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
 +            c.sliderPref("maxSchematicSize", 64, 64, 257, 1, v -> {
