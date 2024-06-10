@@ -9,18 +9,18 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 244 ++++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 243 ++++++++++++++++++
  .../ui/dialogs/SettingsMenuDialog.java        |  29 +--
- core/src/mindustryX/features/ArcOld.java      | 213 +++++++++++++++
+ core/src/mindustryX/features/ArcOld.java      | 223 ++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 472 insertions(+), 15 deletions(-)
+ 4 files changed, 481 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 2dddf7df609c90e43ca5810c27b77c337819d90e..9d211bed4097a51647058a405f773c9c0f410b35 100644
+index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a9dc4984d 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -68,3 +68,247 @@ category.entitySettings.name = 实体相关设置
+@@ -67,3 +67,246 @@ category.entitySettings.name = 实体相关设置
  setting.bulletShow.name = 显示子弹
  setting.showminebeam.name = 显示单位挖掘光束
  #end Settings
@@ -202,14 +202,13 @@ index 2dddf7df609c90e43ca5810c27b77c337819d90e..9d211bed4097a51647058a405f773c9c
 +setting.limitupdate.name = [cyan]限制更新
 +setting.logicSupport.name = [acid]逻辑辅助器
 +setting.logicoverrangelink.name = [red]超级逻辑链接     [yellow][仅限单机有效]
-+setting.mass_driver_line_alpha.name = [acid]质驱引导线[white]：不透明度
++setting.mass_driver_line.name = 显示质驱引导线
 +setting.mass_driver_line_color.name = [pink]质驱引导线[white]：颜色
 +setting.mass_driver_line_interval.name = [acid]质驱引导线[white]：箭头间隔
 +setting.mend_zone.name = [acid]修复范围[white]：不透明度
 +setting.menuFlyersCount.name = 首页兵种数量调整
 +setting.menuFlyersFollower.name = 首页兵种小弟模式
 +setting.menuFlyersRange.name = 首页兵种显示射界
-+setting.minimapTools.name = [acid]小地图[white]：工具箱
 +setting.oneBlockProperty.name = [acid]复制单个建筑时展示属性       [orange]无需要不建议开启，会导致属性丢失
 +setting.otherCheat.name = [red]其他作弊功能(游戏外)
 +setting.overrideSkipWave.name = [acid]功能[white]：忽视跳波限制
@@ -341,12 +340,14 @@ index 9bc85ef9d3b45ece271aaea02dce05dc7b634b74..7daf541be6206723289729418c99fb9c
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..dbcd0a302f490a2b3d86543fddbfbb63beef3e18
+index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4ce616ee72
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,213 @@
+@@ -0,0 +1,223 @@
 +package mindustryX.features;
 +
++import arc.func.*;
++import arc.graphics.*;
 +import arc.struct.*;
 +import arc.util.*;
 +import mindustry.gen.*;
@@ -368,8 +369,6 @@ index 0000000000000000000000000000000000000000..dbcd0a302f490a2b3d86543fddbfbb63
 +                case 3 -> "右上-下";
 +                default -> "";
 +            });
-+            c.checkPref("showAdvanceToolTable", false);
-+            c.checkPref("minimapTools", !mobile);
 +            c.checkPref("arcSpecificTable", true);
 +            c.checkPref("logicSupport", true);
 +            c.checkPref("powerStatistic", true);
@@ -412,9 +411,19 @@ index 0000000000000000000000000000000000000000..dbcd0a302f490a2b3d86543fddbfbb63
 +            c.checkPref("arclogicbordershow", true);
 +            c.checkPref("arcPlacementEffect", false);
 +
-+            c.sliderPref("mass_driver_line_alpha", 100, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
++            c.checkPref("mass_driver_line", true);
 +            c.sliderPref("mass_driver_line_interval", 40, 8, 400, 4, i -> i / 8f + "格");
-+            c.textPref("mass_driver_line_color", "ff8c66");
++            {
++                Cons<String> changed = (t) -> {
++                    try{
++                        RenderExt.massDriverLineColor = Color.valueOf(t);
++                    }catch(Exception e){
++                        RenderExt.massDriverLineColor = Color.valueOf("ff8c66");
++                    }
++                };
++                c.textPref("mass_driver_line_color", "ff8c66", changed);
++                changed.get(settings.getString("mass_driver_line_color"));
++            }
 +
 +            c.addCategory("arcAddTurretInfo");
 +            c.checkPref("showTurretAmmo", false);
@@ -559,10 +568,10 @@ index 0000000000000000000000000000000000000000..dbcd0a302f490a2b3d86543fddbfbb63
 +    }
 +}
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 288a378c4adf14e9a856c47e5d796848ff39523d..7c0e4efbe4a5754d525fe120e9c5c8312d608a52 100644
+index 62e961ec7066c2051c8e5217cefdd9001c1fa764..4fe8f9b104ca785f85c0eadc18f3f4040ed2a8e5 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -61,6 +61,7 @@ public class Settings{
+@@ -60,6 +60,7 @@ public class Settings{
              c.checkPref("bulletShow", true);
              c.checkPref("showMineBeam".toLowerCase(), true);
          }));

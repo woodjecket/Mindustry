@@ -89,10 +89,10 @@ index a251419f31092b68aca9fd756f19e8c3602263d4..59e3d7507a1161e9120b71d9f11ba02a
                      if(locked(node) || debugShowRequirements){
  
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 002da2e34c2e3f0afc77f9440f8758c1f43cde6c..fe555a40dd05ff9bfdb9819b590269232dd175a0 100644
+index 9f2735a5acc756c9b0b3d6aa5a6bbc8ea6861a0f..d08e081e7ae0bdaa67d903d97116d0c714e015bc 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -10,6 +10,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
+@@ -12,6 +12,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
  public class RenderExt{
      public static boolean bulletShow, showMineBeam, displayAllMessage;
      public static boolean arcChoiceUiIcon;
@@ -100,7 +100,7 @@ index 002da2e34c2e3f0afc77f9440f8758c1f43cde6c..fe555a40dd05ff9bfdb9819b59026923
  
      public static void init(){
          Events.run(Trigger.preDraw, () -> {
-@@ -17,6 +18,7 @@ public class RenderExt{
+@@ -19,6 +20,7 @@ public class RenderExt{
              showMineBeam = Core.settings.getBool("showminebeam");
              displayAllMessage = Core.settings.getBool("displayallmessage");
              arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");

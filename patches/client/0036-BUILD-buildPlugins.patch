@@ -12,11 +12,11 @@ way-zer <himc.wicp@gmail.com> on 2024/4/27 at 18:57
  .gitignore                                    |   6 +-
  buildPlugins/build.gradle.kts                 |  23 +++
  .../plugins/mindustryX/buildExt.gradle.kts    |  31 ++++
- .../plugins/mindustryX/loaderMod.gradle.kts   | 135 ++++++++++++++++++
- .../plugins/mindustryX/patchArc.gradle.kts    |  97 +++++++++++++
+ .../plugins/mindustryX/loaderMod.gradle.kts   | 141 ++++++++++++++++++
+ .../plugins/mindustryX/patchArc.gradle.kts    |  99 ++++++++++++
  core/build.gradle.kts                         |   1 +
  settings.gradle                               |   2 +
- 7 files changed, 291 insertions(+), 4 deletions(-)
+ 7 files changed, 299 insertions(+), 4 deletions(-)
  create mode 100644 buildPlugins/build.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/buildExt.gradle.kts
  create mode 100644 buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
@@ -114,10 +114,10 @@ index 0000000000000000000000000000000000000000..f6cd338cc79a0382e8a23ca590ac034f
 \ No newline at end of file
 diff --git a/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts b/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..0991a7b64651323ddd767cccc8fdf2633e9d977f
+index 0000000000000000000000000000000000000000..4921f01e9e12246f561df4c50c16911e81785a20
 --- /dev/null
 +++ b/buildPlugins/plugins/mindustryX/loaderMod.gradle.kts
-@@ -0,0 +1,135 @@
+@@ -0,0 +1,141 @@
 +package mindustryX
 +
 +import com.android.tools.smali.dexlib2.DexFileFactory
@@ -188,6 +188,12 @@ index 0000000000000000000000000000000000000000..0991a7b64651323ddd767cccc8fdf263
 +                output.putNextEntry(outputEntry)
 +                output.write(input.getInputStream(entry).use { it.readAllBytes() })
 +                output.closeEntry()
++                //copy icon
++                if(entry.name == "icons/icon_64.png"){
++                    output.putNextEntry(ZipEntry("icon.png"))
++                    output.write(input.getInputStream(entry).use { it.readAllBytes() })
++                    output.closeEntry()
++                }
 +            }
 +            if (androidTask != null) {
 +                val root = androidTask.outputs.files.first()
@@ -256,10 +262,10 @@ index 0000000000000000000000000000000000000000..0991a7b64651323ddd767cccc8fdf263
 \ No newline at end of file
 diff --git a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..75ab3b5813b4a279c5134a7cf316e367ef778d37
+index 0000000000000000000000000000000000000000..4715953ea1db8e20fe922911ba8054b8a8231fea
 --- /dev/null
 +++ b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,99 @@
 +package mindustryX
 +
 +import javassist.ClassPool
@@ -343,17 +349,19 @@ index 0000000000000000000000000000000000000000..75ab3b5813b4a279c5134a7cf316e367
 +    }
 +
 +    val api by configurations
-+    val patchSrc by configurations.creating {
++    val patchArc by configurations.creating {
 +        attributes {
 +            attribute(patched, true)
 +        }
 +    }
++    configurations.named("compileOnlyApi").configure { extendsFrom(patchArc) }
++    "runtimeOnly"(files(patchArc))
++
++
 +    val arcLib = api.dependencies.find { it.name == "arc-core" }
 +        ?: error("Can't find arc-core")
 +    api.dependencies.remove(arcLib)
-+    api(files(patchSrc))
-+
-+    patchSrc(arcLib as ExternalModuleDependency){
++    patchArc(arcLib as ExternalModuleDependency) {
 +        isTransitive = false
 +    }
 +}

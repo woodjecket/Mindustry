@@ -143,10 +143,10 @@ index d7a2e02c0d81c1935482c3bbb4edb7b555788a43..b536c4f3fdb6b4d850deae290c9de524
          }
  
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d3f2cc85070e141fa4a6186f6b24f88cdddcb275..002da2e34c2e3f0afc77f9440f8758c1f43cde6c 100644
+index c0fe214232b848835a30a51ac3c0904366858bd3..9f2735a5acc756c9b0b3d6aa5a6bbc8ea6861a0f 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -9,12 +9,14 @@ import mindustry.world.blocks.logic.MessageBlock.*;
+@@ -11,12 +11,14 @@ import mindustry.world.blocks.logic.MessageBlock.*;
  
  public class RenderExt{
      public static boolean bulletShow, showMineBeam, displayAllMessage;

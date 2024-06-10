@@ -21,10 +21,10 @@ index 0000000000000000000000000000000000000000..69a28133bf43daa1b1e507ff5e2de415
 +    public static boolean isLoader = false;
 +}
 diff --git a/core/src/mindustryX/loader/Main.java b/core/src/mindustryX/loader/Main.java
-index c0f7d4a491a480763bee18139bbc13f896670bb4..0c05b4782e489aa8219ea520d03be3a0460bcec8 100644
+index 9e19822ac2a4f6cee4306c62cfacd2e526f9c57c..d6fb9e5483066e2e147c247a6d25d7738bd33d2f 100644
 --- a/core/src/mindustryX/loader/Main.java
 +++ b/core/src/mindustryX/loader/Main.java
-@@ -120,6 +120,7 @@ public class Main extends Mod{
+@@ -123,6 +123,7 @@ public class Main extends Mod{
          Log.logger = new NoopLogHandler();
          try{
              Thread.currentThread().setContextClassLoader(classLoader);

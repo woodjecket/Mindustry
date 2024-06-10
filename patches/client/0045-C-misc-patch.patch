@@ -32,7 +32,7 @@ index 21047767677f54172ec1806ded2a925c438b2b86..a21b6481c1c56691bb8feeb49afce672
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 89ac0f575dafcf3602ec5b8b2ec2db47d5f3a584..53555b3ee7232567134b1164bf05b993eeecc7a1 100644
+index f370490430116780a4481cadbb17e0bdd51f078f..4ad5978829931f14946de5008ad44705e8e595ba 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -62,6 +62,10 @@ public class NetClient implements ApplicationListener{

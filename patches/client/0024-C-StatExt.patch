@@ -496,18 +496,18 @@ index 9003d6e4c6afa463aec395590b7473a28d842a17..f6866128bc39fdbf40d8e1b853ecc533
          stats.add(Stat.targetsGround, targetGround);
          if(ammoPerShot != 1) stats.add(Stat.ammoUse, ammoPerShot, StatUnit.perShot);
 diff --git a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-index f7fc8ea5c754acded073ce062d6d0e9bce70943f..f25b90987d05f0e3851faaa238e14d0f3e5ccd88 100644
+index cf4602f09a5e5e6dfd86eef88ace838ea0309fbf..ccb6d48fe731ea72fd720caa06c0173a00dc123a 100644
 --- a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-@@ -8,6 +8,7 @@ import arc.util.io.*;
- import mindustry.gen.*;
+@@ -9,6 +9,7 @@ import mindustry.gen.*;
+ import mindustry.graphics.*;
  import mindustry.type.*;
  import mindustry.world.*;
 +import mindustry.world.meta.*;
  import mindustryX.features.*;
  
  import static mindustry.Vars.*;
-@@ -25,6 +26,14 @@ public class BufferedItemBridge extends ItemBridge{
+@@ -26,6 +27,14 @@ public class BufferedItemBridge extends ItemBridge{
          canOverdrive = true;
      }
  
@@ -523,10 +523,10 @@ index f7fc8ea5c754acded073ce062d6d0e9bce70943f..f25b90987d05f0e3851faaa238e14d0f
          ItemBuffer buffer = new ItemBuffer(bufferCapacity);
  
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index 48de8e94b971603c88b51cb5b101bee4d1a3c262..92d3f3af233ad6e18a3a9cb1e257d2c011b05d70 100644
+index 698e95ac696a3267bba1eb4bb3da2852154b71a4..5ed25c723e407a4a95c878c6637a3cf34ec4a820 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
-@@ -31,6 +31,16 @@ public class Junction extends Block{
+@@ -30,6 +30,16 @@ public class Junction extends Block{
          noUpdateDisabled = true;
      }
  

@@ -10,10 +10,10 @@ Subject: [PATCH] BUILD Kotlin 1.9.20
  3 files changed, 7 insertions(+), 12 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index d2ed11d40ca0ded693bd8b0b74a8838f5e447a18..def9e2ae598abbe85bc4d2f0bd56d2c027941b96 100644
+index bcee6551b24137dd1c96aa1f2b5701008bbb0290..6014be2dd7f1121742e1507d30649e68f85a01a2 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -26,8 +26,8 @@ buildscript{
+@@ -13,8 +13,8 @@ buildscript{
  }
  
  plugins{
@@ -24,7 +24,7 @@ index d2ed11d40ca0ded693bd8b0b74a8838f5e447a18..def9e2ae598abbe85bc4d2f0bd56d2c0
  }
  
  allprojects{
-@@ -216,13 +216,6 @@ project(":core"){
+@@ -182,13 +182,6 @@ project(":core"){
          }
      }
  

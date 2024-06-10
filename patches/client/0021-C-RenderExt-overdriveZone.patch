@@ -78,10 +78,10 @@ index 423462318a31075f047a39d07caee50e031c1390..89b28401796d1d560330328e4bea54f2
  
              Draw.color(baseColor, phaseColor, phaseHeat);
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 1a8ced7fce69797f516d0ae48c2f6a856519debe..77a3c165a4fcaef06f51258271ab887cebd3c55d 100644
+index 62100afee7c0df3fd36781244ccd02cb318316c3..936e714c690d884258097765a25369f7dc089e07 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -12,6 +12,7 @@ public class RenderExt{
+@@ -14,6 +14,7 @@ public class RenderExt{
      public static boolean arcChoiceUiIcon;
      public static boolean researchViewer;
      public static int hiddenItemTransparency;
@@ -89,7 +89,7 @@ index 1a8ced7fce69797f516d0ae48c2f6a856519debe..77a3c165a4fcaef06f51258271ab887c
  
      public static void init(){
          Events.run(Trigger.preDraw, () -> {
-@@ -21,6 +22,7 @@ public class RenderExt{
+@@ -23,6 +24,7 @@ public class RenderExt{
              arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
              researchViewer = Core.settings.getBool("researchViewer");
              hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");

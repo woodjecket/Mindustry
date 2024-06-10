@@ -1,118 +1,58 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sat, 2 Mar 2024 00:52:10 +0800
-Subject: [PATCH] C: AdvanceToolTable
+Subject: [PATCH] UI: AdvanceToolTable
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 移动工具箱位置
 way-zer <himc.wicp@gmail.com> on 2024/4/10 at 19:52
+
+单位工厂可滚动
+way-zer <himc.wicp@gmail.com> on 2024/6/4
+
+优化启动速度
+way-zer <himc.wicp@gmail.com> on 2024/6/6
+
+移动到showQuickToolTable中
+way-zer <himc.wicp@gmail.com> on 2024/6/10
 ---
- .../ui/fragments/PlacementFragment.java       |   2 +
- core/src/mindustryX/Hooks.java                |   1 +
- core/src/mindustryX/features/UIExt.java       |  50 ++
+ core/src/mindustryX/features/UIExt.java       |   8 +-
  core/src/mindustryX/features/UnitExt.java     |  21 +
- .../features/ui/AdvanceToolTable.kt           | 178 +++++++
- .../features/ui/ArcUnitFactoryDialog.java     | 478 ++++++++++++++++++
- .../mindustryX/features/ui/SimpleCollapse.kt  |  43 ++
- .../features/ui/TeamSelectDialog.java         |  51 ++
- 8 files changed, 824 insertions(+)
- create mode 100644 core/src/mindustryX/features/UIExt.java
+ .../features/ui/AdvanceToolTable.kt           | 172 +++++++
+ .../features/ui/ArcUnitFactoryDialog.java     | 452 ++++++++++++++++++
+ 4 files changed, 650 insertions(+), 3 deletions(-)
  create mode 100644 core/src/mindustryX/features/UnitExt.java
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
  create mode 100644 core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
- create mode 100644 core/src/mindustryX/features/ui/SimpleCollapse.kt
- create mode 100644 core/src/mindustryX/features/ui/TeamSelectDialog.java
 
-diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 966520f5c00e34e56f3f1cd8e315e338d4812a61..be2e0724973bd8011561d90393e3835fea59eba4 100644
---- a/core/src/mindustry/ui/fragments/PlacementFragment.java
-+++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
-@@ -25,6 +25,7 @@ import mindustry.type.*;
- import mindustry.ui.*;
- import mindustry.world.*;
- import mindustry.world.blocks.ConstructBlock.*;
-+import mindustryX.features.*;
- 
- import static mindustry.Vars.*;
- 
-@@ -246,6 +247,7 @@ public class PlacementFragment{
-             toggler = full;
-             full.bottom().right().visible(() -> ui.hudfrag.shown);
- 
-+            full.add(UIExt.advanceToolTable).bottom().right();
-             full.table(frame -> {
- 
-                 //rebuilds the category table with the correct recipes
-diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 5f15cc3b9f470523c214adfdd8d1f5f6e332cc55..7d38820522e521e55a4881da586aeffd36e46f60 100644
---- a/core/src/mindustryX/Hooks.java
-+++ b/core/src/mindustryX/Hooks.java
-@@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
-         if(!Vars.headless){
-             RenderExt.init();
-             TimeControl.init();
-+            UIExt.init();
-         }
-     }
- 
 diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..b2576d865d48a096dea0ec18fb65e499caef8bea
---- /dev/null
+index 1a33e4f6c9509d0b34422eb360687ffc6c35f3ab..c09b83d494c64733e6ec9389fa8dfb2b7bcee49d 100644
+--- a/core/src/mindustryX/features/UIExt.java
 +++ b/core/src/mindustryX/features/UIExt.java
-@@ -0,0 +1,50 @@
-+package mindustryX.features;
-+
-+import arc.*;
-+import arc.math.geom.*;
-+import arc.scene.ui.*;
-+import arc.scene.ui.layout.*;
-+import arc.util.*;
-+import mindustryX.features.ui.*;
-+
-+import static mindustry.Vars.*;
-+import static mindustry.content.UnitTypes.gamma;
-+
-+public class UIExt{
-+    public static AdvanceToolTable advanceToolTable;
-+    public static TeamSelectDialog teamSelect;
-+
-+    public static void init(){
-+        teamSelect = new TeamSelectDialog();
-+
-+        advanceToolTable = new AdvanceToolTable();
-+        advanceToolTable.name = "advanceToolTable";
-+        advanceToolTable.right().bottom();
-+        advanceToolTable.visible(() -> Core.settings.getBool("showAdvanceToolTable"));
-+    }
-+
-+    public static void buildPositionRow(Table tt, Vec2 vec){
-+        tt.add("x= ");
-+        TextField x = tt.field(Strings.autoFixed(vec.x, 2), text -> {
-+            vec.x = Float.parseFloat(text);
-+        }).valid(Strings::canParseFloat).maxTextLength(8).get();
-+
-+        tt.add("y= ").marginLeft(32f);
-+        TextField y = tt.field(Strings.autoFixed(vec.y, 2), text -> {
-+            vec.y = Float.parseFloat(text);
-+        }).valid(Strings::canParseFloat).maxTextLength(8).get();
-+
-+        tt.button(gamma.emoji(), () -> {
-+            vec.set(player.tileX(), player.tileY());
-+            x.setText(String.valueOf(vec.x));
-+            y.setText(String.valueOf(vec.y));
-+        }).tooltip(b -> b.label(() -> "选择玩家当前位置：" + player.tileX() + "," + player.tileY())).height(50f);
-+
-+//            tt.button(StatusEffects.blasted.emoji(), () -> {
-+//                if(Marker.markList.size == 0) return;
-+//                vec.set(World.toTile(Marker.markList.peek().markPos.x), World.toTile(Marker.markList.peek().markPos.y));
-+//                x.setText(World.toTile(Marker.markList.peek().markPos.x) + "");
-+//                y.setText(World.toTile(Marker.markList.peek().markPos.y) + "");
-+//            }).tooltip(Marker.markList.size == 0 ? "[red]未标记" : ("选择上个标记点：" + World.toTile(Marker.markList.peek().markPos.x) + "," + World.toTile(Marker.markList.peek().markPos.y))).height(50f);
-+    }
-+}
+@@ -17,6 +17,7 @@ public class UIExt{
+     public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
+     public static TeamsStatDisplay teamsStatDisplay;
+     public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
++    public static AdvanceToolTable advanceToolTable = new AdvanceToolTable();
+     public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
+ 
+     public static void init(){
+@@ -30,9 +31,10 @@ public class UIExt{
+         });
+ 
+         ui.hudGroup.fill(t -> {
+-            t.name = "quickTool";
+-            t.right().add(hudSettingsTable).growX();
+-            t.row().add(advanceBuildTool).growX();
++            t.right().name = "quickTool";
++            t.add(hudSettingsTable).growX().row();
++            t.add(advanceToolTable).growX().row();
++            t.add(advanceBuildTool).growX().row();
+             t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showQuickToolTable"));
+         });
+     }
 diff --git a/core/src/mindustryX/features/UnitExt.java b/core/src/mindustryX/features/UnitExt.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..200a2295b5c2d0c662097df7538742ea020141fa
@@ -142,10 +82,10 @@ index 0000000000000000000000000000000000000000..200a2295b5c2d0c662097df7538742ea
 +}
 diff --git a/core/src/mindustryX/features/ui/AdvanceToolTable.kt b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a942a9f3b
+index 0000000000000000000000000000000000000000..61c480a4f5e7191a16284068ac341cc0a170e85f
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
-@@ -0,0 +1,178 @@
+@@ -0,0 +1,172 @@
 +package mindustryX.features.ui
 +
 +import arc.Events
@@ -155,14 +95,13 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 +import arc.struct.Seq
 +import arc.util.Reflect
 +import mindustry.Vars
-+import mindustry.content.Blocks
 +import mindustry.content.Items
 +import mindustry.content.UnitTypes
 +import mindustry.game.EventType
 +import mindustry.game.Team
 +import mindustry.gen.Icon
++import mindustry.gen.Iconc
 +import mindustry.gen.Payloadc
-+import mindustry.gen.Tex
 +import mindustry.gen.Unit
 +import mindustry.ui.Styles
 +import mindustry.ui.dialogs.BaseDialog
@@ -174,7 +113,7 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 +import kotlin.math.min
 +
 +//move from mindustry.arcModule.ui.AdvanceToolTable
-+class AdvanceToolTable : Table() {
++class AdvanceToolTable : ToolTableBase() {
 +    companion object {
 +        @JvmField
 +        var worldCreator: Boolean = false
@@ -190,6 +129,8 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 +    val tileCopyDialog: TileCopyDialog = TileCopyDialog()
 +
 +    init {
++        icon = Iconc.wrench.toString()
++        rebuild()
 +        Events.on(EventType.ResetEvent::class.java) { _ ->
 +            if (!Vars.state.rules.editor) {
 +                worldCreator = false
@@ -197,74 +138,67 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 +                allBlocksReveal = false
 +            }
 +        }
++    }
 +
-+        defaults().right()
-+        val showEntities = SimpleCollapser().table {
-+            background = Tex.buttonEdge1
-+            add("单位：")
-+            button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
-+                for (item in Vars.content.items()) Vars.player.core().items[item] = Vars.player.core().storageCapacity
-+            }.width(40f).tooltip("[acid]填满核心的所有资源")
-+            button(Items.copper.emoji() + "[red]-", Styles.cleart) {
-+                for (item in Vars.content.items()) Vars.player.core().items[item] = 0
-+            }.width(40f).tooltip("[acid]清空核心的所有资源")
-+            button(UnitTypes.gamma.emoji() + "[acid]+", Styles.cleart) {
-+                val cloneUnit = cloneExactUnit(Vars.player.unit())
-+                cloneUnit[Vars.player.x + Mathf.range(8f)] = Vars.player.y + Mathf.range(8f)
-+                cloneUnit.add()
-+            }.width(40f).tooltip("[acid]克隆")
-+            button(UnitTypes.gamma.emoji() + "[red]×", Styles.cleart) { Vars.player.unit().kill() }.width(40f).tooltip("[red]自杀")
-+            button(Icon.waves, Styles.clearNonei) { factoryDialog.show() }.width(40f).tooltip("[acid]单位工厂-ARC")
-+        }.also { add(it).row() }
-+        val showTeamChange = SimpleCollapser().table {
-+            background = Tex.buttonEdge1
-+            add("队伍：")
-+            for (team in Team.baseTeams) {
-+                button(String.format("[#%s]%s", team.color, team.localized()), Styles.flatToggleMenut) { Vars.player.team(team) }
-+                    .checked { Vars.player.team() === team }.size(30f, 30f)
++    override fun buildTable() {
++        with(table().get()) {
++            background = Styles.black6
++            row().add("单位：")
++            with(table().get()) {
++                button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
++                    for (item in Vars.content.items()) Vars.player.core().items[item] = Vars.player.core().storageCapacity
++                }.width(40f).tooltip("[acid]填满核心的所有资源")
++                button(Items.copper.emoji() + "[red]-", Styles.cleart) {
++                    for (item in Vars.content.items()) Vars.player.core().items[item] = 0
++                }.width(40f).tooltip("[acid]清空核心的所有资源")
++                button(UnitTypes.gamma.emoji() + "[acid]+", Styles.cleart) {
++                    val cloneUnit = cloneExactUnit(Vars.player.unit())
++                    cloneUnit[Vars.player.x + Mathf.range(8f)] = Vars.player.y + Mathf.range(8f)
++                    cloneUnit.add()
++                }.width(40f).tooltip("[acid]克隆")
++                button(UnitTypes.gamma.emoji() + "[red]×", Styles.cleart) { Vars.player.unit().kill() }.width(40f).tooltip("[red]自杀")
++                button(Icon.waves, Styles.clearNonei) { factoryDialog.show() }.width(40f).tooltip("[acid]单位工厂-ARC")
 +            }
-+            button("[violet]+", Styles.flatToggleMenut) { UIExt.teamSelect.pickOne({ team: Team? -> Vars.player.team(team) }, Vars.player.team()) }
-+                .checked { !Seq.with(*Team.baseTeams).contains(Vars.player.team()) }
-+                .tooltip("[acid]更多队伍选择").size(30f, 30f)
-+        }.also { add(it).row() }
-+        val showCreator = SimpleCollapser().table {
-+            background = Tex.buttonEdge1
-+            button("创世神", Styles.flatToggleMenut) { worldCreator = !worldCreator }
-+                .checked { worldCreator }.size(70f, 30f)
-+            button("强制放置", Styles.flatToggleMenut) { forcePlacement = !forcePlacement }
-+                .checked { forcePlacement }.size(70f, 30f)
-+            button("解禁", Styles.flatToggleMenut) {
-+                allBlocksReveal = !allBlocksReveal
-+                Reflect.invoke<Any>(Vars.ui.hudfrag.blockfrag, "rebuild")
-+            }.checked { allBlocksReveal }
-+                .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
-+            button("[orange]复制地形", Styles.flatToggleMenut) { tileCopyDialog.show() }
-+                .tooltip("[acid]复制特定地形").size(70f, 30f).checked { false }
-+        }.also { add(it).row() }
-+        val showGameMode = SimpleCollapser().table {
-+            background = Tex.buttonEdge1
-+            add("规则：")
-+            button("无限火力", Styles.flatToggleMenut) { Vars.player.team().rules().cheat = !Vars.player.team().rules().cheat }
-+                .checked { Vars.player.team().rules().cheat }.tooltip("[acid]开关自己队的无限火力").size(90f, 30f)
-+            button("编辑器", Styles.flatToggleMenut) { Vars.state.rules.editor = !Vars.state.rules.editor }
-+                .checked { Vars.state.rules.editor }.size(70f, 30f)
-+            button("沙盒", Styles.flatToggleMenut) { Vars.state.rules.infiniteResources = !Vars.state.rules.infiniteResources }
-+                .checked { Vars.state.rules.infiniteResources }.size(50f, 30f)
-+        }.also { add(it).row() }
-+        val showTimeControl = SimpleCollapser().table {
-+            background = Tex.buttonEdge1
-+            add("沙漏：")
-+            TimeControl.draw(this)
-+        }.also { add(it).row() }
-+        table(Tex.buttonEdge1) { row: Table ->
-+            val showButtons = SimpleCollapser().table {
-+                button(Items.copper.emoji() + UnitTypes.gamma.emoji(), Styles.cleart, showEntities::toggle).width(50f)
-+                button("队伍", Styles.cleart, showTeamChange::toggle).width(50f)
-+                button(Blocks.worldProcessor.emoji(), Styles.cleart, showCreator::toggle).width(50f)
-+                button("规则", Styles.cleart, showGameMode::toggle).width(50f)
-+                button(Blocks.overdriveProjector.emoji(), Styles.cleart, showTimeControl::toggle).width(50f)
-+            }.also { row.add(it) }
-+            row.button("", Styles.cleart, showButtons::toggle).update { it.setText(if (showButtons.collapsed) "[cyan]工具箱" else "[red]工具箱") }.width(70f)
++
++
++            row().add("队伍：")
++            with(table().get()) {
++                for (team in Team.baseTeams) {
++                    button(String.format("[#%s]%s", team.color, team.localized()), Styles.flatToggleMenut) { Vars.player.team(team) }
++                        .checked { Vars.player.team() === team }.size(30f, 30f)
++                }
++                button("[violet]+", Styles.flatToggleMenut) { UIExt.teamSelect.pickOne({ team: Team? -> Vars.player.team(team) }, Vars.player.team()) }
++                    .checked { !Seq.with(*Team.baseTeams).contains(Vars.player.team()) }
++                    .tooltip("[acid]更多队伍选择").size(30f, 30f)
++            }
++
++            row().add("建筑：")
++            with(table().get()) {
++                button("创世神", Styles.flatToggleMenut) { worldCreator = !worldCreator }
++                    .checked { worldCreator }.size(70f, 30f)
++                button("强制放置", Styles.flatToggleMenut) { forcePlacement = !forcePlacement }
++                    .checked { forcePlacement }.size(70f, 30f)
++                button("解禁", Styles.flatToggleMenut) {
++                    allBlocksReveal = !allBlocksReveal
++                    Reflect.invoke<Any>(Vars.ui.hudfrag.blockfrag, "rebuild")
++                }.checked { allBlocksReveal }
++                    .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
++                button("[orange]复制地形", Styles.flatToggleMenut) { tileCopyDialog.show() }
++                    .tooltip("[acid]复制特定地形").size(70f, 30f).checked { false }
++            }
++
++            row().add("规则：")
++            with(table().get()) {
++                button("无限火力", Styles.flatToggleMenut) { Vars.player.team().rules().cheat = !Vars.player.team().rules().cheat }
++                    .checked { Vars.player.team().rules().cheat }.tooltip("[acid]开关自己队的无限火力").size(90f, 30f)
++                button("编辑器", Styles.flatToggleMenut) { Vars.state.rules.editor = !Vars.state.rules.editor }
++                    .checked { Vars.state.rules.editor }.size(70f, 30f)
++                button("沙盒", Styles.flatToggleMenut) { Vars.state.rules.infiniteResources = !Vars.state.rules.infiniteResources }
++                    .checked { Vars.state.rules.infiniteResources }.size(50f, 30f)
++            }
++
++            row().add("沙漏：")
++            table(TimeControl::draw)
 +        }
 +    }
 +
@@ -327,10 +261,10 @@ index 0000000000000000000000000000000000000000..89e31c197ff31cf534387baf7952114a
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd73737befe
+index 0000000000000000000000000000000000000000..a2064584e7094fa7780b5c107b9bf5909f9a111b
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
-@@ -0,0 +1,478 @@
+@@ -0,0 +1,452 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -341,12 +275,10 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
-+import mindustry.*;
 +import mindustry.content.*;
 +import mindustry.entities.units.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
-+import mindustry.input.*;
 +import mindustry.type.*;
 +import mindustry.ui.*;
 +import mindustry.ui.dialogs.*;
@@ -368,13 +300,25 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +    private final float[] statusTime = {10, 30f, 60f, 120f, 180f, 300f, 600f, 900f, 1200f, 1500f, 1800f, 2700f, 3600f, Float.MAX_VALUE};
 +    private float chatTime = 0;
 +    private boolean showUnitSelect, showUnitPro, showStatesEffect, showItems, showPayload, showSelectPayload, showPayloadBlock, elevation;
-+    private final boolean enableRTSCode = false;
 +
 +    public ArcUnitFactoryDialog(){
 +        super("单位工厂-ARC");
++        //noinspection unchecked
++        getCell(cont).setElement(new ScrollPane(cont)).growX();
++
++        closeOnBack();
++        addCloseButton();
++        //Lazy build
++        shown(() -> {
++            if(cont.hasChildren()) return;
++            setup();
++        });
++    }
++
++    private void setup(){
 +        cont.table(t -> {
 +            t.add("目标单位：");
-+            t.image().update(it -> it.setDrawable(spawnUnit.type.uiIcon)).scaling(Scaling.fit).maxWidth(32);
++            t.image().update(it -> it.setDrawable(spawnUnit.type.uiIcon)).scaling(Scaling.fit).size(iconMed);
 +            t.label(() -> spawnUnit.type.localizedName);
 +        }).row();
 +
@@ -396,9 +340,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            UIExt.buildPositionRow(t, unitLoc);
 +        }).row();
 +
-+        var unitFabricator = new Collapser(t -> t.pane(this::buildUnitFabricator).minHeight(300), true);
-+        cont.button(Blocks.tetrativeReconstructor.emoji() + "[cyan]单位状态重构厂", unitFabricator::toggle).fillX().row();
-+        cont.add(unitFabricator).row();
++        cont.table(this::buildUnitFabricator).fillX().row();
 +
 +        cont.button("[orange]生成！", Icon.modeAttack, () -> {
 +            Vec2 pos = Tmp.v1.set(unitLoc).scl(tilesize);
@@ -413,7 +355,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            control.input.panCamera(pos);
 +        }).fillX().row();
 +
-+        cont.button("[orange] 生成！(/js)", Icon.modeAttack, () -> {
++        cont.button("[orange]生成(/js)", Icon.modeAttack, () -> {
 +            if(chatTime > 0f){
 +                ui.showInfoFade("为了防止因ddos被服务器ban，请勿太快操作", 5f);
 +                return;
@@ -457,20 +399,15 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            Time.run(chatTime, () -> chatTime = 0f);
 +            control.input.panCamera(Tmp.v1.set(unitLoc).scl(tilesize));
 +        }).fillX().visible(() -> Core.settings.getBool("easyJS")).row();
-+
-+        cont.button("RTS价格代码生成", Icon.logic, this::generateRTSCode).fillX().visible(() -> enableRTSCode);
-+
-+        closeOnBack();
-+        addCloseButton();
 +    }
 +
 +    void buildUnitFabricator(Table table){
-+        table.clear();
++        table.clearChildren();
 +        table.button((b) -> {
 +            b.image(showUnitSelect ? Icon.upOpen : Icon.downOpen);
 +            b.table(t -> {
 +                t.add("加工单位：");
-+                t.image(spawnUnit.type.uiIcon).scaling(Scaling.fit).maxWidth(32);
++                t.image(spawnUnit.type.uiIcon).scaling(Scaling.fit).size(iconMed);
 +            }).grow();
 +        }, Styles.togglet, () -> showUnitSelect = !showUnitSelect).fillX().minWidth(400f).row();
 +        table.collapser(list -> {
@@ -479,7 +416,6 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +                if(i++ % 8 == 0) list.row();
 +                list.button((b) -> {
 +                    b.image(unit.uiIcon).scaling(Scaling.fit);
-+                    if(enableRTSCode) b.add("" + getPrice(unit));
 +                }, cleart, () -> {
 +                    if(spawnUnit.type != unit){
 +                        changeUnitType(spawnUnit, unit);
@@ -487,7 +423,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +                    }
 +                    showUnitSelect = !showUnitSelect;
 +                    buildUnitFabricator(table);
-+                }).tooltip(unit.localizedName).width(enableRTSCode ? 100f : 50f).height(50f);
++                }).tooltip(unit.localizedName).width(50f).height(50f);
 +            }
 +        }, () -> showUnitSelect).row();
 +
@@ -535,7 +471,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +                for(StatusEffect effect : content.statusEffects()){
 +                    if(effect == StatusEffects.none) continue;
 +                    if(i++ % 8 == 0) list.row();
-+                    list.button((b) -> b.image(effect.uiIcon).scaling(Scaling.fit), squareTogglet, () -> {
++                    list.button((b) -> b.image(effect.uiIcon).scaling(Scaling.fit).size(iconMed), squareTogglet, () -> {
 +                        unitStatus.add(new StatusEntry().set(effect, unitStatus.isEmpty() ? 600f : unitStatus.orderedItems().peek().time));
 +                        buildUnitFabricator(table);
 +                    }).size(50f).color(unitStatus.select(e -> e.effect == effect).isEmpty() ? Color.gray : Color.white).tooltip(effect.localizedName);
@@ -564,7 +500,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            }).row();
 +            t.table(list -> {
 +                for(var entry : unitStatus){
-+                    list.image(entry.effect.uiIcon).scaling(Scaling.fit);
++                    list.image(entry.effect.uiIcon).scaling(Scaling.fit).size(iconMed);
 +                    list.add(entry.effect.localizedName).padRight(4f);
 +
 +                    if(entry.effect.permanent){
@@ -602,7 +538,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            b.table(t -> {
 +                t.add("携带物品");
 +                if(spawnUnit.stack.amount > 0){
-+                    t.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit);
++                    t.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit).size(iconMed);
 +                    t.add("" + spawnUnit.stack.amount).padRight(4f);
 +                }
 +            }).grow();
@@ -611,7 +547,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            pt.table(ptt -> {
 +                int i = 0;
 +                for(Item item : content.items()){
-+                    ptt.button(b -> b.image(item.uiIcon).scaling(Scaling.fit), cleart, () -> {
++                    ptt.button(b -> b.image(item.uiIcon).scaling(Scaling.fit).size(iconMed), cleart, () -> {
 +                        spawnUnit.stack.item = item;
 +                        if(spawnUnit.stack.amount == 0){
 +                            spawnUnit.stack.amount = spawnUnit.itemCapacity();
@@ -624,7 +560,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            if(spawnUnit.stack.amount > 0){
 +                pt.row();
 +                pt.table(ptt -> {
-+                    ptt.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit);
++                    ptt.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit).size(iconMed);
 +                    ptt.add(" 数量：");
 +                    ptt.field(String.valueOf(spawnUnit.stack.amount), text -> spawnUnit.stack.amount = Integer.parseInt(text)).valid(value -> {
 +                        if(!Strings.canParsePositiveInt(value)) return false;
@@ -657,12 +593,12 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +            table.collapser(p -> {
 +                p.table(pt -> pay.payloads().each(payload -> {
 +                    if(payload instanceof Payloadc payloadUnit){
-+                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).getTable().add("[red]*"), squareTogglet, () -> {
++                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).size(iconMed).getTable().add("[red]*"), squareTogglet, () -> {
 +                            pay.payloads().remove(payload);
 +                            buildUnitFabricator(table);
 +                        }).color(payloadUnit.team().color).size(50f).left();
 +                    }else{
-+                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit), squareTogglet, () -> {
++                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).size(iconMed), squareTogglet, () -> {
 +                            pay.payloads().remove(payload);
 +                            buildUnitFabricator(table);
 +                        }).size(50f).left();
@@ -675,7 +611,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +                    c.table(list -> {
 +                        int i = 0;
 +                        for(UnitType units : content.units()){
-+                            list.button(b -> b.image(units.uiIcon).scaling(Scaling.fit), () -> {
++                            list.button(b -> b.image(units.uiIcon).scaling(Scaling.fit).size(iconMed), () -> {
 +                                pay.addPayload(new UnitPayload(units.create(spawnUnit.team)));
 +                                buildUnitFabricator(table);
 +                            }).size(50f).tooltip(units.localizedName);
@@ -703,7 +639,7 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +                    for(Block payBlock : content.blocks()){
 +                        if(!payBlock.isVisible() || !payBlock.isAccessible() || payBlock.isFloor())
 +                            continue;
-+                        list.button(b -> b.image(payBlock.uiIcon).scaling(Scaling.fit), () -> {
++                        list.button(b -> b.image(payBlock.uiIcon).scaling(Scaling.fit).size(iconMed), () -> {
 +                            pay.addPayload(new BuildPayload(payBlock, spawnUnit.team));
 +                            buildUnitFabricator(table);
 +                        }).size(50f).tooltip(payBlock.localizedName);
@@ -779,140 +715,5 @@ index 0000000000000000000000000000000000000000..674326d459320a2bd831a2471708ebd7
 +        }
 +        Time.run(chatTime, () -> Call.sendChatMessage(Strings.format(format, args)));
 +        chatTime = chatTime + 10f;
-+    }
-+
-+    private int getPrice(UnitType unitType){
-+        return (int)(unitType.health * (1 + unitType.range / 8 / 50) / 20);
-+    }
-+
-+
-+    private void generateRTSCode(){
-+        StringBuilder code = new StringBuilder();
-+        Vars.content.units().each(unitType -> {
-+            code.append("set 单位 @").append(unitType.name).append("\n");
-+            code.append("set 价格 ").append(getPrice(unitType)).append("\n");
-+            code.append("set 工厂 ");
-+            if(unitType.flying){
-+                if(unitType.health < 400) code.append("空1");
-+                else code.append("空2");
-+            }else{
-+                if(unitType.allowLegStep || unitType.naval) code.append("海爬");
-+                else code.append("陆");
-+                if(unitType.health < 720) code.append("1");
-+                else code.append("2");
-+            }
-+            code.append("\n");
-+            code.append("set 名称 \"").append(unitType.emoji()).append(" ").append(unitType.localizedName).append(" ").append(unitType.name).append("\"\n");
-+            code.append("set @counter c返回").append("\n");
-+
-+        });
-+        Core.app.setClipboardText(code.toString());
-+    }
-+}
-diff --git a/core/src/mindustryX/features/ui/SimpleCollapse.kt b/core/src/mindustryX/features/ui/SimpleCollapse.kt
-new file mode 100644
-index 0000000000000000000000000000000000000000..122e9dad97e6ed58568d842ce594fbb246340eb8
---- /dev/null
-+++ b/core/src/mindustryX/features/ui/SimpleCollapse.kt
-@@ -0,0 +1,43 @@
-+package mindustryX.features.ui
-+
-+import arc.scene.event.Touchable
-+import arc.scene.ui.layout.Table
-+import arc.scene.ui.layout.WidgetGroup
-+
-+class SimpleCollapser(val table: Table = Table(), collapsed: Boolean = true) : WidgetGroup(table) {
-+    var collapsed: Boolean = false
-+        set(value) {
-+            if (field == value) return
-+            field = value
-+            this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
-+            this.visible = !collapsed
-+            invalidateHierarchy()
-+        }
-+
-+    init {
-+        if (collapsed) this.collapsed = true
-+    }
-+
-+    fun toggle() {
-+        collapsed = !collapsed
-+    }
-+
-+    override fun draw() {
-+        if (collapsed) return
-+        super.draw()
-+    }
-+
-+    override fun layout() {
-+        table.setBounds(0f, 0f, width, height)
-+    }
-+
-+    override fun getPrefWidth(): Float = if (collapsed) 0f else table.prefWidth
-+    override fun getPrefHeight(): Float = if (collapsed) 0f else table.prefHeight
-+    override fun getMaxWidth(): Float = 0f
-+    override fun getMinHeight(): Float = 0f
-+
-+    inline fun table(block: (Table).() -> Unit): SimpleCollapser {
-+        table.block()
-+        return this
-+    }
-+}
-\ No newline at end of file
-diff --git a/core/src/mindustryX/features/ui/TeamSelectDialog.java b/core/src/mindustryX/features/ui/TeamSelectDialog.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..a0c11ca045115a81be97fbdab2ba8c4f9f080bf7
---- /dev/null
-+++ b/core/src/mindustryX/features/ui/TeamSelectDialog.java
-@@ -0,0 +1,51 @@
-+package mindustryX.features.ui;
-+
-+import arc.func.*;
-+import mindustry.game.*;
-+import mindustry.gen.*;
-+import mindustry.ui.*;
-+import mindustry.ui.dialogs.*;
-+
-+//move from mindustry.arcModule.ui.dialogs.TeamSelectDialog
-+public class TeamSelectDialog extends BaseDialog{
-+    private Boolf<Team> checked;
-+    private Team lastTeam;
-+    private Cons<Team> cons;
-+
-+    public TeamSelectDialog(){
-+        super("队伍选择器");
-+        cont.pane(td -> {
-+            for(Team team : Team.all){
-+                if(team.id % 10 == 6){
-+                    td.row();
-+                    td.add("队伍：" + team.id + "~" + (team.id + 9));
-+                }
-+                td.button(Tex.whiteui, Styles.clearTogglei, 36f, () -> {
-+                    lastTeam = team;
-+                    cons.get(team);
-+                })
-+                .checked(b -> checked.get(team)).pad(3f).size(50f).with(b -> b.getStyle().imageUpColor = team.color);
-+            }
-+        });
-+        closeOnBack();
-+        addCloseButton();
-+    }
-+
-+    public void pickOne(Cons<Team> cons, Team selectedTeam){
-+        if(selectedTeam != null) lastTeam = selectedTeam;
-+        pickOne(cons);
-+    }
-+
-+    public void pickOne(Cons<Team> cons){
-+        select((t) -> t == lastTeam, (t) -> {
-+            hide();
-+            cons.get(t);
-+        });
-+    }
-+
-+    public void select(Boolf<Team> checked, Cons<Team> cons){
-+        this.checked = checked;
-+        this.cons = cons;
-+        show();
 +    }
 +}
