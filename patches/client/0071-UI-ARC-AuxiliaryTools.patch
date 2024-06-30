@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sat, 4 May 2024 15:43:58 +0800
-Subject: [PATCH] UI: AuxiliaryTools
+Subject: [PATCH] UI&ARC: AuxiliaryTools
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -17,25 +17,30 @@ way-zer <himc.wicp@gmail.com> in 2024/5/4
 
 修复锁定视角行为错误
 way-zer <himc.wicp@gmail.com> on 2024/6/10
+
+从ARC中完全分离
+way-zer <himc.wicp@gmail.com> on 2024/6/27
 ---
  .../mindustry/ui/fragments/HudFragment.java   |  26 +++
- .../features/ui/AuxiliaryTools.java           |  96 ++++++++
- .../features/ui/auxiliary/AITools.java        | 123 ++++++++++
- .../features/ui/auxiliary/MapInfoTable.java   | 150 +++++++++++++
- .../features/ui/auxiliary/MarkTable.java      |  56 +++++
+ .../features/ui/AuxiliaryTools.java           |  99 +++++++++
+ .../features/ui/auxiliary/AITools.java        | 122 ++++++++++
+ .../features/ui/auxiliary/MapInfoTable.java   | 149 +++++++++++++
+ .../features/ui/auxiliary/MarkTable.java      |  55 +++++
  .../ui/auxiliary/MobileScriptButtons.java     |  52 +++++
- .../features/ui/auxiliary/ScriptButtons.java  |  76 +++++++
- .../features/ui/auxiliary/WaveInfoTable.java  | 141 ++++++++++++
+ .../features/ui/auxiliary/RStyles.java        |  71 ++++++
+ .../features/ui/auxiliary/ScriptButtons.java  |  74 ++++++
+ .../features/ui/auxiliary/WaveInfoTable.java  | 139 ++++++++++++
  .../features/ui/auxiliary/ai/ATRIAI.java      | 210 ++++++++++++++++++
  .../ui/auxiliary/ai/ArcBuilderAI.java         | 182 +++++++++++++++
  .../features/ui/auxiliary/ai/ArcMinerAI.java  | 130 +++++++++++
  .../features/ui/auxiliary/ai/ArcRepairAI.java |  75 +++++++
- 12 files changed, 1317 insertions(+)
+ 13 files changed, 1384 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/AuxiliaryTools.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/AITools.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/MarkTable.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/RStyles.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ATRIAI.java
@@ -110,10 +115,10 @@ index 0ca6c56396cd161c0633321302579f76bcb4a0bc..dfd556da1c134e5949f1e14ec26a83b0
                  info.name = "fps/ping";
 diff --git a/core/src/mindustryX/features/ui/AuxiliaryTools.java b/core/src/mindustryX/features/ui/AuxiliaryTools.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..fae29686d5e436286cbc4892f9f9ed6e2d5f0182
+index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49da7c6a9e0
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AuxiliaryTools.java
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,99 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -121,7 +126,6 @@ index 0000000000000000000000000000000000000000..fae29686d5e436286cbc4892f9f9ed6e
 +import arc.scene.style.*;
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.game.EventType.*;
 +import mindustry.ui.*;
 +import mindustryX.features.ui.auxiliary.*;
@@ -136,6 +140,10 @@ index 0000000000000000000000000000000000000000..fae29686d5e436286cbc4892f9f9ed6e
 +    new MobileScriptButtons(),
 +    new MarkTable()
 +    );
++
++    static{
++        RStyles.load();
++    }
 +
 +    public AuxiliaryTools(){
 +        setup();
@@ -212,10 +220,10 @@ index 0000000000000000000000000000000000000000..fae29686d5e436286cbc4892f9f9ed6e
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/AITools.java b/core/src/mindustryX/features/ui/auxiliary/AITools.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..552a8ddd18871ef6e6ca41413a09045ffb00e081
+index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799bd2c4022a
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/AITools.java
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,122 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
@@ -225,7 +233,6 @@ index 0000000000000000000000000000000000000000..552a8ddd18871ef6e6ca41413a09045f
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
 +import mindustry.ai.types.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.ui.*;
 +import mindustryX.features.ui.*;
 +import mindustryX.features.ui.auxiliary.ai.*;
@@ -341,10 +348,10 @@ index 0000000000000000000000000000000000000000..552a8ddd18871ef6e6ca41413a09045f
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c67c8b9f7
+index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e51d5ced9
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
-@@ -0,0 +1,150 @@
+@@ -0,0 +1,149 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +
@@ -352,7 +359,6 @@ index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c
 +import arc.graphics.*;
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.content.*;
 +import mindustry.editor.*;
 +import mindustry.gen.*;
@@ -362,10 +368,10 @@ index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c
 +import mindustry.ui.dialogs.*;
 +import mindustry.world.*;
 +import mindustry.world.blocks.environment.*;
++import mindustryX.features.*;
 +import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.ARCVars.arcui;
 +
 +public class MapInfoTable extends AuxiliaryTools.Table{
 +    private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
@@ -381,7 +387,7 @@ index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c
 +
 +        button(Icon.map, RStyles.clearAccentNonei, mapInfoDialog::show).tooltip("地图信息");
 +        button(Items.copper.emoji(), RStyles.clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
-+        button(Icon.chatSmall, RStyles.clearAccentNonei, () -> arcui.MessageDialog.show()).tooltip("中央监控室");
++        button(Icon.chatSmall, RStyles.clearAccentNonei, () -> UIExt.arcMessageDialog.show()).tooltip("中央监控室");
 +        button(Icon.playersSmall, RStyles.clearAccentNonei, () -> {
 +            if(ui.listfrag.players.size > 1){
 +                if(control.input instanceof DesktopInput){
@@ -390,7 +396,7 @@ index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c
 +                if(InputHandler.follow == null) InputHandler.follow = ui.listfrag.players.get(0);
 +                InputHandler.followIndex = (InputHandler.followIndex + 1) >= ui.listfrag.players.size ? 0 : InputHandler.followIndex + 1;
 +                InputHandler.follow = ui.listfrag.players.get(InputHandler.followIndex);
-+                arcui.arcInfo("视角追踪：" + InputHandler.follow.name);
++                UIExt.announce("视角追踪：" + InputHandler.follow.name);
 +            }
 +        }).tooltip("切换跟踪玩家");
 +        if(!mobile) button(Icon.editSmall, RStyles.clearAccentNonei, this::uiTable).tooltip("ui大全");
@@ -497,17 +503,16 @@ index 0000000000000000000000000000000000000000..e0466cd52d0816b59a69f0502425c61c
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MarkTable.java b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1eb4176eda5c1b320dd0bf5d0d23123ca90fe312
+index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e556083972
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,55 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
 +import arc.input.*;
 +import arc.scene.*;
 +import arc.scene.event.*;
-+import mindustry.arcModule.ui.*;
 +import mindustryX.features.ui.AuxiliaryTools.*;
 +import mindustry.gen.*;
 +import mindustry.ui.fragments.*;
@@ -559,7 +564,7 @@ index 0000000000000000000000000000000000000000..1eb4176eda5c1b320dd0bf5d0d23123c
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..fc96ee0b8e2184b8fcee90c7b1c53229ad4ffe46
+index 0000000000000000000000000000000000000000..81024f118a01c6dbc77058c35bc350891acec635
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
 @@ -0,0 +1,52 @@
@@ -567,9 +572,9 @@ index 0000000000000000000000000000000000000000..fc96ee0b8e2184b8fcee90c7b1c53229
 +
 +import arc.*;
 +import arc.scene.style.*;
-+import mindustry.arcModule.toolpack.*;
 +import mindustry.content.*;
 +import mindustry.gen.*;
++import mindustryX.features.*;
 +
 +import static mindustry.Vars.*;
 +
@@ -607,7 +612,7 @@ index 0000000000000000000000000000000000000000..fc96ee0b8e2184b8fcee90c7b1c53229
 +            Call.unitBuildingControlSelect(unit, build);
 +        });
 +
-+        scriptButton(Blocks.radar.uiIcon, "雷达扫描", () -> arcScanner.mobileRadar = !arcScanner.mobileRadar);
++        scriptButton(Blocks.radar.uiIcon, "雷达扫描", () -> ArcRadar.mobileRadar = !ArcRadar.mobileRadar);
 +        if(mobile)
 +            addSettingButton(StatusEffects.unmoving.uiIcon, "viewMode", "原地静止", s -> {
 +                if(!s) Core.camera.position.set(player);
@@ -615,12 +620,89 @@ index 0000000000000000000000000000000000000000..fc96ee0b8e2184b8fcee90c7b1c53229
 +    }
 +
 +}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/RStyles.java b/core/src/mindustryX/features/ui/auxiliary/RStyles.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..49ed101b4a24b034fc313468441a213b02fc4d9d
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/RStyles.java
+@@ -0,0 +1,71 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.graphics.*;
++import arc.scene.style.*;
++import arc.scene.ui.ImageButton.*;
++import arc.scene.ui.TextButton.*;
++import mindustry.gen.*;
++import mindustry.ui.*;
++
++import static mindustry.gen.Tex.underlineWhite;
++import static mindustry.ui.Styles.*;
++
++//move from mindustry.arcModule.ui.RStyles
++public class RStyles{
++    public static Drawable black1;
++
++    public static TextButtonStyle
++    clearLineNonet,
++    clearLineNoneTogglet;
++
++    public static ImageButtonStyle
++    clearAccentNonei,
++    clearAccentNoneTogglei,
++    clearLineNonei,
++    clearLineNoneTogglei;
++
++    public static void load(){
++        var whiteuir = (TextureRegionDrawable)Tex.whiteui;
++
++        black1 = whiteuir.tint(0f, 0f, 0f, 0.1f);
++
++        clearLineNonet = new TextButtonStyle(){{
++            font = Fonts.def;
++            fontColor = Color.white;
++            disabled = black;
++            disabledFontColor = Color.gray;
++            up = none;
++            over = accentDrawable;
++            down = underlineWhite;
++        }};
++
++        clearLineNoneTogglet = new TextButtonStyle(fullTogglet){{
++            up = none;
++            over = accentDrawable;
++            down = underlineWhite;
++            checked = underlineWhite;
++            disabledFontColor = Color.white;
++        }};
++
++        clearAccentNonei = new ImageButtonStyle(clearNonei){{
++            up = none;
++            over = black3;
++            down = none;
++        }};
++
++        clearAccentNoneTogglei = new ImageButtonStyle(clearAccentNonei){{
++            checked = accentDrawable;
++        }};
++
++        clearLineNonei = new ImageButtonStyle(clearNonei){{
++            up = none;
++            over = accentDrawable;
++            down = none;
++        }};
++
++        clearLineNoneTogglei = new ImageButtonStyle(clearLineNonei){{
++            checked = underlineWhite;
++        }};
++    }
++
++}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e4c2502a9464e1188e74e75846b42107d1541afa
+index 0000000000000000000000000000000000000000..307d3fad544d61f31d097eb8fd6b995865629585
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,74 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
@@ -629,7 +711,6 @@ index 0000000000000000000000000000000000000000..e4c2502a9464e1188e74e75846b42107
 +import arc.scene.style.*;
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.content.*;
 +import mindustry.gen.*;
 +import mindustry.input.*;
@@ -638,7 +719,6 @@ index 0000000000000000000000000000000000000000..e4c2502a9464e1188e74e75846b42107
 +import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.*;
-+import static mindustry.arcModule.ARCVars.arcui;
 +
 +public class ScriptButtons extends AuxiliaryTools.Table{
 +
@@ -682,7 +762,7 @@ index 0000000000000000000000000000000000000000..e4c2502a9464e1188e74e75846b42107
 +            boolean setting = Core.settings.getBool(settingName);
 +
 +            Core.settings.put(settingName, !setting);
-+            arcui.arcInfo("已" + (setting ? "取消" : "开启") + description);
++            UIExt.announce("已" + (setting ? "取消" : "开启") + description);
 +
 +            onClick.get(!setting);
 +        }).checked(b -> Core.settings.getBool(settingName));
@@ -699,10 +779,10 @@ index 0000000000000000000000000000000000000000..e4c2502a9464e1188e74e75846b42107
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..09cca99e4ad4e2faa79d525b371051a7e66dfbfc
+index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60ed72d385
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
-@@ -0,0 +1,141 @@
+@@ -0,0 +1,139 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
@@ -710,9 +790,6 @@ index 0000000000000000000000000000000000000000..09cca99e4ad4e2faa79d525b371051a7
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
-+import mindustry.arcModule.*;
-+import mindustry.arcModule.toolpack.*;
-+import mindustry.arcModule.ui.*;
 +import mindustry.content.*;
 +import mindustry.core.*;
 +import mindustry.game.EventType.*;
@@ -721,6 +798,7 @@ index 0000000000000000000000000000000000000000..09cca99e4ad4e2faa79d525b371051a7
 +import mindustry.type.*;
 +import mindustry.ui.*;
 +import mindustry.ui.dialogs.*;
++import mindustryX.features.*;
 +import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.state;
@@ -768,7 +846,7 @@ index 0000000000000000000000000000000000000000..09cca99e4ad4e2faa79d525b371051a7
 +                setWaveOffset(0);
 +            });
 +
-+            buttons.button("♐", RStyles.clearLineNonet, () -> RFuncs.shareWaveInfo(state.wave + waveOffset))
++            buttons.button("♐", RStyles.clearLineNonet, () -> ArcMessageDialog.shareWaveInfo(state.wave + waveOffset))
 +            .disabled((b) -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
 +
 +        }).left().row();
@@ -783,7 +861,7 @@ index 0000000000000000000000000000000000000000..09cca99e4ad4e2faa79d525b371051a7
 +                lsSet.cont.add("设定查询波次").padRight(5f).left();
 +                TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
 +                lsSet.cont.row();
-+                lsSet.cont.slider(1, arcWaveSpawner.calWinWave(), 1, res -> {
++                lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
 +                    waveOffset = (int)res - state.wave;
 +                    field.setText((int)res + "");
 +                });

@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 15 Jun 2024 13:57:02 +0800
+Subject: [PATCH] C(RenderExt) playerEffectColor
+
+---
+ core/src/mindustryX/features/ArcOld.java    | 12 +++++++++++-
+ core/src/mindustryX/features/RenderExt.java |  1 +
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
+index 5be9fedd67dfe406c112fb77e69e8f4ce616ee72..e659197cf01de2a6feae6145c00e3287b6bc4c50 100644
+--- a/core/src/mindustryX/features/ArcOld.java
++++ b/core/src/mindustryX/features/ArcOld.java
+@@ -126,7 +126,17 @@ public class ArcOld{
+             c.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
+ 
+             c.addCategory("arcPlayerEffect");
+-            c.textPref("playerEffectColor", "ffd37f");
++            {
++                Cons<String> changed = (t) -> {
++                    try{
++                        RenderExt.playerEffectColor = Color.valueOf(t);
++                    }catch(Exception e){
++                        RenderExt.playerEffectColor = Pal.accent;
++                    }
++                };
++                c.textPref("playerEffectColor", "ffd37f", changed);
++                changed.get(settings.getString("playerEffectColor"));
++            }
+             c.sliderPref("unitTargetType", 0, 0, 5, 1, s -> switch(s){
+                 case 0 -> "关闭";
+                 case 1 -> "虚圆";
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 5e5190b95b68b37423a9d6beaf7d2215cba32e97..d3af9a67991d89027dc2c556d9b757803fa15553 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -43,6 +43,7 @@ public class RenderExt{
+ 
+     public static boolean unitHide = false;
+     public static Color massDriverLineColor = Color.clear;
++    public static Color playerEffectColor = Color.clear;
+ 
+     private static Effect placementEffect;
+ 
