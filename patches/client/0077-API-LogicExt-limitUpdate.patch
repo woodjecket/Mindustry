@@ -5,8 +5,8 @@ Subject: [PATCH] API(LogicExt) limitUpdate
 
 ---
  core/src/mindustry/entities/EntityGroup.java | 12 ++++++++++++
- core/src/mindustryX/features/LogicExt.java   | 12 +++++++++++-
- 2 files changed, 23 insertions(+), 1 deletion(-)
+ core/src/mindustryX/features/LogicExt.java   | 10 ++++++++++
+ 2 files changed, 22 insertions(+)
 
 diff --git a/core/src/mindustry/entities/EntityGroup.java b/core/src/mindustry/entities/EntityGroup.java
 index 9fdfda3d08ba6497d424fd19af7068f1f10622af..b93abc6277b89d4f8556c484d1e58dc388f3d390 100644
@@ -39,7 +39,7 @@ index 9fdfda3d08ba6497d424fd19af7068f1f10622af..b93abc6277b89d4f8556c484d1e58dc3
              array.items[index].update();
          }
 diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
-index e71f51b27d8576727f19b3273a9a6f0536e610c7..373c2dfbd0f2cbe64811c8a1ca99172a82637556 100644
+index e71f51b27d8576727f19b3273a9a6f0536e610c7..3d0141b5c308df84fea6c061d5b9e810e31b83fd 100644
 --- a/core/src/mindustryX/features/LogicExt.java
 +++ b/core/src/mindustryX/features/LogicExt.java
 @@ -1,11 +1,21 @@
@@ -54,8 +54,7 @@ index e71f51b27d8576727f19b3273a9a6f0536e610c7..373c2dfbd0f2cbe64811c8a1ca99172a
 +    public static int limitDst = 0, limitTimer = 10;
 +
      public static void init(){
--        Events.run(Trigger.update, () -> {
-+        Events.run(Trigger.preDraw, () -> {
+         Events.run(Trigger.update, () -> {
 +            limitUpdate = Core.settings.getBool("limitupdate");
 +            limitDst = Core.settings.getInt("limitdst") * Vars.tilesize;
 +            if(limitUpdate && limitTimer-- < 0){

@@ -12,10 +12,10 @@ Content-Transfer-Encoding: 8bit
 way-zer <himc.wicp@gmail.com> on 2024/6/10 at 14:28
 ---
  core/src/mindustryX/features/UIExt.java       |   9 +
- .../features/ui/AdvanceBuildTool.java         | 434 ++++++++++++++++++
- .../features/ui/HudSettingsTable.java         | 229 +++++++++
+ .../features/ui/AdvanceBuildTool.java         | 448 ++++++++++++++++++
+ .../features/ui/HudSettingsTable.java         | 228 +++++++++
  .../mindustryX/features/ui/ToolTableBase.java |  24 +
- 4 files changed, 696 insertions(+)
+ 4 files changed, 709 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/AdvanceBuildTool.java
  create mode 100644 core/src/mindustryX/features/ui/HudSettingsTable.java
  create mode 100644 core/src/mindustryX/features/ui/ToolTableBase.java
@@ -49,22 +49,21 @@ index 7664e5cd240e9e933373cbd1a3eeb382886e94f8..1a33e4f6c9509d0b34422eb360687ffc
      public static void buildPositionRow(Table tt, Vec2 vec){
 diff --git a/core/src/mindustryX/features/ui/AdvanceBuildTool.java b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e4de41747
+index 0000000000000000000000000000000000000000..d9e8b95289a7c197e089831ce82fda8519e8197b
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
-@@ -0,0 +1,434 @@
+@@ -0,0 +1,448 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
 +import arc.func.*;
++import arc.graphics.*;
 +import arc.graphics.g2d.*;
 +import arc.math.geom.*;
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
-+import mindustry.arcModule.*;
-+import mindustry.arcModule.ui.dialogs.*;
 +import mindustry.content.*;
 +import mindustry.entities.units.*;
 +import mindustry.game.*;
@@ -75,9 +74,11 @@ index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e
 +import mindustry.world.*;
 +import mindustry.world.blocks.*;
 +import mindustry.world.blocks.environment.*;
++import mindustry.world.blocks.logic.*;
 +import mindustry.world.blocks.power.*;
 +import mindustry.world.blocks.production.*;
 +import mindustry.world.blocks.storage.*;
++import mindustryX.features.func.*;
 +
 +import static mindustry.Vars.*;
 +import static mindustry.ui.Styles.flatTogglet;
@@ -136,7 +137,7 @@ index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e
 +                }).tooltip("[cyan]玩家建造区").size(30f);
 +                tt.update(() -> {
 +                    if(placement != BuildRange.zone) return;
-+                    DrawUtilities.drawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, Align.bottom);
++                    FuncX.drawText(selection.getCenter(Tmp.v1).scl(tilesize), "建造区域", Scl.scl(1.25f), Color.white, Align.bottom);
 +                    Draw.color(Pal.stat, 0.7f);
 +                    Draw.z(Layer.effect - 1f);
 +                    Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
@@ -198,7 +199,7 @@ index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e
 +            t.table(tt -> {
 +                tt.button(Blocks.worldMessage.emoji(), flatTogglet, () -> Core.settings.put("displayallmessage", !Core.settings.getBool("displayallmessage", false))).checked(a -> Core.settings.getBool("displayallmessage")).size(30, 30).tooltip("开关信息板全显示");
 +                tt.button(Blocks.worldProcessor.emoji(), Styles.flatBordert, () -> {
-+                    RFuncs.worldProcessor();
++                    showWorldProcessorInfo();
 +                    searchBlock = Blocks.worldProcessor;
 +                    rebuild();
 +                }).size(30).tooltip("地图世处信息");
@@ -250,6 +251,20 @@ index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e
 +        dialog.hidden(this::rebuild);
 +        dialog.addCloseButton();
 +        dialog.show();
++    }
++
++    public static void showWorldProcessorInfo(){
++        Log.info("当前地图:@", state.map.name());
++        int[] data = new int[3];
++        Groups.build.each(b -> {
++            if(b instanceof LogicBlock.LogicBuild lb && lb.block.privileged){
++                data[0] += 1;
++                data[1] += lb.code.split("\n").length + 1;
++                data[2] += lb.code.length();
++            }
++        });
++        Log.info("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]);
++        ui.announce(Strings.format("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]), 10);
 +    }
 +
 +    void replaceBlockGroup(Dialog dialog, Table t, Block ori, Block re){
@@ -485,14 +500,13 @@ index 0000000000000000000000000000000000000000..94b8bb0d5698f315727bb68f84b9fd8e
 +        }
 +
 +    }
-+
 +}
 diff --git a/core/src/mindustryX/features/ui/HudSettingsTable.java b/core/src/mindustryX/features/ui/HudSettingsTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a42a09e4ee65217ac7240cb7afe5e97ac2e6f5ab
+index 0000000000000000000000000000000000000000..c6b6d7e9922a86c029fbfeae57074fb21acbd81b
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/HudSettingsTable.java
-@@ -0,0 +1,229 @@
+@@ -0,0 +1,228 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -501,7 +515,6 @@ index 0000000000000000000000000000000000000000..a42a09e4ee65217ac7240cb7afe5e97a
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
-+import mindustry.arcModule.toolpack.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
 +import mindustry.ui.*;

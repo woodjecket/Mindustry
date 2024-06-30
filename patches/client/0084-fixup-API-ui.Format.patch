@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 14 Jun 2024 20:37:38 +0800
+Subject: [PATCH] fixup! API: ui.Format duration
+
+---
+ core/src/mindustryX/features/ui/Format.kt | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
+index 09530046dab2307c996eaea5b3601d507a55402e..297ed9e0a20b04decf39f58419f8c9b6f9cc7fd8 100644
+--- a/core/src/mindustryX/features/ui/Format.kt
++++ b/core/src/mindustryX/features/ui/Format.kt
+@@ -65,6 +65,20 @@ data class Format @JvmOverloads constructor(private var decimal: Int = 2, privat
+         return "(${World.toTile(pos.x)},${World.toTile(pos.y)})"
+     }
+ 
++    fun duration(seconds: Float, unit: Boolean = true) = buildString {
++        append(if (seconds > 0) "[orange]" else "[acid]")
++        val s = abs(seconds)
++        if (s >= 60) {
++            append((seconds / 60).toInt())
++            append(" : ")
++            append((s % 60).toInt())
++        } else {
++            append(format0(seconds))
++        }
++        append("[]")
++        if (unit) append(if (s >= 60) "min" else "s")
++    }
++
+     @JvmOverloads
+     fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent < 0.95f): String {
+         return buildString {
+@@ -102,4 +116,8 @@ object FormatDefault {
+ 
+     @JvmStatic
+     fun formatTile(pos: Position): String = Format.default.formatTile(pos)
++
++    @JvmOverloads
++    @JvmStatic
++    fun duration(seconds: Float, unit: Boolean = true): String = Format.default.duration(seconds, unit)
+ }
+\ No newline at end of file
