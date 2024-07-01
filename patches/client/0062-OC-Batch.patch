@@ -936,10 +936,10 @@ index d969283650b2ac2ed75a235dd66476cd86255349..8fe579de4d1f57e40be3926e9be95f88
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 4fe8f9b104ca785f85c0eadc18f3f4040ed2a8e5..27094e6b8d0c620c780e8b536316eb0b7cf29121 100644
+index b5f1cdc56623e5ad56e340da6d47a73eb490e5d1..22d9c9119ae16928b545f1059bcfa8b59b6293a5 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -59,6 +59,9 @@ public class Settings{
+@@ -63,6 +63,9 @@ public class Settings{
              c.addCategory("entitySettings");
              c.checkPref("bulletShow", true);
              c.checkPref("showMineBeam".toLowerCase(), true);
