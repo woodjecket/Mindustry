@@ -13,10 +13,10 @@ Content-Transfer-Encoding: 8bit
 570bcd0b way-zer <himc.wicp@gmail.com> on 2024/5/3 at 14:18
 ---
  core/assets/bundles/bundle-mdtx.properties    | 27 ++++++
- .../ui/dialogs/SettingsMenuDialog.java        | 89 ++++++++++++++-----
+ .../ui/dialogs/SettingsMenuDialog.java        | 87 ++++++++++++++-----
  core/src/mindustryX/Hooks.java                |  2 +
- core/src/mindustryX/features/Settings.java    | 68 ++++++++++++++
- 4 files changed, 162 insertions(+), 24 deletions(-)
+ core/src/mindustryX/features/Settings.java    | 72 +++++++++++++++
+ 4 files changed, 164 insertions(+), 24 deletions(-)
  create mode 100644 core/src/mindustryX/features/Settings.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -55,7 +55,7 @@ index 0cb666446175aa5e952ceaa07669e10a3a023d10..cc639cd1a79b62e9ac252efee35f01f1
 +setting.showminebeam.name = 显示单位挖掘光束
 +#end Settings
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc7b634b74 100644
+index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e821405ede 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 @@ -24,6 +24,7 @@ import mindustry.gen.*;
@@ -171,12 +171,11 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
          }
  
          public SliderSetting sliderPref(String name, int def, int min, int max, StringProcessor s){
-@@ -645,47 +661,57 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -645,47 +661,55 @@ public class SettingsMenuDialog extends BaseDialog{
              SliderSetting res;
              list.add(res = new SliderSetting(name, def, min, max, step, s));
              settings.defaults(name, def);
 -            rebuild();
-+            s.get(settings.getInt(name));
              return res;
          }
  
@@ -190,7 +189,6 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
              list.add(new CheckSetting(name, def, changed));
              settings.defaults(name, def);
 -            rebuild();
-+            changed.get(settings.getBool(name));
 +        }
 +
 +        public void addCategory(String name){
@@ -236,7 +234,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
              clearChildren();
  
              for(Setting setting : list){
-@@ -699,6 +725,7 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -699,6 +723,7 @@ public class SettingsMenuDialog extends BaseDialog{
                  }
                  rebuild();
              }).margin(14).width(240f).pad(6);
@@ -244,7 +242,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
          }
  
          public abstract static class Setting{
-@@ -787,6 +814,20 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -787,6 +812,20 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -265,7 +263,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9bc85ef9d3b45ece271aaea02dce05dc
          public static class TextSetting extends Setting{
              String def;
              Cons<String> changed;
-@@ -810,9 +851,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -810,9 +849,9 @@ public class SettingsMenuDialog extends BaseDialog{
                      }
                  });
  
@@ -300,10 +298,10 @@ index 27bf6d34b21c289a516ecc94e1cc13bfbfbdfd2a..eccd7532122ec7461e24202230a6300c
      /** invoke after loading, just before `Mod::init` */
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..62e961ec7066c2051c8e5217cefdd9001c1fa764
+index 0000000000000000000000000000000000000000..be0724ea914562303758d61795617506dbcb678e
 --- /dev/null
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -0,0 +1,68 @@
+@@ -0,0 +1,72 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -347,6 +345,10 @@ index 0000000000000000000000000000000000000000..62e961ec7066c2051c8e5217cefdd900
 +                maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
 +                return v == 257 ? "无限" : String.valueOf(v);
 +            });
++            {
++                var v = Core.settings.getInt("maxSchematicSize");
++                maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
++            }
 +
 +            c.addCategory("blockSettings");
 +            c.checkPref("staticShieldsBorder", false);

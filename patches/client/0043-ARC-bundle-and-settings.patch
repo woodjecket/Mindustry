@@ -11,9 +11,9 @@ way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
  core/assets/bundles/bundle-mdtx.properties    | 243 ++++++++++++++++++
  .../ui/dialogs/SettingsMenuDialog.java        |  29 +--
- core/src/mindustryX/features/ArcOld.java      | 223 ++++++++++++++++
+ core/src/mindustryX/features/ArcOld.java      | 226 ++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 481 insertions(+), 15 deletions(-)
+ 4 files changed, 484 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -268,7 +268,7 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a
 +waves.group.items = 添加物品
 +waves.group.payloads = 添加载荷
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 9bc85ef9d3b45ece271aaea02dce05dc7b634b74..7daf541be6206723289729418c99fb9c96c9e2cd 100644
+index 9d1fac76623f76f2be91b68bd339c9e821405ede..91683c5510baa62e106b9ba03fce67ed26c4b1f6 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 @@ -299,11 +299,12 @@ public class SettingsMenuDialog extends BaseDialog{
@@ -340,10 +340,10 @@ index 9bc85ef9d3b45ece271aaea02dce05dc7b634b74..7daf541be6206723289729418c99fb9c
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4ce616ee72
+index 0000000000000000000000000000000000000000..3cafd2e7f08c2ad7c9528a914df7eab1bdec9e87
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,223 @@
+@@ -0,0 +1,226 @@
 +package mindustryX.features;
 +
 +import arc.func.*;
@@ -398,6 +398,7 @@ index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4c
 +                default -> "全部显示";
 +            });
 +            c.checkPref("forceEnableDarkness", true, (b) -> enableDarkness = b);
++            enableDarkness = settings.getBool("forceEnableDarkness");
 +            c.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
 +            c.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
@@ -509,7 +510,9 @@ index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4c
 +            c.checkPref("save_more_map", false);
 +            c.checkPref("forceIgnoreAttack", false);
 +            c.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
++            AdvanceToolTable.allBlocksReveal = settings.getBool("allBlocksReveal");
 +            c.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
++            AdvanceToolTable.worldCreator = settings.getBool("worldCreator");
 +            c.checkPref("overrideSkipWave", false);
 +            c.checkPref("forceConfigInventory", false);
 +            c.addCategory("arcStrongCheat");
@@ -556,7 +559,7 @@ index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4c
 +            c.addCategory("developerMode");
 +            c.checkPref("rotateCanvas", false);
 +            c.checkPref("limitupdate", false, v -> {
-+                if(!v || !clientLoaded) return;
++                if(!v) return;
 +                settings.put("limitupdate", false);
 +                ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
 +                    settings.put("limitupdate", true);
@@ -568,10 +571,10 @@ index 0000000000000000000000000000000000000000..5be9fedd67dfe406c112fb77e69e8f4c
 +    }
 +}
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 62e961ec7066c2051c8e5217cefdd9001c1fa764..4fe8f9b104ca785f85c0eadc18f3f4040ed2a8e5 100644
+index be0724ea914562303758d61795617506dbcb678e..b5f1cdc56623e5ad56e340da6d47a73eb490e5d1 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -60,6 +60,7 @@ public class Settings{
+@@ -64,6 +64,7 @@ public class Settings{
              c.checkPref("bulletShow", true);
              c.checkPref("showMineBeam".toLowerCase(), true);
          }));

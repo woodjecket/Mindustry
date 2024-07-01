@@ -9,10 +9,10 @@ Subject: [PATCH] C(RenderExt) playerEffectColor
  2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
-index 5be9fedd67dfe406c112fb77e69e8f4ce616ee72..e659197cf01de2a6feae6145c00e3287b6bc4c50 100644
+index 3cafd2e7f08c2ad7c9528a914df7eab1bdec9e87..855c5dad204db7796043e9c9c159a3c39d9795a3 100644
 --- a/core/src/mindustryX/features/ArcOld.java
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -126,7 +126,17 @@ public class ArcOld{
+@@ -127,7 +127,17 @@ public class ArcOld{
              c.sliderPref("rtsWoundUnit", 0, 0, 100, 2, s -> s + "%");
  
              c.addCategory("arcPlayerEffect");

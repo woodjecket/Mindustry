@@ -68,6 +68,9 @@ way-zer <himc.wicp@gmail.com> on 2024/6/14
 * move package
 * clean DrawUtilities
 way-zer <himc.wicp@gmail.com> on 2024/6/15
+
+clean PowerInfo, ArcMessageDialog, BlockSelectDialog, ItemImage
+way-zer <himc.wicp@gmail.com> on 2024/6/30
 ---
  core/src/mindustry/ai/BlockIndexer.java       |  116 ++
  core/src/mindustry/core/Renderer.java         |    3 +-
@@ -78,8 +81,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/15
  .../mindustry/entities/comp/PlayerComp.java   |   26 +-
  .../mindustry/entities/comp/ShieldComp.java   |    6 +
  .../mindustry/entities/comp/StatusComp.java   |   12 +
- core/src/mindustry/game/Schematic.java        |  163 +++
- core/src/mindustry/game/Schematics.java       |    3 +-
+ core/src/mindustry/game/Schematic.java        |  158 +++
  core/src/mindustry/game/Universe.java         |    2 +-
  .../src/mindustry/graphics/BlockRenderer.java |   17 +-
  core/src/mindustry/graphics/Drawf.java        |   54 +
@@ -91,21 +93,20 @@ way-zer <himc.wicp@gmail.com> on 2024/6/15
  core/src/mindustry/input/InputHandler.java    |   62 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
  core/src/mindustry/logic/LCanvas.java         |   94 +-
- core/src/mindustry/logic/LExecutor.java       |   14 +-
+ core/src/mindustry/logic/LExecutor.java       |   15 +-
  core/src/mindustry/logic/LogicDialog.java     |  183 ++-
- core/src/mindustry/type/UnitType.java         |  160 ++-
+ core/src/mindustry/type/UnitType.java         |  167 ++-
  core/src/mindustry/type/Weapon.java           |   25 +-
  core/src/mindustry/ui/Fonts.java              |    2 +-
- core/src/mindustry/ui/ItemImage.java          |   13 +
  core/src/mindustry/ui/Minimap.java            |   12 +-
  .../ui/dialogs/ContentInfoDialog.java         |   28 +-
  .../ui/dialogs/CustomRulesDialog.java         |  115 +-
- .../mindustry/ui/dialogs/DatabaseDialog.java  |   12 +-
+ .../mindustry/ui/dialogs/DatabaseDialog.java  |    9 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |   12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  117 +-
- .../ui/dialogs/SchematicsDialog.java          |  391 +++++-
+ .../ui/dialogs/SchematicsDialog.java          |  383 +++++-
  .../mindustry/ui/fragments/ChatFragment.java  |   25 +-
- .../ui/fragments/ConsoleFragment.java         |    2 +
+ .../ui/fragments/ConsoleFragment.java         |    3 +
  .../mindustry/ui/fragments/HudFragment.java   |  253 +++-
  .../mindustry/ui/fragments/MenuFragment.java  |   59 +-
  .../ui/fragments/PlacementFragment.java       |  321 ++++-
@@ -126,21 +127,21 @@ way-zer <himc.wicp@gmail.com> on 2024/6/15
  .../blocks/production/GenericCrafter.java     |   29 +
  .../world/blocks/storage/CoreBlock.java       |    9 +
  core/src/mindustryX/Hooks.java                |   25 +-
- core/src/mindustryX/features/ArcBuilds.java   |  165 +++
+ core/src/mindustryX/features/ArcBuilds.java   |  160 +++
  core/src/mindustryX/features/ArcOld.java      |   42 +
  core/src/mindustryX/features/ArcRadar.java    |  239 ++++
  .../features}/ArcScanMode.java                |   15 +-
  core/src/mindustryX/features/ArcUnits.java    |  346 +++++
  .../mindustryX/features/ArcWaveSpawner.java   |  258 ++++
- core/src/mindustryX/features/MarkerType.java  |   11 +-
+ core/src/mindustryX/features/MarkerType.java  |   12 +-
  .../mindustryX/features/PicToMindustry.java   |  343 +++++
  core/src/mindustryX/features/RenderExt.java   |   13 +-
  core/src/mindustryX/features/UIExt.java       |    1 +
- .../features/ui/ArcMessageDialog.java         |  464 +++++++
- .../mindustryX/features/ui/ArcPowerInfo.java  |   94 ++
+ .../features/ui/ArcMessageDialog.java         |  419 +++++++
+ .../mindustryX/features/ui/ArcPowerInfo.java  |   71 ++
  .../features/ui/ArcWaveInfoDialog.java        | 1117 +++++++++++++++++
- .../features/ui/BlockSelectDialog.java        |   58 +
- 71 files changed, 6367 insertions(+), 313 deletions(-)
+ .../features/ui/BlockSelectDialog.java        |   65 +
+ 69 files changed, 6281 insertions(+), 311 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcBuilds.java
  create mode 100644 core/src/mindustryX/features/ArcRadar.java
  rename core/src/{mindustry/arcModule/toolpack => mindustryX/features}/ArcScanMode.java (97%)
@@ -153,7 +154,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/15
  create mode 100644 core/src/mindustryX/features/ui/BlockSelectDialog.java
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
-index 60bcca661ec27bbd5dc718ab9b4d7e1fc69d40dc..5d84409f8baaa5179027f3ff5bff31c5e564b63f 100644
+index 60bcca661ec27bbd5dc718ab9b4d7e1fc69d40dc..0b5de3b1215c9fdfd25e207e4491f792cc8b11a8 100644
 --- a/core/src/mindustry/ai/BlockIndexer.java
 +++ b/core/src/mindustry/ai/BlockIndexer.java
 @@ -42,6 +42,14 @@ public class BlockIndexer{
@@ -163,7 +164,7 @@ index 60bcca661ec27bbd5dc718ab9b4d7e1fc69d40dc..5d84409f8baaa5179027f3ff5bff31c5
 +    /** Stores all wallore quadrants on the map. Maps ID to qX to qY to a list of tiles with that ore. */
 +    private IntSeq[][][] oresWall;
 +    /** All wallores available on this map. */
-+    private ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
++    private final ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
 +
 +    public Integer[] floorOresCount = new Integer[content.blocks().size +1];
 +    public Integer[] wallOresCount = new Integer[content.blocks().size +1];
@@ -761,7 +762,7 @@ index 0d70aff00012a17cd4aaab4859f4943ca67f45d9..361eec1d8c1ffa11da5175c84145192b
 +    }
  }
 diff --git a/core/src/mindustry/game/Schematic.java b/core/src/mindustry/game/Schematic.java
-index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..b96abdfe1253f3b01e28060ec62d005ccf62d9cf 100644
+index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..13aebc0af84eb4208e81f31a8815b2d3554806f0 100644
 --- a/core/src/mindustry/game/Schematic.java
 +++ b/core/src/mindustry/game/Schematic.java
 @@ -8,7 +8,15 @@ import mindustry.mod.Mods.*;
@@ -790,23 +791,18 @@ index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..b96abdfe1253f3b01e28060ec62d005c
      public Schematic(Seq<Stile> tiles, StringMap tags, int width, int height){
          this.tiles = tiles;
          this.tags = tags;
-@@ -30,6 +41,15 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -30,6 +41,10 @@ public class Schematic implements Publishable, Comparable<Schematic>{
          this.height = height;
      }
  
 +    public boolean containsBlock(Block block){
-+        AtomicBoolean contains = new AtomicBoolean(false);
-+        tiles.each(t -> {
-+            if(t.block == block) contains.set(true);
-+        });
-+        return contains.get();
-+
++        return tiles.find(tile -> tile.block == block) != null;
 +    }
 +
      public float powerProduction(){
          return tiles.sumf(s -> s.block instanceof PowerGenerator p ? p.powerProduction : 0f);
      }
-@@ -38,6 +58,143 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -38,6 +53,143 @@ public class Schematic implements Publishable, Comparable<Schematic>{
          return tiles.sumf(s -> s.block.consPower != null ? s.block.consPower.usage : 0f);
      }
  
@@ -950,7 +946,7 @@ index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..b96abdfe1253f3b01e28060ec62d005c
      public ItemSeq requirements(){
          ItemSeq requirements = new ItemSeq();
  
-@@ -142,6 +299,12 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -142,6 +294,12 @@ public class Schematic implements Publishable, Comparable<Schematic>{
              block = Blocks.air;
          }
  
@@ -963,27 +959,6 @@ index 75ac43ec66aa09576dc82bfeeaa726e68321ef8e..b96abdfe1253f3b01e28060ec62d005c
          public Stile set(Stile other){
              block = other.block;
              x = other.x;
-diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..bc10897960fdd9651b2a1e6e068fb36108fd8858 100644
---- a/core/src/mindustry/game/Schematics.java
-+++ b/core/src/mindustry/game/Schematics.java
-@@ -34,6 +34,7 @@ import mindustry.world.blocks.sandbox.*;
- import mindustry.world.blocks.storage.*;
- import mindustry.world.blocks.storage.CoreBlock.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.ui.*;
- 
- import java.io.*;
- import java.util.zip.*;
-@@ -278,7 +279,7 @@ public class Schematics implements Loadable{
-     /** Creates an array of build plans from a schematic's data, centered on the provided x+y coordinates. */
-     public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
-         return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
--            .removeAll(s -> (!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow()).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
-+            .removeAll(s -> !AdvanceToolTable.forcePlacement && ((!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow())).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
-     }
- 
-     /** @return all the valid loadouts for a specific core type. */
 diff --git a/core/src/mindustry/game/Universe.java b/core/src/mindustry/game/Universe.java
 index 4aa77d8be7d4876022746b93046e0e8587b9052b..849a46f6bae96b5a65e4874b2621acfcc7e4ded9 100644
 --- a/core/src/mindustry/game/Universe.java
@@ -2094,7 +2069,7 @@ index d8c28c046483618a8bfb5f6a457b54e555f69141..8e8d5f0012e449c4e2e12b7559deb20f
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index dc6716375964ec579572888ff572f2803798e9d9..794d5e85c53b00954a50db3c0876900f5786832b 100644
+index dc6716375964ec579572888ff572f2803798e9d9..f3173eb2ffb9da891074a6dbafc77e08da63f7c3 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -9,6 +9,7 @@ import arc.util.*;
@@ -2105,7 +2080,15 @@ index dc6716375964ec579572888ff572f2803798e9d9..794d5e85c53b00954a50db3c0876900f
  import mindustry.content.*;
  import mindustry.core.*;
  import mindustry.ctype.*;
-@@ -609,6 +610,7 @@ public class LExecutor{
+@@ -27,6 +28,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
+ import mindustry.world.blocks.logic.MessageBlock.*;
+ import mindustry.world.blocks.payloads.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.ui.ArcMessageDialog.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -609,6 +611,7 @@ public class LExecutor{
          public void run(LExecutor exec){
              Object obj = exec.obj(target);
              if(obj instanceof Building b && (exec.privileged || (b.team == exec.team && exec.linkIds.contains(b.id)))){
@@ -2113,7 +2096,7 @@ index dc6716375964ec579572888ff572f2803798e9d9..794d5e85c53b00954a50db3c0876900f
  
                  if(type == LAccess.enabled && !exec.bool(p1)){
                      b.lastDisabler = exec.build;
-@@ -1206,7 +1208,7 @@ public class LExecutor{
+@@ -1206,7 +1209,7 @@ public class LExecutor{
          @Override
          public void run(LExecutor exec){
              if(headless) return;
@@ -2122,7 +2105,7 @@ index dc6716375964ec579572888ff572f2803798e9d9..794d5e85c53b00954a50db3c0876900f
              switch(action){
                  case pan -> {
                      control.input.logicCutscene = true;
-@@ -1593,8 +1595,14 @@ public class LExecutor{
+@@ -1593,8 +1596,14 @@ public class LExecutor{
              }
  
              switch(type){
@@ -2130,17 +2113,17 @@ index dc6716375964ec579572888ff572f2803798e9d9..794d5e85c53b00954a50db3c0876900f
 -                case announce -> ui.announce(text, exec.numf(duration));
 +                case notify -> {
 +                    ui.hudfrag.showToast(Icon.info, text);
-+                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicNotify,text).sendMessage());
++                    ArcMessageDialog.addMsg(new Msg(Type.logicNotify,text).sendMessage());
 +                }
 +                case announce -> {
 +                    ui.announce(text, exec.numf(duration));
-+                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicAnnounce,text).sendMessage());
++                    ArcMessageDialog.addMsg(new Msg(Type.logicAnnounce,text).sendMessage());
 +                }
                  case toast -> ui.showInfoToast(text, exec.numf(duration));
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..67ecff91493bde3c4f620d7ca25c00f63dd650cc 100644
+index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..4380682b09242a8edb0fa68056704ae83ea2717b 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -2173,7 +2156,7 @@ index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..67ecff91493bde3c4f620d7ca25c00f6
 +
      @Nullable LExecutor executor;
  
-+    private boolean dispose = false;
++    private boolean noSave = false;
 +
      public LogicDialog(){
          super("logic");
@@ -2184,10 +2167,10 @@ index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..67ecff91493bde3c4f620d7ca25c00f6
          shown(this::setup);
 -        hidden(() -> consumer.get(canvas.save()));
 +        hidden(() -> {
-+            if(!dispose){
++            if(!noSave){
 +                consumer.get(canvas.save());
 +            } else {
-+                dispose = false;
++                noSave = false;
 +            }});
          onResize(() -> {
              setup();
@@ -2359,7 +2342,7 @@ index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..67ecff91493bde3c4f620d7ca25c00f6
 +                    t.button("[orange]清空",Icon.trash,style,() -> canvas.clearAll()).marginLeft(12f);
 +                    t.row();
 +                    t.button("[orange]丢弃更改", Icon.cancel,style, () -> ui.showConfirm("确认丢弃?", () -> {
-+                        dispose = true;
++                        noSave = true;
 +                        dialog.hide();
 +                        hide();
 +                    })).marginLeft(12f);
@@ -2389,7 +2372,7 @@ index 6555bcf52df4407d81f3bc52d32f1c2d5c7fa4f6..67ecff91493bde3c4f620d7ca25c00f6
      }
  }
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f059a268e 100644
+index abbde2edfa9f483738ca0df305c145df9ffb17fb..b54728d063329242d7d8cb8d6b304a6e030c7feb 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -17,6 +17,7 @@ import mindustry.ai.*;
@@ -2418,18 +2401,25 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
  
      /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
      public int envRequired = 0;
-@@ -503,23 +506,96 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -503,23 +506,103 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void landed(Unit unit){}
  
 +    private void displayStatusEffect(Unit unit,Table table){
 +        if (unit.statuses().isEmpty()) return;
 +        table.row().table(t -> {
-+            for(StatusEntry entry : unit.statuses()) {
-+                if (t.getChildren().size % 5 == 0) t.row();
-+                t.add(new ItemImage(entry.effect.uiIcon,
-+                        entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)
-+                )).padLeft(8f);
++            for(StatusEntry entry : unit.statuses()){
++                if(t.getChildren().size % 5 == 0) t.row();
++                t.stack(
++                new Table(o -> {
++                    o.left();
++                    o.add(new Image(entry.effect.uiIcon)).size(iconMed).scaling(Scaling.fit);
++                }),
++                new Table(tt -> {
++                    tt.left().bottom();
++                    tt.add(entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)).style(Styles.outlineLabel);
++                    tt.pack();
++                })).padLeft(8f);
 +            }
 +        });
 +    }
@@ -2519,7 +2509,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
                  bars.row();
              }
  
-@@ -527,8 +603,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -527,8 +610,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                  ability.displayBars(unit, bars);
              }
  
@@ -2533,7 +2523,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
                  bars.row();
  
                  var count = new float[]{-1};
-@@ -538,18 +617,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -538,18 +624,21 @@ public class UnitType extends UnlockableContent implements Senseable{
                          count[0] = payload.payloadUsed();
                      }
                  }).growX().left().height(0f).pad(0f);
@@ -2561,7 +2551,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
              if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                  table.row();
                  table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
-@@ -560,6 +642,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -560,6 +649,11 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
  
          table.row();
@@ -2573,7 +2563,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1190,9 +1277,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1190,9 +1284,13 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          boolean isPayload = !unit.isAdded();
  
@@ -2587,7 +2577,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          if(unit.controller().isBeingControlled(player.unit())){
              drawControl(unit);
          }
-@@ -1299,7 +1390,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1299,7 +1397,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawShield(Unit unit){
@@ -2596,7 +2586,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          float radius = unit.hitSize() * 1.3f;
          Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,
              Color.clear,
-@@ -1311,6 +1402,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1311,6 +1409,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);
  
          Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));
@@ -2604,7 +2594,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);
  
          Draw.reset();
-@@ -1324,7 +1416,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1324,7 +1423,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          float dest = floor.canShadow ? 1f : 0f;
          //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
          unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
@@ -2613,7 +2603,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
  
          Draw.rect(shadowRegion, unit.x + shadowTX * e, unit.y + shadowTY * e, unit.rotation - 90);
          Draw.color();
-@@ -1339,7 +1431,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1339,7 +1438,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawSoftShadow(float x, float y, float rotation, float alpha){
@@ -2622,7 +2612,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          float rad = 1.6f;
          float size = Math.max(region.width, region.height) * region.scl();
          Draw.rect(softShadowRegion, x, y, size * rad * Draw.xscl, size * rad * Draw.yscl, rotation - 90);
-@@ -1362,18 +1454,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1362,18 +1461,21 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.mixcol();
  
              size = ((3f + sin) * unit.itemTime + 0.5f) * 2;
@@ -2646,7 +2636,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
              }
  
              Draw.reset();
-@@ -1441,6 +1536,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1441,6 +1543,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      public void drawBody(Unit unit){
          applyColor(unit);
  
@@ -2654,7 +2644,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          Draw.rect(region, unit.x, unit.y, unit.rotation - 90);
  
          Draw.reset();
-@@ -1450,13 +1546,14 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1450,13 +1553,14 @@ public class UnitType extends UnlockableContent implements Senseable{
          applyColor(unit);
  
          Draw.color(cellColor(unit));
@@ -2670,7 +2660,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
      }
  
      public void drawLight(Unit unit){
-@@ -1496,7 +1593,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1496,7 +1600,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          if(footRegion.found()){
              for(Leg leg : legs){
@@ -2679,7 +2669,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
              }
          }
  
-@@ -1514,7 +1611,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1514,7 +1618,7 @@ public class UnitType extends UnlockableContent implements Senseable{
              if(footRegion.found() && leg.moving && shadowElevation > 0){
                  float scl = shadowElevation * invDrown;
                  float elev = Mathf.slope(1f - leg.stage) * scl;
@@ -2688,7 +2678,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
                  Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                  Draw.color();
              }
-@@ -1593,13 +1690,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1593,13 +1697,13 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();
  
@@ -2704,7 +2694,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
              Draw.rect(legRegion,
              unit.x + Angles.trnsx(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
              unit.y + Angles.trnsy(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
-@@ -1616,6 +1713,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1616,6 +1720,8 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.color(Color.white);
          }
  
@@ -2713,7 +2703,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
  
          Draw.mixcol();
-@@ -1623,12 +1722,12 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1623,12 +1729,12 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void applyOutlineColor(Unit unit){
          if(unit.drownTime > 0 && unit.lastDrownFloor != null){
@@ -2728,7 +2718,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
          if(healFlash){
              Tmp.c1.set(Color.white).lerp(healColor, Mathf.clamp(unit.healTime - unit.hitTime));
          }
-@@ -1639,6 +1738,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1639,6 +1745,13 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
      }
  
@@ -2742,7 +2732,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
      //endregion
  
      public static class UnitEngine implements Cloneable{
-@@ -1677,13 +1783,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1677,13 +1790,13 @@ public class UnitType extends UnlockableContent implements Senseable{
              );
              Draw.z(z);*/
  
@@ -2759,7 +2749,7 @@ index abbde2edfa9f483738ca0df305c145df9ffb17fb..d90896b8bd975050d870c20ef5a4da4f
              unit.x + ex - Angles.trnsx(rot + rotation, 1f),
              unit.y + ey - Angles.trnsy(rot + rotation, 1f),
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index 7e56b3b8ef56179a8521c3bd1c083c53b09eaa02..35115482cb755beb6a3eb4b716464696d4454b80 100644
+index 7e56b3b8ef56179a8521c3bd1c083c53b09eaa02..07d7ce1d56d743a5a7c455a742b631a42d872117 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
 @@ -24,6 +24,7 @@ import mindustry.graphics.*;
@@ -2814,8 +2804,8 @@ index 7e56b3b8ef56179a8521c3bd1c083c53b09eaa02..35115482cb755beb6a3eb4b716464696
 +                }
 +                Draw.alpha(0.8f);
 +                Lines.line(wx, wy, mount.aimX, mount.aimY);
-+                if(Core.settings.getInt("unitTargetType")==0 || !(unit.controller() instanceof Player))
-+                    Lines.spikes(mount.aimX,mount.aimY,4f,4f,4, (float) (Math.atan((mount.aimX-wx)/(mount.aimY-wy)*doubleRadDeg))+45f);
++                if(!(unit.controller() instanceof Player) || Core.settings.getInt("unitTargetType") == 0)
++                    Lines.spikes(mount.aimX, mount.aimY, 4f, 4f, 4, (float)(Math.atan((mount.aimX - wx) / (mount.aimY - wy) * doubleRadDeg)) + 45f);
 +                Draw.reset();
 +            }
 +        }
@@ -2836,30 +2826,6 @@ index b32847a353f8d9cda2424b17ecadd43be99afc5f..29474ba53b983f170284ea840fecc4f6
      private static ObjectMap<String, TextureRegion> largeIcons = new ObjectMap<>();
      private static TextureRegion[] iconTable;
      private static int lastCid;
-diff --git a/core/src/mindustry/ui/ItemImage.java b/core/src/mindustry/ui/ItemImage.java
-index 6f20b9cd229a15a67d629e56762d86df3ec97012..c86a5349acf70c8eb52addba48b45de70bb831ce 100644
---- a/core/src/mindustry/ui/ItemImage.java
-+++ b/core/src/mindustry/ui/ItemImage.java
-@@ -47,6 +47,19 @@ public class ItemImage extends Stack{
-         }));
-     }
- 
-+    public ItemImage(TextureRegion region, String text){
-+        add(new Table(o -> {
-+            o.left();
-+            o.add(new Image(region)).size(26f).scaling(Scaling.fit);
-+        }));
-+
-+        add(new Table(t -> {
-+            t.left().bottom();
-+            t.add(text).get().setFontScale(1f);
-+            t.pack();
-+        }));
-+    }
-+
-     public ItemImage(ItemStack stack){
-         this(stack.item.uiIcon, stack.amount);
-     }
 diff --git a/core/src/mindustry/ui/Minimap.java b/core/src/mindustry/ui/Minimap.java
 index 770b034943c7a043d50f6191b8d3b6df4e228196..c3b394dc36dae64eaafcdd80da303aa44f435eb0 100644
 --- a/core/src/mindustry/ui/Minimap.java
@@ -3210,7 +3176,7 @@ index 4efed965d12b7e407b408a677fd8f0ac63d3c168..4d394d0cd4f3733dbf8f05529c7c948f
          main.image().color(Pal.accent).height(3f).padRight(100f).padBottom(20);
          main.row();
 diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-index 9ef878c280d567340d9fc4753d310b73be3397a2..86416d2be0b318845035233ef57c5f77e59de34e 100644
+index 9ef878c280d567340d9fc4753d310b73be3397a2..23d1c93fe86783acb16dfd648991842ae0188b1c 100644
 --- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 +++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 @@ -16,9 +16,10 @@ import mindustry.graphics.*;
@@ -3252,15 +3218,6 @@ index 9ef878c280d567340d9fc4753d310b73be3397a2..86416d2be0b318845035233ef57c5f77
                      }
  
                      if((++count) % cols == 0){
-@@ -115,6 +118,7 @@ public class DatabaseDialog extends BaseDialog{
-     }
- 
-     boolean unlocked(UnlockableContent content){
--        return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
-+        //return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
-+        return true;
-     }
- }
 diff --git a/core/src/mindustry/ui/dialogs/PausedDialog.java b/core/src/mindustry/ui/dialogs/PausedDialog.java
 index 129e64d65876b8282e74e333e2ed320c44566a5f..83908f9aa063e0f83a2208aba43782a13e3cdbe6 100644
 --- a/core/src/mindustry/ui/dialogs/PausedDialog.java
@@ -3592,7 +3549,7 @@ index 16d5d9e304dacd2ae477e26d5094e6cdfc87e605..08b0b1279c10c793b855cd441641744f
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3121d493f 100644
+index ff444b8991e2aa4d892bee3ab75757a5b1420c10..3aef7c42c71cc9b19f4ac9932a909b32d6c67412 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 @@ -15,6 +15,12 @@ import arc.scene.ui.layout.*;
@@ -3745,7 +3702,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
      }
  
      public void showInfo(Schematic schematic){
-@@ -275,15 +369,47 @@ public class SchematicsDialog extends BaseDialog{
+@@ -275,15 +369,48 @@ public class SchematicsDialog extends BaseDialog{
                      t.row();
                      dialog.hide();
                  }
@@ -3784,7 +3741,8 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
 +                        req.submit(r -> {
 +                            String code = r.getResultAsString();
 +                            if (clipbroad) arcSendClipBroadMsg(s, code);
-+                            else ArcMessageDialog.share("Schem", " " + code.substring(code.lastIndexOf('/') + 1));
++                            //添加颜色字符，保持ARC兼容性
++                            else ArcMessageDialog.share("[blue]<Schem>[]", " " + code.substring(code.lastIndexOf('/') + 1));
 +                        });
 +                        req.error(e -> Core.app.post(() -> {
 +                            ui.showException("分享失败", e);
@@ -3798,7 +3756,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
                  }).marginLeft(12f);
              });
          });
-@@ -292,6 +418,94 @@ public class SchematicsDialog extends BaseDialog{
+@@ -292,6 +419,85 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -3840,16 +3798,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
 +        UIExt.announce("已保存至剪贴板");
 +    }
 +
-+    public boolean resolveSchematic(String msg, @Nullable Player sender) {
-+        if ((!msg.contains(ShareType)) || (!ArcMessageDialog.arcMsgType.schematic.show)) {
-+            return false;
-+        }
-+        int start = msg.indexOf(' ', msg.indexOf(ShareType) + ShareType.length());
-+        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), sender));
-+        return true;
-+    }
-+
-+    private void readShare(String base64, @Nullable Player sender) {
++    public void readShare(String base64, @Nullable Player sender) {
 +        Core.app.post(() -> {
 +            try {
 +                Schematic s = Schematics.readBase64(base64);
@@ -3893,7 +3842,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
      public void showEdit(Schematic s){
          new BaseDialog("@schematic.edit"){{
              setFillParent(true);
-@@ -571,6 +785,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -571,6 +777,11 @@ public class SchematicsDialog extends BaseDialog{
                      t.button("@schematic.texttag", Icon.add, () -> showNewTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                      t.button("@schematic.icontag", Icon.add, () -> showNewIconTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                  });
@@ -3905,7 +3854,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
  
              };
  
-@@ -579,6 +798,135 @@ public class SchematicsDialog extends BaseDialog{
+@@ -579,6 +790,135 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -4041,7 +3990,7 @@ index ff444b8991e2aa4d892bee3ab75757a5b1420c10..c68c9de6859dac5a37aef744044686b3
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -789,13 +1137,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -789,13 +1129,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
@@ -4145,10 +4094,10 @@ index 89b9a23ce2bb850df5c7ae99a5f964753a807662..03bbbbfca69229893fc097479f407884
      }
  
 diff --git a/core/src/mindustry/ui/fragments/ConsoleFragment.java b/core/src/mindustry/ui/fragments/ConsoleFragment.java
-index e74e6a12e3da57eb58598eb4e679a7990c109def..c3da0262ba70422ffca7d1389498fa713511890f 100644
+index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a56bf9136 100644
 --- a/core/src/mindustry/ui/fragments/ConsoleFragment.java
 +++ b/core/src/mindustry/ui/fragments/ConsoleFragment.java
-@@ -12,6 +12,7 @@ import arc.scene.ui.TextField.*;
+@@ -12,9 +12,11 @@ import arc.scene.ui.TextField.*;
  import arc.scene.ui.layout.*;
  import arc.struct.*;
  import arc.util.*;
@@ -4156,11 +4105,15 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..c3da0262ba70422ffca7d1389498fa71
  import mindustry.game.EventType.*;
  import mindustry.input.*;
  import mindustry.ui.*;
-@@ -163,6 +164,7 @@ public class ConsoleFragment extends Table{
++import mindustryX.features.ui.ArcMessageDialog.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -163,6 +165,7 @@ public class ConsoleFragment extends Table{
          clearChatInput();
  
          if(message.replace(" ", "").isEmpty()) return;
-+        ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.console,message));
++        ArcMessageDialog.addMsg(new Msg(Type.console,message));
  
          //special case for 'clear' command
          if(message.equals("clear")){
@@ -6437,10 +6390,10 @@ index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..73c181e9d887dc2a8c1c32a9f92f2a6d
  }
 diff --git a/core/src/mindustryX/features/ArcBuilds.java b/core/src/mindustryX/features/ArcBuilds.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..229ca9d89b2c990f7397f945f53cda21d0dfac66
+index 0000000000000000000000000000000000000000..58cfacb6c8f3a89dd1bb476155231bac11344464
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcBuilds.java
-@@ -0,0 +1,165 @@
+@@ -0,0 +1,160 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -6461,16 +6414,11 @@ index 0000000000000000000000000000000000000000..229ca9d89b2c990f7397f945f53cda21
 +
 +//move from mindustry.arcModule.draw.ARCBuilds
 +public class ArcBuilds{
-+    static boolean targetAir = false, targetGround = false, canShoot = false;
-+    static boolean turretForceShowRange = false;
-+
-+    static int turretShowRange = 0, turretAlertRange;
-+
-+    static boolean canHitPlayer = false, canHitCommand = false, canHitPlans = false, canHitMouse = false;
-+
-+    static boolean showTurretAmmo = false, showTurretAmmoAmount = false;
-+
-+    static boolean blockWeaponTargetLine = false, blockWeaponTargetLineWhenIdle = false;
++    private static boolean targetAir = false, targetGround = false, canShoot = false;
++    private static boolean turretForceShowRange = false;
++    private static int turretShowRange = 0, turretAlertRange;
++    private static boolean showTurretAmmo = false, showTurretAmmoAmount = false;
++    private static boolean blockWeaponTargetLine = false, blockWeaponTargetLineWhenIdle = false;
 +
 +    static{
 +        // 减少性能开销
@@ -6524,11 +6472,11 @@ index 0000000000000000000000000000000000000000..229ca9d89b2c990f7397f945f53cda21
 +            if((turretShowRange == 3 || (turretShowRange == 2 && targetAir) || (turretShowRange == 1 && targetGround)))
 +                drawRange(build);
 +            else if(turretAlertRange > 0 && build.team != player.team()){
-+                canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
++                boolean canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
 +                && build.within(player.unit().x, player.unit().y, build.range() + turretAlertRange);
-+                canHitMouse = build.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), build.range() + turretAlertRange);
-+                canHitCommand = control.input.commandMode && ((ArcUnits.selectedUnitsFlyer && targetAir) || (ArcUnits.selectedUnitsLand && targetGround));
-+                canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && targetGround;
++                boolean canHitMouse = build.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), build.range() + turretAlertRange);
++                boolean canHitCommand = control.input.commandMode && ((ArcUnits.selectedUnitsFlyer && targetAir) || (ArcUnits.selectedUnitsLand && targetGround));
++                boolean canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && targetGround;
 +                if(canHitPlayer || (canHitMouse && (canHitCommand || canHitPlans))) drawRange(build);
 +            }
 +
@@ -6580,7 +6528,7 @@ index 0000000000000000000000000000000000000000..229ca9d89b2c990f7397f945f53cda21
 +            ammoTypes = t.ammoTypes;
 +        }else if(block instanceof ItemTurret t){
 +            ammoTypes = t.ammoTypes;
-+        }else if(block instanceof PowerTurret t){
++        }else if(block instanceof PowerTurret){
 +            turretBulletDraw(x, y, Icon.power.getRegion(), iconSize, range, 0f);
 +            return;
 +        }else return;
@@ -6607,7 +6555,7 @@ index 0000000000000000000000000000000000000000..229ca9d89b2c990f7397f945f53cda21
 +    }
 +}
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
-index e659197cf01de2a6feae6145c00e3287b6bc4c50..cc10596a14af70a86cfbcc462fdff0ee5fd8ab94 100644
+index 855c5dad204db7796043e9c9c159a3c39d9795a3..459ffcffbedfcccafd9bc77101cb8af7c8dacf2b 100644
 --- a/core/src/mindustryX/features/ArcOld.java
 +++ b/core/src/mindustryX/features/ArcOld.java
 @@ -1,15 +1,20 @@
@@ -6631,7 +6579,7 @@ index e659197cf01de2a6feae6145c00e3287b6bc4c50..cc10596a14af70a86cfbcc462fdff0ee
  import static mindustry.Vars.*;
  
  public class ArcOld{
-@@ -230,4 +235,41 @@ public class ArcOld{
+@@ -233,4 +238,41 @@ public class ArcOld{
              c.checkPref("developMode", false);
          }));
      }
@@ -7607,10 +7555,10 @@ index 0000000000000000000000000000000000000000..ef4e313c601ad1ce64355761f420ef41
 +}
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
-index c3850e910d6e9d579316734190e891d701681ffb..ac294d4072987c18a7823004929979e5f335f199 100644
+index c3850e910d6e9d579316734190e891d701681ffb..090c2e958f1d0ca8ad93da2ffd7620acb5d699c3 100644
 --- a/core/src/mindustryX/features/MarkerType.java
 +++ b/core/src/mindustryX/features/MarkerType.java
-@@ -6,15 +6,15 @@ import arc.graphics.*;
+@@ -6,16 +6,17 @@ import arc.graphics.*;
  import arc.graphics.g2d.*;
  import arc.math.*;
  import arc.math.geom.*;
@@ -7626,18 +7574,20 @@ index c3850e910d6e9d579316734190e891d701681ffb..ac294d4072987c18a7823004929979e5
  import mindustry.graphics.*;
 +import mindustryX.features.func.*;
  import mindustryX.features.ui.*;
++import mindustryX.features.ui.ArcMessageDialog.*;
  
  import java.util.regex.*;
-@@ -155,7 +155,7 @@ public class MarkerType{
+ 
+@@ -155,7 +156,7 @@ public class MarkerType{
          var exists = (MarkElement)Groups.draw.find(it -> it instanceof MarkElement e && e.message == null && e.within(pos.scl(tilesize), 2 * tilesize));
          last = exists != null ? exists : type.at(pos.scl(tilesize));
          last.message = text;
 -        MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
-+        ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.markLoc, text, pos));
++        ArcMessageDialog.addMsg(new Msg(Type.markLoc, text, pos));
          return true;
      }
  
-@@ -199,9 +199,10 @@ public class MarkerType{
+@@ -199,9 +200,10 @@ public class MarkerType{
          @Override
          public void draw(){
              super.draw();
@@ -7649,7 +7599,7 @@ index c3850e910d6e9d579316734190e891d701681ffb..ac294d4072987c18a7823004929979e5
          }
  
          private void showArrow(){
-@@ -209,7 +210,7 @@ public class MarkerType{
+@@ -209,7 +211,7 @@ public class MarkerType{
              Drawf.arrow(player.x, player.y, x, y, 5f * tilesize, 4f, color);
  
              var p = Tmp.v1.set(this).sub(player).limit(4.5f * tilesize).add(player);
@@ -8087,10 +8037,10 @@ index 651e6408d6132a194f63fba2613abac62b60aaf1..1962d9b7db710f08cb7050723d2d4827
      public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 diff --git a/core/src/mindustryX/features/ui/ArcMessageDialog.java b/core/src/mindustryX/features/ui/ArcMessageDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf8c2ec4d2
+index 0000000000000000000000000000000000000000..995f8e92be32d0a8bd1f9af991000120c52f7dc8
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcMessageDialog.java
-@@ -0,0 +1,464 @@
+@@ -0,0 +1,419 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -8098,6 +8048,7 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +import arc.math.geom.*;
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
++import arc.struct.Queue;
 +import arc.struct.*;
 +import arc.util.*;
 +import mindustry.*;
@@ -8118,18 +8069,16 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +
 +//move from mindustry.arcModule.ui.dialogs.MessageDialog
 +public class ArcMessageDialog extends BaseDialog{
-+    private static boolean ignoreMark = false;
-+    public static final Seq<advanceMsg> msgList = new Seq<>();
-+
-+    private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
++    public static final Queue<Msg> msgList = new Queue<>();//队头为新添加的
++    private static int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
 +    private Table historyTable;
-+    private Boolean fieldMode = false;
++    private boolean fieldMode = false;
 +
 +    public ArcMessageDialog(){
 +        super("ARC-中央监控室");
 +
 +        //voiceControl.voiceControlDialog();
-+        cont.pane(t -> historyTable = t).growX().scrollX(false);
++        cont.pane(t -> historyTable = t).maxWidth(1000).scrollX(false);
 +
 +        addCloseButton();
 +        buttons.button("设置", Icon.settings, this::arcMsgSettingTable);
@@ -8137,7 +8086,7 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +
 +        buttons.row();
 +        buttons.button("清空", Icon.trash, () -> {
-+            clearMsg();
++            msgList.clear();
 +            build();
 +        });
 +
@@ -8145,19 +8094,19 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +        onResize(this::build);
 +
 +        Events.on(EventType.WorldLoadEvent.class, e -> {
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "载入地图： " + state.map.name()));
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "简介： " + state.map.description()));
-+            limitMsg(maxMsgRecorded);
++            addMsg(new Msg(Type.eventWorldLoad, "载入地图： " + state.map.name()));
++            addMsg(new Msg(Type.eventWorldLoad, "简介： " + state.map.description()));
++            while(msgList.size >= maxMsgRecorded) msgList.removeLast();
 +        });
 +
 +        Events.on(EventType.WaveEvent.class, e -> {
 +            if(state.wavetime < 60f) return;
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWave, "波次： " + state.wave + " | " + getWaveInfo(state.wave - 1)));
++            addMsg(new Msg(Type.eventWave, "波次： " + state.wave + " | " + getWaveInfo(state.wave - 1)));
 +        });
 +
 +        Events.on(EventType.BlockDestroyEvent.class, e -> {
 +            if(e.tile.build instanceof CoreBlock.CoreBuild)
-+                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + (int)e.tile.x + "," + (int)e.tile.y + ")", new Vec2(e.tile.x * 8, e.tile.y * 8)));
++                addMsg(new Msg(Type.eventCoreDestory, "核心摧毁： " + "(" + (int)e.tile.x + "," + (int)e.tile.y + ")", new Vec2(e.tile.x * 8, e.tile.y * 8)));
 +        });
 +    }
 +
@@ -8219,43 +8168,42 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +    void build(){
 +        historyTable.clear();
 +        historyTable.setWidth(800f);
-+        if(msgList.size == 0) return;
-+        for(int i = msgList.size - 1; i >= 0; i--){
-+            int finalI = i;
-+            if(!msgList.get(finalI).msgType.show) continue;
-+            historyTable.table(Tex.whiteui, t -> {
-+                advanceMsg thisMsg = msgList.get(finalI);
-+                t.background(Tex.whitePane);
-+                t.setColor(thisMsg.msgType.color);
++        int i = 0;
++        for(var msg : msgList){
++            i++;
++            int id = i;
++            if(!msg.msgType.show) continue;
++            historyTable.table(Tex.whitePane, t -> {
++                t.setColor(msg.msgType.color);
 +                t.marginTop(5);
 +
 +                t.table(Tex.whiteui, tt -> {
-+                    tt.color.set(thisMsg.msgType.color);
++                    tt.color.set(msg.msgType.color);
 +
-+                    if(msgList.get(finalI).msgType == arcMsgType.chat)
-+                        tt.add(getPlayerName(thisMsg)).style(Styles.outlineLabel).left().width(300f);
++                    if(msg.msgType == Type.chat)
++                        tt.add(getPlayerName(msg)).style(Styles.outlineLabel).left().width(300f);
 +                    else
-+                        tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(300f);
++                        tt.add(msg.msgType.name).style(Styles.outlineLabel).color(msg.msgType.color).left().width(300f);
 +
-+                    tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
++                    tt.add(formatTime(msg.time)).style(Styles.outlineLabel).color(msg.msgType.color).left().padLeft(20f).width(100f);
 +
-+                    if(thisMsg.msgLoc.x != -1){
-+                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), Styles.logict, () -> {
-+                            control.input.panCamera(thisMsg.msgLoc);
-+                            MarkerType.mark.at(Tmp.v1.scl(thisMsg.msgLoc.x, thisMsg.msgLoc.y)).color = color;
++                    if(msg.msgLoc != null){
++                        tt.button("♐： " + (int)(msg.msgLoc.x / tilesize) + "," + (int)(msg.msgLoc.y / tilesize), Styles.logict, () -> {
++                            control.input.panCamera(msg.msgLoc);
++                            MarkerType.mark.at(Tmp.v1.scl(msg.msgLoc.x, msg.msgLoc.y)).color = color;
 +                            hide();
 +                        }).padLeft(50f).height(24f).width(150f);
 +                    }
 +
 +                    tt.add().growX();
-+                    tt.add("    " + (msgList.size - finalI)).style(Styles.outlineLabel).color(thisMsg.msgType.color).padRight(10);
++                    tt.add("    " + id).style(Styles.outlineLabel).color(msg.msgType.color).padRight(10);
 +
 +                    tt.button(Icon.copy, Styles.logici, () -> {
-+                        Core.app.setClipboardText(thisMsg.message);
++                        Core.app.setClipboardText(msg.message);
 +                        ui.announce("已导出本条聊天记录");
 +                    }).size(24f).padRight(6);
 +                    tt.button(Icon.cancel, Styles.logici, () -> {
-+                        msgList.remove(finalI);
++                        msgList.remove(msg);
 +                        build();
 +                    }).size(24f);
 +
@@ -8266,18 +8214,18 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +                t.table(tt -> {
 +                    tt.left();
 +                    tt.marginLeft(4);
-+                    tt.setColor(thisMsg.msgType.color);
-+                    if(fieldMode) tt.field(thisMsg.message, Styles.nodeArea, text -> {
++                    tt.setColor(msg.msgType.color);
++                    if(fieldMode) tt.field(msg.message, Styles.nodeArea, text -> {
 +                    }).growX();
-+                    else tt.labelWrap(getPlayerMsg(thisMsg)).growX();
++                    else tt.labelWrap(getPlayerMsg(msg)).growX();
 +                }).pad(4).padTop(2).growX().grow();
 +
 +                t.marginBottom(7);
-+            }).growX().maxWidth(1000f).padBottom(15f).row();
++            }).growX().padBottom(15f).row();
 +        }
 +    }
 +
-+    private String getPlayerName(advanceMsg msgElement){
++    private String getPlayerName(Msg msgElement){
 +        int typeStart = msgElement.message.indexOf("[coral][");
 +        int typeEnd = msgElement.message.indexOf("[coral]]");
 +        if(typeStart == -1 || typeEnd == -1 || typeEnd <= typeStart){
@@ -8287,8 +8235,8 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +        return msgElement.message.substring(typeStart + 20, typeEnd);
 +    }
 +
-+    private String getPlayerMsg(advanceMsg msgElement){
-+        if(msgElement.msgType != arcMsgType.normal) return msgElement.message;
++    private String getPlayerMsg(Msg msgElement){
++        if(msgElement.msgType != Type.normal) return msgElement.message;
 +        int typeStart = msgElement.message.indexOf("[coral][");
 +        int typeEnd = msgElement.message.indexOf("[coral]]");
 +        if(typeStart == -1 || typeEnd == -1 || typeEnd <= typeStart){
@@ -8302,30 +8250,23 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +        if(Core.settings.getInt("maxMsgRecorded") == 0) Core.settings.put("maxMsgRecorded", 500);
 +
 +        setDialog.cont.table(t -> {
-+
-+            t.check("停止识别标记等交互信息", ignoreMark, a -> ignoreMark = !ignoreMark).left().width(300f);
-+            t.row();
-+
 +            t.check("信息编辑模式", fieldMode, a -> {
 +                fieldMode = a;
 +                build();
-+            }).left().width(200f);
-+            t.row();
++            }).left().width(200f).row();
 +
-+            t.add("调整显示的信息").height(50f);
-+            t.row();
++            t.add("调整显示的信息").height(50f).row();
 +            t.table(tt -> {
 +                tt.button("关闭全部", Styles.cleart, () -> {
-+                    for(arcMsgType type : arcMsgType.values()) type.show = false;
++                    for(Type type : Type.values()) type.show = false;
 +                }).width(200f).height(50f);
 +                tt.button("默认", Styles.cleart, () -> {
-+                    for(arcMsgType type : arcMsgType.values()) type.show = true;
-+                    arcMsgType.serverTips.show = false;
++                    for(Type type : Type.values()) type.show = true;
++                    Type.serverTips.show = false;
 +                }).width(200f).height(50f);
-+            });
-+            t.row();
++            }).row();
 +            t.table(Tex.button, tt -> tt.pane(tp -> {
-+                for(arcMsgType type : arcMsgType.values()){
++                for(Type type : Type.values()){
 +
 +                    CheckBox box = new CheckBox("[#" + type.color.toString() + "]" + type.name);
 +
@@ -8364,143 +8305,107 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +        return new SimpleDateFormat("HH:mm:ss", Locale.US).format(time);
 +    }
 +
-+    public static void resolveMsg(String message, @Nullable Player playersender){
-+        if(!ignoreMark){
-+            if(resolveMarkMsg(message, playersender)) return;
-+            if(ui.schematics.resolveSchematic(message, playersender)) return;
++    public static void resolveMsg(String message, @Nullable Player sender){
++        Type type = resolveMarkType(message);
++        if(type == null) type = resolveServerType(message);
++        if(type == null) type = sender != null ? Type.chat : Type.normal;
 +
-+            if(playersender != null){
-+                addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.chat, message, playersender.name(), new Vec2(playersender.x, playersender.y)));
-+                return;
++        addMsg(new Msg(type, message, sender != null ? sender.name() : null, sender != null ? new Vec2(sender.x, sender.y) : null));
++        if(!type.show) return;
++        switch(type){
++            case schematic -> {
++                String id = message.split("<Schem>")[1];
++                id = id.substring(id.indexOf(' ') + 1);
++                Http.get("https://pastebin.com/raw/" + id, r -> ui.schematics.readShare(r.getResultAsString().replace(" ", "+"), sender));
 +            }
-+            if(resolveServerMsg(message)) return;
-+        }
-+        addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.normal, message));
-+    }
-+
-+    public static boolean resolveMarkMsg(String message, @Nullable Player playersender){
-+        //除了markType以外的内容
-+        if(message.contains("<ARC")){
-+            if(message.contains("标记了") && message.contains("Wave")){
-+                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markWave, message));
-+                return true;
-+            }else if(message.contains("标记了") && message.contains("Content")){
-+                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markContent, message));
-+                return true;
-+            }else if(message.contains("<AT>")){
-+                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markPlayer, message));
-+                if(message.substring(message.indexOf("AT")).contains(player.name)){
-+                    if(playersender != null)
-+                        ui.announce("[gold]你被[white] " + playersender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
-+                    else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);
-+                }
-+                return true;
++            case markPlayer -> {
++                if(message.split("AT")[1].contains(player.name)) return;
++                if(sender != null)
++                    ui.announce("[gold]你被[white] " + sender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
++                else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);
 +            }
 +        }
-+        return false;
 +    }
 +
-+    public static boolean resolveServerMsg(String message){
-+        Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
-+        "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
-+        "[RED]本地图禁用单位", "[RED]该地图限制空军,禁止进入敌方领空", "[yellow]本地图限制空军", "[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
-+        " [GREEN]====", "[RED]无效指令", "[RED]该技能", "切换成功",
-+        "[violet][投票系统][]", "[coral][-]野生的", "[CYAN][+]野生的"   // xem相关
-+        );
++    public static Type resolveMarkType(String message){
++        if(!message.contains("<ARC")) return null;
++        if(message.contains("标记了") && message.contains("Wave")) return Type.markWave;
++        if(message.contains("标记了") && message.contains("Content")) return Type.markContent;
++        if(message.contains("<AT>")) return Type.markPlayer;
++        if(message.contains("<Schem>")) return Type.schematic;
++        return null;
++    }
++
++    private static final Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
++    "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
++    "[RED]本地图禁用单位", "[RED]该地图限制空军,禁止进入敌方领空", "[yellow]本地图限制空军", "[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
++    " [GREEN]====", "[RED]无效指令", "[RED]该技能", "切换成功",
++    "[violet][投票系统][]", "[coral][-]野生的", "[CYAN][+]野生的"   // xem相关
++    );
++
++    public static Type resolveServerType(String message){
++        if(message.contains("小贴士")) return Type.serverTips;
++        if(message.contains("[YELLOW][技能]")) return Type.serverSkill;
 +        for(int i = 0; i < serverMsg.size; i++){
 +            if(message.contains(serverMsg.get(i))){
-+                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverMsg, message));
-+                return true;
++                return Type.serverMsg;
 +            }
 +        }
-+
-+        if(message.contains("小贴士")){
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverTips, message));
-+            return true;
-+        }
-+        if(message.contains("[acid][公屏][white]")){
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverToast, message));
-+            return true;
-+        }
-+        if(message.contains("[YELLOW][技能]")){
-+            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverSkill, message));
-+            return true;
-+        }
-+
-+        return false;
++        return null;
 +    }
 +
-+    public static void addMsg(advanceMsg msg){
-+        msgList.add(msg);
-+    }
-+
-+    private void clearMsg(){
-+        msgList.clear();
-+    }
-+
-+    private void limitMsg(int maxMsg){
-+        // 限制信息数量
-+        while(true){
-+            if(msgList.size < maxMsg) return;
-+            msgList.remove(0);
-+        }
++    public static void addMsg(Msg msg){
++        msgList.addFirst(msg);
 +    }
 +
 +    void exportMsg(){
 +        StringBuilder messageHis = new StringBuilder();
-+        messageHis.append("下面是[MDTX").append(Version.mdtXBuild).append("] 导出的游戏内聊天记录").append("\n");
++        messageHis.append("下面是[MDTX-").append(Version.mdtXBuild).append("] 导出的游戏内聊天记录").append("\n");
 +        messageHis.append("*** 当前地图名称: ").append(state.map.name()).append("（模式：").append(state.rules.modeName).append("）\n");
 +        messageHis.append("*** 当前波次: ").append(state.wave).append("\n");
-+
-+        StringBuilder messageLs = new StringBuilder();
-+        int messageCount = 0;
-+        for(int i = 0; i < msgList.size; i++){
-+            String msg = msgList.get(i).message;
-+            messageLs.insert(0, msg + "\n");
-+            messageCount += 1;
++        messageHis.append("成功选取共 ").append(msgList.size).append(" 条记录，如下：\n");
++        for(var msg : msgList){
++            messageHis.append(Strings.stripColors(msg.message)).append("\n");
 +        }
-+
-+        messageHis.append("成功选取共 ").append(messageCount).append(" 条记录，如下：\n");
-+        messageHis.append(messageLs);
 +        Core.app.setClipboardText(Strings.stripGlyphs(Strings.stripColors(messageHis.toString())));
 +    }
 +
-+    public static class advanceMsg{
-+        public final arcMsgType msgType;
++    public static class Msg{
++        public final Type msgType;
 +        public final String message;
 +        public final Date time;
 +        public final String sender;
 +        public boolean selected;
-+        public final Vec2 msgLoc;
++        public final @Nullable Vec2 msgLoc;
 +
-+        public advanceMsg(arcMsgType msgType, String message, Date time, String sender, Vec2 msgLoc){
++        public Msg(Type msgType, String message, Date time, String sender, Vec2 msgLoc){
 +            this.msgType = msgType;
 +            this.message = message;
 +            this.time = time;
 +            this.sender = sender;
-+            this.msgLoc = new Vec2().set(msgLoc);
++            this.msgLoc = msgLoc;
 +        }
 +
-+        public advanceMsg(arcMsgType msgType, String message, String sender, Vec2 msgLoc){
++        public Msg(Type msgType, String message, String sender, Vec2 msgLoc){
 +            this(msgType, message, new Date(), sender, msgLoc);
 +        }
 +
-+        public advanceMsg(arcMsgType msgType, String message, Vec2 msgLoc){
++        public Msg(Type msgType, String message, Vec2 msgLoc){
 +            this(msgType, message, "null", msgLoc);
 +        }
 +
-+        public advanceMsg(arcMsgType msgType, String message){
-+            this(msgType, message, new Vec2(-1, -1));
++        public Msg(Type msgType, String message){
++            this(msgType, message, null);
 +        }
 +
 +
-+        public advanceMsg sendMessage(){
++        public Msg sendMessage(){
 +            ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message);
 +            return this;
 +        }
 +    }
 +
-+    public enum arcMsgType{
++    public enum Type{
 +        normal("消息", Color.gray),
 +
 +        chat("聊天", Color.valueOf("#778899")),
@@ -8533,7 +8438,7 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +        public Color color;
 +        public Boolean show;
 +
-+        arcMsgType(String type, String subClass, Color color, Boolean show){
++        Type(String type, String subClass, Color color, Boolean show){
 +            this.name = subClass.isEmpty() ? type : (type + "~" + subClass);
 +            this.type = type;
 +            this.subClass = subClass;
@@ -8541,11 +8446,11 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 +            this.show = show;
 +        }
 +
-+        arcMsgType(String type, String subClass, Color color){
++        Type(String type, String subClass, Color color){
 +            this(type, subClass, color, true);
 +        }
 +
-+        arcMsgType(String type, Color color){
++        Type(String type, Color color){
 +            this(type, "", color);
 +        }
 +
@@ -8558,10 +8463,10 @@ index 0000000000000000000000000000000000000000..7c782509cf5d95c257e26b77bf03acdf
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/ui/ArcPowerInfo.java b/core/src/mindustryX/features/ui/ArcPowerInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..15e7c51732985227be01bc19c9f93f65b1bf0afa
+index 0000000000000000000000000000000000000000..d163c90f9969982e84dc8ea44faef92ba390686a
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcPowerInfo.java
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,71 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -8576,42 +8481,30 @@ index 0000000000000000000000000000000000000000..15e7c51732985227be01bc19c9f93f65
 +
 +//move from mindustry.arcModule.ui.PowerInfo
 +public class ArcPowerInfo{
-+    private static final ArcPowerInfo info = new ArcPowerInfo();
-+    public float powerbal;
-+    public float stored;
-+    public float capacity;
-+    public float produced;
-+    public float need;
++    public static float balance, stored, capacity, produced, need;
 +
-+    public void add(float powerbal, float stored, float cap, float produced, float need){
-+        this.powerbal += powerbal;
-+        this.stored += stored;
-+        this.capacity += cap;
-+        this.produced += produced;
-+        this.need += need;
++    public static void update(){
++        balance = 0;
++        stored = 0;
++        capacity = 0;
++        produced = 0;
++        need = 0;
++        Groups.powerGraph.each(item -> {
++            var graph = item.graph();
++            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
++            balance += graph.getPowerBalance();
++            stored += graph.getLastPowerStored();
++            capacity += graph.getLastCapacity();
++            produced += graph.getLastPowerProduced();
++            need += graph.getLastPowerNeeded();
++        });
 +    }
 +
-+    private void clear(){
-+        this.powerbal = 0;
-+        this.stored = 0;
-+        this.capacity = 0;
-+        this.produced = 0;
-+        this.need = 0;
++    public static int getPowerBalance(){
++        return (int)(balance * 60);
 +    }
 +
-+    public int getPowerBalance(){
-+        return (int)(powerbal * 60);
-+    }
-+
-+    public float getStored(){
-+        return stored;
-+    }
-+
-+    public float getCapacity(){
-+        return capacity;
-+    }
-+
-+    public float getSatisfaction(){
++    public static float getSatisfaction(){
 +        if(Mathf.zero(produced)){
 +            return 0f;
 +        }else if(Mathf.zero(need)){
@@ -8621,31 +8514,20 @@ index 0000000000000000000000000000000000000000..15e7c51732985227be01bc19c9f93f65
 +    }
 +
 +
-+    public static void update(){
-+        info.clear();
-+        Groups.powerGraph.each(item -> {
-+            var graph = item.graph();
-+            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
-+            info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
-+        });
-+    }
-+
 +    public static Element getBars(){
 +        Table power = new Table(Tex.wavepane).marginTop(6);
 +
 +        Bar powerBar = new Bar(
-+        () -> Core.bundle.format("bar.powerbalance", (info.getPowerBalance() >= 0 ? "+" : "") + UI.formatAmount(info.getPowerBalance())) +
-+        (info.getSatisfaction() >= 1 ? "" : " [gray]" + (int)(info.getSatisfaction() * 100) + "%"),
-+        () -> Pal.powerBar,
-+        info::getSatisfaction);
++        () -> Core.bundle.format("bar.powerbalance", (getPowerBalance() >= 0 ? "+" : "") + UI.formatAmount(getPowerBalance())) +
++        (getSatisfaction() >= 1 ? "" : " [gray]" + (int)(getSatisfaction() * 100) + "%"),
++        () -> Pal.powerBar, ArcPowerInfo::getSatisfaction);
 +        Bar batteryBar = new Bar(
-+        () -> Core.bundle.format("bar.powerstored", UI.formatAmount((long)info.getStored()), UI.formatAmount((long)info.getCapacity())),
++        () -> Core.bundle.format("bar.powerstored", UI.formatAmount((long)stored), UI.formatAmount((long)capacity)),
 +        () -> Pal.powerBar,
-+        () -> info.getStored() / info.getCapacity());
++        () -> stored / capacity);
 +
 +        power.clicked(() -> {
-+            int arccoreitems = Core.settings.getInt("arccoreitems");
-+            Core.settings.put("arccoreitems", (arccoreitems + 1) % 4);
++            Core.settings.put("arccoreitems", (Core.settings.getInt("arccoreitems") + 1) % 4);
 +        });
 +        power.margin(0);
 +        power.add(powerBar).height(18).growX().padBottom(1);
@@ -9782,10 +9664,10 @@ index 0000000000000000000000000000000000000000..3d0fc7ec9d8b3f400cd4d9270aef4a03
 +}
 diff --git a/core/src/mindustryX/features/ui/BlockSelectDialog.java b/core/src/mindustryX/features/ui/BlockSelectDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..735fcbb281c18b6535f47ef9ea01a9573c5afa8a
+index 0000000000000000000000000000000000000000..4af00d9add5776e8d966880336121b05722e73b0
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/BlockSelectDialog.java
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,65 @@
 +package mindustryX.features.ui;
 +
 +import arc.func.*;
@@ -9802,7 +9684,10 @@ index 0000000000000000000000000000000000000000..735fcbb281c18b6535f47ef9ea01a957
 +
 +//move from mindustry.arcModule.ui.dialogs.BlockSelectDialog
 +public class BlockSelectDialog extends BaseDialog{
-+
++    private final Boolf<Block> condition;
++    private final Cons<Block> cons;
++    private final Boolf<Block> checked;
++    private final boolean autoHide;
 +    private String searchBlock = "";
 +    private final Table blockTable = new Table();
 +
@@ -9812,19 +9697,23 @@ index 0000000000000000000000000000000000000000..735fcbb281c18b6535f47ef9ea01a957
 +
 +    public BlockSelectDialog(Boolf<Block> condition, Cons<Block> cons, Boolf<Block> checked, boolean autoHide){
 +        super("方块选择器");
-+        rebuild(condition, cons, checked, autoHide);
++        this.condition = condition;
++        this.cons = cons;
++        this.checked = checked;
++        this.autoHide = autoHide;
 +        cont.pane(td -> {
 +            td.field("", t -> {
 +                searchBlock = !t.isEmpty() ? t.toLowerCase() : "";
-+                rebuild(condition, cons, checked, autoHide);
++                rebuild();
 +            }).maxTextLength(50).growX().get().setMessageText("搜索...");
 +            td.row();
 +            td.add(blockTable);
 +        });
++        rebuild();
 +        addCloseButton();
 +    }
 +
-+    private void rebuild(Boolf<Block> condition, Cons<Block> cons, Boolf<Block> checked, boolean autoHide){
++    private void rebuild(){
 +        blockTable.clear();
 +        blockTable.table(td -> {
 +            Seq<Block> blocks = content.blocks().select(block -> condition.get(block) && (searchBlock.isEmpty() || block.name.contains(searchBlock) || block.localizedName.contains(searchBlock)) && (block.privileged || AdvanceToolTable.allBlocksReveal || !block.isHidden())).sort(block -> block.group.ordinal());

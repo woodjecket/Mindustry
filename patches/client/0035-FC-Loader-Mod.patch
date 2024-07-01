@@ -12,8 +12,8 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  .../src/mindustryX/loader/AndroidImpl.java    | 277 ++++++++++++++++++
  core/src/mindustryX/loader/DesktopImpl.java   | 131 +++++++++
  .../src/mindustryX/loader/LoaderPlatform.java |  45 +++
- core/src/mindustryX/loader/Main.java          | 133 +++++++++
- 4 files changed, 586 insertions(+)
+ core/src/mindustryX/loader/Main.java          | 134 +++++++++
+ 4 files changed, 587 insertions(+)
  create mode 100644 android/src/mindustryX/loader/AndroidImpl.java
  create mode 100644 core/src/mindustryX/loader/DesktopImpl.java
  create mode 100644 core/src/mindustryX/loader/LoaderPlatform.java
@@ -492,10 +492,10 @@ index 0000000000000000000000000000000000000000..7214a64cd3d4e93503c1ed50e1514db9
 +}
 diff --git a/core/src/mindustryX/loader/Main.java b/core/src/mindustryX/loader/Main.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9e19822ac2a4f6cee4306c62cfacd2e526f9c57c
+index 0000000000000000000000000000000000000000..47a2c48e09d85b8e919026b2ea72384999b36d0d
 --- /dev/null
 +++ b/core/src/mindustryX/loader/Main.java
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,134 @@
 +package mindustryX.loader;
 +
 +import arc.*;
@@ -576,7 +576,8 @@ index 0000000000000000000000000000000000000000..9e19822ac2a4f6cee4306c62cfacd2e5
 +        }
 +
 +        try{
-+            loadError("Detected ARC client, skip: " + Reflect.get(Version.class, "arcbuild"));
++            loadError("Detected ARC client, skip: " + Reflect.get(Version.class, "arcBuild"));
++            return false;
 +        }catch(Exception e){/*ignore*/}
 +
 +        ModMeta meta = null;
