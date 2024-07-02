@@ -1,0 +1,479 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 24 Mar 2024 00:02:12 +0800
+Subject: [PATCH] ARC setBars
+
+---
+ core/src/mindustry/world/Block.java           | 23 +++++++++++++------
+ .../world/blocks/defense/ForceProjector.java  |  7 +++++-
+ .../world/blocks/defense/MendProjector.java   |  7 ++++++
+ .../blocks/defense/OverdriveProjector.java    |  4 +++-
+ .../world/blocks/defense/ShieldWall.java      | 11 +++++++++
+ .../blocks/defense/turrets/ItemTurret.java    |  8 +++----
+ .../world/blocks/heat/HeatConductor.java      |  4 ++--
+ .../world/blocks/heat/HeatProducer.java       |  4 +++-
+ .../world/blocks/payloads/BlockProducer.java  |  5 +++-
+ .../blocks/payloads/PayloadDeconstructor.java |  4 +++-
+ .../world/blocks/power/ImpactReactor.java     | 19 +++++++++++----
+ .../world/blocks/power/PowerGenerator.java    |  3 +--
+ .../world/blocks/production/BeamDrill.java    |  2 +-
+ .../world/blocks/production/Drill.java        |  5 +++-
+ .../world/blocks/production/HeatCrafter.java  |  5 ++--
+ .../world/blocks/production/WallCrafter.java  |  2 +-
+ .../world/blocks/sandbox/LiquidSource.java    |  7 ------
+ .../world/blocks/units/Reconstructor.java     |  6 ++++-
+ .../world/blocks/units/UnitAssembler.java     |  6 ++++-
+ .../world/blocks/units/UnitFactory.java       | 10 +++++++-
+ 20 files changed, 102 insertions(+), 40 deletions(-)
+
+diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
+index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a525592c16 100644
+--- a/core/src/mindustry/world/Block.java
++++ b/core/src/mindustry/world/Block.java
+@@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import java.lang.reflect.*;
+ import java.util.*;
+@@ -578,7 +579,7 @@ public class Block extends UnlockableContent implements Senseable{
+ 
+     public void addLiquidBar(Liquid liq){
+         addBar("liquid-" + liq.name, entity -> !liq.unlockedNow() ? null : new Bar(
+-            () -> liq.localizedName,
++            () -> liq.localizedName + " " + liq.emoji() + " " + FormatDefault.percent(entity.liquids.get(liq), liquidCapacity),
+             liq::barColor,
+             () -> entity.liquids.get(liq) / liquidCapacity
+         ));
+@@ -586,15 +587,19 @@ public class Block extends UnlockableContent implements Senseable{
+ 
+     /** Adds a liquid bar that dynamically displays a liquid type. */
+     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
+-        addBar("liquid", entity -> new Bar(
+-            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
+-            () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
+-            () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
++        addBar("liquid", entity -> new Bar(() -> {
++            var c = current.get((T)entity);
++            if(c == null || entity.liquids.get(c) <= 0.001f) return Core.bundle.get("bar.liquid");
++            return c.localizedName + " " + c.emoji() + " " + FormatDefault.percent(entity.liquids.get(c), liquidCapacity);
++        },
++        () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
++        () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
+         );
+     }
+ 
+     public void setBars(){
+-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
++        addBar("health", entity -> new Bar(() -> "\uE813 " + new Format(4).percent(entity.health, entity.maxHealth),
++        () -> Pal.health, entity::healthf).blink(Color.white));
+ 
+         if(consPower != null){
+             boolean buffered = consPower.buffered;
+@@ -602,7 +607,11 @@ public class Block extends UnlockableContent implements Senseable{
+ 
+             addBar("power", entity -> new Bar(
+                 () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
+-                Core.bundle.get("bar.power"),
++                Iconc.power + " " + FormatDefault.percent(
++                entity.power.status * consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
++                consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
++                entity.timeScale() * 100 * (entity.shouldConsume() ? 1f : 0f) * entity.efficiency
++                ),
+                 () -> Pal.powerBar,
+                 () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
+             );
+diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
+index 4b7d6968838780299971c9a827752e516d74ea0c..5cc4088121fd85ccb4971465494b2f00ee59a878 100644
+--- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
++++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
+@@ -21,6 +21,7 @@ import mindustry.world.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -83,7 +84,11 @@ public class ForceProjector extends Block{
+     @Override
+     public void setBars(){
+         super.setBars();
+-        addBar("shield", (ForceBuild entity) -> new Bar("stat.shieldhealth", Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
++        addBar("shield",
++        (ForceBuild entity) -> new Bar(() -> "\uE84D " + FormatDefault.percent(shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
++        () -> Pal.accent,
++        () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat))
++        .blink(Color.white));
+     }
+ 
+     @Override
+diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
+index 5c9f7369c72dbd5b6b4345008e7dc896e48b02b4..f52a5307bdd8c79fbccb82b7ff74dc856d615edb 100644
+--- a/core/src/mindustry/world/blocks/defense/MendProjector.java
++++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
+@@ -10,6 +10,7 @@ import mindustry.content.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
+ import mindustry.logic.*;
++import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
+@@ -67,6 +68,12 @@ public class MendProjector extends Block{
+         }
+     }
+ 
++    @Override
++    public void setBars(){
++        super.setBars();
++        addBar("charge", (MendBuild entity) -> new Bar(() -> ("充能: " + (int)entity.charge + " / " + reload), () -> Pal.items, () -> (entity.charge / reload)));
++    }
++
+     @Override
+     public void drawPlace(int x, int y, int rotation, boolean valid){
+         super.drawPlace(x, y, rotation, valid);
+diff --git a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+index 89b28401796d1d560330328e4bea54f258f3fdeb..11cd57fb65dcac2eb118cd7d584dd83be20b7c0f 100644
+--- a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
++++ b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+@@ -79,7 +79,9 @@ public class OverdriveProjector extends Block{
+     @Override
+     public void setBars(){
+         super.setBars();
+-        addBar("boost", (OverdriveBuild entity) -> new Bar(() -> Core.bundle.format("bar.boost", Mathf.round(Math.max((entity.realBoost() * 100 - 100), 0))), () -> Pal.accent, () -> entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));
++        addBar("boost", (OverdriveBuild entity) -> new Bar(() ->
++                "超速：" + (entity.realBoost() <= 1 ? "[red]\uE815": "+" + (int)((entity.realBoost() - 1) * 100) + "%"),
++                () -> Pal.accent, () -> entity.realBoost() / (hasBoost ? speedBoost + speedBoostPhase : speedBoost)));
+     }
+ 
+     public class OverdriveBuild extends Building implements Ranged{
+diff --git a/core/src/mindustry/world/blocks/defense/ShieldWall.java b/core/src/mindustry/world/blocks/defense/ShieldWall.java
+index 53c0889446bda2891a6417c435ff255953447b92..2d2e5e04d9105714a828cda022f84687943289b0 100644
+--- a/core/src/mindustry/world/blocks/defense/ShieldWall.java
++++ b/core/src/mindustry/world/blocks/defense/ShieldWall.java
+@@ -7,8 +7,10 @@ import arc.util.*;
+ import arc.util.io.*;
+ import mindustry.annotations.Annotations.*;
+ import mindustry.graphics.*;
++import mindustry.ui.*;
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -38,6 +40,15 @@ public class ShieldWall extends Wall{
+ 
+     }
+ 
++    @Override
++    public void setBars(){
++        super.setBars();
++        addBar("charge", (ShieldWallBuild entity) -> new Bar(
++        () -> "\uE84D " + FormatDefault.percent(entity.shield, shieldHealth),
++        () -> Pal.shield,
++        () -> (entity.shield / shieldHealth)));
++    }
++
+     public class ShieldWallBuild extends WallBuild{
+         public float shield = shieldHealth, shieldRadius = 0f;
+         public float breakTimer;
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java b/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
+index 93a77b644f2ea6e583346f9899bf73dbf59f28ef..2fbf6a50f7e253798829fce804b6c76f8d039c78 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
+@@ -15,6 +15,7 @@ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -57,10 +58,9 @@ public class ItemTurret extends Turret{
+         super.setBars();
+ 
+         addBar("ammo", (ItemTurretBuild entity) ->
+-            new Bar(
+-                "stat.ammo",
+-                Pal.ammo,
+-                () -> (float)entity.totalAmmo / maxAmmo
++        new Bar(() -> Core.bundle.get("stat.ammo") + " " + (entity.totalAmmo > 0 ? ((ItemTurret.ItemEntry)entity.ammo.peek()).item.emoji() : "") + " " + FormatDefault.percent(entity.totalAmmo, maxAmmo),
++            ()->Pal.ammo,
++                () -> (float) entity.totalAmmo / maxAmmo
+             )
+         );
+     }
+diff --git a/core/src/mindustry/world/blocks/heat/HeatConductor.java b/core/src/mindustry/world/blocks/heat/HeatConductor.java
+index 8ca9446de3177bbd18cf08c1911ed72b09bec532..1db74176ac71b528c0ec5fa8b83b87f38b89755b 100644
+--- a/core/src/mindustry/world/blocks/heat/HeatConductor.java
++++ b/core/src/mindustry/world/blocks/heat/HeatConductor.java
+@@ -11,6 +11,7 @@ import mindustry.graphics.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.draw.*;
++import mindustryX.features.ui.*;
+ 
+ public class HeatConductor extends Block{
+     public float visualMaxHeat = 15f;
+@@ -28,8 +29,7 @@ public class HeatConductor extends Block{
+     public void setBars(){
+         super.setBars();
+ 
+-        //TODO show number
+-        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> Core.bundle.format("bar.heatamount", (int)(entity.heat + 0.001f)), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
++        addBar("heat", (HeatConductorBuild entity) -> new Bar(() -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, visualMaxHeat), () -> Pal.lightOrange, () -> entity.heat / visualMaxHeat));
+     }
+ 
+     @Override
+diff --git a/core/src/mindustry/world/blocks/heat/HeatProducer.java b/core/src/mindustry/world/blocks/heat/HeatProducer.java
+index b2bcd8ab2dccb95fef69b2b643442a25e8ab8141..f04e9b3f2ebdebf0857e7e7ed715755c5ec0bda7 100644
+--- a/core/src/mindustry/world/blocks/heat/HeatProducer.java
++++ b/core/src/mindustry/world/blocks/heat/HeatProducer.java
+@@ -1,5 +1,6 @@
+ package mindustry.world.blocks.heat;
+ 
++import arc.*;
+ import arc.math.*;
+ import arc.util.io.*;
+ import mindustry.graphics.*;
+@@ -7,6 +8,7 @@ import mindustry.ui.*;
+ import mindustry.world.blocks.production.*;
+ import mindustry.world.draw.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.ui.*;
+ 
+ public class HeatProducer extends GenericCrafter{
+     public float heatOutput = 10f;
+@@ -33,7 +35,7 @@ public class HeatProducer extends GenericCrafter{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("heat", (HeatProducerBuild entity) -> new Bar("bar.heat", Pal.lightOrange, () -> entity.heat / heatOutput));
++        addBar("heat", (HeatProducerBuild entity) -> new Bar(() -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatOutput), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
+     }
+ 
+     public class HeatProducerBuild extends GenericCrafterBuild implements HeatBlock{
+diff --git a/core/src/mindustry/world/blocks/payloads/BlockProducer.java b/core/src/mindustry/world/blocks/payloads/BlockProducer.java
+index e5eccb570f089aabf8776016a354ce687b511e11..7cdacba72edbd71ba8e40bd93730ad3422f00edf 100644
+--- a/core/src/mindustry/world/blocks/payloads/BlockProducer.java
++++ b/core/src/mindustry/world/blocks/payloads/BlockProducer.java
+@@ -67,7 +67,10 @@ public abstract class BlockProducer extends PayloadBlock{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("progress", (BlockProducerBuild entity) -> new Bar("bar.progress", Pal.ammo, () -> entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildCost)));
++        addBar("progress", (BlockProducerBuild entity) ->
++                new Bar(() -> entity.recipe() == null ? (Iconc.crafting + "") : (Iconc.crafting + " " + Strings.fixed((entity.progress / entity.recipe().buildCost) * 100f, 0)  + " %"),
++                        () -> Pal.ammo, () -> entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildCost))
++            );
+     }
+     
+     public abstract class BlockProducerBuild extends PayloadBlockBuild<BuildPayload>{
+diff --git a/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java b/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java
+index d2586a4e2223241601e187bce1da9a8edb2e9f21..6b271a019e53d91dc84c24c657143285edd026d4 100644
+--- a/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java
++++ b/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java
+@@ -44,7 +44,9 @@ public class PayloadDeconstructor extends PayloadBlock{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("progress", (PayloadDeconstructorBuild e) -> new Bar("bar.progress", Pal.ammo, () -> e.progress));
++        addBar("progress", (PayloadDeconstructorBuild e) ->
++                new Bar(() -> Iconc.crafting + " " + Strings.fixed(e.progress * 100f, 0)  + " %",
++                        () -> Pal.ammo, () -> e.progress));
+     }
+ 
+     public class PayloadDeconstructorBuild extends PayloadBlockBuild<Payload>{
+diff --git a/core/src/mindustry/world/blocks/power/ImpactReactor.java b/core/src/mindustry/world/blocks/power/ImpactReactor.java
+index 528b2960a70af587b6b6fbbaf203646d0bd6a594..f8112d126ade845c483087b38105b6d95ede556d 100644
+--- a/core/src/mindustry/world/blocks/power/ImpactReactor.java
++++ b/core/src/mindustry/world/blocks/power/ImpactReactor.java
+@@ -54,11 +54,20 @@ public class ImpactReactor extends PowerGenerator{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("power", (GeneratorBuild entity) -> new Bar(() ->
+-        Core.bundle.format("bar.poweroutput",
+-        Strings.fixed(Math.max(entity.getPowerProduction() - consPower.usage, 0) * 60 * entity.timeScale(), 1)),
+-        () -> Pal.powerBar,
+-        () -> entity.productionEfficiency));
++        addBar("power", (GeneratorBuild entity) -> new Bar(
++                () -> entity.warmup() > 0.999f
++                        ? Strings.format(Iconc.power+"@[lightgray](@%)[]",
++                                Strings.autoFixed((entity.getPowerProduction() - consPower.usage) * 60 * entity.timeScale(), 1),
++                                Strings.autoFixed(entity.productionEfficiency * 100, 1)
++                        )
++                        : Strings.format(Iconc.power+"@[lightgray](@%)[]|@s",
++                                Strings.autoFixed((entity.getPowerProduction() - consPower.usage) * 60 * entity.timeScale(), 1),
++                                Strings.autoFixed(entity.productionEfficiency * 100, 1),
++                                Strings.autoFixed((warmupToTime(0.999f, entity.timeScale()) - warmupToTime(entity.warmup(), entity.timeScale())) / 60f, 1)
++                        ),
++                () -> Pal.powerBar,
++                () -> entity.productionEfficiency)
++        );
+     }
+ 
+     @Override
+diff --git a/core/src/mindustry/world/blocks/power/PowerGenerator.java b/core/src/mindustry/world/blocks/power/PowerGenerator.java
+index 9b0ef63732d2cd574bf37f9f0a5fd0f3af378fd9..4c1065a12000cc5f9f4bb5a9fedda45878b6caa2 100644
+--- a/core/src/mindustry/world/blocks/power/PowerGenerator.java
++++ b/core/src/mindustry/world/blocks/power/PowerGenerator.java
+@@ -73,8 +73,7 @@ public class PowerGenerator extends PowerDistributor{
+ 
+         if(hasPower && outputsPower){
+             addBar("power", (GeneratorBuild entity) -> new Bar(() ->
+-            Core.bundle.format("bar.poweroutput",
+-            Strings.fixed(entity.getPowerProduction() * 60 * entity.timeScale(), 1)),
++                    Iconc.power + "+ " + Strings.autoFixed(entity.getPowerProduction() * 60 * entity.timeScale(), 1),
+             () -> Pal.powerBar,
+             () -> entity.productionEfficiency));
+         }
+diff --git a/core/src/mindustry/world/blocks/production/BeamDrill.java b/core/src/mindustry/world/blocks/production/BeamDrill.java
+index 163019c9c2562301984912c212e5d5558a028e36..6eadc089446a92e4dd1d649a66132dfd58419dcb 100644
+--- a/core/src/mindustry/world/blocks/production/BeamDrill.java
++++ b/core/src/mindustry/world/blocks/production/BeamDrill.java
+@@ -83,7 +83,7 @@ public class BeamDrill extends Block{
+         super.setBars();
+ 
+         addBar("drillspeed", (BeamDrillBuild e) ->
+-            new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastDrillSpeed * 60, 2)), () -> Pal.ammo, () -> e.warmup));
++            new Bar(() -> (e.lastItem == null ? "挖掘速度：0.00/s" : e.lastItem.emoji() +" "+ Strings.fixed(e.lastDrillSpeed * 60 , 2) + "/s"), () -> Pal.ammo, () -> e.warmup));
+     }
+ 
+     @Override
+diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
+index 21babe1f3e89b0a33bbc93c8e79bc9d76505ad5f..1ca61ee0140d29c28239ed87a165f1fedf11cd97 100644
+--- a/core/src/mindustry/world/blocks/production/Drill.java
++++ b/core/src/mindustry/world/blocks/production/Drill.java
+@@ -111,7 +111,10 @@ public class Drill extends Block{
+         super.setBars();
+ 
+         addBar("drillspeed", (DrillBuild e) ->
+-             new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastDrillSpeed * 60 * e.timeScale(), 2)), () -> Pal.ammo, () -> e.warmup));
++             new Bar(() -> (e.dominantItem == null ? "挖掘速度：" : e.dominantItem.emoji()) +" "+ Strings.fixed(e.lastDrillSpeed * 60 * e.timeScale() , 2) + "/s", () -> Pal.ammo, () -> e.warmup));
++        if(!(this instanceof BurstDrill) && Core.settings.getBool("arcDrillProgress"))
++            addBar("progress", (DrillBuild e) ->
++                new Bar(() -> e.dominantItem == null ? "":Iconc.production + " " + Math.round(e.progress / (drillTime + hardnessDrillMultiplier * e.dominantItem.hardness) * 100) + " %", () -> e.dominantItem == null ? Pal.ammo : e.dominantItem.color, () -> e.dominantItem == null ? 0 : e.progress / (drillTime + hardnessDrillMultiplier * e.dominantItem.hardness)));
+     }
+ 
+     public Item getDrop(Tile tile){
+diff --git a/core/src/mindustry/world/blocks/production/HeatCrafter.java b/core/src/mindustry/world/blocks/production/HeatCrafter.java
+index 5af67c37c74871553a35e9b5ff9757869072b6da..39a2956d60c1da89f2bb89ab345462cbb1a7a7dc 100644
+--- a/core/src/mindustry/world/blocks/production/HeatCrafter.java
++++ b/core/src/mindustry/world/blocks/production/HeatCrafter.java
+@@ -6,6 +6,7 @@ import mindustry.graphics.*;
+ import mindustry.ui.*;
+ import mindustry.world.blocks.heat.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.ui.*;
+ 
+ /** A crafter that requires contact from heater blocks to craft. */
+ public class HeatCrafter extends GenericCrafter{
+@@ -25,8 +26,8 @@ public class HeatCrafter extends GenericCrafter{
+         super.setBars();
+ 
+         addBar("heat", (HeatCrafterBuild entity) ->
+-            new Bar(() ->
+-            Core.bundle.format("bar.heatpercent", (int)(entity.heat + 0.01f), (int)(entity.efficiencyScale() * 100 + 0.01f)),
++            new Bar(
++            () -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatRequirement, entity.efficiencyScale() * 100, true),
+             () -> Pal.lightOrange,
+             () -> entity.heat / heatRequirement));
+     }
+diff --git a/core/src/mindustry/world/blocks/production/WallCrafter.java b/core/src/mindustry/world/blocks/production/WallCrafter.java
+index d499f2cfe3a8592171323d40b638d5ccd0121dcb..8a3ea96bf8a7e7acd146d16f05fbb61a9b1f6f08 100644
+--- a/core/src/mindustry/world/blocks/production/WallCrafter.java
++++ b/core/src/mindustry/world/blocks/production/WallCrafter.java
+@@ -57,7 +57,7 @@ public class WallCrafter extends Block{
+         super.setBars();
+ 
+         addBar("drillspeed", (WallCrafterBuild e) ->
+-            new Bar(() -> Core.bundle.format("bar.drillspeed", Strings.fixed(e.lastEfficiency * 60 / drillTime, 2)), () -> Pal.ammo, () -> e.warmup));
++            new Bar(() -> (output == null ? "挖掘速度：" : output.emoji()) +" "+ Strings.fixed(e.lastEfficiency * 60 / drillTime, 2) + "/s", () -> Pal.ammo, () -> e.warmup));
+     }
+ 
+     @Override
+diff --git a/core/src/mindustry/world/blocks/sandbox/LiquidSource.java b/core/src/mindustry/world/blocks/sandbox/LiquidSource.java
+index f51b9cda1ffeefdb689ffc64144669b737a03b3d..575d0d5f08ef4e9b7bb5fa277e5dd5c0562fe7cd 100644
+--- a/core/src/mindustry/world/blocks/sandbox/LiquidSource.java
++++ b/core/src/mindustry/world/blocks/sandbox/LiquidSource.java
+@@ -38,13 +38,6 @@ public class LiquidSource extends Block{
+         configClear((LiquidSourceBuild tile) -> tile.source = null);
+     }
+ 
+-    @Override
+-    public void setBars(){
+-        super.setBars();
+-
+-        removeBar("liquid");
+-    }
+-
+     @Override
+     public void drawPlanConfig(BuildPlan plan, Eachable<BuildPlan> list){
+         drawPlanConfigCenter(plan, plan.config, "center", true);
+diff --git a/core/src/mindustry/world/blocks/units/Reconstructor.java b/core/src/mindustry/world/blocks/units/Reconstructor.java
+index 25b6e72226dcd7403326f503aa210ec3766a3831..81f9c6c99e79fef6f42dcaf7314309d500edfa7e 100644
+--- a/core/src/mindustry/world/blocks/units/Reconstructor.java
++++ b/core/src/mindustry/world/blocks/units/Reconstructor.java
+@@ -62,7 +62,11 @@ public class Reconstructor extends UnitBlock{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("progress", (ReconstructorBuild entity) -> new Bar("bar.progress", Pal.ammo, entity::fraction));
++        addBar("progress",
++            (ReconstructorBuild e) -> new Bar(() ->
++                    Iconc.units + " " + Strings.fixed(e.progress * 100f / constructTime, 0) + "%" + " | " +
++                            Strings.fixed((constructTime - e.progress) / (60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()), 0) +  " s",
++                    () -> Pal.ammo, e::fraction));
+         addBar("units", (ReconstructorBuild e) ->
+         new Bar(
+             () -> e.unit() == null ? "[lightgray]" + Iconc.cancel :
+diff --git a/core/src/mindustry/world/blocks/units/UnitAssembler.java b/core/src/mindustry/world/blocks/units/UnitAssembler.java
+index 2d2a40115e383eca8ab3c33226054c9c7772f64a..3dfd6208c237a8b89de69ce862c47ac78f7c857f 100644
+--- a/core/src/mindustry/world/blocks/units/UnitAssembler.java
++++ b/core/src/mindustry/world/blocks/units/UnitAssembler.java
+@@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;
+ import arc.struct.*;
+ import arc.util.*;
+ import arc.util.io.*;
++import mindustry.*;
+ import mindustry.ai.types.*;
+ import mindustry.annotations.Annotations.*;
+ import mindustry.content.*;
+@@ -96,7 +97,10 @@ public class UnitAssembler extends PayloadBlock{
+     public void setBars(){
+         super.setBars();
+ 
+-        addBar("progress", (UnitAssemblerBuild e) -> new Bar("bar.progress", Pal.ammo, () -> e.progress));
++        addBar("progress", (UnitAssembler.UnitAssemblerBuild e) -> new Bar(() ->
++                Iconc.units + " " + (int)(e.progress * 100) + "%" + " | " +Strings.fixed((e.plan().time * (1-e.progress))/(60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()),0) +  " s",
++                () -> Pal.ammo, () -> e.progress
++        ));
+ 
+         addBar("units", (UnitAssemblerBuild e) ->
+             new Bar(() ->
+diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
+index b89d945c65fc20339d0433a0a2125b8544ceaca1..81e8b9fdcc6995a9b1bedf76404bef32026bf763 100644
+--- a/core/src/mindustry/world/blocks/units/UnitFactory.java
++++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
+@@ -84,7 +84,15 @@ public class UnitFactory extends UnitBlock{
+     @Override
+     public void setBars(){
+         super.setBars();
+-        addBar("progress", (UnitFactoryBuild e) -> new Bar("bar.progress", Pal.ammo, e::fraction));
++        addBar("progress", (UnitFactoryBuild e) -> {
++            if(e.currentPlan == -1){
++                return new Bar(Iconc.units + "[red] " + Iconc.cancel, Pal.ammo, e::fraction);
++            }
++            return new Bar(() -> e.currentPlan == -1 ? "[red] X" : (Iconc.units + " " + Strings.fixed(e.progress * 100f / plans.get(e.currentPlan).time, 0) + "% | " +
++            Strings.fixed((plans.get(e.currentPlan).time - e.progress) / (60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()), 0) + " s"
++            ), () -> Pal.ammo, e::fraction
++            );
++        });
+ 
+         addBar("units", (UnitFactoryBuild e) ->
+         new Bar(

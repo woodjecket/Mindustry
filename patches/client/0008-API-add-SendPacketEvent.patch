@@ -1,0 +1,113 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 23 Jun 2023 16:18:22 +0800
+Subject: [PATCH] API: add SendPacketEvent
+
+---
+ core/src/mindustry/net/ArcNetProvider.java    |  3 ++
+ core/src/mindustry/net/Net.java               |  6 +++-
+ .../mindustryX/events/SendPacketEvent.java    | 33 +++++++++++++++++++
+ 3 files changed, 41 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/mindustryX/events/SendPacketEvent.java
+
+diff --git a/core/src/mindustry/net/ArcNetProvider.java b/core/src/mindustry/net/ArcNetProvider.java
+index e7a1a33dd6b4a523900d841d08246d0383ce2f30..23e8b294d646f2835750a1b085ae826032c3c627 100644
+--- a/core/src/mindustry/net/ArcNetProvider.java
++++ b/core/src/mindustry/net/ArcNetProvider.java
+@@ -16,6 +16,7 @@ import mindustry.game.EventType.*;
+ import mindustry.net.Administration.*;
+ import mindustry.net.Net.*;
+ import mindustry.net.Packets.*;
++import mindustryX.events.*;
+ import net.jpountz.lz4.*;
+ 
+ import java.io.*;
+@@ -335,6 +336,7 @@ public class ArcNetProvider implements NetProvider{
+ 
+         @Override
+         public void sendStream(Streamable stream){
++            if(SendPacketEvent.emit(this, null, stream)) return;
+             connection.addListener(new InputStreamSender(stream.stream, 1024){
+                 int id;
+ 
+@@ -360,6 +362,7 @@ public class ArcNetProvider implements NetProvider{
+ 
+         @Override
+         public void send(Object object, boolean reliable){
++            if(SendPacketEvent.emit(this, null, object)) return;
+             try{
+                 if(reliable){
+                     connection.sendTCP(object);
+diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
+index 145238bf8856c7b83da468b89362c3d1df5d5928..7db098b1985ea7df7516f43ab4b0c49f05c723fa 100644
+--- a/core/src/mindustry/net/Net.java
++++ b/core/src/mindustry/net/Net.java
+@@ -10,6 +10,7 @@ import mindustry.game.EventType.*;
+ import mindustry.gen.*;
+ import mindustry.net.Packets.*;
+ import mindustry.net.Streamable.*;
++import mindustryX.events.*;
+ import net.jpountz.lz4.*;
+ 
+ import java.io.*;
+@@ -223,8 +224,10 @@ public class Net{
+ 
+     /** Send an object to all connected clients, or to the server if this is a client.*/
+     public void send(Object object, boolean reliable){
++        if(SendPacketEvent.emit(null, null, object)) return;
+         if(server){
+             for(NetConnection con : provider.getConnections()){
++                if(!con.hasBegunConnecting) continue;
+                 con.send(object, reliable);
+             }
+         }else{
+@@ -234,8 +237,9 @@ public class Net{
+ 
+     /** Send an object to everyone EXCEPT a certain client. Server-side only.*/
+     public void sendExcept(NetConnection except, Object object, boolean reliable){
++        if(SendPacketEvent.emit(null, except, object)) return;
+         for(NetConnection con : getConnections()){
+-            if(con != except){
++            if(con != except && con.hasBegunConnecting){
+                 con.send(object, reliable);
+             }
+         }
+diff --git a/core/src/mindustryX/events/SendPacketEvent.java b/core/src/mindustryX/events/SendPacketEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..11e0817d8d2f2fc95cb40027660372f6662b9b6b
+--- /dev/null
++++ b/core/src/mindustryX/events/SendPacketEvent.java
+@@ -0,0 +1,33 @@
++package mindustryX.events;
++
++import arc.*;
++import arc.util.*;
++import mindustry.net.*;
++import mindustryX.*;
++
++@MindustryXApi
++public class SendPacketEvent{
++    /** null for all, may emit again */
++    @Nullable
++    public NetConnection con;
++    /** only when call in sendExcept */
++    @Nullable
++    public NetConnection except;
++    public Object packet;
++    public boolean isCancelled;
++
++    private SendPacketEvent(){
++    }
++
++    private static final SendPacketEvent inst = new SendPacketEvent();
++
++    /** @return isCancelled */
++    public static boolean emit(@Nullable NetConnection con, @Nullable NetConnection except, Object packet){
++        inst.isCancelled = false;
++        inst.con = con;
++        inst.except = except;
++        inst.packet = packet;
++        Events.fire(inst);
++        return inst.isCancelled;
++    }
++}

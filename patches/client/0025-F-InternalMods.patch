@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 23 Feb 2024 16:37:59 +0800
+Subject: [PATCH] F: InternalMods
+
+---
+ core/src/mindustry/mod/Mods.java              |  2 +-
+ .../src/mindustryX/features/InternalMods.java | 35 +++++++++++++++++++
+ 2 files changed, 36 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/mindustryX/features/InternalMods.java
+
+diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
+index 3ece15b1d9dd00a522a9ea62e13427004155cd96..8b258a35f1a5a6f01d0a2904ed6fbbd5f0c76ee1 100644
+--- a/core/src/mindustry/mod/Mods.java
++++ b/core/src/mindustry/mod/Mods.java
+@@ -448,7 +448,7 @@ public class Mods implements Loadable{
+     /** Loads all mods from the folder, but does not call any methods on them.*/
+     public void load(){
+         var candidates = new Seq<Fi>();
+-
++        mods.addAll(mindustryX.features.InternalMods.load());
+         // Add local mods
+         Seq.with(modDirectory.list())
+         .retainAll(f -> f.extEquals("jar") || f.extEquals("zip") || (f.isDirectory() && Structs.contains(metaFiles, meta -> f.child(meta).exists())))
+diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1ce00d17c712d417383a3d61f13e6f62e5d91adc
+--- /dev/null
++++ b/core/src/mindustryX/features/InternalMods.java
+@@ -0,0 +1,35 @@
++package mindustryX.features;
++
++import arc.files.*;
++import arc.struct.*;
++import mindustry.core.*;
++import mindustry.mod.*;
++import mindustry.mod.Mods.*;
++
++import static arc.Core.files;
++import static mindustry.Vars.*;
++
++public class InternalMods{
++    public static Seq<LoadedMod> load(){
++        return Seq.with(
++        );
++    }
++
++    private static ModMeta meta(String id, String displayName, String version, String author){
++        ModMeta meta = new ModMeta();
++        meta.name = id;
++        meta.displayName = "[内置]" + displayName;
++        meta.version = version;
++        meta.author = author;
++        meta.minGameVersion = Version.buildString();
++        meta.hidden = true;
++        meta.cleanup();
++        return meta;
++    }
++
++    private static LoadedMod internalMod(ModMeta meta, Mod main){
++        Fi file = modDirectory.child("internal-" + meta.name + ".jar");
++        Fi root = files.internal("/mindustryX/mods/" + meta.name);
++        return new LoadedMod(file, root, main, InternalMods.class.getClassLoader(), meta);
++    }
++}

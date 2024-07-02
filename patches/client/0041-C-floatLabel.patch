@@ -1,0 +1,180 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 23 Mar 2024 21:28:15 +0800
+Subject: [PATCH] =?UTF-8?q?C:=20floatLabel=20/=20=E9=A6=96=E9=A1=B5?=
+ =?UTF-8?q?=E6=B5=AE=E5=8A=A8=E6=A0=87=E8=AF=AD(=E9=87=8D=E7=BD=AE)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/assets/labels                            | 74 +++++++++++++++++++
+ .../mindustry/ui/fragments/MenuFragment.java  |  7 ++
+ .../features/ui/MenuFloatLabel.java           | 38 ++++++++++
+ 3 files changed, 119 insertions(+)
+ create mode 100644 core/assets/labels
+ create mode 100644 core/src/mindustryX/features/ui/MenuFloatLabel.java
+
+diff --git a/core/assets/labels b/core/assets/labels
+new file mode 100644
+index 0000000000000000000000000000000000000000..518bd2fd1a82dcba920cc996f7174f0168303861
+--- /dev/null
++++ b/core/assets/labels
+@@ -0,0 +1,74 @@
++广告位招租
++_(:зゝ∠)_
++¯\_(ツ)_/¯
++(≧ω≦)
++绝对没有bug
++给个好评！
++占领整个星球了吗？
++如果启用像素画面，这行字会很难看清
++冲击！启动！
++欢迎回来！
++检测到钍反应堆过热，5,4,3,2,1...
++试试在水边用抽水机
++试试用双管炮打T5
++试试往涡轮里放爆炸混合物
++这里不是minecraft
++Also try minecraft!
++Also try factorio!
++Also try satisfactory!
++Also try shapez!
++Flood与Creeper World 3不得不说的故事
++一大波[][yellow]即将来袭！
++[]
++神圣的G键连接着我们
++A[]
++router! router! router!
++路由器神教
++Alt+F4\n解锁[red]隐藏功能
++ []点击此处插入文字
++崩服特惠[#e4ffd6]145
++像素原神，启动!
++发电的尽头是水电
++血压提升辅助器
++来点涩图秋梨哥
++熔岩领域10分钟8布8塑钢4合金
++/vote gameover
++[]点击此处开启隐藏功能
++扣1送阿尔法fumo
++修复器修复修复修复器的修复器
++ [][yellow]它不发电
++高血压模拟器
++别杀mono，你这个怪物！
++你肯定在看这行字
++原价9.99美刀
++因为这句太cool/n所以把它加上[alphachan][yellow]
++一键装弹，踢出游戏
++不要乱发图片影响他人/n(来点涩图秋梨膏)
++数数第几次看到这行字
++付费开源
++蓝图不规范，亲人两行泪
++废料分裂，秒杀一切
++双管加铜，力大无穷
++火焰加硫，破坏如榴
++熔岩飙车1v4深得我心\n沙荒残骸暴风雪正合我意
++经验+3(GoodGame)
++与指挥中心的永别
++Latum萌萌的!
++M属性大爆发，Mindustry！
++赞美Lucky Clover
++赞美WayZer
++茉莉茉莉茉莉茉莉茉莉
++学术端要变成松鼠的形状了
++学术追源于根目录(root)
++学术与原版差距200个文件与20000行代码!!!
++学术工具箱与Testing Utilities不得不说的事
++学术单位工厂与Unit Factory不得不说的事
++中国电弧
++亲爱的，我把硅用完了
++lc被茉莉扑倒在床上了
++有bug？？？ 去反馈吧
++低血压专效药
++能用双管过裂谷吗?
++他妈的没有钛啊
++一点点钛都没有啊
++看看看看看看
+diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
+index 497b2077e17316a2582a5abdea274c4f773b99fd..593d8e2bfbb8c1e156b998dc44d3554317e171bf 100644
+--- a/core/src/mindustry/ui/fragments/MenuFragment.java
++++ b/core/src/mindustry/ui/fragments/MenuFragment.java
+@@ -19,6 +19,7 @@ import mindustry.game.EventType.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
+ import mindustry.ui.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ import static mindustry.gen.Tex.*;
+@@ -29,6 +30,8 @@ public class MenuFragment{
+     private MenuRenderer renderer;
+     private Seq<MenuButton> customButtons = new Seq<>();
+ 
++    MenuFloatLabel floatLabel;
++
+     public void build(Group parent){
+         renderer = new MenuRenderer();
+ 
+@@ -37,6 +40,7 @@ public class MenuFragment{
+         group.visible(() -> !ui.editor.isShown());
+         parent.addChild(group);
+ 
++        parent.addChild(floatLabel = new MenuFloatLabel());
+         parent = group;
+ 
+         parent.fill((x, y, w, h) -> renderer.render());
+@@ -104,6 +108,9 @@ public class MenuFragment{
+                 fy -= Scl.scl(macNotchHeight);
+             }
+ 
++            floatLabel.setPosition(width / 2f + logow * 0.35f, fy - logoh / 2f - Scl.scl(2f) + logoh * 0.15f);
++            floatLabel.baseScale = logoh * 0.03f;
++
+             Draw.color();
+             Draw.rect(logo, fx, fy, logow, logoh);
+ 
+diff --git a/core/src/mindustryX/features/ui/MenuFloatLabel.java b/core/src/mindustryX/features/ui/MenuFloatLabel.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a0423b616af0ac1499339d03f44cae839115725a
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/MenuFloatLabel.java
+@@ -0,0 +1,38 @@
++package mindustryX.features.ui;
++
++import arc.*;
++import arc.math.*;
++import arc.scene.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import arc.util.*;
++
++public class MenuFloatLabel extends WidgetGroup{
++    private static final float period = 75f, varSize = 0.8f;
++    private final Label textLabel;
++    private final String[] labels;
++    public float baseScale = 1f;
++    private long lastVisible;
++
++    public MenuFloatLabel(){
++        super();
++        setTransform(true);
++        setRotation(20);
++        addChild(textLabel = new Label(""));
++        visible(() -> Core.settings.getBool("menuFloatText", true));
++        textLabel.setAlignment(Align.center);
++        update(() -> {
++            textLabel.setFontScale(baseScale * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
++            if(Core.graphics.getFrameId() - lastVisible > 1){
++                randomLabel();
++            }
++            lastVisible = Core.graphics.getFrameId();
++        });
++        labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
++        randomLabel();
++    }
++
++    public void randomLabel(){
++        Timer.schedule(() -> textLabel.setText("[yellow]" + labels[new Rand().random(0, labels.length - 1)]), 0.11f);
++    }
++}

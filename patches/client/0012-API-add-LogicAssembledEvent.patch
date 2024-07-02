@@ -1,0 +1,119 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 3 Aug 2023 12:20:38 +0800
+Subject: [PATCH] API: add LogicAssembledEvent
+
+---
+ core/src/mindustry/logic/LParser.java         |  4 +++-
+ core/src/mindustry/logic/LStatements.java     | 11 ++++++++++
+ .../world/blocks/logic/LogicBlock.java        |  4 ++++
+ .../events/LogicAssembledEvent.java           | 21 +++++++++++++++++++
+ 4 files changed, 39 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/mindustryX/events/LogicAssembledEvent.java
+
+diff --git a/core/src/mindustry/logic/LParser.java b/core/src/mindustry/logic/LParser.java
+index 6f65e9981f2291d1c892c23f3ec8603aec8e3a4c..32133826223d3e4fe1be991c8abd3bc23d720779 100644
+--- a/core/src/mindustry/logic/LParser.java
++++ b/core/src/mindustry/logic/LParser.java
+@@ -5,6 +5,8 @@ import arc.util.*;
+ import mindustry.gen.*;
+ import mindustry.logic.LStatements.*;
+ 
++import java.util.*;
++
+ public class LParser{
+     private static final String[] tokens = new String[16];
+     private static final int maxJumps = 500;
+@@ -155,7 +157,7 @@ public class LParser{
+                         statements.add(LAssembler.customParsers.get(tokens[0]).get(tokens));
+                     }else{
+                         //unparseable statement
+-                        statements.add(new InvalidStatement());
++                        statements.add(new InvalidStatement(Arrays.copyOf(tokens, tok)));
+                     }
+                 }
+                 line ++;
+diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
+index 3ca506e0e0ec45bf4bfbc58029e2db65673a4c60..9884b9846f06a48c4596ffa5f29f59279b3c21b7 100644
+--- a/core/src/mindustry/logic/LStatements.java
++++ b/core/src/mindustry/logic/LStatements.java
+@@ -20,6 +20,7 @@ import mindustry.logic.LogicFx.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.meta.*;
++import mindustryX.*;
+ 
+ import static mindustry.Vars.*;
+ import static mindustry.logic.LCanvas.*;
+@@ -45,6 +46,16 @@ public class LStatements{
+ 
+     @RegisterStatement("noop")
+     public static class InvalidStatement extends LStatement{
++        @MindustryXApi
++        public transient String[] tokens = {};
++
++        public InvalidStatement(){
++        }
++
++        @MindustryXApi
++        public InvalidStatement(String[] tokens){
++            this.tokens = tokens;
++        }
+ 
+         @Override
+         public void build(Table table){
+diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
+index 6f4d08ac40d461d0c41dbb292866add7565ed784..261b6374360c2cbae88f44aa441f55706c181936 100644
+--- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
++++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
+@@ -1,5 +1,6 @@
+ package mindustry.world.blocks.logic;
+ 
++import arc.*;
+ import arc.Graphics.*;
+ import arc.Graphics.Cursor.*;
+ import arc.func.*;
+@@ -25,6 +26,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.ConstructBlock.*;
+ import mindustry.world.meta.*;
+ import mindustryX.*;
++import mindustryX.events.*;
+ 
+ import java.io.*;
+ import java.util.zip.*;
+@@ -404,6 +406,8 @@ public class LogicBlock extends Block{
+                     asm.putConst("@thisx", World.conv(x));
+                     asm.putConst("@thisy", World.conv(y));
+ 
++                    //MDTX: LogicAssembledEvent
++                    Events.fire(new LogicAssembledEvent(this, asm));
+                     executor.load(asm);
+                 }catch(Exception e){
+                     //handle malformed code and replace it with nothing
+diff --git a/core/src/mindustryX/events/LogicAssembledEvent.java b/core/src/mindustryX/events/LogicAssembledEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4db97d52e70a6cd0b53346d86461b3677da44138
+--- /dev/null
++++ b/core/src/mindustryX/events/LogicAssembledEvent.java
+@@ -0,0 +1,21 @@
++package mindustryX.events;
++
++import mindustry.logic.*;
++import mindustry.world.blocks.logic.LogicBlock.*;
++import mindustryX.*;
++
++/**
++ * Fired after LAssembler finish assemble and about to load to LExecutor
++ * Allow mods to modify LAssembler, try parse InvalidStatement again.
++ * Not fired when LogicBlock load empty code.
++ */
++@MindustryXApi
++public class LogicAssembledEvent{
++    public LogicBuild build;
++    public LAssembler assembler;
++
++    public LogicAssembledEvent(LogicBuild build, LAssembler assembler){
++        this.build = build;
++        this.assembler = assembler;
++    }
++}

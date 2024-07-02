@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 9 Apr 2023 14:20:43 +0800
+Subject: [PATCH] API: Add `LogicBlock.running`
+
+---
+ core/src/mindustry/world/blocks/logic/LogicBlock.java | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
+index 655cf48e4f974d2e05cdca66deb361f1ee9f65bf..6f4d08ac40d461d0c41dbb292866add7565ed784 100644
+--- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
++++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
+@@ -24,6 +24,7 @@ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.ConstructBlock.*;
+ import mindustry.world.meta.*;
++import mindustryX.*;
+ 
+ import java.io.*;
+ import java.util.zip.*;
+@@ -31,6 +32,8 @@ import java.util.zip.*;
+ import static mindustry.Vars.*;
+ 
+ public class LogicBlock extends Block{
++    @MindustryXApi
++    public static boolean running = false;
+     private static final int maxByteLen = 1024 * 100;
+     public static final int maxNameLength = 32;
+ 
+@@ -531,6 +534,7 @@ public class LogicBlock extends Block{
+ 
+                 if(accumulator > maxInstructionScale * ipt) accumulator = maxInstructionScale * ipt;
+ 
++                running = true;
+                 for(int i = 0; i < (int)accumulator; i++){
+                     executor.runOnce();
+                     accumulator --;
+@@ -539,6 +543,7 @@ public class LogicBlock extends Block{
+                         break;
+                     }
+                 }
++                running = false;
+             }
+         }
+ 

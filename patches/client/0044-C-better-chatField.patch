@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 28 Mar 2024 00:34:34 +0800
+Subject: [PATCH] =?UTF-8?q?C:=20better=20chatField=20/=20=E7=A6=81?=
+ =?UTF-8?q?=E7=94=A8=E8=81=8A=E5=A4=A9=E6=A0=8F=E7=84=A6=E7=82=B9=E8=BD=AC?=
+ =?UTF-8?q?=E7=A7=BB?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/ui/fragments/ChatFragment.java | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
+index 30c344478857c5d20db41f89bc2358cee2c1c8e5..7a968f1c21275eb4a571350adfcf59df1fa37df9 100644
+--- a/core/src/mindustry/ui/fragments/ChatFragment.java
++++ b/core/src/mindustry/ui/fragments/ChatFragment.java
+@@ -5,6 +5,7 @@ import arc.Input.*;
+ import arc.func.*;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
++import arc.input.*;
+ import arc.math.*;
+ import arc.scene.*;
+ import arc.scene.ui.*;
+@@ -73,6 +74,8 @@ public class ChatFragment extends Table{
+                     historyPos--;
+                     updateChat();
+                 }
++                //MDTX: disable FocusTraversal when tab is used as chat_mode
++                chatfield.setFocusTraversal(keybinds.get(Binding.chat_mode).key != KeyCode.tab);
+                 if(input.keyTap(Binding.chat_mode)){
+                     nextMode();
+                 }

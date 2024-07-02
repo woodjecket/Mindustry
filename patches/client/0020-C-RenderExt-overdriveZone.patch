@@ -1,0 +1,99 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 17 Feb 2024 14:15:29 +0800
+Subject: [PATCH] C(RenderExt) overdriveZone
+
+---
+ core/src/mindustry/core/Renderer.java         |  5 +++++
+ core/src/mindustry/graphics/Layer.java        |  3 +++
+ .../blocks/defense/OverdriveProjector.java    | 19 +++++++++++++++++++
+ core/src/mindustryX/features/RenderExt.java   |  2 ++
+ 4 files changed, 29 insertions(+)
+
+diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
+index 01b2872b6ab744ad12f44049feb6146ce8ad84d5..e987766b74de1fbb8d3d9e0a8f1863b0821a49db 100644
+--- a/core/src/mindustry/core/Renderer.java
++++ b/core/src/mindustry/core/Renderer.java
+@@ -349,6 +349,11 @@ public class Renderer implements ApplicationListener{
+                 effectBuffer.blit(Shaders.shield);
+             });
+ 
++            Draw.drawRange(Layer.overdrive, 1f, () -> effectBuffer.begin(Color.clear), () -> {
++                effectBuffer.end();
++                effectBuffer.blit(Shaders.shield);
++            });
++
+             Draw.drawRange(Layer.buildBeam, 1f, () -> effectBuffer.begin(Color.clear), () -> {
+                 effectBuffer.end();
+                 effectBuffer.blit(Shaders.buildBeam);
+diff --git a/core/src/mindustry/graphics/Layer.java b/core/src/mindustry/graphics/Layer.java
+index 7d8d9f343acb410ba680aab1c1f6a2be9dbbf3a4..48e80224bdcbaea0476d4be204eef7670b14af87 100644
+--- a/core/src/mindustry/graphics/Layer.java
++++ b/core/src/mindustry/graphics/Layer.java
+@@ -86,6 +86,9 @@ public class Layer{
+     //shield effects
+     shields = 125,
+ 
++    //shield effects
++    overdrive = 127,
++
+     //weather effects, e.g. rain and snow
+     weather = 130,
+ 
+diff --git a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+index 423462318a31075f047a39d07caee50e031c1390..89b28401796d1d560330328e4bea54f258f3fdeb 100644
+--- a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
++++ b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+@@ -15,6 +15,7 @@ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -138,6 +139,24 @@ public class OverdriveProjector extends Block{
+         public void draw(){
+             super.draw();
+ 
++            float realRange = range + phaseHeat * phaseRangeBoost;
++            float pro_Transparency = RenderExt.overdriveZoneTransparency;
++            if(realBoost() > 1 && pro_Transparency > 0){
++                if(renderer.animateShields){
++                    Draw.z(Layer.overdrive);
++                    Draw.color(Color.valueOf("#ff8920"), phaseColor, 1 - pro_Transparency * realBoost() * realBoost() / 4.25f);
++                    Fill.poly(x, y,50, realRange);
++                    Draw.reset();
++                    Draw.z(Layer.overdrive-0.3f);
++                } else{
++                    Draw.color(phaseHeat>0.2?Color.valueOf("FFA500"):Color.valueOf("FF8C00"), pro_Transparency);
++                    Lines.stroke(1f);
++                    Lines.circle(x, y, realRange);
++                    Draw.alpha(pro_Transparency * 0.1f);
++                    Fill.circle(x, y, realRange);
++                }
++            }
++
+             float f = 1f - (Time.time / 100f) % 1f;
+ 
+             Draw.color(baseColor, phaseColor, phaseHeat);
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 62100afee7c0df3fd36781244ccd02cb318316c3..936e714c690d884258097765a25369f7dc089e07 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -14,6 +14,7 @@ public class RenderExt{
+     public static boolean arcChoiceUiIcon;
+     public static boolean researchViewer;
+     public static int hiddenItemTransparency;
++    public static float overdriveZoneTransparency;
+ 
+     public static void init(){
+         Events.run(Trigger.preDraw, () -> {
+@@ -23,6 +24,7 @@ public class RenderExt{
+             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
+             researchViewer = Core.settings.getBool("researchViewer");
+             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
++            overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+     }

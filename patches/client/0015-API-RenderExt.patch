@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 26 Mar 2024 19:22:00 +0800
+Subject: [PATCH] API: RenderExt
+
+---
+ core/src/mindustry/core/Renderer.java         |  3 ++-
+ .../src/mindustry/graphics/BlockRenderer.java |  3 ++-
+ core/src/mindustryX/Hooks.java                |  5 ++++
+ core/src/mindustryX/features/RenderExt.java   | 27 +++++++++++++++++++
+ 4 files changed, 36 insertions(+), 2 deletions(-)
+ create mode 100644 core/src/mindustryX/features/RenderExt.java
+
+diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
+index ae3ae07e384731434e66a31ee13bfaa1576a83a8..01b2872b6ab744ad12f44049feb6146ce8ad84d5 100644
+--- a/core/src/mindustry/core/Renderer.java
++++ b/core/src/mindustry/core/Renderer.java
+@@ -22,6 +22,7 @@ import mindustry.maps.*;
+ import mindustry.type.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -383,7 +384,7 @@ public class Renderer implements ApplicationListener{
+         Events.fire(Trigger.drawOver);
+         blocks.drawBlocks();
+ 
+-        Groups.draw.draw(Drawc::draw);
++        Groups.draw.draw(RenderExt::onGroupDraw);
+ 
+         Draw.reset();
+         Draw.flush();
+diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
+index aec39b666137666976321336b698e80177b05f84..5c57b1309660e500c38099d362b46a62846ac24c 100644
+--- a/core/src/mindustry/graphics/BlockRenderer.java
++++ b/core/src/mindustry/graphics/BlockRenderer.java
+@@ -18,6 +18,7 @@ import mindustry.gen.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.environment.Floor.*;
+ import mindustry.world.blocks.power.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -417,7 +418,7 @@ public class BlockRenderer{
+ 
+             //comment wasVisible part for hiding?
+             if(block != Blocks.air && (visible || build.wasVisible)){
+-                block.drawBase(tile);
++                RenderExt.onBlockDraw(tile, block, build);
+                 Draw.reset();
+                 Draw.z(Layer.block);
+ 
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 7cace088409de5b701577465f38ae01eb8b87a1c..1548f3d6ae0d362575a05ef38ea1575af65f5afc 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -3,6 +3,8 @@ package mindustryX;
+ import arc.*;
+ import arc.files.*;
+ import arc.util.*;
++import mindustry.*;
++import mindustryX.features.*;
+ 
+ import java.net.*;
+ import java.util.*;
+@@ -18,6 +20,9 @@ public class Hooks implements ApplicationListener{
+     @Override
+     public void init(){
+         Log.infoTag("MindustryX", "Hooks.init");
++        if(!Vars.headless){
++            RenderExt.init();
++        }
+     }
+ 
+     @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..835b5d7b801f03683cbb7502ea98025ff2c24d40
+--- /dev/null
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -0,0 +1,27 @@
++package mindustryX.features;
++
++import arc.*;
++import arc.util.*;
++import mindustry.game.EventType.*;
++import mindustry.gen.*;
++import mindustry.world.*;
++
++public class RenderExt{
++    public static void init(){
++        Events.run(Trigger.preDraw, () -> {
++        });
++        Events.run(Trigger.draw, RenderExt::draw);
++    }
++
++    private static void draw(){
++
++    }
++
++    public static void onGroupDraw(Drawc t){
++        t.draw();
++    }
++
++    public static void onBlockDraw(Tile tile, Block block, @Nullable Building build){
++        block.drawBase(tile);
++    }
++}

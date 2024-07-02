@@ -1,0 +1,142 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 22:28:36 +0800
+Subject: [PATCH] =?UTF-8?q?C(RenderExt)=20logicDisplayNoBorder(=E6=98=BE?=
+ =?UTF-8?q?=E7=A4=BA=E5=B1=8F=E6=97=A0=E8=BE=B9=E6=A1=86),arcDrillMode(?=
+ =?UTF-8?q?=E8=BD=AC=E5=A4=B4=E6=98=BE=E7=A4=BA=E7=89=A9=E5=93=81)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .../world/blocks/logic/LogicDisplay.java      |  7 ++++-
+ .../world/blocks/production/Drill.java        |  2 ++
+ core/src/mindustryX/features/RenderExt.java   | 27 +++++++++++++++++++
+ 3 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/world/blocks/logic/LogicDisplay.java b/core/src/mindustry/world/blocks/logic/LogicDisplay.java
+index 1816245ad2a2e21501da4817c00ba8ba0de04f9f..1db6409a264c5977e4ccfbf7709d1db430ac31e6 100644
+--- a/core/src/mindustry/world/blocks/logic/LogicDisplay.java
++++ b/core/src/mindustry/world/blocks/logic/LogicDisplay.java
+@@ -16,6 +16,7 @@ import mindustry.graphics.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ public class LogicDisplay extends Block{
+     public static final byte
+@@ -73,7 +74,7 @@ public class LogicDisplay extends Block{
+ 
+         @Override
+         public void draw(){
+-            super.draw();
++            if(!RenderExt.logicDisplayNoBorder) super.draw();
+ 
+             //don't even bother processing anything when displays are off.
+             if(!Vars.renderer.drawDisplays) return;
+@@ -152,6 +153,10 @@ public class LogicDisplay extends Block{
+             Draw.blend(Blending.disabled);
+             Draw.draw(Draw.z(), () -> {
+                 if(buffer != null){
++                    if(RenderExt.logicDisplayNoBorder){
++                        Draw.rect(Draw.wrap(buffer.getTexture()), x, y, (buffer.getWidth() + 16) * Draw.scl, -(buffer.getHeight() + 16) * Draw.scl);
++                        return;
++                    }
+                     Draw.rect(Draw.wrap(buffer.getTexture()), x, y, buffer.getWidth() * scaleFactor * Draw.scl, -buffer.getHeight() * scaleFactor * Draw.scl);
+                 }
+             });
+diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
+index 1ca61ee0140d29c28239ed87a165f1fedf11cd97..5a7b4ccabac13d75cd273904d9528e9b531c21f0 100644
+--- a/core/src/mindustry/world/blocks/production/Drill.java
++++ b/core/src/mindustry/world/blocks/production/Drill.java
+@@ -21,6 +21,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.environment.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -256,6 +257,7 @@ public class Drill extends Block{
+ 
+         @Override
+         public void drawSelect(){
++            if(RenderExt.arcDrillMode) return;
+             if(dominantItem != null){
+                 float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;
+                 Draw.mixcol(Color.darkGray, 1f);
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 9c981c82076b7ff94256f198eaeb6cef07b3b9a8..3d2f0fbec71c512b72a118a40a6ce2a4c7531fac 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -3,16 +3,19 @@ package mindustryX.features;
+ import arc.*;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
++import arc.math.*;
+ import arc.util.*;
+ import mindustry.entities.*;
+ import mindustry.game.EventType.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
++import mindustry.type.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.defense.*;
+ import mindustry.world.blocks.defense.turrets.*;
+ import mindustry.world.blocks.logic.*;
+ import mindustry.world.blocks.logic.MessageBlock.*;
++import mindustry.world.blocks.production.Drill.*;
+ import mindustry.world.blocks.storage.*;
+ 
+ import static mindustry.Vars.tilesize;
+@@ -25,6 +28,7 @@ public class RenderExt{
+     public static int hiddenItemTransparency;
+     public static int blockBarMinHealth;
+     public static float overdriveZoneTransparency;
++    public static boolean logicDisplayNoBorder, arcDrillMode;
+ 
+     public static boolean unitHide = false;
+ 
+@@ -52,6 +56,8 @@ public class RenderExt{
+             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
+             blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
+             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
++            logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
++            arcDrillMode = Core.settings.getBool("arcdrillmode");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
+@@ -70,6 +76,8 @@ public class RenderExt{
+         block.drawBase(tile);
+         if(displayAllMessage && build instanceof MessageBuild)
+             Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
++        if(arcDrillMode && build instanceof DrillBuild drill)
++            arcDrillModeDraw(block, drill);
+     }
+ 
+     private static void placementEffect(float x, float y, float lifetime, float range, Color color){
+@@ -94,4 +102,23 @@ public class RenderExt{
+                 placementEffect(build.x, build.y, 120f, t.range, t.mapColor);
+         }
+     }
++
++    /** 在转头旁边显示矿物类型 */
++    private static void arcDrillModeDraw(Block block, DrillBuild build){
++        Item dominantItem = build.dominantItem;
++        if(dominantItem == null) return;
++        int size = block.size;
++        float dx = build.x - size * tilesize / 2f + 5, dy = build.y - size * tilesize / 2f + 5;
++        float iconSize = 5f;
++        Draw.rect(dominantItem.fullIcon, dx, dy, iconSize, iconSize);
++        Draw.reset();
++
++        float eff = Mathf.lerp(0, 1, Math.min(1f, (float)build.dominantItems / (size * size)));
++        if(eff < 0.9f){
++            Draw.alpha(0.5f);
++            Draw.color(dominantItem.color);
++            Lines.stroke(1f);
++            Lines.arc(dx, dy, iconSize * 0.75f, eff);
++        }
++    }
+ }

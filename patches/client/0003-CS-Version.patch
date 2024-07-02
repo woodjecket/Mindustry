@@ -1,0 +1,222 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 18:21:14 +0800
+Subject: [PATCH] CS: Version
+
+---
+ .gitignore                             |  1 +
+ android/AndroidManifest.xml            |  3 +--
+ android/build.gradle                   |  4 ++--
+ android/res/values/strings.xml         |  2 +-
+ build.gradle                           |  4 ++--
+ core/build.gradle.kts                  |  2 +-
+ core/src/mindustry/Vars.java           |  2 +-
+ core/src/mindustry/core/NetClient.java |  4 +++-
+ core/src/mindustry/core/NetServer.java | 11 ++++++++---
+ core/src/mindustry/core/Version.java   | 16 +++++++++++++++-
+ gradle.properties                      |  2 ++
+ 11 files changed, 37 insertions(+), 14 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -4,6 +4,7 @@ logs/
+ /core/assets/mindustry-maps/
+ /core/assets/bundles/output/
+ /core/assets/.gifimages/
++/core/assets/MindustryX.hjson
+ /deploy/
+ /out/
+ ios/libs/
+diff --git a/android/AndroidManifest.xml b/android/AndroidManifest.xml
+index 8cae20eee7a480cef6a14576fc72b096d38271e1..25602c4ab4070b7db9b31803c88281c7e4aa449e 100644
+--- a/android/AndroidManifest.xml
++++ b/android/AndroidManifest.xml
+@@ -1,6 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-          package="io.anuke.mindustry">
++<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ 
+     <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
+     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
+diff --git a/android/build.gradle b/android/build.gradle
+index 136f657fb1187dd5c4e9ff49352964bb917c6eed..6f3e8ee3b7b21265a4638ad3b5f09af790619c76 100644
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -18,7 +18,7 @@ configurations{ natives }
+ 
+ repositories{
+     mavenCentral()
+-    maven{ url "https://maven.google.com" }
++    maven{ url "https://dl.google.com/dl/android/maven2/" }
+ }
+ 
+ android{
+@@ -48,7 +48,7 @@ android{
+         Integer vcode = props['androidBuildCode']?.toInteger() ?: 1
+         def versionNameResult = "$versionNumber-$versionType-${getBuildVersion().replace(" ", "-")}"
+ 
+-        applicationId "io.anuke.mindustry"
++        applicationId "com.github.tinylake.mindustryX"
+         minSdkVersion 14
+         targetSdkVersion 33
+         
+diff --git a/android/res/values/strings.xml b/android/res/values/strings.xml
+index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e7c322bed 100644
+--- a/android/res/values/strings.xml
++++ b/android/res/values/strings.xml
+@@ -1,4 +1,4 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <string name="app_name">Mindustry</string>
++    <string name="app_name">MindustryX</string>
+ </resources>
+diff --git a/build.gradle b/build.gradle
+index 0cb5c6337c2d6a41243907d2c34c679b63112d61..fb6808e41d2fbff78c81f3904d01eb4e8e413492 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -21,12 +21,12 @@ allprojects{
+     apply plugin: 'maven-publish'
+     
+     version = project.hasProperty("packageVersion") ? project.getProperty("packageVersion") : 'release'
+-    group = 'com.github.Anuken'
++    group = 'cf.wayzer.MindustryX'
+ 
+     ext{
+         versionNumber = '7'
+         if(!project.hasProperty("versionModifier")) versionModifier = 'release'
+-        if(!project.hasProperty("versionType")) versionType = 'official'
++        if(!project.hasProperty("versionType")) versionType = 'MindustryX'
+         appName = 'Mindustry'
+         steamworksVersion = '0b86023401880bb5e586bc404bedbaae9b1f1c94'
+         rhinoVersion = '73a812444ac388ac2d94013b5cadc8f70b7ea027'
+diff --git a/core/build.gradle.kts b/core/build.gradle.kts
+index e2a6d4ede97677940bc6b73de42f6f5ff71fc0be..9d9d170c1fb00fbd4bf35c1a2f04bcff6dca09cf 100644
+--- a/core/build.gradle.kts
++++ b/core/build.gradle.kts
+@@ -46,7 +46,7 @@ tasks{
+         property("type", findProperty("versionType") ?: "official")
+         property("modifier", findProperty("versionModifier") ?: "release")
+         property("number", '7')
+-        property("build", findProperty("buildversion") ?: "custom build")
++        property("build", findProperty("upstreamBuild") ?: "custom build")
+     }
+     processResources.configure {
+         dependsOn(generateLocales, generateBasePartNames, writeVersion)
+diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
+index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46aa85b3c2 100644
+--- a/core/src/mindustry/Vars.java
++++ b/core/src/mindustry/Vars.java
+@@ -77,7 +77,7 @@ public class Vars implements Loadable{
+     //TODO merge with v6 list upon release
+     public static final String serverJsonURL = "https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_v7.json";
+     /** URL of the github issue report template.*/
+-    public static final String reportIssueURL = "https://github.com/Anuken/Mindustry/issues/new?labels=bug&template=bug_report.md";
++    public static final String reportIssueURL = "https://github.com/TinyLake/MindustryX/issues/new?labels=bug&template=bug_report.md";
+     /** list of built-in servers.*/
+     public static final Seq<ServerGroup> defaultServers = Seq.with();
+     /** maximum size of any block, do not change unless you know what you're doing */
+diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
+index 8171a89797a0d1cb29fb50364a94b6d3130698ae..76736b9f6bc44d040bdfc2cc717702d1c3eca839 100644
+--- a/core/src/mindustry/core/NetClient.java
++++ b/core/src/mindustry/core/NetClient.java
+@@ -92,7 +92,7 @@ public class NetClient implements ApplicationListener{
+             c.locale = locale;
+             c.mods = mods.getModStrings();
+             c.mobile = mobile;
+-            c.versionType = Version.type;
++            c.versionType = "official";
+             c.color = player.color.rgba();
+             c.usid = getUsid(packet.addressTCP);
+             c.uuid = platform.getUUID();
+@@ -135,6 +135,8 @@ public class NetClient implements ApplicationListener{
+             Log.info("Received world data: @ bytes.", data.stream.available());
+             NetworkIO.loadWorld(new InflaterInputStream(data.stream));
+ 
++            Call.serverPacketReliable("ARC", Version.mdtXBuild);
++            Call.serverPacketReliable("MDTX", Version.mdtXBuild);
+             finishConnecting();
+         });
+     }
+diff --git a/core/src/mindustry/core/NetServer.java b/core/src/mindustry/core/NetServer.java
+index b80f828362676bdad9cffa982b2544f845441c74..80149612e037bd9ec6368c1b4c3a5d067fd184f1 100644
+--- a/core/src/mindustry/core/NetServer.java
++++ b/core/src/mindustry/core/NetServer.java
+@@ -210,9 +210,14 @@ public class NetServer implements ApplicationListener{
+                 return;
+             }
+ 
+-            if(packet.versionType == null || ((packet.version == -1 || !packet.versionType.equals(Version.type)) && Version.build != -1 && !admins.allowsCustomClients())){
+-                con.kick(!Version.type.equals(packet.versionType) ? KickReason.typeMismatch : KickReason.customClient);
+-                return;
++            if(Version.build != -1 && !admins.allowsCustomClients()){
++                if(packet.versionType == null || packet.version == -1){
++                    con.kick(KickReason.customClient);
++                    return;
++                }else if((!Version.type.equals("MindustryX") || !"official".equals(packet.versionType)) && !Version.type.equals(packet.versionType)){
++                    con.kick(KickReason.typeMismatch);
++                    return;
++                }
+             }
+ 
+             boolean preventDuplicates = headless && netServer.admins.isStrict();
+diff --git a/core/src/mindustry/core/Version.java b/core/src/mindustry/core/Version.java
+index 73bbd59416cc8e1b64bcb5538fdd73886a455451..8698103654e40dd4e85451e1020563ca562ed2d2 100644
+--- a/core/src/mindustry/core/Version.java
++++ b/core/src/mindustry/core/Version.java
+@@ -6,6 +6,8 @@ import arc.files.*;
+ import arc.struct.*;
+ import arc.util.*;
+ import arc.util.io.*;
++import arc.util.serialization.*;
++import mindustryX.*;
+ 
+ public class Version{
+     /** Build type. 'official' for official releases; 'custom' or 'bleeding edge' are also used. */
+@@ -20,6 +22,8 @@ public class Version{
+     public static int revision = 0;
+     /** Whether version loading is enabled. */
+     public static boolean enabled = true;
++    @MindustryXApi
++    public static String mdtXBuild;
+ 
+     public static void init(){
+         if(!enabled) return;
+@@ -44,6 +48,15 @@ public class Version{
+         }else{
+             build = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
+         }
++        //MDTX: mdtXBuild
++        if(Core.files == null) return;
++        try{
++            Jval meta = Jval.read(Core.files.internal("MindustryX.hjson").readString());
++            mdtXBuild = meta.getString("version");
++        }catch(Throwable e){
++            e.printStackTrace();
++            mdtXBuild = "custom build";
++        }
+     }
+ 
+     /** @return whether the current game version is greater than the specified version string, e.g. "120.1"*/
+@@ -73,6 +86,7 @@ public class Version{
+         if(build == -1){
+             return "custom build";
+         }
+-        return (type.equals("official") ? modifier : type) + " build " + build + (revision == 0 ? "" : "." + revision);
++        return (type.equals("official") ? modifier : type) + " build " + build + (revision == 0 ? "" : "." + revision) +
++        "\nMindustryX " + mdtXBuild;
+     }
+ }
+diff --git a/gradle.properties b/gradle.properties
+index f43e22ea642fe0dcd62cf970a518de025db65ea4..b1921b8ac0d8d0ca7ac86e4d551a694d1ae38ed9 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -28,3 +28,5 @@ org.gradle.caching=true
+ org.gradle.internal.http.socketTimeout=100000
+ org.gradle.internal.http.connectionTimeout=100000
+ archash=7d6e89dffd
++
++upstreamBuild=25087
+\ No newline at end of file

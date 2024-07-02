@@ -1,0 +1,1545 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 4 May 2024 15:43:58 +0800
+Subject: [PATCH] UI&ARC: AuxiliaryTools
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+整理AuxiliaryTable
+MinRi2 <2275045670@qq.com>
+
+修复ScriptButtons
+way-zer <himc.wicp@gmail.com> on 2024/4/27 at 17:08
+
+从ARC拆分，并重命名
+way-zer <himc.wicp@gmail.com> in 2024/5/4
+
+修复锁定视角行为错误
+way-zer <himc.wicp@gmail.com> on 2024/6/10
+
+从ARC中完全分离
+way-zer <himc.wicp@gmail.com> on 2024/6/27
+---
+ .../mindustry/ui/fragments/HudFragment.java   |  26 +++
+ .../features/ui/AuxiliaryTools.java           |  99 +++++++++
+ .../features/ui/auxiliary/AITools.java        | 122 ++++++++++
+ .../features/ui/auxiliary/MapInfoTable.java   | 149 +++++++++++++
+ .../features/ui/auxiliary/MarkTable.java      |  55 +++++
+ .../ui/auxiliary/MobileScriptButtons.java     |  52 +++++
+ .../features/ui/auxiliary/RStyles.java        |  71 ++++++
+ .../features/ui/auxiliary/ScriptButtons.java  |  74 ++++++
+ .../features/ui/auxiliary/WaveInfoTable.java  | 139 ++++++++++++
+ .../features/ui/auxiliary/ai/ATRIAI.java      | 210 ++++++++++++++++++
+ .../ui/auxiliary/ai/ArcBuilderAI.java         | 182 +++++++++++++++
+ .../features/ui/auxiliary/ai/ArcMinerAI.java  | 130 +++++++++++
+ .../features/ui/auxiliary/ai/ArcRepairAI.java |  75 +++++++
+ 13 files changed, 1384 insertions(+)
+ create mode 100644 core/src/mindustryX/features/ui/AuxiliaryTools.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/AITools.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/MarkTable.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/RStyles.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ATRIAI.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ArcBuilderAI.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java
+ create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java
+
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index e0c292b5231bdf83b8e1e02f2dd9a055020ade68..c41e081b442047b7704401fa9aa8ea1dfb08d7c4 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -43,6 +43,7 @@ public class HudFragment{
+ 
+     private ImageButton flip;
+     public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
++    private AuxiliaryTools auxiliaryTools;
+ 
+     private String hudText = "";
+     private boolean showHudText;
+@@ -52,6 +53,7 @@ public class HudFragment{
+     private long lastToast;
+ 
+     public void build(Group parent){
++        auxiliaryTools = new AuxiliaryTools();
+ 
+         //warn about guardian/boss waves
+         Events.on(WaveEvent.class, e -> {
+@@ -121,6 +123,13 @@ public class HudFragment{
+             .touchable(Touchable.disabled)
+             .style(Styles.outlineLabel)
+             .name("position");
++            if(Core.settings.getInt("AuxiliaryTable") == 3){
++                t.row();
++                t.table(infoWave -> {
++                    infoWave.left().top();
++                    infoWave.add(auxiliaryTools);
++                }).left().top();
++            }
+             t.top().right();
+         });
+ 
+@@ -240,6 +249,14 @@ public class HudFragment{
+ 
+             wavesMain.row();
+ 
++            if(Core.settings.getInt("AuxiliaryTable") == 2){
++                wavesMain.table(t->{
++                    t.name = "AuxiliaryTable";
++                    t.left().top().add(auxiliaryTools);
++                }).left();
++                wavesMain.row();
++            }
++
+             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
+ 
+             editorMain.name = "editor";
+@@ -266,6 +283,15 @@ public class HudFragment{
+             }).width(dsize * 5 + 4f);
+             editorMain.visible(() -> shown && state.isEditor());
+ 
++            //map info/nextwave display
++            if(Core.settings.getInt("AuxiliaryTable") == 1){
++                cont.table(infoWave -> {
++                    infoWave.name = "map/wave";
++                    infoWave.left().top();
++                    infoWave.add(auxiliaryTools);
++                }).left().top();
++            }
++
+             //fps display
+             cont.table(info -> {
+                 info.name = "fps/ping";
+diff --git a/core/src/mindustryX/features/ui/AuxiliaryTools.java b/core/src/mindustryX/features/ui/AuxiliaryTools.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49da7c6a9e0
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/AuxiliaryTools.java
+@@ -0,0 +1,99 @@
++package mindustryX.features.ui;
++
++import arc.*;
++import arc.graphics.g2d.*;
++import arc.scene.style.*;
++import arc.scene.ui.layout.*;
++import arc.struct.*;
++import mindustry.game.EventType.*;
++import mindustry.ui.*;
++import mindustryX.features.ui.auxiliary.*;
++
++public class AuxiliaryTools extends Table{
++    private boolean shown = true;
++    private final Seq<Table> toolsTables = Seq.with(
++    new MapInfoTable(),
++    new WaveInfoTable(),
++    new AITools(),
++    new ScriptButtons(),
++    new MobileScriptButtons(),
++    new MarkTable()
++    );
++
++    static{
++        RStyles.load();
++    }
++
++    public AuxiliaryTools(){
++        setup();
++
++        rebuild();
++        Events.on(WorldLoadEvent.class, e -> rebuild());
++        Events.on(ResetEvent.class, e -> clearChildren());
++    }
++
++    public void setup(){
++        for(Table table : toolsTables){
++            table.setup();
++        }
++    }
++
++    public void toggle(){
++        shown = !shown;
++        rebuild();
++    }
++
++    private void rebuild(){
++        clearChildren();
++
++        table(Styles.black3, buttons -> {
++            buttons.button("[acid]辅助器", RStyles.clearLineNoneTogglet, this::toggle).size(80f, 40f).tooltip((shown ? "关闭" : "开启") + "辅助器");
++
++            if(shown){
++                for(Table table : toolsTables){
++                    table.addButton(buttons);
++                }
++            }
++        }).fillX();
++
++        row();
++
++        if(shown){
++            table(RStyles.black1, body -> {
++                body.defaults().expandX().left();
++                for(Table table : toolsTables){
++                    table.margin(4);
++                    body.collapser(table, table::shown).row();
++                }
++            }).fillX().left();
++        }
++    }
++
++    public abstract static class Table extends arc.scene.ui.layout.Table{
++        private boolean shown;
++        protected Drawable icon;
++
++        public Table(TextureRegion region){
++            this(new TextureRegionDrawable(region));
++        }
++
++        public Table(Drawable icon){
++            this.icon = icon;
++        }
++
++        public void addButton(arc.scene.ui.layout.Table buttons){
++            buttons.button(icon, RStyles.clearAccentNoneTogglei, 30, this::toggle)
++            .size(40).checked(b -> shown);
++        }
++
++        protected abstract void setup();
++
++        public boolean shown(){
++            return shown;
++        }
++
++        public boolean toggle(){
++            return shown = !shown;
++        }
++    }
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/AITools.java b/core/src/mindustryX/features/ui/auxiliary/AITools.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799bd2c4022a
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/AITools.java
+@@ -0,0 +1,122 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.*;
++import arc.graphics.g2d.*;
++import arc.scene.style.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import arc.util.*;
++import mindustry.ai.types.*;
++import mindustry.ui.*;
++import mindustryX.features.ui.*;
++import mindustryX.features.ui.auxiliary.ai.*;
++import mindustry.content.*;
++import mindustry.entities.units.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.ui.dialogs.*;
++import mindustry.world.*;
++
++import static mindustry.Vars.*;
++
++public class AITools extends AuxiliaryTools.Table{
++    private AIController selectAI;
++
++    public AITools(){
++        super(Icon.android);
++
++        Events.run(EventType.Trigger.update, () -> {
++            if(selectAI != null){
++                selectAI.unit(player.unit());
++                selectAI.updateUnit();
++            }
++        });
++    }
++
++    @Override
++    public void setup(){
++        button(Icon.settingsSmall, RStyles.clearLineNoneTogglei, 30, this::showSettingDialog);
++
++        if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
++        aiButton(new ArcMinerAI(), UnitTypes.mono.region, "矿机AI");
++        aiButton(new ArcBuilderAI(), UnitTypes.poly.region, "重建AI");
++        aiButton(new ArcRepairAI(), UnitTypes.mega.region, "修复AI");
++        aiButton(new DefenderAI(), UnitTypes.oct.region, "保护AI");
++    }
++
++    private void aiButton(AIController ai, TextureRegion textureRegion, String describe){
++        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> selectAI(ai))
++        .checked(b -> selectAI == ai).size(40).tooltip(describe);
++    }
++
++    private void selectAI(AIController ai){
++        selectAI = selectAI == ai ? null : ai;
++    }
++
++    private void showSettingDialog(){
++        int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
++
++        BaseDialog dialog = new BaseDialog("ARC-AI设定器");
++
++        dialog.cont.table(t -> {
++            t.add("minerAI-矿物筛选器").color(Pal.accent).pad(cols / 2f).center().row();
++
++            t.image().color(Pal.accent).fillX().row();
++
++            t.table(c -> {
++                c.add("地表矿").row();
++
++                c.table(list -> {
++                    int i = 0;
++                    for(Block block : ArcMinerAI.oreAllList){
++                        if(indexer.floorOresCount[block.id] == 0) continue;
++                        if(i++ % 3 == 0) list.row();
++                        list.button(block.emoji() + "\n" + indexer.floorOresCount[block.id], Styles.flatToggleMenut, () -> {
++                            if(ArcMinerAI.oreList.contains(block)) ArcMinerAI.oreList.remove(block);
++                            else if(!ArcMinerAI.oreList.contains(block)) ArcMinerAI.oreList.add(block);
++                        }).tooltip(block.localizedName).checked(k -> ArcMinerAI.oreList.contains(block)).width(100f).height(50f);
++                    }
++                }).row();
++
++                c.add("墙矿").row();
++
++                c.table(list -> {
++                    int i = 0;
++                    for(Block block : ArcMinerAI.oreAllWallList){
++                        if(indexer.wallOresCount[block.id] == 0) continue;
++                        if(i++ % 3 == 0) list.row();
++                        list.button(block.emoji() + "\n" + indexer.wallOresCount[block.id], Styles.flatToggleMenut, () -> {
++                            if(ArcMinerAI.oreWallList.contains(block)) ArcMinerAI.oreWallList.remove(block);
++                            else if(!ArcMinerAI.oreWallList.contains(block)) ArcMinerAI.oreWallList.add(block);
++                        }).tooltip(block.localizedName).checked(k -> ArcMinerAI.oreWallList.contains(block)).width(100f).height(50f);
++                    }
++                }).row();
++
++            }).growX();
++        }).growX();
++
++        dialog.cont.row();
++
++        dialog.cont.table(t -> {
++            t.add("builderAI").color(Pal.accent).pad(cols / 2f).center().row();
++
++            t.image().color(Pal.accent).fillX().row();
++
++            t.table(tt -> {
++                tt.add("重建冷却时间: ");
++
++                TextField sField = tt.field(ArcBuilderAI.rebuildTime + "", text -> ArcBuilderAI.rebuildTime = Math.max(5f, Float.parseFloat(text))).valid(Strings::canParsePositiveFloat).width(200f).get();
++
++                tt.slider(5, 200, 5, i -> {
++                    ArcBuilderAI.rebuildTime = i;
++                    sField.setText(ArcBuilderAI.rebuildTime + "");
++                }).width(200f);
++            }).growX();
++        }).growX();
++
++        dialog.addCloseButton();
++        dialog.show();
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e51d5ced9
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
+@@ -0,0 +1,149 @@
++package mindustryX.features.ui.auxiliary;
++
++
++import arc.*;
++import arc.graphics.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import mindustry.content.*;
++import mindustry.editor.*;
++import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.input.*;
++import mindustry.ui.*;
++import mindustry.ui.dialogs.*;
++import mindustry.world.*;
++import mindustry.world.blocks.environment.*;
++import mindustryX.features.*;
++import mindustryX.features.ui.*;
++
++import static mindustry.Vars.*;
++
++public class MapInfoTable extends AuxiliaryTools.Table{
++    private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
++    private int uiRowIndex = 0;
++
++    public MapInfoTable(){
++        super(Icon.map);
++    }
++
++    @Override
++    protected void setup(){
++        defaults().size(40);
++
++        button(Icon.map, RStyles.clearAccentNonei, mapInfoDialog::show).tooltip("地图信息");
++        button(Items.copper.emoji(), RStyles.clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
++        button(Icon.chatSmall, RStyles.clearAccentNonei, () -> UIExt.arcMessageDialog.show()).tooltip("中央监控室");
++        button(Icon.playersSmall, RStyles.clearAccentNonei, () -> {
++            if(ui.listfrag.players.size > 1){
++                if(control.input instanceof DesktopInput){
++                    ((DesktopInput)control.input).panning = true;
++                }
++                if(InputHandler.follow == null) InputHandler.follow = ui.listfrag.players.get(0);
++                InputHandler.followIndex = (InputHandler.followIndex + 1) >= ui.listfrag.players.size ? 0 : InputHandler.followIndex + 1;
++                InputHandler.follow = ui.listfrag.players.get(InputHandler.followIndex);
++                UIExt.announce("视角追踪：" + InputHandler.follow.name);
++            }
++        }).tooltip("切换跟踪玩家");
++        if(!mobile) button(Icon.editSmall, RStyles.clearAccentNonei, this::uiTable).tooltip("ui大全");
++    }
++
++    private void floorStatisticDialog(){
++        BaseDialog dialog = new BaseDialog("ARC-矿物统计");
++        Table table = dialog.cont;
++        table.clear();
++
++        table.table(c -> {
++            c.add("地表矿").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(list -> {
++                int i = 0;
++                for(Block block : content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null)){
++                    if(indexer.floorOresCount[block.id] == 0) continue;
++                    if(i++ % 4 == 0) list.row();
++                    list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
++                }
++            }).row();
++
++            c.add("墙矿").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(list -> {
++                int i = 0;
++                for(Block block : content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null)){
++                    if(indexer.wallOresCount[block.id] == 0) continue;
++                    if(i++ % 4 == 0) list.row();
++                    list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.wallOresCount[block.id]).width(100f).height(50f);
++                }
++            }).row();
++
++            c.add("液体").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(list -> {
++                int i = 0;
++                for(Block block : content.blocks().select(b -> ((b instanceof Floor f && f.liquidDrop != null)))){
++                    if(indexer.floorOresCount[block.id] == 0) continue;
++                    if(i++ % 4 == 0) list.row();
++                    list.add(block.emoji() + " " + block.localizedName + "\n" + indexer.floorOresCount[block.id]).width(100f).height(50f);
++                }
++            }).row();
++        });
++        dialog.addCloseButton();
++        dialog.show();
++    }
++
++    private void uiTable(){
++        BaseDialog dialog = new BaseDialog("ARC-ui大全");
++        uiRowIndex = 0;
++        TextField sField = dialog.cont.field("", text -> {
++        }).fillX().get();
++        dialog.cont.row();
++
++        dialog.cont.pane(c -> {
++            c.add("颜色").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(ct -> {
++                for(var colorEntry : Colors.getColors()){
++                    Color value = colorEntry.value;
++                    String key = colorEntry.key;
++                    ct.button("[#" + value + "]" + key, Styles.cleart, () -> {
++                        Core.app.setClipboardText("[#" + value + "]");
++                        sField.setText(sField.getText() + "[#" + value + "]");
++                    }).size(50f).tooltip(key);
++                    uiRowIndex += 1;
++                    if(uiRowIndex % 15 == 0) ct.row();
++                }
++            }).row();
++            c.add("物品").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(ct -> {
++                uiRowIndex = 0;
++                Fonts.stringIcons.copy().each((name, iconc) -> {
++                    ct.button(iconc, Styles.cleart, () -> {
++                        Core.app.setClipboardText(iconc);
++                        sField.setText(sField.getText() + iconc);
++                    }).size(50f).tooltip(name);
++                    uiRowIndex += 1;
++                    if(uiRowIndex % 15 == 0) ct.row();
++                });
++            }).row();
++            c.add("图标").color(Pal.accent).center().fillX().row();
++            c.image().color(Pal.accent).fillX().row();
++            c.table(ct -> {
++                uiRowIndex = 0;
++                for(var i : Iconc.codes){
++                    String icon = String.valueOf((char)i.value), internal = i.key;
++                    ct.button(icon, Styles.cleart, () -> {
++                        Core.app.setClipboardText(icon);
++                        sField.setText(sField.getText() + icon);
++                    }).size(50f).tooltip(internal);
++                    uiRowIndex += 1;
++                    if(uiRowIndex % 15 == 0) ct.row();
++                }
++            }).row();
++        }).row();
++
++        dialog.addCloseButton();
++        dialog.show();
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/MarkTable.java b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e556083972
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
+@@ -0,0 +1,55 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.*;
++import arc.input.*;
++import arc.scene.*;
++import arc.scene.event.*;
++import mindustryX.features.ui.AuxiliaryTools.*;
++import mindustry.gen.*;
++import mindustry.ui.fragments.*;
++import mindustryX.features.*;
++
++import static mindustry.Vars.*;
++
++public class MarkTable extends Table{
++    public final Element mobileHitter = new Element();
++
++    public MarkTable(){
++        super(Icon.effect);
++
++        mobileHitter.addListener(new ElementGestureListener(20, 0.4f, MarkerType.heatTime / 60f, 0.15f){
++            @Override
++            public boolean longPress(Element actor, float x, float y){
++                MarkerType.selected.markWithMessage(Core.input.mouseWorld());
++                mobileHitter.remove();
++                return true;
++            }
++
++            @Override
++            public void fling(InputEvent event, float velocityX, float velocityY, KeyCode button){
++                mobileHitter.remove();
++                ui.announce("[yellow]你已退出标记模式");
++            }
++        });
++
++        mobileHitter.fillParent = true;
++    }
++
++    @Override
++    protected void setup(){
++        if(mobile){
++            button("♐ >", RStyles.clearLineNonet, () -> {
++                ui.hudGroup.addChild(mobileHitter);
++                ui.announce("[cyan]你已进入标记模式,长按屏幕可进行一次标记(外划可以退出).");
++            }).height(40).width(70f).tooltip("开启手机标记");
++        }
++
++        for(var type : MarkerType.allTypes){
++            button(type.shortName(), RStyles.clearLineNoneTogglet, () -> MarkerType.selected = type)
++            .checked(b -> MarkerType.selected == type).size(40).tooltip(type.localizedName);
++        }
++
++        button("T", RStyles.clearLineNoneTogglet, () -> ui.chatfrag.nextMode())
++        .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(40).tooltip("前缀添加/t");
++    }
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..81024f118a01c6dbc77058c35bc350891acec635
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
+@@ -0,0 +1,52 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.*;
++import arc.scene.style.*;
++import mindustry.content.*;
++import mindustry.gen.*;
++import mindustryX.features.*;
++
++import static mindustry.Vars.*;
++
++/**
++ * 专为手机制备的脚本按钮
++ */
++public class MobileScriptButtons extends ScriptButtons{
++
++    public MobileScriptButtons(){
++        icon = new TextureRegionDrawable(UnitTypes.emanate.uiIcon);
++
++        if(mobile){
++            toggle();
++        }
++    }
++
++    @Override
++    protected void setup(){
++        defaults().size(40);
++
++        scriptButton(Icon.unitsSmall, "指挥模式", () -> control.input.commandMode = !control.input.commandMode).checked(b -> control.input.commandMode);
++
++        scriptButton(Icon.pause, "暂停建造", () -> control.input.isBuilding = !control.input.isBuilding).checked(b -> control.input.isBuilding);
++
++        scriptButton(Icon.up, "捡起载荷", () -> control.input.tryPickupPayload());
++
++        scriptButton(Icon.down, "丢下载荷", () -> control.input.tryDropPayload());
++
++        scriptButton(Blocks.payloadConveyor.uiIcon, "进入传送带", () -> {
++            Building build = player.buildOn();
++
++            if(build == null) return;
++
++            Unit unit = player.unit();
++            Call.unitBuildingControlSelect(unit, build);
++        });
++
++        scriptButton(Blocks.radar.uiIcon, "雷达扫描", () -> ArcRadar.mobileRadar = !ArcRadar.mobileRadar);
++        if(mobile)
++            addSettingButton(StatusEffects.unmoving.uiIcon, "viewMode", "原地静止", s -> {
++                if(!s) Core.camera.position.set(player);
++            });
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/RStyles.java b/core/src/mindustryX/features/ui/auxiliary/RStyles.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..49ed101b4a24b034fc313468441a213b02fc4d9d
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/RStyles.java
+@@ -0,0 +1,71 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.graphics.*;
++import arc.scene.style.*;
++import arc.scene.ui.ImageButton.*;
++import arc.scene.ui.TextButton.*;
++import mindustry.gen.*;
++import mindustry.ui.*;
++
++import static mindustry.gen.Tex.underlineWhite;
++import static mindustry.ui.Styles.*;
++
++//move from mindustry.arcModule.ui.RStyles
++public class RStyles{
++    public static Drawable black1;
++
++    public static TextButtonStyle
++    clearLineNonet,
++    clearLineNoneTogglet;
++
++    public static ImageButtonStyle
++    clearAccentNonei,
++    clearAccentNoneTogglei,
++    clearLineNonei,
++    clearLineNoneTogglei;
++
++    public static void load(){
++        var whiteuir = (TextureRegionDrawable)Tex.whiteui;
++
++        black1 = whiteuir.tint(0f, 0f, 0f, 0.1f);
++
++        clearLineNonet = new TextButtonStyle(){{
++            font = Fonts.def;
++            fontColor = Color.white;
++            disabled = black;
++            disabledFontColor = Color.gray;
++            up = none;
++            over = accentDrawable;
++            down = underlineWhite;
++        }};
++
++        clearLineNoneTogglet = new TextButtonStyle(fullTogglet){{
++            up = none;
++            over = accentDrawable;
++            down = underlineWhite;
++            checked = underlineWhite;
++            disabledFontColor = Color.white;
++        }};
++
++        clearAccentNonei = new ImageButtonStyle(clearNonei){{
++            up = none;
++            over = black3;
++            down = none;
++        }};
++
++        clearAccentNoneTogglei = new ImageButtonStyle(clearAccentNonei){{
++            checked = accentDrawable;
++        }};
++
++        clearLineNonei = new ImageButtonStyle(clearNonei){{
++            up = none;
++            over = accentDrawable;
++            down = none;
++        }};
++
++        clearLineNoneTogglei = new ImageButtonStyle(clearLineNonei){{
++            checked = underlineWhite;
++        }};
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..307d3fad544d61f31d097eb8fd6b995865629585
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
+@@ -0,0 +1,74 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.*;
++import arc.func.*;
++import arc.graphics.g2d.*;
++import arc.scene.style.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import mindustry.content.*;
++import mindustry.gen.*;
++import mindustry.input.*;
++import mindustry.ui.dialogs.*;
++import mindustryX.features.*;
++import mindustryX.features.ui.*;
++
++import static mindustry.Vars.*;
++
++public class ScriptButtons extends AuxiliaryTools.Table{
++
++    public ScriptButtons(){
++        super(UnitTypes.gamma.uiIcon);
++    }
++
++    @Override
++    protected void setup(){
++        defaults().size(40);
++
++        scriptButton(Blocks.buildTower.uiIcon, "在建造列表加入被摧毁建筑", () -> player.buildDestroyedBlocks());
++
++        scriptButton(Blocks.message.uiIcon, "锁定上个标记点", MarkerType::lockOnLastMark);
++
++        scriptButton(Items.copper.uiIcon, "一键放置", () -> player.dropItems());
++
++        scriptButton(Icon.pencilSmall, "特效显示", () -> EffectsDialog.withAllEffects().show());
++
++        addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", s -> {
++        });
++
++        addSettingButton(UnitTypes.vela.uiIcon, "forceBoost", "强制助推", s -> {
++        });
++
++        if(!mobile){
++            addSettingButton(Icon.eyeSmall, "removePan", "视角脱离玩家", s -> {
++                if(control.input instanceof DesktopInput desktopInput){
++                    desktopInput.panning = true;
++                }
++            });
++        }
++    }
++
++    protected void addSettingButton(TextureRegion region, String settingName, String description, Boolc onClick){
++        addSettingButton(new TextureRegionDrawable(region), settingName, description, onClick);
++    }
++
++    protected void addSettingButton(Drawable icon, String settingName, String description, Boolc onClick){
++        scriptButton(icon, description, () -> {
++            boolean setting = Core.settings.getBool(settingName);
++
++            Core.settings.put(settingName, !setting);
++            UIExt.announce("已" + (setting ? "取消" : "开启") + description);
++
++            onClick.get(!setting);
++        }).checked(b -> Core.settings.getBool(settingName));
++    }
++
++    protected Cell<ImageButton> scriptButton(TextureRegion region, String description, Runnable runnable){
++        return scriptButton(new TextureRegionDrawable(region), description, runnable);
++    }
++
++    protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
++        return button(icon, RStyles.clearLineNonei, 30, runnable).tooltip(description);//TODO allowMobile
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60ed72d385
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
+@@ -0,0 +1,139 @@
++package mindustryX.features.ui.auxiliary;
++
++import arc.*;
++import arc.scene.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
++import arc.util.*;
++import mindustry.content.*;
++import mindustry.core.*;
++import mindustry.game.EventType.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.type.*;
++import mindustry.ui.*;
++import mindustry.ui.dialogs.*;
++import mindustryX.features.*;
++import mindustryX.features.ui.*;
++
++import static mindustry.Vars.state;
++
++public class WaveInfoTable extends AuxiliaryTools.Table{
++    public static final float fontScl = 0.8f;
++
++    private int waveOffset = 0;
++
++    private final Table waveInfo;
++
++    private final ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
++
++    public WaveInfoTable(){
++        super(Icon.waves);
++
++        Events.on(WorldLoadEvent.class, e -> {
++            waveOffset = 0;
++            rebuildWaveInfo();
++        });
++
++        Events.on(WaveEvent.class, e -> rebuildWaveInfo());
++
++        waveInfo = new Table(Tex.pane);
++    }
++
++    @Override
++    protected void setup(){
++        left().top();
++        waveInfo.left().top();
++
++        button(Icon.waves, RStyles.clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
++
++        table(buttons -> {
++            buttons.defaults().size(40);
++
++            buttons.button("<", RStyles.clearLineNonet, () -> shiftWaveOffset(-1));
++
++            buttons.button("O", RStyles.clearLineNonet, () -> setWaveOffset(0));
++
++            buttons.button(">", RStyles.clearLineNonet, () -> shiftWaveOffset(1));
++
++            buttons.button("Go", RStyles.clearLineNonet, () -> {
++                state.wave += waveOffset;
++                setWaveOffset(0);
++            });
++
++            buttons.button("♐", RStyles.clearLineNonet, () -> ArcMessageDialog.shareWaveInfo(state.wave + waveOffset))
++            .disabled((b) -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
++
++        }).left().row();
++
++        table(setWave -> {
++            setWave.label(() -> "" + getDisplayWaves()).get().setFontScale(fontScl);
++
++            setWave.row();
++
++            setWave.button(Icon.settingsSmall, RStyles.clearAccentNonei, 30, () -> {
++                Dialog lsSet = new BaseDialog("波次设定");
++                lsSet.cont.add("设定查询波次").padRight(5f).left();
++                TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
++                lsSet.cont.row();
++                lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
++                    waveOffset = (int)res - state.wave;
++                    field.setText((int)res + "");
++                });
++                lsSet.addCloseButton();
++                lsSet.show();
++            });
++        });
++
++        pane(Styles.noBarPane, waveInfo).scrollY(false).pad(8f).maxWidth(180f).left().update(pane -> {
++            // 自动失焦
++            if(pane.hasScroll()){
++                Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
++                if(result == null || !result.isDescendantOf(pane)){
++                    Core.scene.setScrollFocus(null);
++                }
++            }
++        });
++    }
++
++    private void rebuildWaveInfo(){
++        waveInfo.clearChildren();
++
++        int curInfoWave = getDisplayWaves();
++        for(SpawnGroup group : state.rules.spawns){
++            int amount = group.getSpawned(curInfoWave);
++
++            if(amount == 0) continue;
++
++            float shield = group.getShield(curInfoWave);
++            StatusEffect effect = group.effect;
++
++            waveInfo.table(groupT -> {
++                groupT.image(group.type.uiIcon).scaling(Scaling.fit).size(20).row();
++
++                groupT.add("" + amount, fontScl).row();
++
++                groupT.add((shield > 0 ? UI.formatAmount((long)shield) : ""), fontScl).row();
++
++                if(effect != null && effect != StatusEffects.none){
++                    groupT.image(effect.uiIcon).size(20);
++                }
++            }).pad(8).left().top();
++        }
++    }
++
++    private void shiftWaveOffset(int shiftCount){
++        int offset = Math.max(waveOffset + shiftCount, -state.wave + 1);
++        setWaveOffset(offset);
++    }
++
++    private void setWaveOffset(int waveOffset){
++        this.waveOffset = waveOffset;
++        rebuildWaveInfo();
++    }
++
++    private int getDisplayWaves(){
++        return state.wave - 1 + waveOffset;
++    }
++
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/ai/ATRIAI.java b/core/src/mindustryX/features/ui/auxiliary/ai/ATRIAI.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..46c9a044491de8dcf45284ef4e73a6309c03d80c
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/ai/ATRIAI.java
+@@ -0,0 +1,210 @@
++package mindustryX.features.ui.auxiliary.ai;
++
++import arc.struct.*;
++import arc.util.*;
++import mindustry.*;
++import mindustry.ai.types.*;
++import mindustry.entities.*;
++import mindustry.entities.units.*;
++import mindustry.game.*;
++import mindustry.gen.*;
++import mindustry.input.*;
++import mindustry.type.*;
++import mindustry.world.*;
++import mindustry.world.blocks.*;
++import mindustry.world.blocks.environment.*;
++
++import static mindustry.Vars.*;
++
++public class ATRIAI extends AIController{
++    //builderAI
++
++    public static final float buildRadius = 1500;
++    public static final float retreatDst = 110f;
++    public static final float retreatDelay = Time.toSeconds * 2f;
++    public static final float rebuildTime = 120f;
++
++    public @Nullable Unit following;
++    public @Nullable Teamc enemy;
++    public @Nullable Teams.BlockPlan lastPlan;
++
++    public float fleeRange = 370f;
++
++    boolean found = false;
++    float retreatTimer;
++
++    //minerAI
++    public static final Seq<Block> oreAllList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
++    public static final Seq<Block> oreAllWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
++    public static final Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
++    public static final Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
++
++    public Seq<Item> canMineList;
++    public boolean mining = true;
++    public Item targetItem;
++    public Tile ore;
++
++
++    public ATRIAI(float fleeRange){
++        this.fleeRange = fleeRange;
++    }
++
++    public ATRIAI(){
++    }
++
++    @Override
++    public void init(){
++        if(!unit.canMine()) return;
++
++        if(unit.type.mineFloor){
++            canMineList = oreList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }else if(unit.type.mineWalls){
++            canMineList = oreWallList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }
++    }
++
++    @Override
++    public void updateMovement(){
++        builderMode();
++    }
++
++    private void builderMode(){
++
++        if(target != null && shouldShoot()){
++            unit.lookAt(target);
++        }
++
++        unit.updateBuilding = true;
++
++        if(following != null){
++            retreatTimer = 0f;
++            //try to follow and mimic someone
++
++            //validate follower
++            if(!following.isValid() || !following.activelyBuilding()){
++                following = null;
++                unit.plans.clear();
++                return;
++            }
++
++            //set to follower's first build plan, whatever that is
++            unit.plans.clear();
++            unit.plans.addFirst(following.buildPlan());
++            lastPlan = null;
++        }else if(unit.buildPlan() == null){
++            //not following anyone or building
++            if(timer.get(timerTarget4, 40)){
++                enemy = target(unit.x, unit.y, fleeRange, true, true);
++            }
++
++            //fly away from enemy when not doing anything, but only after a delay
++            if((retreatTimer += Time.delta) >= retreatDelay){
++                if(enemy != null){
++                    unit.clearBuilding();
++                    var core = unit.closestCore();
++                    if(core != null && !unit.within(core, retreatDst)){
++                        moveTo(core, retreatDst);
++                    }
++                }
++            }
++        }
++
++        if(unit.buildPlan() != null){
++            if(unit.controller() == Vars.player && control.input instanceof DesktopInput di) di.isBuilding = true;
++            //approach plan if building
++            BuildPlan req = unit.buildPlan();
++
++            //clear break plan if another player is breaking something
++            if(!req.breaking && timer.get(timerTarget2, 40f)){
++                for(Player player : Groups.player){
++                    if(player.isBuilder() && player.unit().activelyBuilding() && player.unit().buildPlan().samePos(req) && player.unit().buildPlan().breaking){
++                        unit.plans.removeFirst();
++                        //remove from list of plans
++                        unit.team.data().plans.remove(p -> p.x == req.x && p.y == req.y);
++                        return;
++                    }
++                }
++            }
++
++            boolean valid =
++            !(lastPlan != null && lastPlan.removed) &&
++            ((req.tile() != null && req.tile().build instanceof ConstructBlock.ConstructBuild cons && cons.current == req.block) ||
++            (req.breaking ?
++            Build.validBreak(unit.team(), req.x, req.y) :
++            Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));
++
++            if(valid){
++                //move toward the plan
++                moveTo(req.tile(), unit.type.buildRange - 20f);
++            }else{
++                //discard invalid plan
++                unit.plans.removeFirst();
++                lastPlan = null;
++            }
++        }else{
++            //follow someone and help them build
++            if(timer.get(timerTarget2, 60f)){
++                found = false;
++
++                Units.nearby(unit.team, unit.x, unit.y, buildRadius, u -> {
++                    if(found) return;
++
++                    if(u.canBuild() && u != unit && u.activelyBuilding()){
++                        BuildPlan plan = u.buildPlan();
++
++                        Building build = world.build(plan.x, plan.y);
++                        if(build instanceof ConstructBlock.ConstructBuild cons){
++                            float dist = Math.min(cons.dst(unit) - unit.type.buildRange, 0);
++
++                            //make sure you can reach the plan in time
++                            if(dist / unit.speed() < cons.buildCost * 0.9f){
++                                following = u;
++                                found = true;
++                            }
++                        }
++                    }
++                });
++            }
++
++            //find new plan
++            if(!unit.team.data().plans.isEmpty() && following == null && timer.get(timerTarget3, rebuildTime)){
++                Queue<Teams.BlockPlan> blocks = unit.team.data().plans;
++                Teams.BlockPlan block = blocks.first();
++
++                //check if it's already been placed
++                if(world.tile(block.x, block.y) != null && world.tile(block.x, block.y).block().id == block.block){
++                    blocks.removeFirst();
++                }else if(Build.validPlace(content.block(block.block), unit.team(), block.x, block.y, block.rotation) && (!nearEnemy(block.x, block.y))){ //it's valid
++                    lastPlan = block;
++                    //add build plan
++                    unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));
++                    //shift build plan to tail so next unit builds something else
++                    blocks.addLast(blocks.removeFirst());
++                }else{
++                    //shift head of queue to tail, try something else next time
++                    blocks.addLast(blocks.removeFirst());
++                }
++            }
++        }
++    }
++
++
++    protected boolean nearEnemy(int x, int y){
++        return Units.nearEnemy(unit.team, x * tilesize - fleeRange / 2f, y * tilesize - fleeRange / 2f, fleeRange, fleeRange);
++    }
++
++    @Override
++    public AIController fallback(){
++        return unit.type.flying ? new FlyingAI() : new GroundAI();
++    }
++
++    @Override
++    public boolean useFallback(){
++        return state.rules.waves && unit.team == state.rules.waveTeam && !unit.team.rules().rtsAi;
++    }
++
++    @Override
++    public boolean shouldShoot(){
++        return !unit.isBuilding() && unit.type.canAttack;
++    }
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/ai/ArcBuilderAI.java b/core/src/mindustryX/features/ui/auxiliary/ai/ArcBuilderAI.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b336ba6618476c5dbee6b416582aee03b5885b0f
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/ai/ArcBuilderAI.java
+@@ -0,0 +1,182 @@
++package mindustryX.features.ui.auxiliary.ai;
++
++import arc.struct.*;
++import arc.util.*;
++import mindustry.*;
++import mindustry.ai.types.*;
++import mindustry.entities.*;
++import mindustry.entities.units.*;
++import mindustry.game.Teams.*;
++import mindustry.gen.*;
++import mindustry.input.*;
++import mindustry.world.*;
++import mindustry.world.blocks.ConstructBlock.*;
++
++import static mindustry.Vars.*;
++
++public class ArcBuilderAI extends AIController{
++    public static final float buildRadius = 1500;
++    public static final float retreatDst = 110f;
++    public static final float retreatDelay = Time.toSeconds * 2f;
++    public static float rebuildTime = 120f;
++
++    public @Nullable Unit following;
++    public @Nullable Teamc enemy;
++    public @Nullable BlockPlan lastPlan;
++
++    public float fleeRange = 370f;
++    public boolean alwaysFlee;
++
++    boolean found = false;
++    float retreatTimer;
++
++    public ArcBuilderAI(boolean alwaysFlee, float fleeRange){
++        this.alwaysFlee = alwaysFlee;
++        this.fleeRange = fleeRange;
++    }
++
++    public ArcBuilderAI(){
++    }
++
++    @Override
++    public void updateMovement(){
++
++        if(target != null && shouldShoot()){
++            unit.lookAt(target);
++        }
++
++        unit.updateBuilding = true;
++
++        if(following != null){
++            retreatTimer = 0f;
++            //try to follow and mimic someone
++
++            //validate follower
++            if(!following.isValid() || !following.activelyBuilding()){
++                following = null;
++                unit.plans.clear();
++                return;
++            }
++
++            //set to follower's first build plan, whatever that is
++            unit.plans.clear();
++            unit.plans.addFirst(following.buildPlan());
++            lastPlan = null;
++        }else if(unit.buildPlan() == null || alwaysFlee){
++            //not following anyone or building
++            if(timer.get(timerTarget4, 40)){
++                enemy = target(unit.x, unit.y, fleeRange, true, true);
++            }
++
++            //fly away from enemy when not doing anything, but only after a delay
++            if((retreatTimer += Time.delta) >= retreatDelay || alwaysFlee){
++                if(enemy != null){
++                    unit.clearBuilding();
++                    var core = unit.closestCore();
++                    if(core != null && !unit.within(core, retreatDst)){
++                        moveTo(core, retreatDst);
++                    }
++                }
++            }
++        }
++
++        if(unit.buildPlan() != null){
++            if(unit.controller() == Vars.player && control.input instanceof DesktopInput di) di.isBuilding = true;
++            if(!alwaysFlee) retreatTimer = 0f;
++            //approach plan if building
++            BuildPlan req = unit.buildPlan();
++
++            //clear break plan if another player is breaking something
++            if(!req.breaking && timer.get(timerTarget2, 40f)){
++                for(Player player : Groups.player){
++                    if(player.isBuilder() && player.unit().activelyBuilding() && player.unit().buildPlan().samePos(req) && player.unit().buildPlan().breaking){
++                        unit.plans.removeFirst();
++                        //remove from list of plans
++                        unit.team.data().plans.remove(p -> p.x == req.x && p.y == req.y);
++                        return;
++                    }
++                }
++            }
++
++            boolean valid =
++            !(lastPlan != null && lastPlan.removed) &&
++            ((req.tile() != null && req.tile().build instanceof ConstructBuild cons && cons.current == req.block) ||
++            (req.breaking ?
++            Build.validBreak(unit.team(), req.x, req.y) :
++            Build.validPlace(req.block, unit.team(), req.x, req.y, req.rotation)));
++
++            if(valid){
++                //move toward the plan
++                moveTo(req.tile(), unit.type.buildRange - 20f);
++            }else{
++                //discard invalid plan
++                unit.plans.removeFirst();
++                lastPlan = null;
++            }
++        }else{
++
++            //follow someone and help them build
++            if(timer.get(timerTarget2, 60f)){
++                found = false;
++
++                Units.nearby(unit.team, unit.x, unit.y, buildRadius, u -> {
++                    if(found) return;
++
++                    if(u.canBuild() && u != unit && u.activelyBuilding()){
++                        BuildPlan plan = u.buildPlan();
++
++                        Building build = world.build(plan.x, plan.y);
++                        if(build instanceof ConstructBuild cons){
++                            float dist = Math.min(cons.dst(unit) - unit.type.buildRange, 0);
++
++                            //make sure you can reach the plan in time
++                            if(dist / unit.speed() < cons.buildCost * 0.9f){
++                                following = u;
++                                found = true;
++                            }
++                        }
++                    }
++                });
++            }
++
++            //find new plan
++            if(!unit.team.data().plans.isEmpty() && following == null && timer.get(timerTarget3, rebuildTime)){
++                Queue<BlockPlan> blocks = unit.team.data().plans;
++                BlockPlan block = blocks.first();
++
++                //check if it's already been placed
++                if(world.tile(block.x, block.y) != null && world.tile(block.x, block.y).block().id == block.block){
++                    blocks.removeFirst();
++                }else if(Build.validPlace(content.block(block.block), unit.team(), block.x, block.y, block.rotation) && (!alwaysFlee || !nearEnemy(block.x, block.y))){ //it's valid
++                    lastPlan = block;
++                    //add build plan
++                    unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));
++                    //shift build plan to tail so next unit builds something else
++                    blocks.addLast(blocks.removeFirst());
++                }else{
++                    //shift head of queue to tail, try something else next time
++                    blocks.addLast(blocks.removeFirst());
++                }
++            }
++        }
++    }
++
++    protected boolean nearEnemy(int x, int y){
++        return Units.nearEnemy(unit.team, x * tilesize - fleeRange / 2f, y * tilesize - fleeRange / 2f, fleeRange, fleeRange);
++    }
++
++    @Override
++    public AIController fallback(){
++        return unit.type.flying ? new FlyingAI() : new GroundAI();
++    }
++
++    @Override
++    public boolean useFallback(){
++        return state.rules.waves && unit.team == state.rules.waveTeam && !unit.team.rules().rtsAi;
++    }
++
++    @Override
++    public boolean shouldShoot(){
++        return !unit.isBuilding() && unit.type.canAttack;
++    }
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java b/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7122bbd621de71142efcec60bdf8f240dcc5f9a5
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java
+@@ -0,0 +1,130 @@
++package mindustryX.features.ui.auxiliary.ai;
++
++import arc.struct.*;
++import arc.util.*;
++import mindustry.entities.units.*;
++import mindustry.gen.*;
++import mindustry.input.*;
++import mindustry.type.*;
++import mindustry.world.*;
++import mindustry.world.blocks.environment.*;
++import mindustry.world.blocks.storage.*;
++
++import static mindustry.Vars.*;
++
++public class ArcMinerAI extends AIController{
++    public static final Seq<Block> oreAllList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
++    public static final Seq<Block> oreAllWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
++    public static final Seq<Block> oreList = content.blocks().select(b -> b instanceof Floor f && !f.wallOre && f.itemDrop != null);
++    public static final Seq<Block> oreWallList = content.blocks().select(b -> ((b instanceof Floor f && f.wallOre) || b instanceof StaticWall) && b.itemDrop != null);
++
++    public Seq<Item> canMineList;
++    public boolean mining = true;
++    public Item targetItem;
++    public Tile ore;
++
++    @Override
++    public void init(){
++        if(!unit.canMine()) return;
++
++        if(unit.type.mineFloor){
++            canMineList = oreList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }else if(unit.type.mineWalls){
++            canMineList = oreWallList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }
++    }
++
++    private Item updateTargetItem(boolean canMineNonBuildable){
++        //reverse是因为min取最后一个最小的
++        if(unit.type.mineFloor){
++            canMineList = oreList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }else if(unit.type.mineWalls){
++            canMineList = oreWallList.map(b -> b.itemDrop).select(i -> unit.canMine(i));
++        }
++        return canMineList.select(i -> (unit.type.mineFloor ? indexer.hasOre(i) : indexer.hasOreWall(i))
++        && (canMineNonBuildable || i.buildable)
++        && unit.core().acceptItem(null, i)
++        ).reverse().min(i -> unit.core().items.get(i));
++    }
++
++    private Tile findClosetOre(Building build){
++        if(unit.type.mineFloor){
++            return indexer.findClosestOre(build.x, build.y, targetItem);
++        }
++        return indexer.findClosestWallOre(build.x, build.y, targetItem);
++    }
++
++    @Override
++    public void updateMovement(){
++        if(!unit.canMine() || canMineList.isEmpty() || unit.core() == null) return;
++
++        CoreBlock.CoreBuild core = unit.closestCore();
++        //变量命名不知道叫啥了
++        //最近的可以塞入非建筑物品的核心
++        CoreBlock.CoreBuild core2 = unit.team.data().cores.select(c -> !((CoreBlock)c.block).incinerateNonBuildable).min(c -> unit.dst(c));
++
++        CoreBlock.CoreBuild targetCore = targetItem == null || targetItem.buildable || core2 == null ? core : core2;
++
++        if(unit.type.canBoost){
++            player.boosting = true;
++        }
++        if(mining){
++
++            if(targetItem != null && (!core.acceptItem(null, targetItem) || (core2 == null && !targetItem.buildable))){
++                unit.mineTile = null;
++                targetItem = null;
++            }
++
++            if(targetItem == null || timer.get(timerTarget2, 300f)){
++                targetItem = updateTargetItem(core2 != null);
++                if(targetItem == null) return;
++            }
++
++            if(!unit.acceptsItem(targetItem) || unit.stack.amount >= unit.type.itemCapacity){
++                mining = false;
++                return;
++            }
++
++            if(ore == null || !unit.validMine(ore, false) || ore.drop() != targetItem || timer.get(timerTarget3, 120f)){
++                ore = findClosetOre(targetCore);
++                if(ore == null) return;
++            }
++
++
++            Tmp.v1.setLength(unit.type.mineRange * 0.9f).limit(ore.dst(targetCore) - 0.5f).setAngle(ore.angleTo(targetCore)).add(ore);
++            moveTo(Tmp.v1, 0.1f);
++            if(unit.validMine(ore)){
++                unit.mineTile = ore;
++            }
++
++        }else{
++            unit.mineTile = null;
++
++            if(unit.stack.amount == 0){
++                mining = true;
++                return;
++            }
++            if(!core.acceptItem(null, unit.stack.item)){
++                unit.clearItem();
++            }
++
++            moveTo(targetCore, core.hitSize());
++            if(unit.within(targetCore, itemTransferRange) && targetCore.acceptItem(null, targetItem)){
++                if(control.input instanceof DesktopInput di){
++                    di.autoAim = true;
++                }
++                unit.aimX = core.x;
++                unit.aimY = core.y;
++                Call.transferInventory(player, core);
++                targetItem = updateTargetItem(core2 != null);
++                if(control.input instanceof DesktopInput di){
++                    Time.run(30f, () -> di.autoAim = false);
++                }
++            }
++        }
++    }
++
++    @Override
++    public void updateVisuals(){
++    }
++}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java b/core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c75797d3b4bb5b5b6181ae7a0bddd6669b20b9f1
+--- /dev/null
++++ b/core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java
+@@ -0,0 +1,75 @@
++package mindustryX.features.ui.auxiliary.ai;
++
++import arc.util.*;
++import mindustry.entities.*;
++import mindustry.entities.units.*;
++import mindustry.gen.*;
++import mindustry.world.blocks.ConstructBlock.*;
++
++public class ArcRepairAI extends AIController{
++    public static final float retreatDst = 160f;
++    public static final float fleeRange = 310f;
++    public static final float retreatDelay = Time.toSeconds * 3f;
++
++    @Nullable
++    Teamc avoid;
++    float retreatTimer;
++    Building damagedTarget;
++
++    @Override
++    public void updateMovement(){
++        if(target instanceof Building){
++            boolean shoot = false;
++
++            if(target.within(unit, unit.type.range)){
++                unit.aim(target);
++                shoot = true;
++            }
++
++            unit.controlWeapons(shoot);
++        }else if(target == null){
++            unit.controlWeapons(false);
++        }
++
++        if(target != null){
++            if(!target.within(unit, unit.type.range * 0.65f) && target instanceof Building b && b.team == unit.team){
++                moveTo(target, unit.type.range * 0.65f);
++            }
++
++            unit.lookAt(target);
++        }
++
++        //not repairing
++        if(!(target instanceof Building)){
++            if(timer.get(timerTarget4, 40)){
++                avoid = target(unit.x, unit.y, fleeRange, true, true);
++            }
++
++            if((retreatTimer += Time.delta) >= retreatDelay){
++                //fly away from enemy when not doing anything
++                if(avoid != null){
++                    var core = unit.closestCore();
++                    if(core != null && !unit.within(core, retreatDst)){
++                        moveTo(core, retreatDst);
++                    }
++                }
++            }
++        }else{
++            retreatTimer = 0f;
++        }
++    }
++
++    @Override
++    public void updateTargeting(){
++        if(timer.get(timerTarget, 15)){
++            damagedTarget = Units.findDamagedTile(unit.team, unit.x, unit.y);
++            if(damagedTarget instanceof ConstructBuild) damagedTarget = null;
++        }
++
++        if(damagedTarget == null){
++            super.updateTargeting();
++        }else{
++            this.target = damagedTarget;
++        }
++    }
++}

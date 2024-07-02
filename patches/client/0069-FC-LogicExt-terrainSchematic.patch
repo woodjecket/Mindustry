@@ -1,0 +1,118 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 27 Jun 2024 22:41:02 +0800
+Subject: [PATCH] =?UTF-8?q?FC(LogicExt)=20terrainSchematic=20(=E5=9C=B0?=
+ =?UTF-8?q?=E5=BD=A2=E8=93=9D=E5=9B=BE)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/game/Schematics.java       | 31 +++++++++++++++++--
+ .../world/blocks/environment/Floor.java       |  1 +
+ core/src/mindustryX/features/LogicExt.java    |  2 ++
+ 3 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
+index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e040a3e3cd985212b03898e4816f8d315f4d07c3 100644
+--- a/core/src/mindustry/game/Schematics.java
++++ b/core/src/mindustry/game/Schematics.java
+@@ -34,6 +34,8 @@ import mindustry.world.blocks.sandbox.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import java.io.*;
+ import java.util.zip.*;
+@@ -278,7 +280,7 @@ public class Schematics implements Loadable{
+     /** Creates an array of build plans from a schematic's data, centered on the provided x+y coordinates. */
+     public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
+         return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
+-            .removeAll(s -> (!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow()).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
++            .removeAll(s -> !LogicExt.terrainSchematic && !AdvanceToolTable.forcePlacement && ((!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow())).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
+     }
+ 
+     /** @return all the valid loadouts for a specific core type. */
+@@ -399,7 +401,7 @@ public class Schematics implements Loadable{
+             }
+         }
+ 
+-        if(found){
++        if(found || LogicExt.terrainSchematic){
+             x = minx;
+             y = miny;
+             x2 = maxx;
+@@ -408,6 +410,22 @@ public class Schematics implements Loadable{
+             return new Schematic(new Seq<>(), new StringMap(), 1, 1);
+         }
+ 
++        if(LogicExt.terrainSchematic){
++            x = Math.min(x, ox + 1);
++            x2 = Math.max(x2, ox2 - 1);
++            y = Math.min(y, oy + 1);
++            y2 = Math.max(y2, oy2 - 1);
++            for(int cx = ox; cx <= ox2; cx++){
++                for(int cy = oy; cy <= oy2; cy++){
++                    Tile tile = world.tile(cx, cy);
++                    tiles.add(new Stile(tile.floor(), tile.x - x, tile.y - y));
++                    if(!tile.overlay().isAir())
++                        tiles.add(new Stile(tile.overlay(), tile.x - x, tile.y - y));
++                    if(!tile.block().isAir() && tile.build == null)
++                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y));
++                }
++            }
++        }
+         int width = x2 - x + 1, height = y2 - y + 1;
+         int offsetX = -x, offsetY = -y;
+         IntSet counted = new IntSet();
+@@ -426,6 +444,15 @@ public class Schematics implements Loadable{
+                 }
+             }
+         }
++        if(LogicExt.terrainSchematic){
++            for(int cx = ox; cx <= ox2; cx++){
++                for(int cy = oy; cy <= oy2; cy++){
++                    Tile tile = world.tile(cx, cy);
++                    if(!tile.block().isAir() && (tile.build == null || counted.add(tile.build.pos())))
++                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y));
++                }
++            }
++        }
+ 
+         return new Schematic(tiles, new StringMap(), width, height);
+     }
+diff --git a/core/src/mindustry/world/blocks/environment/Floor.java b/core/src/mindustry/world/blocks/environment/Floor.java
+index dfd29de65b8b4b0b07a5610cbe366f13f21a0373..d5482461eebb80f0dac8ce45a9b7a860274b4019 100644
+--- a/core/src/mindustry/world/blocks/environment/Floor.java
++++ b/core/src/mindustry/world/blocks/environment/Floor.java
+@@ -93,6 +93,7 @@ public class Floor extends Block{
+         allowRectanglePlacement = true;
+         instantBuild = true;
+         placeEffect = Fx.rotateBlock;
++        schematicPriority = 100;
+     }
+ 
+     @Override
+diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
+index 3d0141b5c308df84fea6c061d5b9e810e31b83fd..bdc81ee89e34a125a22f05096231a72fec2e3172 100644
+--- a/core/src/mindustryX/features/LogicExt.java
++++ b/core/src/mindustryX/features/LogicExt.java
+@@ -7,6 +7,7 @@ import mindustry.game.EventType.*;
+ public class LogicExt{
+     public static boolean limitUpdate = false;
+     public static int limitDst = 0, limitTimer = 10;
++    public static boolean terrainSchematic = false;
+ 
+     public static void init(){
+         Events.run(Trigger.update, () -> {
+@@ -16,6 +17,7 @@ public class LogicExt{
+                 limitUpdate = false;
+                 limitTimer = 10;
+             }
++            terrainSchematic = Core.settings.getBool("terrainSchematic");
+         });
+     }
+ }
+\ No newline at end of file

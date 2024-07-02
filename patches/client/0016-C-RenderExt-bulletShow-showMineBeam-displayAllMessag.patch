@@ -1,0 +1,97 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 18 Feb 2024 15:57:51 +0800
+Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
+ arcTurretPlaceCheck
+
+---
+ core/src/mindustry/type/UnitType.java                 |  3 ++-
+ .../world/blocks/defense/turrets/BaseTurret.java      |  6 ++++++
+ core/src/mindustryX/features/RenderExt.java           | 11 +++++++++++
+ 3 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
+index 34c3b537df9075827b24df0f26c83de1cc805bf6..939924880db520a918cc51cf5cace817000fb28d 100644
+--- a/core/src/mindustry/type/UnitType.java
++++ b/core/src/mindustry/type/UnitType.java
+@@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;
+ import mindustry.world.blocks.units.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static arc.graphics.g2d.Draw.*;
+ import static mindustry.Vars.*;
+@@ -1207,7 +1208,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+ 
+         unit.drawBuilding();
+ 
+-        drawMining(unit);
++        if(RenderExt.showMineBeam) drawMining(unit);
+ 
+         boolean isPayload = !unit.isAdded();
+ 
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+index dbe779461193af3f8b882a2db305eedfd457bd82..eced3dc7581a4916970634e600d0f5cd86f6ee7e 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+@@ -1,5 +1,7 @@
+ package mindustry.world.blocks.defense.turrets;
+ 
++import arc.*;
++import arc.graphics.g2d.*;
+ import arc.math.*;
+ import arc.struct.*;
+ import arc.util.*;
+@@ -68,6 +70,10 @@ public class BaseTurret extends Block{
+ 
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, Pal.placing);
+ 
++        if(state.rules.placeRangeCheck && Core.settings.getBool("arcTurretPlaceCheck")){
++            Draw.alpha(0.5f);
++            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, placeOverlapRange, Pal.remove);
++        }
+         if(fogRadiusMultiplier < 0.99f && state.rules.fog){
+             Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
+         }
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 835b5d7b801f03683cbb7502ea98025ff2c24d40..c0fe214232b848835a30a51ac3c0904366858bd3 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -1,14 +1,22 @@
+ package mindustryX.features;
+ 
+ import arc.*;
++import arc.graphics.g2d.*;
+ import arc.util.*;
+ import mindustry.game.EventType.*;
+ import mindustry.gen.*;
++import mindustry.graphics.*;
+ import mindustry.world.*;
++import mindustry.world.blocks.logic.MessageBlock.*;
+ 
+ public class RenderExt{
++    public static boolean bulletShow, showMineBeam, displayAllMessage;
++
+     public static void init(){
+         Events.run(Trigger.preDraw, () -> {
++            bulletShow = Core.settings.getBool("bulletShow");
++            showMineBeam = Core.settings.getBool("showminebeam");
++            displayAllMessage = Core.settings.getBool("displayallmessage");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+     }
+@@ -18,10 +26,13 @@ public class RenderExt{
+     }
+ 
+     public static void onGroupDraw(Drawc t){
++        if(!bulletShow && t instanceof Bulletc) return;
+         t.draw();
+     }
+ 
+     public static void onBlockDraw(Tile tile, Block block, @Nullable Building build){
+         block.drawBase(tile);
++        if(displayAllMessage && build instanceof MessageBuild)
++            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
+     }
+ }

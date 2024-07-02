@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 16 Apr 2024 21:38:36 +0800
+Subject: [PATCH] API(Hooks) pollKeys
+
+---
+ core/src/mindustry/input/Binding.java | 3 +++
+ core/src/mindustryX/Hooks.java        | 9 +++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
+index 039829ebd447f97c72917b91fd52f3fef6aeccfa..8376e3f5a5f4aef6c5397567aaba13780eda86ab 100644
+--- a/core/src/mindustry/input/Binding.java
++++ b/core/src/mindustry/input/Binding.java
+@@ -98,6 +98,9 @@ public enum Binding implements KeyBind{
+     chat_scroll(new Axis(KeyCode.scroll)),
+     chat_mode(KeyCode.tab),
+     console(KeyCode.f8),
++
++    //MDTX
++    mindustryX(KeyCode.unknown, "mindustryX"),
+     ;
+ 
+     private final KeybindValue defaultValue;
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index 390913c56aa6088fa3092826cdc772073883113d..5d34d188966dea076a8bfb49329aab3b4eb4019c 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -54,6 +54,15 @@ public class Hooks implements ApplicationListener{
+         return message;
+     }
+ 
++    @Override
++    public void update(){
++        pollKeys();
++    }
++
++    public static void pollKeys(){
++        if(Core.scene.hasField()) return;
++    }
++
+     private static void registerBundle(){
+         //MDTX: bundle overwrite
+         try{
