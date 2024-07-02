@@ -6336,23 +6336,24 @@ index a7199929351d4ec311ba34d81b3b0e2601ad04fe..22a95dcbb5642659b98096de45f33ac0
          }
  
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..73c181e9d887dc2a8c1c32a9f92f2a6d5e8f5b6d 100644
+index d83a7bf2781d7deefd4cb6c10190ac90288dfb47..c8702f81d76ba91a0c60ffd05dbdbee95863bda5 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -7,11 +7,10 @@ import mindustry.gen.*;
+@@ -8,12 +8,11 @@ import mindustry.gen.*;
  import mindustry.input.*;
- import mindustryX.features.Settings;
  import mindustryX.features.*;
+ import mindustryX.features.Settings;
 +import mindustryX.features.ui.*;
  
  import java.net.*;
+ import java.util.*;
  
 -import static arc.Core.*;
 -
  public class Hooks implements ApplicationListener{
      /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
      public static void beforeInit(){
-@@ -55,6 +54,14 @@ public class Hooks implements ApplicationListener{
+@@ -58,6 +57,14 @@ public class Hooks implements ApplicationListener{
          if(message == null) return null;
          if(Vars.ui != null){
              if(MarkerType.resolveMessage(message)) return message;
@@ -6367,7 +6368,7 @@ index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..73c181e9d887dc2a8c1c32a9f92f2a6d
          }
          return message;
      }
-@@ -75,8 +82,18 @@ public class Hooks implements ApplicationListener{
+@@ -78,8 +85,18 @@ public class Hooks implements ApplicationListener{
          if(Core.input.keyTap(Binding.point)){
              MarkerType.selected.markWithMessage(Core.input.mouseWorld());
          }
@@ -6387,7 +6388,7 @@ index 5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3..73c181e9d887dc2a8c1c32a9f92f2a6d
 +            Core.settings.put("superUnitEffect", (level + 1) % 3);
          }
      }
- }
+ 
 diff --git a/core/src/mindustryX/features/ArcBuilds.java b/core/src/mindustryX/features/ArcBuilds.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..58cfacb6c8f3a89dd1bb476155231bac11344464

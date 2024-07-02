@@ -46,10 +46,10 @@ index 593d8e2bfbb8c1e156b998dc44d3554317e171bf..cdf4295a544656573aea87416e8957b2
          //info icon
          if(mobile){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index eccd7532122ec7461e24202230a6300c3e027249..e8382f995d3fb459ce641065d1d5c1d9ddca9d58 100644
+index a1f9e743989ef91d28eb1dc17dc607e1656aa1b0..390913c56aa6088fa3092826cdc772073883113d 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -20,6 +20,8 @@ public class Hooks implements ApplicationListener{
+@@ -23,6 +23,8 @@ public class Hooks implements ApplicationListener{
      @Override
      public void init(){
          Log.infoTag("MindustryX", "Hooks.init");

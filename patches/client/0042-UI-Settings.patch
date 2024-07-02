@@ -277,21 +277,21 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
                  table.row();
              }
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 27bf6d34b21c289a516ecc94e1cc13bfbfbdfd2a..eccd7532122ec7461e24202230a6300c3e027249 100644
+index 01d7b62ec79aaef21c2bd0bd7dfcc1dc072b057c..a1f9e743989ef91d28eb1dc17dc607e1656aa1b0 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -5,6 +5,7 @@ import arc.util.*;
+@@ -6,6 +6,7 @@ import arc.util.*;
  import mindustry.*;
  import mindustry.gen.*;
  import mindustryX.features.*;
 +import mindustryX.features.Settings;
  
  import java.net.*;
- 
-@@ -12,6 +13,7 @@ public class Hooks implements ApplicationListener{
-     /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
+ import java.util.*;
+@@ -15,6 +16,7 @@ public class Hooks implements ApplicationListener{
      public static void beforeInit(){
          Log.infoTag("MindustryX", "Hooks.beforeInit");
+         registerBundle();
 +        Settings.addSettings();
      }
  

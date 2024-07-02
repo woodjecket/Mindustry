@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 17 Sep 2023 11:55:29 +0800
-Subject: [PATCH] SO: Early release #Anuken:9065
+Subject: [PATCH] SC: Early release #Anuken:9065
 
 ---
  core/src/mindustry/game/SpawnGroup.java | 2 +-

@@ -8,17 +8,20 @@ Content-Transfer-Encoding: 8bit
 
 增加Position相关
 way-zer <himc.wicp@gmail.com> on 2024/6/10
+
+Add Duration API
+way-zer <himc.wicp@gmail.com> on 2024/6/14
 ---
- core/src/mindustryX/features/ui/Format.kt | 105 ++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+ core/src/mindustryX/features/ui/Format.kt | 123 ++++++++++++++++++++++
+ 1 file changed, 123 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/Format.kt
 
 diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..09530046dab2307c996eaea5b3601d507a55402e
+index 0000000000000000000000000000000000000000..297ed9e0a20b04decf39f58419f8c9b6f9cc7fd8
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/Format.kt
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,123 @@
 +package mindustryX.features.ui
 +
 +import arc.math.Mathf
@@ -86,6 +89,20 @@ index 0000000000000000000000000000000000000000..09530046dab2307c996eaea5b3601d50
 +        return "(${World.toTile(pos.x)},${World.toTile(pos.y)})"
 +    }
 +
++    fun duration(seconds: Float, unit: Boolean = true) = buildString {
++        append(if (seconds > 0) "[orange]" else "[acid]")
++        val s = abs(seconds)
++        if (s >= 60) {
++            append((seconds / 60).toInt())
++            append(" : ")
++            append((s % 60).toInt())
++        } else {
++            append(format0(seconds))
++        }
++        append("[]")
++        if (unit) append(if (s >= 60) "min" else "s")
++    }
++
 +    @JvmOverloads
 +    fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent < 0.95f): String {
 +        return buildString {
@@ -123,5 +140,9 @@ index 0000000000000000000000000000000000000000..09530046dab2307c996eaea5b3601d50
 +
 +    @JvmStatic
 +    fun formatTile(pos: Position): String = Format.default.formatTile(pos)
++
++    @JvmOverloads
++    @JvmStatic
++    fun duration(seconds: Float, unit: Boolean = true): String = Format.default.duration(seconds, unit)
 +}
 \ No newline at end of file

@@ -54,10 +54,10 @@ index 7a968f1c21275eb4a571350adfcf59df1fa37df9..89b9a23ce2bb850df5c7ae99a5f96475
          team("/t"),
          admin("/a", player::admin)
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0daff7fbbab 100644
+index 6e4a90501f429bec5075e3d11e01dc2e220d930f..3cfe589eca2f32127b659aa8c8647e8ffbb7e5eb 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -49,6 +49,9 @@ public class Hooks implements ApplicationListener{
+@@ -52,6 +52,9 @@ public class Hooks implements ApplicationListener{
  
      public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
          if(message == null) return null;
@@ -67,7 +67,7 @@ index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0da
          return message;
      }
  
-@@ -62,5 +65,11 @@ public class Hooks implements ApplicationListener{
+@@ -65,6 +68,12 @@ public class Hooks implements ApplicationListener{
          if(Core.input.keyTap(Binding.toggle_unit)){
              RenderExt.unitHide = !RenderExt.unitHide;
          }
@@ -78,7 +78,8 @@ index 086c6a80d21baca2103b9b8796ae849af988d4c4..b4a4ce3f2de2b146abd3794f8be3b0da
 +            MarkerType.selected.markWithMessage(Core.input.mouseWorld());
 +        }
      }
- }
+ 
+     private static void registerBundle(){
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d701681ffb

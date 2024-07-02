@@ -10,10 +10,10 @@ Subject: [PATCH] API: UIExt
  create mode 100644 core/src/mindustryX/features/UIExt.java
 
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 5f15cc3b9f470523c214adfdd8d1f5f6e332cc55..7d38820522e521e55a4881da586aeffd36e46f60 100644
+index 9b7e280fb96aa4e5ffd26f432ecf938df542880e..e073bd101614f55da9e496aa6e60fe062475079b 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
+@@ -24,6 +24,7 @@ public class Hooks implements ApplicationListener{
          if(!Vars.headless){
              RenderExt.init();
              TimeControl.init();

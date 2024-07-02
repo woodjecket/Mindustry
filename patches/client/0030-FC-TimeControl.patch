@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Thu, 29 Feb 2024 18:48:33 +0800
-Subject: [PATCH] C: TimeControl
+Subject: [PATCH] FC: TimeControl
 
 ---
  core/src/mindustryX/Hooks.java                |  1 +
@@ -10,10 +10,10 @@ Subject: [PATCH] C: TimeControl
  create mode 100644 core/src/mindustryX/features/TimeControl.java
 
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 8e17b92678d8f8a844dc0395af6cbefbc20ca70e..5f15cc3b9f470523c214adfdd8d1f5f6e332cc55 100644
+index b4687306b3fe782e096db1943e72cecc566e5e46..9b7e280fb96aa4e5ffd26f432ecf938df542880e 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -14,6 +14,7 @@ public class Hooks implements ApplicationListener{
+@@ -23,6 +23,7 @@ public class Hooks implements ApplicationListener{
          Log.infoTag("MindustryX", "Hooks.init");
          if(!Vars.headless){
              RenderExt.init();
