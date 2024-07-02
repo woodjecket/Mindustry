@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 9 Apr 2024 18:23:19 +0800
+Subject: [PATCH] API(Hooks) onHttp
+
+---
+ core/src/mindustryX/Hooks.java | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
+index ca6144798666f96ee074838e489b51df1a10d19d..7cace088409de5b701577465f38ae01eb8b87a1c 100644
+--- a/core/src/mindustryX/Hooks.java
++++ b/core/src/mindustryX/Hooks.java
+@@ -4,6 +4,7 @@ import arc.*;
+ import arc.files.*;
+ import arc.util.*;
+ 
++import java.net.*;
+ import java.util.*;
+ 
+ public class Hooks implements ApplicationListener{
+@@ -19,6 +20,22 @@ public class Hooks implements ApplicationListener{
+         Log.infoTag("MindustryX", "Hooks.init");
+     }
+ 
++    @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
++    public static void onHttp(Http.HttpRequest req){
++        if(Core.settings.getBool("githubMirror")){
++            try{
++                String url = req.url;
++                String host = new URL(url).getHost();
++                if(host.contains("github.com") || host.contains("raw.githubusercontent.com")){
++                    url = "https://gh.tinylake.tech/" + url;
++                    req.url = url;
++                }
++            }catch(Exception e){
++                //ignore
++            }
++        }
++    }
++
+     private static void registerBundle(){
+         //MDTX: bundle overwrite
+         try{

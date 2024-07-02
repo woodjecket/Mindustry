@@ -67,10 +67,10 @@ index 6f9b8f9b50079b42f7762c8ee2b1101394b54e33..22b66b83cde27a73415b9154ed813cdf
          if(object instanceof StreamBegin b){
              streams.put(b.id, currentStream = new StreamBuilder(b));
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 7d38820522e521e55a4881da586aeffd36e46f60..1ef82d96d3230f1d94548c473411f03cd007f19c 100644
+index e073bd101614f55da9e496aa6e60fe062475079b..01d7b62ec79aaef21c2bd0bd7dfcc1dc072b057c 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -16,6 +16,7 @@ public class Hooks implements ApplicationListener{
+@@ -25,6 +25,7 @@ public class Hooks implements ApplicationListener{
              RenderExt.init();
              TimeControl.init();
              UIExt.init();

@@ -12,10 +12,10 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 14 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 7e0757047006ed5d6e8b1165124b7de90a8e037d..f195945461e87f5a3353ef0d5e8d229d163c8f2e 100644
+index 87c1dfce278bdc123ee761d8e1e16c2b883d2c8a..91e7514c34ce5748998b14b98b799cf1bf572f0d 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -236,6 +236,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -237,6 +237,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
                  }))));
              }
          }else{
@@ -24,7 +24,7 @@ index 7e0757047006ed5d6e8b1165124b7de90a8e037d..f195945461e87f5a3353ef0d5e8d229d
              asyncCore.begin();
  
              super.update();
-@@ -252,6 +254,18 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -253,6 +255,18 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          }
      }
  

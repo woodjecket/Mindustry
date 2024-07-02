@@ -8,7 +8,7 @@ Subject: [PATCH] C: fix console messages order
  1 file changed, 4 insertions(+)
 
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index a74612c7ba97056cbaf6cd998ed10aaad973a8a5..c7692170f49fae761dc659225330c43c3ee04e3e 100644
+index ae716151e019fa61af85b99583d3bc8dba9a3e18..fde236399dcec5d7f5f96c101f8b6d398748c8fc 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -378,6 +378,10 @@ public class Vars implements Loadable{

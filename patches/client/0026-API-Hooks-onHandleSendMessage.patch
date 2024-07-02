@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Fri, 23 Feb 2024 01:05:54 +0800
-Subject: [PATCH] API: Hooks.onHandleSendMessage
+Subject: [PATCH] API(Hooks) onHandleSendMessage
 
 ---
  core/src/mindustry/core/NetClient.java | 4 ++++
@@ -31,24 +31,26 @@ index 6eaa704296d197c2bcd722c78e2c770a543aec27..dcca3b910e100d508955cf96681a793f
              Vars.ui.chatfrag.addMessage(message);
              Sounds.chatMessage.play();
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index c399832fd28e50e3f6464380fca916cf5539d213..8e17b92678d8f8a844dc0395af6cbefbc20ca70e 100644
+index 1548f3d6ae0d362575a05ef38ea1575af65f5afc..b4687306b3fe782e096db1943e72cecc566e5e46 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -3,6 +3,7 @@ package mindustryX;
- import arc.*;
+@@ -4,6 +4,7 @@ import arc.*;
+ import arc.files.*;
  import arc.util.*;
  import mindustry.*;
 +import mindustry.gen.*;
  import mindustryX.features.*;
  
  import java.net.*;
-@@ -31,4 +32,9 @@ public class Hooks implements ApplicationListener{
-             }
+@@ -41,6 +42,11 @@ public class Hooks implements ApplicationListener{
          }
      }
-+
+ 
 +    public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
 +        if(message == null) return null;
 +        return message;
 +    }
- }
++
+     private static void registerBundle(){
+         //MDTX: bundle overwrite
+         try{

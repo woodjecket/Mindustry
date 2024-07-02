@@ -10,10 +10,10 @@ Subject: [PATCH] API: LogicExt
  create mode 100644 core/src/mindustryX/features/LogicExt.java
 
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 26a9f9a2789c36f4d5cd3af57a0c540d90019937..5b5fae7ecb53a650d1a5d0a5003d4a5c56dbecf3 100644
+index 4fa26b01d1c0edde949fde860d0ca42a20d067d5..d83a7bf2781d7deefd4cb6c10190ac90288dfb47 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
-@@ -24,6 +24,7 @@ public class Hooks implements ApplicationListener{
+@@ -27,6 +27,7 @@ public class Hooks implements ApplicationListener{
      @Override
      public void init(){
          Log.infoTag("MindustryX", "Hooks.init");
