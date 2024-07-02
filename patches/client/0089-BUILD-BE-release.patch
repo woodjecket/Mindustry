@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Wed, 3 Jul 2024 00:16:15 +0800
+Subject: [PATCH] BUILD BE release
+
+---
+ .github/workflows/build.yml | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 7274747394a37e24191ce31bfa5ed03a8e31b834..2909edd2d2efc4f59e51349efebef9863e97974c 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -39,13 +39,14 @@ jobs:
+           keystore_alias_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
+           keystore_alias: MindustryX
+         run: |
+-          gradle desktop:dist core:genLoaderModAll android:assembleRelease -Pbuildversion=${RELEASE_VERSION}
++          gradle desktop:dist android:assembleRelease server:dist -Pbuildversion=${RELEASE_VERSION}
+       - name: Move artifacts
+         run: |
+           mkdir artifacts
+           mv desktop/build/libs/Mindustry.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}-Desktop.jar
+-          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
++#          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
+           mv android/build/outputs/apk/release/android-release.apk artifacts/MindustryX-${{env.RELEASE_VERSION}}-Android.apk
++          mv work/server/build/libs/server-release.jar artifacts/server-${{env.RELEASE_VERSION}}.jar
+       - name: Update Tag
+         uses: rickstaa/action-create-tag@v1
+         with:

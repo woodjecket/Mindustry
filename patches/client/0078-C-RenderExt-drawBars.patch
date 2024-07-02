@@ -4,11 +4,11 @@ Date: Wed, 5 Jun 2024 23:26:51 +0800
 Subject: [PATCH] C(RenderExt) drawBars
 
 ---
- core/src/mindustryX/features/RenderExt.java | 54 +++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+ core/src/mindustryX/features/RenderExt.java | 56 +++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 5f9673b79a87985190aee8083a51607e60af04b7..5e5190b95b68b37423a9d6beaf7d2215cba32e97 100644
+index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb7459f5d5f04 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -6,6 +6,8 @@ import arc.graphics.g2d.*;
@@ -56,7 +56,7 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..5e5190b95b68b37423a9d6beaf7d2215
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -152,4 +162,48 @@ public class RenderExt{
+@@ -152,4 +162,50 @@ public class RenderExt{
              }
          }
      }
@@ -103,5 +103,7 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..5e5190b95b68b37423a9d6beaf7d2215
 +        Draw.color(fg, 0.6f);
 +        Lines.stroke(2f);
 +        Lines.line(x1, y, Mathf.lerp(x1, x2, Mathf.clamp(ratio, 0f, 1f)), y);
++
++        Draw.reset();
 +    }
  }

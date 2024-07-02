@@ -133,7 +133,6 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  core/src/mindustryX/features/ArcBuilds.java   |  160 +++
  core/src/mindustryX/features/ArcOld.java      |   42 +
  core/src/mindustryX/features/ArcRadar.java    |  239 ++++
- .../features}/ArcScanMode.java                |   15 +-
  core/src/mindustryX/features/ArcUnits.java    |  346 +++++
  .../mindustryX/features/ArcWaveSpawner.java   |  258 ++++
  core/src/mindustryX/features/MarkerType.java  |   12 +-
@@ -144,10 +143,9 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  .../mindustryX/features/ui/ArcPowerInfo.java  |   71 ++
  .../features/ui/ArcWaveInfoDialog.java        | 1117 +++++++++++++++++
  .../features/ui/BlockSelectDialog.java        |   65 +
- 69 files changed, 6196 insertions(+), 285 deletions(-)
+ 68 files changed, 6188 insertions(+), 278 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcBuilds.java
  create mode 100644 core/src/mindustryX/features/ArcRadar.java
- rename core/src/{mindustry/arcModule/toolpack => mindustryX/features}/ArcScanMode.java (97%)
  create mode 100644 core/src/mindustryX/features/ArcUnits.java
  create mode 100644 core/src/mindustryX/features/ArcWaveSpawner.java
  create mode 100644 core/src/mindustryX/features/PicToMindustry.java
@@ -6649,77 +6647,6 @@ index 0000000000000000000000000000000000000000..21abee2343532b732130d2209137a6c0
 +    }
 +
 +}
-diff --git a/core/src/mindustry/arcModule/toolpack/ArcScanMode.java b/core/src/mindustryX/features/ArcScanMode.java
-similarity index 97%
-rename from core/src/mindustry/arcModule/toolpack/ArcScanMode.java
-rename to core/src/mindustryX/features/ArcScanMode.java
-index b5336d79400f724b39d50c304e417ba52b8b6aaa..f2b394217a66d92c418db8ae1311a07f4bbf9263 100644
---- a/core/src/mindustry/arcModule/toolpack/ArcScanMode.java
-+++ b/core/src/mindustryX/features/ArcScanMode.java
-@@ -1,4 +1,4 @@
--package mindustry.arcModule.toolpack;
-+package mindustryX.features;
- 
- import arc.*;
- import arc.func.*;
-@@ -11,7 +11,6 @@ import arc.scene.ui.layout.*;
- import arc.struct.*;
- import arc.util.*;
- import mindustry.ai.types.*;
--import mindustry.arcModule.*;
- import mindustry.gen.*;
- import mindustry.graphics.*;
- import mindustry.input.*;
-@@ -23,9 +22,11 @@ import mindustry.world.blocks.liquid.*;
- import mindustry.world.blocks.production.*;
- import mindustry.world.blocks.storage.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.ui.*;
- 
- import static mindustry.Vars.*;
- 
-+//move from mindustry.arcModule.toolpack.ArcScanMode
- public class ArcScanMode{
-     public static boolean enabled = false;
-     private static final Table ctTable = new Table();
-@@ -71,8 +72,8 @@ public class ArcScanMode{
-     private static void updateSpawnerDisplay(){
-         spawnerTable.clear();
-         flyerTable.clear();
--        if(arcWaveSpawner.arcWave.isEmpty()) return;
--        arcWaveSpawner.waveInfo thisWave = arcWaveSpawner.arcWave.get(Math.min(state.wave - 1, arcWaveSpawner.arcWave.size - 1));
-+        if(ArcWaveSpawner.arcWave.isEmpty()) return;
-+        ArcWaveSpawner.waveInfo thisWave = ArcWaveSpawner.arcWave.get(Math.min(state.wave - 1, ArcWaveSpawner.arcWave.size - 1));
-         for(Tile tile : spawner.getSpawns()){
-             if(Mathf.dst(tile.worldx(), tile.worldy(), Core.input.mouseWorldX(), Core.input.mouseWorldY()) < state.rules.dropZoneRadius){
-                 float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
-@@ -85,7 +86,7 @@ public class ArcScanMode{
-                 float spawnX = Mathf.clamp(world.width() * tilesize / 2f + Angles.trnsx(flyerAngle, trns), 0, world.width() * tilesize);
-                 float spawnY = Mathf.clamp(world.height() * tilesize / 2f + Angles.trnsy(flyerAngle, trns), 0, world.height() * tilesize);
- 
--                if(arcWaveSpawner.hasFlyer){
-+                if(ArcWaveSpawner.hasFlyer){
-                     Lines.line(tile.worldx(), tile.worldy(), spawnX, spawnY);
-                     Tmp.v1.set(spawnX - tile.worldx(), spawnY - tile.worldy());
-                     Tmp.v1.setLength(Tmp.v1.len() * curve);
-@@ -94,7 +95,7 @@ public class ArcScanMode{
-                     Vec2 v = Core.camera.project(spawnX, spawnY);
-                     flyerTable.setPosition(v.x, v.y);
-                     flyerTable.table(Styles.black3, tt -> {
--                        tt.add(RFuncs.calWaveTimer()).row();
-+                        tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
-                         thisWave.specLoc(tile.pos(), group -> group.type.flying);
-                         tt.add(thisWave.proTable(false));
-                         tt.row();
-@@ -114,7 +115,7 @@ public class ArcScanMode{
-                 Vec2 v = Core.camera.project(tile.worldx(), tile.worldy());
-                 spawnerTable.setPosition(v.x, v.y);
-                 spawnerTable.table(Styles.black3, tt -> {
--                    tt.add(RFuncs.calWaveTimer()).row();
-+                    tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
-                     thisWave.specLoc(tile.pos(), group -> !group.type.flying);
-                     tt.add(thisWave.proTable(false));
-                     tt.row();
 diff --git a/core/src/mindustryX/features/ArcUnits.java b/core/src/mindustryX/features/ArcUnits.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..3b05b8fbce42092593a7dd4b177e73a69eedfc43
@@ -7741,7 +7668,7 @@ index 0000000000000000000000000000000000000000..b3bf32d2d3da28f6adc38c56ea3d2440
 +    }
 +}
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d3af9a67991d89027dc2c556d9b757803fa15553..9312ef2a44bc8fb8d0bd50c106a6ce74967fcfdd 100644
+index 7dd8cea136898d7800142e6f5b9e54c87f1c5877..cf09ac1033e9af7f50aedfa7402048ac05bc3a3b 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -7,8 +7,8 @@ import arc.math.*;

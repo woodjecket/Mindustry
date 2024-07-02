@@ -4,20 +4,73 @@ Date: Sun, 19 May 2024 19:40:31 +0800
 Subject: [PATCH] ARC arcScanMode
 
 ---
- .../arcModule/toolpack/ArcScanMode.java       | 397 ++++++++++++++++++
  .../blocks/distribution/DirectionBridge.java  |   7 +
  .../world/blocks/distribution/ItemBridge.java |  12 +
  .../world/blocks/distribution/MassDriver.java |   3 +
- 4 files changed, 419 insertions(+)
- create mode 100644 core/src/mindustry/arcModule/toolpack/ArcScanMode.java
+ core/src/mindustryX/features/ArcScanMode.java | 398 ++++++++++++++++++
+ 4 files changed, 420 insertions(+)
+ create mode 100644 core/src/mindustryX/features/ArcScanMode.java
 
-diff --git a/core/src/mindustry/arcModule/toolpack/ArcScanMode.java b/core/src/mindustry/arcModule/toolpack/ArcScanMode.java
+diff --git a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
+index 2c0077cc99557c80f49d0cf496c92309b31e482e..341b81c8ec8cae795b3e5c3872e253f9317975bc 100644
+--- a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
++++ b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
+@@ -215,5 +215,12 @@ public class DirectionBridge extends Block{
+             }
+             return null;
+         }
++        public boolean arcCheckAccept(Building source) {
++            //only accept if there's an output point.
++            if(findLink() == null) return false;
++
++            int rel = this.relativeToEdge(source.tile);
++            return rel != rotation && occupied[(rel + 2) % 4] == null;
++        }
+     }
+ }
+diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
+index 050e7151487c8d248c0e6e0b48913fbe944164d9..ecad9d1a4270e0611bca5c6b3d23f4d6f07dd027 100644
+--- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
++++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
+@@ -530,5 +530,17 @@ public class ItemBridge extends Block{
+                 wasMoved = moved = read.bool();
+             }
+         }
++
++        public boolean arcLinkValid() {
++            return linkValid(this.tile, world.tile(link));
++        }
++
++        public boolean arcCheckDump(Building to){
++            return checkDump(to);
++        }
++
++        public boolean arcCheckAccept(Building source) {
++            return checkAccept(source, world.tile(link));
++        }
+     }
+ }
+diff --git a/core/src/mindustry/world/blocks/distribution/MassDriver.java b/core/src/mindustry/world/blocks/distribution/MassDriver.java
+index 7fc0d5f0ec12e7d2aaa70d32beebed9027914449..f749a280f0307a1c44294b6ebcba25808f429ef0 100644
+--- a/core/src/mindustry/world/blocks/distribution/MassDriver.java
++++ b/core/src/mindustry/world/blocks/distribution/MassDriver.java
+@@ -335,6 +335,9 @@ public class MassDriver extends Block{
+             return other instanceof MassDriverBuild entity && other.isValid() && other.efficiency > 0 && entity.block == block && entity.link == pos() && within(other, range);
+         }
+ 
++        public boolean arcLinkValid(){
++            return linkValid();
++        }
+         protected boolean linkValid(){
+             if(link == -1) return false;
+             return world.build(this.link) instanceof MassDriverBuild other && other.block == block && other.team == team && within(other, range);
+diff --git a/core/src/mindustryX/features/ArcScanMode.java b/core/src/mindustryX/features/ArcScanMode.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba52b8b6aaa
+index 0000000000000000000000000000000000000000..f2b394217a66d92c418db8ae1311a07f4bbf9263
 --- /dev/null
-+++ b/core/src/mindustry/arcModule/toolpack/ArcScanMode.java
-@@ -0,0 +1,397 @@
-+package mindustry.arcModule.toolpack;
++++ b/core/src/mindustryX/features/ArcScanMode.java
+@@ -0,0 +1,398 @@
++package mindustryX.features;
 +
 +import arc.*;
 +import arc.func.*;
@@ -30,7 +83,6 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +import arc.struct.*;
 +import arc.util.*;
 +import mindustry.ai.types.*;
-+import mindustry.arcModule.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
 +import mindustry.input.*;
@@ -42,9 +94,11 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +import mindustry.world.blocks.production.*;
 +import mindustry.world.blocks.storage.*;
 +import mindustry.world.meta.*;
++import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.*;
 +
++//move from mindustry.arcModule.toolpack.ArcScanMode
 +public class ArcScanMode{
 +    public static boolean enabled = false;
 +    private static final Table ctTable = new Table();
@@ -90,8 +144,8 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +    private static void updateSpawnerDisplay(){
 +        spawnerTable.clear();
 +        flyerTable.clear();
-+        if(arcWaveSpawner.arcWave.isEmpty()) return;
-+        arcWaveSpawner.waveInfo thisWave = arcWaveSpawner.arcWave.get(Math.min(state.wave - 1, arcWaveSpawner.arcWave.size - 1));
++        if(ArcWaveSpawner.arcWave.isEmpty()) return;
++        ArcWaveSpawner.waveInfo thisWave = ArcWaveSpawner.arcWave.get(Math.min(state.wave - 1, ArcWaveSpawner.arcWave.size - 1));
 +        for(Tile tile : spawner.getSpawns()){
 +            if(Mathf.dst(tile.worldx(), tile.worldy(), Core.input.mouseWorldX(), Core.input.mouseWorldY()) < state.rules.dropZoneRadius){
 +                float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
@@ -104,7 +158,7 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +                float spawnX = Mathf.clamp(world.width() * tilesize / 2f + Angles.trnsx(flyerAngle, trns), 0, world.width() * tilesize);
 +                float spawnY = Mathf.clamp(world.height() * tilesize / 2f + Angles.trnsy(flyerAngle, trns), 0, world.height() * tilesize);
 +
-+                if(arcWaveSpawner.hasFlyer){
++                if(ArcWaveSpawner.hasFlyer){
 +                    Lines.line(tile.worldx(), tile.worldy(), spawnX, spawnY);
 +                    Tmp.v1.set(spawnX - tile.worldx(), spawnY - tile.worldy());
 +                    Tmp.v1.setLength(Tmp.v1.len() * curve);
@@ -113,7 +167,7 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +                    Vec2 v = Core.camera.project(spawnX, spawnY);
 +                    flyerTable.setPosition(v.x, v.y);
 +                    flyerTable.table(Styles.black3, tt -> {
-+                        tt.add(RFuncs.calWaveTimer()).row();
++                        tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
 +                        thisWave.specLoc(tile.pos(), group -> group.type.flying);
 +                        tt.add(thisWave.proTable(false));
 +                        tt.row();
@@ -133,7 +187,7 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +                Vec2 v = Core.camera.project(tile.worldx(), tile.worldy());
 +                spawnerTable.setPosition(v.x, v.y);
 +                spawnerTable.table(Styles.black3, tt -> {
-+                    tt.add(RFuncs.calWaveTimer()).row();
++                    tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
 +                    thisWave.specLoc(tile.pos(), group -> !group.type.flying);
 +                    tt.add(thisWave.proTable(false));
 +                    tt.row();
@@ -414,56 +468,3 @@ index 0000000000000000000000000000000000000000..b5336d79400f724b39d50c304e417ba5
 +        }
 +    }
 +}
-diff --git a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-index 2c0077cc99557c80f49d0cf496c92309b31e482e..341b81c8ec8cae795b3e5c3872e253f9317975bc 100644
---- a/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-+++ b/core/src/mindustry/world/blocks/distribution/DirectionBridge.java
-@@ -215,5 +215,12 @@ public class DirectionBridge extends Block{
-             }
-             return null;
-         }
-+        public boolean arcCheckAccept(Building source) {
-+            //only accept if there's an output point.
-+            if(findLink() == null) return false;
-+
-+            int rel = this.relativeToEdge(source.tile);
-+            return rel != rotation && occupied[(rel + 2) % 4] == null;
-+        }
-     }
- }
-diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 050e7151487c8d248c0e6e0b48913fbe944164d9..ecad9d1a4270e0611bca5c6b3d23f4d6f07dd027 100644
---- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-+++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-@@ -530,5 +530,17 @@ public class ItemBridge extends Block{
-                 wasMoved = moved = read.bool();
-             }
-         }
-+
-+        public boolean arcLinkValid() {
-+            return linkValid(this.tile, world.tile(link));
-+        }
-+
-+        public boolean arcCheckDump(Building to){
-+            return checkDump(to);
-+        }
-+
-+        public boolean arcCheckAccept(Building source) {
-+            return checkAccept(source, world.tile(link));
-+        }
-     }
- }
-diff --git a/core/src/mindustry/world/blocks/distribution/MassDriver.java b/core/src/mindustry/world/blocks/distribution/MassDriver.java
-index 7fc0d5f0ec12e7d2aaa70d32beebed9027914449..f749a280f0307a1c44294b6ebcba25808f429ef0 100644
---- a/core/src/mindustry/world/blocks/distribution/MassDriver.java
-+++ b/core/src/mindustry/world/blocks/distribution/MassDriver.java
-@@ -335,6 +335,9 @@ public class MassDriver extends Block{
-             return other instanceof MassDriverBuild entity && other.isValid() && other.efficiency > 0 && entity.block == block && entity.link == pos() && within(other, range);
-         }
- 
-+        public boolean arcLinkValid(){
-+            return linkValid();
-+        }
-         protected boolean linkValid(){
-             if(link == -1) return false;
-             return world.build(this.link) instanceof MassDriverBuild other && other.block == block && other.team == team && within(other, range);
