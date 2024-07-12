@@ -54,7 +54,7 @@ index 7a968f1c21275eb4a571350adfcf59df1fa37df9..89b9a23ce2bb850df5c7ae99a5f96475
          team("/t"),
          admin("/a", player::admin)
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 6e4a90501f429bec5075e3d11e01dc2e220d930f..3cfe589eca2f32127b659aa8c8647e8ffbb7e5eb 100644
+index af7d31b4674b0efb198643fdfa7dc8b65e17d38a..3d1491a497b4f3a7dad96620cdc6638376938b4d 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -52,6 +52,9 @@ public class Hooks implements ApplicationListener{

@@ -4,10 +4,11 @@ Date: Wed, 3 Apr 2024 21:57:24 +0800
 Subject: [PATCH] API: Hooks
 
 ---
- core/src/mindustry/ClientLauncher.java |  1 +
- core/src/mindustry/Vars.java           |  1 +
- core/src/mindustryX/Hooks.java         | 17 +++++++++++++++++
- 3 files changed, 19 insertions(+)
+ core/src/mindustry/ClientLauncher.java          |  1 +
+ core/src/mindustry/Vars.java                    |  1 +
+ core/src/mindustryX/Hooks.java                  | 17 +++++++++++++++++
+ server/src/mindustry/server/ServerLauncher.java |  1 +
+ 4 files changed, 20 insertions(+)
  create mode 100644 core/src/mindustryX/Hooks.java
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
@@ -57,3 +58,15 @@ index 0000000000000000000000000000000000000000..499a9f3403c6769288ad44e7fb4a68ff
 +        Log.infoTag("MindustryX", "Hooks.init");
 +    }
 +}
+diff --git a/server/src/mindustry/server/ServerLauncher.java b/server/src/mindustry/server/ServerLauncher.java
+index 1aea11b2cc877ef9a35280575e6419d9fab16f01..1799c999b2affdc0de392841212edc1f544e4751 100644
+--- a/server/src/mindustry/server/ServerLauncher.java
++++ b/server/src/mindustry/server/ServerLauncher.java
+@@ -76,6 +76,7 @@ public class ServerLauncher implements ApplicationListener{
+         Core.app.addListener(netServer = new NetServer());
+         Core.app.addListener(new ServerControl(args));
+         Core.app.addListener(new ApplicationListener(){public void update(){ asyncCore.end(); }});
++        Core.app.addListener(new mindustryX.Hooks());
+ 
+         mods.eachClass(Mod::init);
+ 

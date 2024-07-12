@@ -11,11 +11,11 @@ Subject: [PATCH] CS: Version
  build.gradle                           |  4 ++--
  core/build.gradle.kts                  |  2 +-
  core/src/mindustry/Vars.java           |  2 +-
- core/src/mindustry/core/NetClient.java |  4 +++-
- core/src/mindustry/core/NetServer.java | 11 ++++++++---
+ core/src/mindustry/core/NetClient.java |  2 ++
  core/src/mindustry/core/Version.java   | 16 +++++++++++++++-
+ core/src/mindustry/net/NetworkIO.java  |  2 +-
  gradle.properties                      |  2 ++
- 11 files changed, 37 insertions(+), 14 deletions(-)
+ 11 files changed, 29 insertions(+), 11 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
@@ -42,7 +42,7 @@ index 8cae20eee7a480cef6a14576fc72b096d38271e1..25602c4ab4070b7db9b31803c88281c7
      <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
      <uses-feature android:name="android.hardware.type.pc" android:required="false" />
 diff --git a/android/build.gradle b/android/build.gradle
-index 136f657fb1187dd5c4e9ff49352964bb917c6eed..6f3e8ee3b7b21265a4638ad3b5f09af790619c76 100644
+index 8b9676e3f124728d59ee80367d14f433853c0c40..c39484bf6b00b8031b7ae8862cc172f8946f12cc 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -18,7 +18,7 @@ configurations{ natives }
@@ -54,8 +54,8 @@ index 136f657fb1187dd5c4e9ff49352964bb917c6eed..6f3e8ee3b7b21265a4638ad3b5f09af7
  }
  
  android{
-@@ -48,7 +48,7 @@ android{
-         Integer vcode = props['androidBuildCode']?.toInteger() ?: 1
+@@ -46,7 +46,7 @@ android{
+     defaultConfig{
          def versionNameResult = "$versionNumber-$versionType-${getBuildVersion().replace(" ", "-")}"
  
 -        applicationId "io.anuke.mindustry"
@@ -119,18 +119,9 @@ index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 8171a89797a0d1cb29fb50364a94b6d3130698ae..76736b9f6bc44d040bdfc2cc717702d1c3eca839 100644
+index 8171a89797a0d1cb29fb50364a94b6d3130698ae..6b05845bad6eb3862dea511563e099085d15b479 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -92,7 +92,7 @@ public class NetClient implements ApplicationListener{
-             c.locale = locale;
-             c.mods = mods.getModStrings();
-             c.mobile = mobile;
--            c.versionType = Version.type;
-+            c.versionType = "official";
-             c.color = player.color.rgba();
-             c.usid = getUsid(packet.addressTCP);
-             c.uuid = platform.getUUID();
 @@ -135,6 +135,8 @@ public class NetClient implements ApplicationListener{
              Log.info("Received world data: @ bytes.", data.stream.available());
              NetworkIO.loadWorld(new InflaterInputStream(data.stream));
@@ -140,28 +131,6 @@ index 8171a89797a0d1cb29fb50364a94b6d3130698ae..76736b9f6bc44d040bdfc2cc717702d1
              finishConnecting();
          });
      }
-diff --git a/core/src/mindustry/core/NetServer.java b/core/src/mindustry/core/NetServer.java
-index b80f828362676bdad9cffa982b2544f845441c74..80149612e037bd9ec6368c1b4c3a5d067fd184f1 100644
---- a/core/src/mindustry/core/NetServer.java
-+++ b/core/src/mindustry/core/NetServer.java
-@@ -210,9 +210,14 @@ public class NetServer implements ApplicationListener{
-                 return;
-             }
- 
--            if(packet.versionType == null || ((packet.version == -1 || !packet.versionType.equals(Version.type)) && Version.build != -1 && !admins.allowsCustomClients())){
--                con.kick(!Version.type.equals(packet.versionType) ? KickReason.typeMismatch : KickReason.customClient);
--                return;
-+            if(Version.build != -1 && !admins.allowsCustomClients()){
-+                if(packet.versionType == null || packet.version == -1){
-+                    con.kick(KickReason.customClient);
-+                    return;
-+                }else if((!Version.type.equals("MindustryX") || !"official".equals(packet.versionType)) && !Version.type.equals(packet.versionType)){
-+                    con.kick(KickReason.typeMismatch);
-+                    return;
-+                }
-             }
- 
-             boolean preventDuplicates = headless && netServer.admins.isStrict();
 diff --git a/core/src/mindustry/core/Version.java b/core/src/mindustry/core/Version.java
 index 73bbd59416cc8e1b64bcb5538fdd73886a455451..8698103654e40dd4e85451e1020563ca562ed2d2 100644
 --- a/core/src/mindustry/core/Version.java
@@ -209,6 +178,19 @@ index 73bbd59416cc8e1b64bcb5538fdd73886a455451..8698103654e40dd4e85451e1020563ca
 +        "\nMindustryX " + mdtXBuild;
      }
  }
+diff --git a/core/src/mindustry/net/NetworkIO.java b/core/src/mindustry/net/NetworkIO.java
+index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129b7a859dc 100644
+--- a/core/src/mindustry/net/NetworkIO.java
++++ b/core/src/mindustry/net/NetworkIO.java
+@@ -107,7 +107,7 @@ public class NetworkIO{
+         buffer.putInt(Core.settings.getInt("totalPlayers", Groups.player.size()));
+         buffer.putInt(state.wave);
+         buffer.putInt(Version.build);
+-        writeString(buffer, Version.type);
++        writeString(buffer, "MindustryX");
+ 
+         buffer.put((byte)state.rules.mode().ordinal());
+         buffer.putInt(netServer.admins.getPlayerLimit());
 diff --git a/gradle.properties b/gradle.properties
 index f43e22ea642fe0dcd62cf970a518de025db65ea4..b1921b8ac0d8d0ca7ac86e4d551a694d1ae38ed9 100644
 --- a/gradle.properties

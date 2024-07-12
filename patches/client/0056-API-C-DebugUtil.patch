@@ -95,7 +95,7 @@ index c882edc714762142d52ccf81682e923c74f486a9..bd45df84f3f12358bd875fcca2251d43
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 3cfe589eca2f32127b659aa8c8647e8ffbb7e5eb..afa6585f8292e98e7e4279da1bdb42c5f69ff9c7 100644
+index 3d1491a497b4f3a7dad96620cdc6638376938b4d..9981f2963b730173d8c03e29440e2e9ee404d4d3 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -18,6 +18,7 @@ public class Hooks implements ApplicationListener{

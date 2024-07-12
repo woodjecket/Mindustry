@@ -45,7 +45,7 @@ index a23af33bb1a25a679616822533f54de3de40831e..09c2f11f0caaa5e99b43a83bc306055b
              Tmp.r1.grow(6f);
              if(Tmp.r1.contains(Core.input.mouseWorld())){
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 5d34d188966dea076a8bfb49329aab3b4eb4019c..6e4a90501f429bec5075e3d11e01dc2e220d930f 100644
+index 66c54877a8c14ea43294c2db818583fcd7191351..af7d31b4674b0efb198643fdfa7dc8b65e17d38a 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -5,6 +5,7 @@ import arc.files.*;
@@ -59,7 +59,7 @@ index 5d34d188966dea076a8bfb49329aab3b4eb4019c..6e4a90501f429bec5075e3d11e01dc2e
 @@ -61,6 +62,9 @@ public class Hooks implements ApplicationListener{
  
      public static void pollKeys(){
-         if(Core.scene.hasField()) return;
+         if(Vars.headless || Core.scene.hasField()) return;
 +        if(Core.input.keyTap(Binding.toggle_unit)){
 +            RenderExt.unitHide = !RenderExt.unitHide;
 +        }

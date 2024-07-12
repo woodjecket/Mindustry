@@ -7,7 +7,7 @@ clear and replce jabel(Support record)
 way-zer <himc.wicp@gmail.com> on 2024/6/9
 ---
  .gitignore                                    |   2 +-
- android/build.gradle                          |  73 +++--
+ android/build.gradle                          |  80 +++--
  android/proguard-rules.pro                    |   5 +
  .../com/github/bsideup/jabel/Desugar.java     |  13 +
  .../javax.annotation.processing.Processor     |   6 +
@@ -21,11 +21,11 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  gradlew                                       | 282 +++++++++++-------
  gradlew.bat                                   |  35 ++-
  ios/build.gradle                              |   2 +-
- server/build.gradle                           |  42 +--
+ server/build.gradle                           |  44 +--
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 19 files changed, 384 insertions(+), 607 deletions(-)
+ 19 files changed, 389 insertions(+), 611 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -52,7 +52,7 @@ index dd3f2a0f065d3f774ea84fbc932e337160e4b307..7d91d3191096c431b739d2d5ecd951a7
  /core/assets/locales
  /core/assets/cache/
 diff --git a/android/build.gradle b/android/build.gradle
-index f7f1ce377bb162249e8034db9ab712a75e96bc17..136f657fb1187dd5c4e9ff49352964bb917c6eed 100644
+index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433853c0c40 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -1,18 +1,19 @@
@@ -107,9 +107,26 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..136f657fb1187dd5c4e9ff49352964bb
      sourceSets{
          main{
              manifest.srcFile 'AndroidManifest.xml'
-@@ -63,8 +57,8 @@ android{
+@@ -50,8 +44,6 @@ android{
+     }
+ 
+     defaultConfig{
+-        Properties props = loadVersionProps()
+-        Integer vcode = props['androidBuildCode']?.toInteger() ?: 1
+         def versionNameResult = "$versionNumber-$versionType-${getBuildVersion().replace(" ", "-")}"
+ 
+         applicationId "io.anuke.mindustry"
+@@ -59,12 +51,15 @@ android{
+         targetSdkVersion 33
+         
+         versionName versionNameResult
+-        versionCode = vcode
++        versionCode = 1
  
          if(project.hasProperty("release")){
++            Properties props = loadVersionProps()
++            Integer vcode = props['androidBuildCode']?.toInteger() ?: 1
++            versionCode = vcode
              props['androidBuildCode'] = (vcode + 1).toString()
 +            props.store(file('../core/assets/version.properties').newWriter(), null)
          }
@@ -117,7 +134,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..136f657fb1187dd5c4e9ff49352964bb
      }
  
      compileOptions{
-@@ -72,7 +66,7 @@ android{
+@@ -72,7 +67,7 @@ android{
          targetCompatibility JavaVersion.VERSION_1_8
      }
  
@@ -126,7 +143,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..136f657fb1187dd5c4e9ff49352964bb
  
      signingConfigs{
          release{
-@@ -119,8 +113,8 @@ dependencies{
+@@ -119,8 +114,8 @@ dependencies{
      implementation arcModule("backends:backend-android")
      implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
  
@@ -137,7 +154,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..136f657fb1187dd5c4e9ff49352964bb
  
      def version;
      def highestVersion;
-@@ -133,24 +127,25 @@ dependencies{
+@@ -133,24 +128,25 @@ dependencies{
      if(sdkFile.exists()) compileOnly files(sdkFile.absolutePath)
  }
  
@@ -3096,7 +3113,7 @@ index d0ec38f0a9c9f7d07c240a3d0c8c24bd0f6c1ebf..44d6d24b5b4d43514c8c5bf535bf7077
  launchIPhoneSimulator.dependsOn build
  launchIPadSimulator.dependsOn build
 diff --git a/server/build.gradle b/server/build.gradle
-index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..0ea1b05d6928c1d16ffb5f48a6ac0c1eb8d66bd8 100644
+index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..badc019ded25d495a139efe134085184640eb500 100644
 --- a/server/build.gradle
 +++ b/server/build.gradle
 @@ -3,10 +3,6 @@ sourceSets.main.java.srcDirs = ["src/"]
@@ -3110,7 +3127,7 @@ index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..0ea1b05d6928c1d16ffb5f48a6ac0c1e
  task run(dependsOn: classes, type: JavaExec){
      mainClass = project.mainClassName
      classpath = sourceSets.main.runtimeClasspath
-@@ -31,6 +27,7 @@ task debug(dependsOn: classes, type: JavaExec){
+@@ -31,10 +27,11 @@ task debug(dependsOn: classes, type: JavaExec){
  }
  
  task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
@@ -3118,6 +3135,11 @@ index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..0ea1b05d6928c1d16ffb5f48a6ac0c1e
      from files(sourceSets.main.output.classesDirs)
      from files(sourceSets.main.output.resourcesDir)
      from {configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }}
+-    from files(project.assetsDir)
++    from files(tasks.getByPath(":core:allAssets"))
+     exclude("sprites/**")
+     exclude("music/**")
+     exclude("sounds/**")
 @@ -51,40 +48,3 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
          attributes 'Main-Class': project.mainClassName
      }

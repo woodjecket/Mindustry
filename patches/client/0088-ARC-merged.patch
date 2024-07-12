@@ -74,6 +74,10 @@ way-zer <himc.wicp@gmail.com> on 2024/6/30
 
 remove minimap.forceShowPlayer, minimap.unitDetailsIcon, 左键切换视角(原版已实现右键切视角)
 way-zer <himc.wicp@gmail.com> on 2024/7/2
+
+* 修复BE版指挥菜单错乱
+* 移除多余小地图按钮
+way-zer <himc.wicp@gmail.com> on 2024/7/13
 ---
  core/src/mindustry/ai/BlockIndexer.java       |  116 ++
  core/src/mindustry/core/Renderer.java         |    3 +-
@@ -94,9 +98,6 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  core/src/mindustry/input/DesktopInput.java    |   98 +-
  core/src/mindustry/input/InputHandler.java    |   62 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
- core/src/mindustry/logic/LCanvas.java         |   87 +-
- core/src/mindustry/logic/LExecutor.java       |   19 +-
- core/src/mindustry/logic/LogicDialog.java     |  178 ++-
  core/src/mindustry/type/UnitType.java         |  166 ++-
  core/src/mindustry/type/Weapon.java           |   25 +-
  core/src/mindustry/ui/Fonts.java              |    2 +-
@@ -110,9 +111,9 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  .../ui/dialogs/SettingsMenuDialog.java        |    1 -
  .../mindustry/ui/fragments/ChatFragment.java  |   25 +-
  .../ui/fragments/ConsoleFragment.java         |    3 +
- .../mindustry/ui/fragments/HudFragment.java   |  251 +++-
+ .../mindustry/ui/fragments/HudFragment.java   |  235 +++-
  .../mindustry/ui/fragments/MenuFragment.java  |   59 +-
- .../ui/fragments/PlacementFragment.java       |  321 ++++-
+ .../ui/fragments/PlacementFragment.java       |  212 +++-
  .../ui/fragments/PlayerListFragment.java      |  203 ++-
  core/src/mindustry/world/Block.java           |   18 +-
  core/src/mindustry/world/Build.java           |   50 +
@@ -124,8 +125,6 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  .../blocks/defense/turrets/BaseTurret.java    |    5 +-
  .../blocks/defense/turrets/ReloadTurret.java  |   13 +
  .../world/blocks/defense/turrets/Turret.java  |   21 +
- .../world/blocks/logic/LogicBlock.java        |   88 +-
- .../world/blocks/logic/MemoryBlock.java       |  107 ++
  .../world/blocks/production/Drill.java        |   23 +-
  .../blocks/production/GenericCrafter.java     |   29 +
  .../world/blocks/storage/CoreBlock.java       |    9 +
@@ -140,10 +139,10 @@ way-zer <himc.wicp@gmail.com> on 2024/7/2
  core/src/mindustryX/features/RenderExt.java   |   13 +-
  core/src/mindustryX/features/UIExt.java       |    1 +
  .../features/ui/ArcMessageDialog.java         |  419 +++++++
- .../mindustryX/features/ui/ArcPowerInfo.java  |   71 ++
+ .../mindustryX/features/ui/ArcPowerInfo.java  |   70 ++
  .../features/ui/ArcWaveInfoDialog.java        | 1117 +++++++++++++++++
  .../features/ui/BlockSelectDialog.java        |   65 +
- 68 files changed, 6188 insertions(+), 278 deletions(-)
+ 63 files changed, 5597 insertions(+), 264 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcBuilds.java
  create mode 100644 core/src/mindustryX/features/ArcRadar.java
  create mode 100644 core/src/mindustryX/features/ArcUnits.java
@@ -672,7 +671,7 @@ index b599d443b2c4a55a872a2f96c9adc6c056ff4a4e..b73ba15762b2fb6807f76e6dfd55866a
  
      /**
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index f970cfe23b56d283ab271aa7d025155ccbd8a4a9..241183345672da4d05a3dfe7212f03e284ca5702 100644
+index 71b18bedbffcb3eb83a1650f4ff5b2241787a5d8..a90ca4b427d85e02d5ad11c6c30812fca594e0ed 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
 +++ b/core/src/mindustry/entities/comp/PlayerComp.java
 @@ -21,6 +21,8 @@ import mindustry.net.Administration.*;
@@ -683,8 +682,8 @@ index f970cfe23b56d283ab271aa7d025155ccbd8a4a9..241183345672da4d05a3dfe7212f03e2
 +import mindustry.world.blocks.production.GenericCrafter;
  import mindustry.world.blocks.storage.*;
  import mindustry.world.blocks.storage.CoreBlock.*;
- 
-@@ -295,7 +297,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+ import mindustryX.events.*;
+@@ -299,7 +301,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
          font.getData().setScale(0.25f / Scl.scl(1f));
          layout.setText(font, name);
  
@@ -693,7 +692,7 @@ index f970cfe23b56d283ab271aa7d025155ccbd8a4a9..241183345672da4d05a3dfe7212f03e2
              Draw.color(0f, 0f, 0f, 0.3f);
              Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);
              Draw.color();
-@@ -360,6 +362,28 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+@@ -364,6 +366,28 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
          }
      }
  
@@ -1837,443 +1836,6 @@ index 2d0fc1bec1fb644a44e4b38e2cdab671e44ac9af..9339797b9bcf2dc4d0e3274dfa374eaa
  
          unit.movePref(movement);
  
-diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
-index 04871c02fbee810619980a87a36a5f60a9a5d43a..a7bab103aca31ec21bb3e11f6b4a80b649ed55a9 100644
---- a/core/src/mindustry/logic/LCanvas.java
-+++ b/core/src/mindustry/logic/LCanvas.java
-@@ -18,6 +18,8 @@ import mindustry.gen.*;
- import mindustry.graphics.*;
- import mindustry.logic.LStatements.*;
- import mindustry.ui.*;
-+import mindustry.ui.dialogs.BaseDialog;
-+import mindustryX.features.*;
- 
- public class LCanvas extends Table{
-     public static final int maxJumpsDrawn = 100;
-@@ -58,7 +60,7 @@ public class LCanvas extends Table{
- 
-     /** @return if statement elements should have rows. */
-     public static boolean useRows(){
--        return Core.graphics.getWidth() < Scl.scl(900f) * 1.2f;
-+        return Core.graphics.getWidth() - (Core.settings.getBool("logicSupport") ? 400f : 0f) < Scl.scl(900f) * 1.2f;
-     }
- 
-     public static void tooltip(Cell<?> cell, String key){
-@@ -351,14 +353,19 @@ public class LCanvas extends Table{
- 
-                 addressLabel = t.add(index + "").style(Styles.outlineLabel).color(color).padRight(8).get();
- 
-+                t.button(Icon.add, Styles.logici, () -> {
-+                }).size(24f).padRight(6).get().tapped(this::arcAppend);
-+
-                 t.button(Icon.copy, Styles.logici, () -> {
-                 }).size(24f).padRight(6).get().tapped(this::copy);
- 
-+                t.button(st instanceof PrintStatement ? Icon.fileText : Icon.pencil, Styles.logici, () -> arcTrans()).size(24f).padRight(6).get().tapped(()->{});
-+
-                 t.button(Icon.cancel, Styles.logici, () -> {
-                     remove();
-                     dragging = null;
-                     statements.layout();
--                }).size(24f);
-+                }).size(24f).padLeft(Vars.mobile?48:0);
- 
-                 t.addListener(new InputListener(){
-                     float lastx, lasty;
-@@ -436,6 +443,80 @@ public class LCanvas extends Table{
-             }
-         }
- 
-+        public void arcAppend(){
-+            BaseDialog dialog = new BaseDialog("@add");
-+            dialog.cont.table(table -> {
-+                table.background(Tex.button);
-+                table.pane(t -> {
-+                    for(Prov<LStatement> prov : LogicIO.allStatements){
-+                        LStatement example = prov.get();
-+                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
-+
-+                        LCategory category = example.category();
-+                        Table cat = t.find(category.name);
-+                        if(cat == null){
-+                            t.table(s -> {
-+                                if(category.icon != null){
-+                                    s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);
-+                                }
-+                                s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
-+                                s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
-+                            }).growX().pad(5f).padTop(10f);
-+
-+                            t.row();
-+
-+                            cat = t.table(c -> {
-+                                c.top().left();
-+                            }).name(category.name).top().left().growX().fillY().get();
-+                            t.row();
-+                        }
-+
-+                        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(Styles.flatt);
-+                        style.fontColor = category.color;
-+                        style.font = Fonts.outline;
-+
-+                        cat.button(example.name(), style, () -> {
-+                            statements.addChildAt(statements.getChildren().indexOf(this) + 1,new StatementElem(prov.get()));
-+                            statements.layout();
-+                            dialog.hide();
-+                        }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
-+
-+                        if(cat.getChildren().size % 3 == 0) cat.row();
-+                    }
-+                }).grow();
-+            }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
-+            dialog.addCloseButton();
-+            dialog.show();
-+        }
-+
-+        public void arcTrans(){ //LC：md这玩意真难搞，这一小段代码研究了一整天才找到如何解决。
-+            LStatement stNew;
-+            int child = statements.getChildren().indexOf(this) + 1;
-+            if(st instanceof PrintStatement pst){ //print->代码
-+                Seq<LStatement> lsStatement = LAssembler.read(pst.value.replace("_"," "),privileged);
-+                stNew = lsStatement.first();
-+                if (stNew instanceof InvalidStatement) UIExt.announce("[orange]警告：转换失败，请输入正确格式\n[cyan]" + LogicDialog.transText);
-+                else if(stNew instanceof JumpStatement jst && jst.destIndex != -1){
-+                    jst.dest = (StatementElem) statements.getChildren().get(jst.destIndex);
-+                }
-+            }else if (st instanceof InvalidStatement){
-+                stNew = LogicIO.read(new String[]{"print",LogicDialog.transText},2);
-+            }else{  //代码->print
-+                StringBuilder thisText = new StringBuilder();
-+                LogicIO.write(st,thisText);
-+                LogicDialog.transText = thisText.toString();
-+                stNew = LogicIO.read(new String[]{"print",LogicDialog.transText},2);
-+            }
-+            StatementElem stNewElem = new StatementElem(stNew);
-+            statements.addChildAt(child, stNewElem);
-+            remove();
-+            for(Element ste :  statements.seq){
-+                if(((StatementElem)ste).st instanceof JumpStatement jst && jst.dest == st.elem) jst.dest = stNewElem;
-+            }
-+            statements.layout();
-+        }
-+
-+
-         @Override
-         public void draw(){
-             float pad = 5f;
-@@ -584,7 +665,7 @@ public class LCanvas extends Table{
-             float dist = 100f;
- 
-             //square jumps
--            if(false){
-+            if(Core.settings.getBool("rectJumpLine")){
-                 float len = Scl.scl(Mathf.randomSeed(hashCode(), 10, 50));
- 
-                 float maxX = Math.max(x, x2) + len;
-diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index f06cac9e1e77f0207895e1502cde6541d01dd6e2..10e2a9930c328e7ca715a8112f62adfa8c7636b1 100644
---- a/core/src/mindustry/logic/LExecutor.java
-+++ b/core/src/mindustry/logic/LExecutor.java
-@@ -9,6 +9,7 @@ import arc.util.*;
- import mindustry.*;
- import mindustry.ai.types.*;
- import mindustry.annotations.Annotations.*;
-+import mindustryX.features.ui.ArcMessageDialog;
- import mindustry.content.*;
- import mindustry.core.*;
- import mindustry.ctype.*;
-@@ -30,6 +31,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
- import mindustry.world.blocks.logic.MessageBlock.*;
- import mindustry.world.blocks.payloads.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.ui.ArcMessageDialog.*;
- 
- import static mindustry.Vars.*;
- 
-@@ -45,9 +47,9 @@ public class LExecutor{
-     public LInstruction[] instructions = {};
-     /** Non-constant variables used for network sync */
-     public LVar[] vars = {};
--    
-+
-     public LVar counter, unit, thisv, ipt;
--    
-+
-     public int[] binds;
-     public boolean yield;
- 
-@@ -501,6 +503,7 @@ public class LExecutor{
-         public void run(LExecutor exec){
-             Object obj = target.obj();
-             if(obj instanceof Building b && (exec.privileged || (b.team == exec.team && exec.linkIds.contains(b.id)))){
-+                b.lastLogicController = exec.build;
- 
-                 if(type == LAccess.enabled && !p1.bool()){
-                     b.lastDisabler = exec.build;
-@@ -1192,7 +1195,7 @@ public class LExecutor{
-         @Override
-         public void run(LExecutor exec){
-             if(headless) return;
--
-+            if(Core.settings.getBool("removeLogicLock"))return;
-             switch(action){
-                 case pan -> {
-                     control.input.logicCutscene = true;
-@@ -1623,8 +1626,14 @@ public class LExecutor{
-             }
- 
-             switch(type){
--                case notify -> ui.hudfrag.showToast(Icon.info, text);
--                case announce -> ui.announce(text, duration.numf());
-+                case notify -> {
-+                    ui.hudfrag.showToast(Icon.info, text);
-+                    ArcMessageDialog.addMsg(new Msg(Type.logicNotify,text).sendMessage());
-+                }
-+                case announce -> {
-+                    ui.announce(text, duration.numf());
-+                    ArcMessageDialog.addMsg(new Msg(Type.logicAnnounce,text).sendMessage());
-+                }
-                 case toast -> ui.showInfoToast(text, duration.numf());
-                 //TODO desync?
-                 case mission -> state.rules.mission = text;
-diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..9b9696ec78a7ae95a5163fb265384f6fb4adbb1d 100644
---- a/core/src/mindustry/logic/LogicDialog.java
-+++ b/core/src/mindustry/logic/LogicDialog.java
-@@ -4,6 +4,7 @@ import arc.*;
- import arc.func.*;
- import arc.graphics.*;
- import arc.scene.actions.*;
-+import arc.scene.event.*;
- import arc.scene.ui.*;
- import arc.scene.ui.TextButton.*;
- import arc.scene.ui.layout.*;
-@@ -18,6 +19,7 @@ import mindustry.logic.LStatements.*;
- import mindustry.ui.*;
- import mindustry.ui.dialogs.*;
- import mindustry.world.blocks.logic.*;
-+import mindustryX.features.*;
- 
- import static mindustry.Vars.*;
- import static mindustry.logic.LCanvas.*;
-@@ -26,9 +28,19 @@ public class LogicDialog extends BaseDialog{
-     public LCanvas canvas;
-     Cons<String> consumer = s -> {};
-     boolean privileged;
-+    public static float period = 15f;
-+    float counter = 0f;
-+    Table varTable = new Table();
-+    Table mainTable = new Table();
-+    public static boolean refreshing = true;
-+
-+    public static String transText = "";
-+
-     @Nullable LExecutor executor;
-     GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
- 
-+    private boolean noSave = false;
-+
-     public LogicDialog(){
-         super("logic");
- 
-@@ -40,19 +52,168 @@ public class LogicDialog extends BaseDialog{
-         addCloseListener();
- 
-         shown(this::setup);
--        hidden(() -> consumer.get(canvas.save()));
-+        hidden(() -> {
-+            if(!noSave){
-+                consumer.get(canvas.save());
-+            } else {
-+                noSave = false;
-+            }});
-         onResize(() -> {
-             setup();
-             canvas.rebuild();
-+            varsTable();
-         });
- 
--        add(canvas).grow().name("canvas");
-+
-+        add(mainTable).grow().name("canvas");
-+        rebuildMain();
- 
-         row();
- 
-         add(buttons).growX().name("canvas");
-     }
- 
-+    private void rebuildMain(){
-+        mainTable.clear();
-+        canvas.rebuild();
-+        if(!Core.settings.getBool("logicSupport"))  {
-+            mainTable.add(canvas).grow();
-+        }else{
-+            varsTable();
-+            mainTable.add(varTable);
-+            mainTable.add(canvas).grow();
-+            counter=0;
-+            varTable.update(()->{
-+                counter+=Time.delta;
-+                if(counter>period && refreshing){
-+                    counter=0;
-+                }
-+            });
-+        }
-+    }
-+    private void varsTable(){
-+        varTable.clear();
-+        varTable.table(t->{
-+            t.table(tt->{
-+                tt.add("刷新间隔").padRight(5f).left();
-+                TextField field = tt.field((int)period + "", text -> {
-+                    period = Integer.parseInt(text);
-+                }).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
-+                tt.slider(1, 60,1, period, res -> {
-+                    period = res;
-+                    field.setText((int)res + "");
-+                });
-+            });
-+            t.row();
-+            t.table(tt -> {
-+                tt.button(Icon.cancelSmall, Styles.cleari, () -> {
-+                    Core.settings.put("logicSupport", !Core.settings.getBool("logicSupport"));
-+                    UIExt.announce("[orange]已关闭逻辑辅助器！");
-+                    rebuildMain();
-+                }).size(50f);
-+                tt.button(Icon.refreshSmall, Styles.cleari, () -> {
-+                    executor.build.updateCode(executor.build.code);
-+                    varsTable();
-+                    UIExt.announce("[orange]已更新逻辑显示！");
-+                }).size(50f);
-+                tt.button(Icon.pauseSmall, Styles.cleari, () -> {
-+                    refreshing = !refreshing;
-+                    String text = "[orange]已" + (refreshing ? "开启" : "关闭") + "逻辑刷新";
-+                    UIExt.announce(text);
-+                }).checked(refreshing).size(50f);
-+                tt.button(Icon.rightOpenOutSmall, Styles.cleari, () -> {
-+                    Core.settings.put("rectJumpLine", !Core.settings.getBool("rectJumpLine"));
-+                    String text = "[orange]已" + (refreshing ? "开启" : "关闭") + "方形跳转线";
-+                    UIExt.announce(text);
-+                    this.canvas.rebuild();
-+                }).checked(refreshing).size(50f);
-+
-+                tt.button(Icon.playSmall, Styles.cleari, () -> {
-+                    if (state.isPaused()) state.set(State.playing);
-+                    else state.set(State.paused);
-+                    String text = state.isPaused() ? "已暂停" : "已继续游戏";
-+                    UIExt.announce(text);
-+                }).checked(state.isPaused()).size(50f);
-+            });
-+        });
-+        varTable.row();
-+            varTable.pane(t->{
-+                if(executor==null) return;
-+                for(var s : executor.vars){
-+                    if(s.name.startsWith("___")) continue;
-+                    String text = arcVarsText(s);
-+                    t.table(tt->{
-+                        tt.background(Tex.whitePane);
-+
-+                        tt.table(tv->{
-+                            tv.labelWrap(s.name).width(100f);
-+                            tv.touchable = Touchable.enabled;
-+                            tv.tapped(()->{
-+                                Core.app.setClipboardText(s.name);
-+                                UIExt.announce("[cyan]复制变量名[white]\n " + s.name);
-+                            });
-+                        });
-+                        tt.table(tv->{
-+                            Label varPro = tv.labelWrap(text).width(200f).get();
-+                            tv.touchable = Touchable.enabled;
-+                            tv.tapped(()->{
-+                                Core.app.setClipboardText(varPro.getText().toString());
-+                                String text1 = "[cyan]复制变量属性[white]\n " + varPro.getText();
-+                                UIExt.announce(text1);
-+                            });
-+                            tv.update(()->{
-+                                if(counter + Time.delta>period && refreshing){
-+                                    varPro.setText(arcVarsText(s));
-+                                }
-+                            });
-+                        }).padLeft(20f);
-+
-+                        tt.update(()->{
-+                            if(counter + Time.delta>period && refreshing){
-+                                tt.setColor(arcVarsColor(s));
-+                            }
-+                        });
-+
-+                    }).padTop(10f).row();
-+                }
-+                t.table(tt->{
-+                    tt.background(Tex.whitePane);
-+
-+                    tt.table(tv->{
-+                        Label varPro = tv.labelWrap(executor.textBuffer.toString()).width(300f).get();
-+                        tv.touchable = Touchable.enabled;
-+                        tv.tapped(()->{
-+                            Core.app.setClipboardText(varPro.getText().toString());
-+                            String text = "[cyan]复制信息版[white]\n " + varPro.getText();
-+                            UIExt.announce(text);
-+                        });
-+                        tv.update(()->{
-+                            if(counter + Time.delta>period && refreshing){
-+                                varPro.setText(executor.textBuffer.toString());
-+                            }
-+                        });
-+                    }).padLeft(20f);
-+
-+                    tt.update(()->{
-+                        if(counter + Time.delta>period && refreshing){
-+                            tt.setColor(Color.valueOf("#e600e6"));
-+                        }
-+                    });
-+
-+                }).padTop(10f).row();
-+            }).width(400f).padLeft(20f);
-+    }
-+
-+    public static String arcVarsText(LVar s){
-+        return s.isobj ? PrintI.toString(s.objval) : Math.abs(s.numval - (long)s.numval) < 0.00001 ? (long)s.numval + "" : s.numval + "";
-+    }
-+
-+    public static Color arcVarsColor(LVar s){
-+        if(s.constant && s.name.startsWith("@")) return Color.goldenrod;
-+        else if (s.constant) return Color.valueOf("00cc7e");
-+        else return typeColor(s,new Color());
-+    }
-+
-     public static Color typeColor(LVar s, Color color){
-         return color.set(
-             !s.isobj ? Pal.place :
-@@ -124,6 +285,17 @@ public class LogicDialog extends BaseDialog{
-                             ui.showException(e);
-                         }
-                     }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
-+                    t.row();
-+                    t.button("[orange]丢弃更改", Icon.cancel,style, () -> ui.showConfirm("确认丢弃?", () -> {
-+                        noSave = true;
-+                        dialog.hide();
-+                        hide();
-+                    })).marginLeft(12f);
-+                    t.row();
-+                    t.button("[orange]逻辑辅助器",Icon.settings,style,()-> {
-+                        Core.settings.put("logicSupport",!Core.settings.getBool("logicSupport"));
-+                        rebuildMain();
-+                    }).marginLeft(12f);
-                 });
-             });
- 
-@@ -266,7 +438,7 @@ public class LogicDialog extends BaseDialog{
-                 modified.get(result);
-             }
-         };
--
-+        varsTable();
-         show();
-     }
- }
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
 index 998caed117d2eeef7f74ad0527c2f01f76f60650..03d218ef76d25d776793493bf34400d0d652bfcd 100644
 --- a/core/src/mindustry/type/UnitType.java
@@ -3904,7 +3466,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b761af64fa 100644
+index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..3f258c3bba65c433f533f2b65ba08480991b3beb 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
@@ -3923,17 +3485,16 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
  
  public class HudFragment{
      private static final float dsize = 65f, pauseHeight = 36f;
-@@ -45,6 +47,9 @@ public class HudFragment{
+@@ -45,6 +47,8 @@ public class HudFragment{
      public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
      private AuxiliaryTools auxiliaryTools;
  
-+    private Slider minimapSlider;
 +    private boolean hideObjectives = true;
 +
      private String hudText = "";
      private boolean showHudText;
  
-@@ -52,6 +57,8 @@ public class HudFragment{
+@@ -52,6 +56,8 @@ public class HudFragment{
      private Table lastUnlockLayout;
      private long lastToast;
  
@@ -3942,37 +3503,21 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
      public void build(Group parent){
          auxiliaryTools = new AuxiliaryTools();
  
-@@ -92,6 +99,14 @@ public class HudFragment{
+@@ -92,6 +98,11 @@ public class HudFragment{
              showToast(Icon.warning, Core.bundle.format("sector.attacked", e.sector.name()));
          });
  
 +        Events.on(WorldLoadEvent.class,e->{
 +            hideObjectives = false;
 +            rebuildArcStatus();
-+            if(minimapSlider != null){
-+                minimapSlider.setRange(0.1f, Math.min(world.width(), world.height()) / 16f / 2f);
-+            }
 +        });
 +
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -115,14 +130,29 @@ public class HudFragment{
-             //minimap
+@@ -116,13 +127,16 @@ public class HudFragment{
              t.add(new Minimap()).name("minimap");
              t.row();
-+            if(mobile){
-+                t.table(tt -> {
-+                    tt.button(Icon.play, cleari, () -> {
-+                        ui.minimapfrag.toggle();
-+                    }).left();
-+
-+                    minimapSlider = tt.slider(1, 1, 0.1f, (n) -> {
-+                        renderer.minimap.setZoom(n);
-+                    }).fillX().get();
-+                }).fillX().row();
-+            }
-+
              //position
 -            t.label(() ->
 -                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
@@ -3994,7 +3539,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
              if(Core.settings.getInt("AuxiliaryTable") == 3){
                  t.row();
                  t.table(infoWave -> {
-@@ -219,12 +249,16 @@ public class HudFragment{
+@@ -219,12 +233,16 @@ public class HudFragment{
              Table wavesMain, editorMain;
  
              cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
@@ -4012,7 +3557,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
                  //wave info button with text
                  s.add(makeStatusTable()).grow().name("status");
  
-@@ -245,7 +279,13 @@ public class HudFragment{
+@@ -245,7 +263,13 @@ public class HudFragment{
                          logic.skipWave();
                      }
                  }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
@@ -4027,7 +3572,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
  
              wavesMain.row();
  
-@@ -261,6 +301,7 @@ public class HudFragment{
+@@ -261,6 +285,7 @@ public class HudFragment{
  
              editorMain.name = "editor";
              editorMain.table(Tex.buttonEdge4, t -> {
@@ -4035,7 +3580,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
                  //t.margin(0f);
                  t.name = "teams";
                  t.add("@editor.teams").growX().left();
-@@ -279,6 +320,7 @@ public class HudFragment{
+@@ -279,6 +304,7 @@ public class HudFragment{
                              teams.row();
                          }
                      }
@@ -4043,7 +3588,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
                  }).left();
              }).width(dsize * 5 + 4f);
              editorMain.visible(() -> shown && state.isEditor());
-@@ -303,6 +345,8 @@ public class HudFragment{
+@@ -303,6 +329,8 @@ public class HudFragment{
                  IntFormat mem = new IntFormat("memory");
                  IntFormat memnative = new IntFormat("memory2");
  
@@ -4052,7 +3597,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -310,6 +354,10 @@ public class HudFragment{
+@@ -310,6 +338,10 @@ public class HudFragment{
                  info.row();
                  info.label(() -> "Draws: " + DebugUtil.lastDrawRequests).left().style(Styles.outlineLabel).name("draw");
                  info.row();
@@ -4063,7 +3608,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -389,7 +437,7 @@ public class HudFragment{
+@@ -389,7 +421,7 @@ public class HudFragment{
                  }
                  return max == 0f ? 0f : val / max;
              }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
@@ -4072,7 +3617,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
  
              t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
                  p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
-@@ -920,6 +968,143 @@ public class HudFragment{
+@@ -920,6 +952,143 @@ public class HudFragment{
          return table;
      }
  
@@ -4216,7 +3761,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -964,7 +1149,51 @@ public class HudFragment{
+@@ -964,7 +1133,51 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){
@@ -4270,7 +3815,7 @@ index c41e081b442047b7704401fa9aa8ea1dfb08d7c4..fb6cf872cd12473ff9b683b0df9892b7
  
  }
 diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
-index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae3241b0805b 100644
+index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba90b9542a2 100644
 --- a/core/src/mindustry/ui/fragments/MenuFragment.java
 +++ b/core/src/mindustry/ui/fragments/MenuFragment.java
 @@ -1,6 +1,7 @@
@@ -4316,7 +3861,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
  
          parent.fill(c -> {
              c.pane(Styles.noBarPane, cont -> {
-@@ -105,6 +125,11 @@ public class MenuFragment{
+@@ -91,6 +111,11 @@ public class MenuFragment{
              }));
          }
  
@@ -4328,7 +3873,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
          String versionText = ((Version.build == -1) ? "[#fc8140aa]" : "[#ffffffba]") + Version.combined();
          parent.fill((x, y, w, h) -> {
              TextureRegion logo = Core.atlas.find("logo");
-@@ -130,6 +155,22 @@ public class MenuFragment{
+@@ -116,6 +141,22 @@ public class MenuFragment{
          }).touchable = Touchable.disabled;
      }
  
@@ -4351,7 +3896,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
      private void buildMobile(){
          container.clear();
          container.name = "buttons";
-@@ -147,7 +188,7 @@ public class MenuFragment{
+@@ -133,7 +174,7 @@ public class MenuFragment{
              tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
              mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
              exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
@@ -4360,7 +3905,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
  
          Seq<MobileButton> customs = customButtons.map(b -> new MobileButton(b.icon, b.text, b.runnable == null ? () -> {} : b.runnable));
  
-@@ -166,11 +207,12 @@ public class MenuFragment{
+@@ -152,11 +193,12 @@ public class MenuFragment{
              container.add(editor);
              container.add(tools);
              container.add(mods);
@@ -4374,7 +3919,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
          }else{
              container.marginTop(0f);
              container.add(play);
-@@ -188,7 +230,9 @@ public class MenuFragment{
+@@ -174,7 +216,9 @@ public class MenuFragment{
                  container.add(customs.get(i));
                  if(i % 2 == 0) container.row();
              }
@@ -4385,7 +3930,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
          }
      }
  
-@@ -210,14 +254,15 @@ public class MenuFragment{
+@@ -196,14 +240,15 @@ public class MenuFragment{
                      new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
                      new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
                      new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
@@ -4405,7 +3950,7 @@ index cdf4295a544656573aea87416e8957b2c338e239..4276102b9d3eebf5592dd99dd8c4ae32
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7dd7fceca 100644
+index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..cd6b06189153afbe838a8a2d862044ad8d440c67 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -4557,16 +4102,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
                                      header.button("?", Styles.flatBordert, () -> {
                                          ui.content.show(displayBlock);
                                          Events.fire(new BlockInfoEvent());
-@@ -370,7 +408,7 @@ public class PlacementFragment{
-                                     req.table(line -> {
-                                         line.left();
-                                         line.image(stack.item.uiIcon).size(8 * 2);
--                                        line.add(stack.item.localizedName).maxWidth(140f).fillX().color(Color.lightGray).padLeft(2).left().get().setEllipsis(true);
-+                                        line.add((Core.settings.getBool("colorizedContent") ? "": "[lightgray]") + stack.item.localizedName).maxWidth(140f).fillX().padLeft(2).left().get().setEllipsis(true);
-                                         line.labelWrap(() -> {
-                                             Building core = player.core();
-                                             int stackamount = Math.round(stack.amount * state.rules.buildCostMultiplier);
-@@ -398,7 +436,26 @@ public class PlacementFragment{
+@@ -398,6 +436,24 @@ public class PlacementFragment{
                          }else if(hovered != null){
                              //show hovered item, whatever that may be
                              hovered.display(topTable);
@@ -4589,32 +4125,35 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
 +                                    t.add(" | " + hoverTile.overlay().emoji() + hoverTile.overlay().localizedName).left();
 +                            }).growX().left();
                          }
-+
                      });
                  }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
- 
-@@ -434,7 +491,7 @@ public class PlacementFragment{
-                 }).colspan(3).fillX().row();
+@@ -435,6 +491,7 @@ public class PlacementFragment{
  
                  //commandTable: commanded units
--                {
-+                if (Core.settings.getBool("arcCommandTable")){
+                 {
++                    boolean arcExtra= Core.settings.getBool("arcCommandTable");
                      commandTable.touchable = Touchable.enabled;
                      commandTable.add(Core.bundle.get("commandmode.name")).fill().center().labelAlign(Align.center).row();
                      commandTable.image().color(Pal.accent).growX().pad(20f).padTop(0f).padBottom(4f).row();
-@@ -512,6 +569,7 @@ public class PlacementFragment{
-                                     u.row();
+@@ -519,7 +576,7 @@ public class PlacementFragment{
+                                                 Call.setUnitCommand(player, units.mapInt(un -> un.id).toArray(), command);
+                                             }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized(), true);
  
-                                     u.table(coms -> {
-+                                        coms.add(Blocks.worldProcessor.emoji()).width(20f).padRight(20f);
-                                         coms.left();
-                                         int scol = 0;
-                                         for(var command : commands){
-@@ -542,9 +600,62 @@ public class PlacementFragment{
+-                                            if(++scol % 6 == 0) coms.row();
++                                            if(++scol % (rowWidth + 2) == 0) coms.row();
                                          }
+ 
                                      }).fillX().padTop(4f).left();
-                                 }
-+                                if(control.input.selectedUnits.size > 0){
+@@ -538,13 +595,66 @@ public class PlacementFragment{
+                                                 Call.setUnitStance(player, units.mapInt(un -> un.id).toArray(), stance);
+                                             }).checked(i -> currentStance[0] == stance).size(50f).tooltip(stance.localized(), true);
+ 
+-                                            if(++scol % 6 == 0) coms.row();
++                                            if(++scol % (rowWidth + 2) == 0) coms.row();
++                                        }
++                                    }).fillX().padTop(4f).left();
++                                }
++                                if(arcExtra && control.input.selectedUnits.size > 0){
 +                                    u.row();
 +                                    u.table(sp -> {
 +                                        float wound = (float) Core.settings.getInt("rtsWoundUnit") / 100f;
@@ -4641,13 +4180,13 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
 +                                                if (hasLand == 1) arcSelectUnits(spp,UnitTypes.crawler.emoji(),"陆军单位", unit -> !unit.isFlying() && !unit.type.naval);
 +                                                if (hasNaval == 1) arcSelectUnits(spp,UnitTypes.retusa.emoji(),"海军单位", unit -> unit.type.naval);
 +                                            });
-+                                        }
-+                                    }).fillX().padTop(4f).left();
-+                                }
+                                         }
+                                     }).fillX().padTop(4f).left();
+                                 }
                              }else{
                                  u.add(Core.bundle.get("commandmode.nounits")).color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
                              }
-+                            if (mobile) {
++                            if(arcExtra && mobile){
 +                                u.row();
 +                                u.table(sp->{
 +                                    sp.button("\uE86D", Styles.cleart, () -> {
@@ -4673,121 +4212,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
                          };
  
                          u.update(() -> {
-@@ -607,13 +718,121 @@ public class PlacementFragment{
-                         });
-                         rebuildCommand.run();
-                     }).grow();
-+
-+                } else{//commandTable: commanded units
-+                        commandTable.touchable = Touchable.enabled;
-+                        commandTable.add("[accent]指挥模式").fill().center().labelAlign(Align.center).row();
-+                        commandTable.image().color(Pal.accent).growX().pad(20f).padTop(0f).padBottom(4f).row();
-+                        commandTable.table(u -> {
-+                            u.left();
-+                            int[] curCount = {0};
-+                            UnitCommand[] currentCommand = {null};
-+                            var commands = new Seq<UnitCommand>();
-+
-+                            rebuildCommand = () -> {
-+                                u.clearChildren();
-+                                var units = control.input.selectedUnits;
-+                                if(units.size > 0){
-+                                    int[] counts = new int[content.units().size];
-+                                    for(var unit : units){
-+                                        counts[unit.type.id] ++;
-+                                    }
-+                                    commands.clear();
-+                                    boolean firstCommand = false;
-+                                    Table unitlist = u.table().growX().left().get();
-+                                    unitlist.left();
-+
-+                                    int col = 0;
-+                                    for(int i = 0; i < counts.length; i++){
-+                                        if(counts[i] > 0){
-+                                            var type = content.unit(i);
-+                                            unitlist.add(new ItemImage(type.uiIcon, counts[i])).tooltip(type.localizedName).pad(4).with(b -> {
-+                                                var listener = new ClickListener();
-+
-+                                                //left click -> select
-+                                                b.clicked(KeyCode.mouseLeft, () -> control.input.selectedUnits.removeAll(unit -> unit.type != type));
-+                                                //right click -> remove
-+                                                b.clicked(KeyCode.mouseRight, () -> control.input.selectedUnits.removeAll(unit -> unit.type == type));
-+
-+                                                b.addListener(listener);
-+                                                b.addListener(new HandCursorListener());
-+                                                //gray on hover
-+                                                b.update(() -> ((Group)b.getChildren().first()).getChildren().first().setColor(listener.isOver() ? Color.lightGray : Color.white));
-+                                            });
-+
-+                                            if(++col % 7 == 0){
-+                                                unitlist.row();
-+                                            }
-+
-+                                            if(!firstCommand){
-+                                                commands.add(type.commands);
-+                                                firstCommand = true;
-+                                            }else{
-+                                                //remove commands that this next unit type doesn't have
-+                                                commands.removeAll(com -> !Structs.contains(type.commands, com));
-+                                            }
-+                                        }
-+                                    }
-+
-+                                    if(commands.size > 1){
-+                                        u.row();
-+
-+                                        u.table(coms -> {
-+                                            for(var command : commands){
-+                                                coms.button(Icon.icons.get(command.icon, Icon.cancel), Styles.clearNoneTogglei, () -> {
-+                                                    IntSeq ids = new IntSeq();
-+                                                    for(var unit : units){
-+                                                        ids.add(unit.id);
-+                                                    }
-+
-+                                                    Call.setUnitCommand(player, ids.toArray(), command);
-+                                                }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized());
-+                                            }
-+                                        }).fillX().padTop(4f).left();
-+                                    }
-+                                }else{
-+                                    u.add("[未选择单位]").color(Pal.accent).growX().center().labelAlign(Align.center).pad(6);
-+                                }
-+                            };
-+
-+                            u.update(() -> {
-+                                boolean hadCommand = false;
-+                                UnitCommand shareCommand = null;
-+
-+                                //find the command that all units have, or null if they do not share one
-+                                for(var unit : control.input.selectedUnits){
-+                                    if(unit.isCommandable()){
-+                                        var nextCommand = unit.command().currentCommand();
-+
-+                                        if(hadCommand){
-+                                            if(shareCommand != nextCommand){
-+                                                shareCommand = null;
-+                                            }
-+                                        }else{
-+                                            shareCommand = nextCommand;
-+                                            hadCommand = true;
-+                                        }
-+                                    }
-+                                }
-+
-+                                currentCommand[0] = shareCommand;
-+
-+                                int size = control.input.selectedUnits.size;
-+                                if(curCount[0] != size){
-+                                    curCount[0] = size;
-+                                    rebuildCommand.run();
-+                                }
-+                            });
-+                            rebuildCommand.run();
-+                        }).grow();
-+
-                 }
- 
-                 //blockCatTable: all blocks | all categories
+@@ -613,7 +723,7 @@ public class PlacementFragment{
                  {
                      blockCatTable.table(Tex.pane2, blocksSelect -> {
                          blocksSelect.margin(4).marginTop(0);
@@ -4796,7 +4221,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
                              if(pane.hasScroll()){
                                  Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
                                  if(result == null || !result.isDescendantOf(pane)){
-@@ -647,6 +866,17 @@ public class PlacementFragment{
+@@ -647,6 +757,17 @@ public class PlacementFragment{
                          boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
  
                          int f = 0;
@@ -4814,7 +4239,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
                          for(Category cat : getCategories()){
                              if(f++ % 2 == 0) categories.row();
  
-@@ -692,7 +922,7 @@ public class PlacementFragment{
+@@ -692,7 +813,7 @@ public class PlacementFragment{
      }
  
      Seq<Block> getUnlockedByCategory(Category cat){
@@ -4823,7 +4248,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
      }
  
      Block getSelectedBlock(Category cat){
-@@ -706,7 +936,9 @@ public class PlacementFragment{
+@@ -706,7 +827,9 @@ public class PlacementFragment{
  
      boolean hasInfoBox(){
          hover = hovered();
@@ -4834,7 +4259,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
      }
  
      /** Returns the thing being hovered over. */
-@@ -718,24 +950,75 @@ public class PlacementFragment{
+@@ -718,24 +841,75 @@ public class PlacementFragment{
          if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
  
          //check for a unit
@@ -4857,10 +4282,7 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
 +
 +        return null;
 +
- 
--            //if the tile has a drop, display the drop
--            if((hoverTile.drop() != null && hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
--                return hoverTile;
++
 +    }
 +    @Nullable
 +    Displayable hoveredblock(){
@@ -4868,7 +4290,10 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..369eba7629bc091a0555f99e46c6baa7
 +
 +        //if the mouse intersects the table or the UI has the mouse, no hovering can occur
 +        if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
-+
+ 
+-            //if the tile has a drop, display the drop
+-            if((hoverTile.drop() != null && hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
+-                return hoverTile;
 +        //check tile being hovered over
 +        Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
 +        if(hoverTile != null){
@@ -5684,303 +5109,6 @@ index df8ecaa3537b0fb9d1ffad0226695af9596b9b81..2a718df7a38755246403d75a18c20c9e
      }
  
      public static class BulletEntry{
-diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d500f1c75 100644
---- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
-+++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-@@ -8,6 +8,7 @@ import arc.graphics.*;
- import arc.graphics.g2d.*;
- import arc.math.*;
- import arc.math.geom.*;
-+import arc.scene.ui.Label;
- import arc.scene.ui.layout.*;
- import arc.struct.Bits;
- import arc.struct.*;
-@@ -27,11 +28,13 @@ import mindustry.world.blocks.ConstructBlock.*;
- import mindustry.world.meta.*;
- import mindustryX.*;
- import mindustryX.events.*;
-+import mindustryX.features.*;
- 
- import java.io.*;
- import java.util.zip.*;
- 
- import static mindustry.Vars.*;
-+import static mindustry.logic.LogicDialog.*;
- 
- public class LogicBlock extends Block{
-     @MindustryXApi
-@@ -114,7 +117,7 @@ public class LogicBlock extends Block{
-     }
- 
-     public boolean accessible(){
--        return !privileged || state.rules.editor || state.playtestingMap != null;
-+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
-     }
- 
-     @Override
-@@ -260,6 +263,14 @@ public class LogicBlock extends Block{
-         public @Nullable String tag;
-         public char iconTag;
- 
-+        Table settingTable = new Table();
-+        boolean showSettingTable = false;
-+        boolean showContent = false;
-+
-+        float counter = 0f;
-+
-+        boolean linkSimplify = false;
-+
-         /** Block of code to run after load. */
-         public @Nullable Runnable loadBlock;
- 
-@@ -583,10 +594,12 @@ public class LogicBlock extends Block{
-             }
- 
-             //draw top text on separate layer
-+            //draw link order
-+            int i = 0;
-             for(LogicLink l : links){
-                 Building build = world.build(l.x, l.y);
-                 if(l.active && validLink(build)){
--                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);
-+                    build.block.drawPlaceText(linkSimplify ? i++ + "" : l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
-                 }
-             }
-         }
-@@ -638,6 +651,61 @@ public class LogicBlock extends Block{
-             return other != null && other.isValid() && (privileged || (!other.block.privileged && other.team == team && other.within(this, range + other.block.size*tilesize/2f))) && !(other instanceof ConstructBuild);
-         }
- 
-+        private void rebuildSettingTable() {
-+            settingTable.clear();
-+            if (!showSettingTable) return;
-+            settingTable.setColor(Color.lightGray);
-+            settingTable.update(() -> {
-+                counter += Time.delta;
-+                if (counter > period && refreshing) {
-+                    counter = 0;
-+                }
-+            });
-+            settingTable.table(t -> {
-+                t.button(Icon.copy, Styles.cleari, () -> {
-+                    Core.app.setClipboardText(code);
-+                    UIExt.announce("已复制逻辑");
-+                }).size(40);
-+                t.button(Icon.download, Styles.cleari, () -> {
-+                    updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
-+                    UIExt.announce("已导入逻辑(仅单机生效)");
-+                }).size(40);
-+                t.button(Icon.trash, Styles.cleari, () -> {
-+                    code = "";
-+                    updateCode(code);
-+                    UIExt.announce("已清除逻辑(仅单机生效)");
-+                }).size(40);
-+                t.button(Icon.chatSmall, Styles.cleari, () -> {
-+                    linkSimplify = !linkSimplify;
-+                    UIExt.announce(linkSimplify ? "仅显示linkindex" : "显示方块名和linkindex");
-+                }).size(40);
-+                t.button(Icon.info, Styles.cleari, () -> {
-+                    showContent = !showContent;
-+                    rebuildSettingTable();
-+                }).size(40);
-+            });
-+            if (showContent && !code.isEmpty()) {
-+                settingTable.row();
-+                settingTable.pane(t -> {
-+                    for (var s : executor.vars) {
-+                        if(s.name.startsWith("___")) continue;
-+                        String text = arcVarsText(s);
-+                        t.table(tt -> {
-+                            tt.labelWrap(s.name + "").color(arcVarsColor(s)).width(100f);
-+                            Label label = tt.labelWrap(" : " + text).width(200f).get();
-+                            tt.update(() -> {
-+                                if (counter + Time.delta > period && refreshing) {
-+                                    label.setText(arcVarsText(s));
-+                                }
-+                            });
-+                        });
-+                        t.row();
-+                    }
-+                }).maxHeight(400f);
-+
-+            }
-+        }
-+
-         @Override
-         public boolean shouldShowConfigure(Player player){
-             return accessible();
-@@ -645,7 +713,21 @@ public class LogicBlock extends Block{
- 
-         @Override
-         public void buildConfiguration(Table table){
--            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
-+            if (Core.settings.getBool("logicSupport")){
-+                table.table(t -> {
-+                    t.button(Icon.pencil, Styles.cleari, () -> {
-+                        ui.logic.show(code, executor, privileged, code -> configure(compress(code, relativeConnections())));
-+                    }).size(40);
-+                    t.button(Icon.settings, Styles.cleari, () -> {
-+                        showSettingTable = !showSettingTable;
-+                        rebuildSettingTable();
-+                    }).size(40);
-+                });
-+                table.row();
-+                table.add(settingTable);
-+            }else{
-+                table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
-+            }
-         }
- 
-         public void showEditDialog(){
-diff --git a/core/src/mindustry/world/blocks/logic/MemoryBlock.java b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-index 37a6c2af615665c5179c6df5d57e053a07ce4c72..815ae61d974d0ce5ab9a664faceed7cc649e6bee 100644
---- a/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-+++ b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-@@ -1,15 +1,29 @@
- package mindustry.world.blocks.logic;
- 
-+import arc.Core;
-+import arc.graphics.Color;
-+import arc.scene.event.Touchable;
-+import arc.scene.ui.Label;
-+import arc.scene.ui.layout.Table;
-+import arc.util.Time;
- import arc.util.io.*;
- import mindustry.gen.*;
-+import mindustry.ui.Styles;
- import mindustry.world.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.*;
- 
- import static mindustry.Vars.*;
- 
- public class MemoryBlock extends Block{
-     public int memoryCapacity = 32;
- 
-+    boolean showInfo = false;
-+    int numPerRow = 10;
-+    int period = 15;
-+
-+    Table infoTable = new Table();
-+
-     public MemoryBlock(String name){
-         super(name);
-         destructible = true;
-@@ -18,6 +32,7 @@ public class MemoryBlock extends Block{
-         drawDisabled = false;
-         envEnabled = Env.any;
-         canOverdrive = false;
-+        configurable = true;
-     }
- 
-     @Override
-@@ -38,6 +53,8 @@ public class MemoryBlock extends Block{
- 
-     public class MemoryBuild extends Building{
-         public double[] memory = new double[memoryCapacity];
-+        float counter = 0f;
-+        int deci = -1;
- 
-         //massive byte size means picking up causes sync issues
-         @Override
-@@ -71,6 +88,96 @@ public class MemoryBlock extends Block{
-             }
-         }
- 
-+        @Override
-+        public void buildConfiguration(Table table){
-+            if(!RenderExt.showOtherInfo && !accessible()){
-+                //go away
-+                deselect();
-+                return;
-+            }
-+
-+            rebuildInfo();
-+            table.add(infoTable);
-+        }
-+
-+        private void rebuildInfo(){
-+            infoTable.clear();
-+            if(!showInfo){
-+                infoTable.button(Icon.pencil, Styles.cleari, () -> {
-+                    showInfo = !showInfo;
-+                    rebuildInfo();
-+                }).size(40);
-+                return;
-+            }
-+            infoTable.update(()->{
-+                counter+= Time.delta;
-+                if(counter>period){
-+                    counter=0;
-+                }
-+            });
-+            infoTable.setColor(Color.lightGray);
-+            infoTable.table(t->{
-+                t.button(Icon.pencil, Styles.cleari, () -> {
-+                    showInfo = !showInfo;
-+                    rebuildInfo();
-+                }).size(40);
-+                t.button(Icon.refreshSmall,Styles.cleari,()->{
-+                    rebuildInfo();
-+                    UIExt.announce("已更新内存元！");
-+                }).size(40);
-+
-+                Label rowNum = t.add("每行 "+numPerRow).get();
-+                t.slider(2, 15,1, numPerRow, res -> {
-+                    numPerRow = (int)res;
-+                    rowNum.setText("每行 "+numPerRow);
-+                });
-+
-+                Label deciL = t.add(deci==-1?"不约化":("约化 "+deci)).get();
-+                t.slider(-1, 15,1, deci, res -> {
-+                    deci = (int)res;
-+                    deciL.setText(deci==-1?"不约化":("约化 "+deci));
-+                });
-+
-+                Label refresh = t.add("刷新 "+period).get();
-+                t.slider(1, 60,1, 20, res -> {
-+                    period = (int)res;
-+                    refresh.setText("刷新 "+period);
-+                });
-+            });
-+            infoTable.row();
-+            infoTable.pane(t->{
-+                int index = 0;
-+                for(double v : memory){
-+                    Label textR = t.add(index + " ").get();
-+                    int finalIndex = index;
-+
-+                    t.table(tt->{
-+                        Label text = tt.add(showString(memory[finalIndex])).get();
-+                        tt.update(()->{
-+                            if(counter + Time.delta>period){
-+                                textR.setText((memory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
-+                                text.setText(showString(memory[finalIndex]));
-+                            }
-+                        });
-+                        tt.touchable = Touchable.enabled;
-+                        tt.tapped(()->{
-+                            Core.app.setClipboardText(memory[finalIndex]+"");
-+                            UIExt.announce("[cyan]复制内存[white]\n " + memory[finalIndex]);
-+                        });
-+                    });
-+                    index+=1;
-+                    if(index % numPerRow==0) t.row();
-+                    else t.add(" " + ((index % numPerRow) % 2 == 0?"[cyan]":"[acid]") + "|[white] ");
-+                }
-+            }).maxWidth(1000f).maxHeight(500f);
-+        }
-+
-+        public String showString(double number){
-+            if(number == 0) return "[gray]-";
-+            else if(deci == 0 || number == (int)number) return "[orange]" + (int)number + "";
-+            if(deci == -1) return "[orange]" + number + "";
-+            else return "[orange]" + String.format("%." + deci + "f", number) + "";
-+        }
-         @Override
-         public void read(Reads read, byte revision){
-             super.read(read, revision);
 diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
 index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601a5e0f214 100644
 --- a/core/src/mindustry/world/blocks/production/Drill.java
@@ -6116,7 +5244,7 @@ index e4a2a026722ae1cd129eb8f5465d2e6d5d1d5a07..676e9e703bada87f86ce5fac296cb44a
          }
  
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index d83a7bf2781d7deefd4cb6c10190ac90288dfb47..c8702f81d76ba91a0c60ffd05dbdbee95863bda5 100644
+index f323267b874868d3c8c05919ccc1ea92821f4918..f6449229108ed927d93863741ccc6dbd7fd6b3d7 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -8,12 +8,11 @@ import mindustry.gen.*;
@@ -8173,10 +7301,10 @@ index 0000000000000000000000000000000000000000..995f8e92be32d0a8bd1f9af991000120
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/ui/ArcPowerInfo.java b/core/src/mindustryX/features/ui/ArcPowerInfo.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d163c90f9969982e84dc8ea44faef92ba390686a
+index 0000000000000000000000000000000000000000..7f6737204adc9856a176f6f36e8b316dc6e74938
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcPowerInfo.java
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,70 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -8188,6 +7316,7 @@ index 0000000000000000000000000000000000000000..d163c90f9969982e84dc8ea44faef92b
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
 +import mindustry.ui.*;
++import mindustryX.features.Settings;
 +
 +//move from mindustry.arcModule.ui.PowerInfo
 +public class ArcPowerInfo{
@@ -8236,9 +7365,7 @@ index 0000000000000000000000000000000000000000..d163c90f9969982e84dc8ea44faef92b
 +        () -> Pal.powerBar,
 +        () -> stored / capacity);
 +
-+        power.clicked(() -> {
-+            Core.settings.put("arccoreitems", (Core.settings.getInt("arccoreitems") + 1) % 4);
-+        });
++        power.clicked(() -> Settings.cycle("arccoreitems",4));
 +        power.margin(0);
 +        power.add(powerBar).height(18).growX().padBottom(1);
 +        power.row();

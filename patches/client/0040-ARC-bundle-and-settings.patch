@@ -571,7 +571,7 @@ index 0000000000000000000000000000000000000000..3cafd2e7f08c2ad7c9528a914df7eab1
 +    }
 +}
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index be0724ea914562303758d61795617506dbcb678e..b5f1cdc56623e5ad56e340da6d47a73eb490e5d1 100644
+index 4c68c9f8d75a897dd636ac96b9d7a1b1a73cbf44..02cb18ab5655c14c33680a50388e42d33fd2212f 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -64,6 +64,7 @@ public class Settings{

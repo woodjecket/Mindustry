@@ -23,7 +23,7 @@ index 039829ebd447f97c72917b91fd52f3fef6aeccfa..8376e3f5a5f4aef6c5397567aaba1378
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 390913c56aa6088fa3092826cdc772073883113d..5d34d188966dea076a8bfb49329aab3b4eb4019c 100644
+index 390913c56aa6088fa3092826cdc772073883113d..66c54877a8c14ea43294c2db818583fcd7191351 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -54,6 +54,15 @@ public class Hooks implements ApplicationListener{
@@ -36,7 +36,7 @@ index 390913c56aa6088fa3092826cdc772073883113d..5d34d188966dea076a8bfb49329aab3b
 +    }
 +
 +    public static void pollKeys(){
-+        if(Core.scene.hasField()) return;
++        if(Vars.headless || Core.scene.hasField()) return;
 +    }
 +
      private static void registerBundle(){

@@ -49,7 +49,7 @@ index 0000000000000000000000000000000000000000..9cbe154c9479a5ead03734dc348e9215
 +await clearOldAssets(core.getInput("release") || import.meta.env.TAG)
 \ No newline at end of file
 diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
-index 10f800a3a57e1f0c19513526e27d940e6b22aa26..7274747394a37e24191ce31bfa5ed03a8e31b834 100644
+index 0cd3e1cb4f412b11074f75396882876af2818f59..797925569a7a81a34dff17296884a7088e05d5f1 100644
 --- a/.github/workflows/build.yml
 +++ b/.github/workflows/build.yml
 @@ -59,3 +59,9 @@ jobs:

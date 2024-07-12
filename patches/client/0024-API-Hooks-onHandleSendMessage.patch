@@ -9,7 +9,7 @@ Subject: [PATCH] API(Hooks) onHandleSendMessage
  2 files changed, 10 insertions(+)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 76736b9f6bc44d040bdfc2cc717702d1c3eca839..138ba396e44b98d60031369f1d063f3465b382c8 100644
+index 6b05845bad6eb3862dea511563e099085d15b479..c0960a878e6831e746499bdf13444c2e6ab42f9a 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -198,6 +198,8 @@ public class NetClient implements ApplicationListener{

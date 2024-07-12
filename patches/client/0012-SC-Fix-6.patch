@@ -4,22 +4,14 @@ Date: Mon, 26 Dec 2022 15:29:10 +0800
 Subject: [PATCH] SC: Fix #6
 
 ---
- .../mindustry/world/blocks/payloads/PayloadConveyor.java   | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ .../src/mindustry/world/blocks/payloads/PayloadConveyor.java | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/world/blocks/payloads/PayloadConveyor.java b/core/src/mindustry/world/blocks/payloads/PayloadConveyor.java
-index e6c368d97eec75f27d68d681fec480defe7e8218..d80217d66403bfd962594deb73642f053f3e403d 100644
+index e6c368d97eec75f27d68d681fec480defe7e8218..f9064cdc0773a76860f6d1873901083c4ccd07ce 100644
 --- a/core/src/mindustry/world/blocks/payloads/PayloadConveyor.java
 +++ b/core/src/mindustry/world/blocks/payloads/PayloadConveyor.java
-@@ -11,6 +11,7 @@ import mindustry.entities.*;
- import mindustry.gen.*;
- import mindustry.graphics.*;
- import mindustry.world.*;
-+import mindustry.world.blocks.payloads.PayloadRouter.*;
- import mindustry.world.meta.*;
- 
- import static mindustry.Vars.*;
-@@ -154,7 +155,10 @@ public class PayloadConveyor extends Block{
+@@ -154,7 +154,10 @@ public class PayloadConveyor extends Block{
                  if(valid && stepAccepted != curStep && item != null){
                      if(next != null){
                          //trigger update forward
@@ -31,11 +23,3 @@ index e6c368d97eec75f27d68d681fec480defe7e8218..d80217d66403bfd962594deb73642f05
  
                          //TODO add self to queue of next conveyor, then check if this conveyor was selected next frame - selection happens deterministically
                          if(next != null && next.acceptPayload(this, item)){
-@@ -267,6 +271,7 @@ public class PayloadConveyor extends Block{
- 
-         @Override
-         public boolean acceptPayload(Building source, Payload payload){
-+            //Note: using progress there seems very bad thing.(for E/S and low TPS)
-             return this.item == null
-                 && payload.fits(payloadLimit)
-                 && (source == this || this.enabled && progress <= 5f);

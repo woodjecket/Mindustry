@@ -46,7 +46,7 @@ index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692ae
              entity.move(ref.body.x - ref.x, ref.body.y - ref.y);
          }
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 22d9c9119ae16928b545f1059bcfa8b59b6293a5..ce902f8edad79e96f6f7b57fd2edd055ed1a55fd 100644
+index 80a24246610b4a6464aed90eefb1dce626a60475..1e24c02e81ff84f8d1c839e2e74699980004c0c4 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -63,6 +63,7 @@ public class Settings{

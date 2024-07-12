@@ -10,14 +10,14 @@ Subject: [PATCH] S: Add icons.properties,bundles,block_colors.png to server
  2 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/server/build.gradle b/server/build.gradle
-index 0ea1b05d6928c1d16ffb5f48a6ac0c1eb8d66bd8..8e6276a74b8b2b26d19da562abd5ca2420e15aa6 100644
+index badc019ded25d495a139efe134085184640eb500..f212b7bf9d8a3e46179ba62d8987fcb15efa5568 100644
 --- a/server/build.gradle
 +++ b/server/build.gradle
 @@ -31,18 +31,18 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
      from files(sourceSets.main.output.classesDirs)
      from files(sourceSets.main.output.resourcesDir)
      from {configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }}
--    from files(project.assetsDir)
+-    from files(tasks.getByPath(":core:allAssets"))
 -    exclude("sprites/**")
 -    exclude("music/**")
 -    exclude("sounds/**")
@@ -29,7 +29,7 @@ index 0ea1b05d6928c1d16ffb5f48a6ac0c1eb8d66bd8..8e6276a74b8b2b26d19da562abd5ca24
 -    exclude("icons/icon.icns")
 -    exclude("icons/icon.ico")
 -    exclude("icons/icon_64.png")
-+    from (files(project.assetsDir)){
++    from (files(tasks.getByPath(":core:allAssets"))){
 +        include "baseparts/**"
 +        include "bundles/**"
 +        include "icons/icons.properties"
@@ -45,7 +45,7 @@ index 0ea1b05d6928c1d16ffb5f48a6ac0c1eb8d66bd8..8e6276a74b8b2b26d19da562abd5ca24
      manifest{
          attributes 'Main-Class': project.mainClassName
 diff --git a/server/src/mindustry/server/ServerLauncher.java b/server/src/mindustry/server/ServerLauncher.java
-index 1aea11b2cc877ef9a35280575e6419d9fab16f01..167be582ef387471f31c252a7732881d1d22ac87 100644
+index 1799c999b2affdc0de392841212edc1f544e4751..81683e05cc3f38d943ae94f00621da01e09a1f31 100644
 --- a/server/src/mindustry/server/ServerLauncher.java
 +++ b/server/src/mindustry/server/ServerLauncher.java
 @@ -41,7 +41,7 @@ public class ServerLauncher implements ApplicationListener{

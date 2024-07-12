@@ -115,7 +115,7 @@ index 03a7b867bc5af050d217fc8fb7ea9f31f9279b86..a55bc18a055c74d4e7de3332bd1315be
          }
  
 diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index afa6585f8292e98e7e4279da1bdb42c5f69ff9c7..4fa26b01d1c0edde949fde860d0ca42a20d067d5 100644
+index 9981f2963b730173d8c03e29440e2e9ee404d4d3..28892eb7f43aa7d903541b9d8412018c41975868 100644
 --- a/core/src/mindustryX/Hooks.java
 +++ b/core/src/mindustryX/Hooks.java
 @@ -12,6 +12,8 @@ import mindustryX.features.Settings;

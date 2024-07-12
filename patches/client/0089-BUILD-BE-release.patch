@@ -4,27 +4,51 @@ Date: Wed, 3 Jul 2024 00:16:15 +0800
 Subject: [PATCH] BUILD BE release
 
 ---
- .github/workflows/build.yml | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ .github/workflows/build.yml                     |  8 +++++---
+ .github/workflows/gradle-wrapper-validation.yml | 10 ----------
+ 2 files changed, 5 insertions(+), 13 deletions(-)
+ delete mode 100644 .github/workflows/gradle-wrapper-validation.yml
 
 diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
-index 7274747394a37e24191ce31bfa5ed03a8e31b834..2909edd2d2efc4f59e51349efebef9863e97974c 100644
+index 797925569a7a81a34dff17296884a7088e05d5f1..da5e36d6a525f365832306d99dde6b97f2882149 100644
 --- a/.github/workflows/build.yml
 +++ b/.github/workflows/build.yml
-@@ -39,13 +39,14 @@ jobs:
-           keystore_alias_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
-           keystore_alias: MindustryX
+@@ -34,17 +34,19 @@ jobs:
+           echo "${{ secrets.KEYSTORE_BASE64 }}" | openssl enc -d -base64 -in - -out ../bekeystore.jks
+       - name: Build
          run: |
--          gradle desktop:dist core:genLoaderModAll android:assembleRelease -Pbuildversion=${RELEASE_VERSION}
-+          gradle desktop:dist android:assembleRelease server:dist -Pbuildversion=${RELEASE_VERSION}
-       - name: Move artifacts
-         run: |
+-          gradle desktop:dist core:genLoaderModAll -Pbuildversion=${RELEASE_VERSION}
++          gradle desktop:dist server:dist -Pbuildversion=${RELEASE_VERSION} -PversionType=bleeding-edge
            mkdir artifacts
            mv desktop/build/libs/Mindustry.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}-Desktop.jar
 -          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
-+#          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
++          mv server/build/libs/server-release.jar artifacts/server-${{env.RELEASE_VERSION}}.jar
+       - name: Build Android
+         env:
+           keystore_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
+           keystore_alias_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
+           keystore_alias: MindustryX
+         run: |
+-          gradle android:assembleRelease -Pbuildversion=${RELEASE_VERSION}
++          sed -i 's/tinylake.mindustryX/tinylake.mindustryX.be/g' android/build.gradle
++          sed -i 's/MindustryX/MindustryX BE/g' android/res/values/strings.xml
++          gradle android:assembleRelease -Pbuildversion=${RELEASE_VERSION} -PversionType=bleeding-edge
            mv android/build/outputs/apk/release/android-release.apk artifacts/MindustryX-${{env.RELEASE_VERSION}}-Android.apk
-+          mv work/server/build/libs/server-release.jar artifacts/server-${{env.RELEASE_VERSION}}.jar
        - name: Update Tag
          uses: rickstaa/action-create-tag@v1
-         with:
+diff --git a/.github/workflows/gradle-wrapper-validation.yml b/.github/workflows/gradle-wrapper-validation.yml
+deleted file mode 100644
+index 95cce8bab650b7357a7b675ea34c04601a1ec66a..0000000000000000000000000000000000000000
+--- a/.github/workflows/gradle-wrapper-validation.yml
++++ /dev/null
+@@ -1,10 +0,0 @@
+-name: "Validate Gradle Wrapper"
+-on: [push, pull_request]
+-
+-jobs:
+-  validation:
+-    name: "Validation"
+-    runs-on: ubuntu-latest
+-    steps:
+-      - uses: actions/checkout@v4
+-      - uses: gradle/wrapper-validation-action@v2

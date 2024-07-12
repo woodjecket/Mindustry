@@ -20,9 +20,9 @@ way-zer <himc.wicp@gmail.com> on 2024/6/10
 ---
  core/src/mindustryX/features/UIExt.java       |   8 +-
  core/src/mindustryX/features/UnitExt.java     |  21 +
- .../features/ui/AdvanceToolTable.kt           | 127 +++++
+ .../features/ui/AdvanceToolTable.kt           | 128 +++++
  .../features/ui/ArcUnitFactoryDialog.java     | 452 ++++++++++++++++++
- 4 files changed, 605 insertions(+), 3 deletions(-)
+ 4 files changed, 606 insertions(+), 3 deletions(-)
  create mode 100644 core/src/mindustryX/features/UnitExt.java
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
  create mode 100644 core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
@@ -82,10 +82,10 @@ index 0000000000000000000000000000000000000000..200a2295b5c2d0c662097df7538742ea
 +}
 diff --git a/core/src/mindustryX/features/ui/AdvanceToolTable.kt b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..d28fbe368126b3e44656f8fe7c1cb4d4d5d93edf
+index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f71600547093d860
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
-@@ -0,0 +1,127 @@
+@@ -0,0 +1,128 @@
 +package mindustryX.features.ui
 +
 +import arc.Core
@@ -105,6 +105,7 @@ index 0000000000000000000000000000000000000000..d28fbe368126b3e44656f8fe7c1cb4d4
 +import mindustry.ui.Styles
 +import mindustry.world.blocks.payloads.Payload
 +import mindustryX.features.LogicExt
++import mindustryX.features.Settings
 +import mindustryX.features.TimeControl
 +import mindustryX.features.UIExt
 +
@@ -178,7 +179,7 @@ index 0000000000000000000000000000000000000000..d28fbe368126b3e44656f8fe7c1cb4d4
 +                    Reflect.invoke<Any>(Vars.ui.hudfrag.blockfrag, "rebuild")
 +                }.checked { allBlocksReveal }
 +                    .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
-+                button("地形蓝图", Styles.flatToggleMenut) { Core.settings.put("terrainSchematic", !LogicExt.terrainSchematic) }
++                button("地形蓝图", Styles.flatToggleMenut) { Settings.toggle("terrainSchematic") }
 +                    .checked { LogicExt.terrainSchematic }.size(72f, 30f)
 +            }
 +

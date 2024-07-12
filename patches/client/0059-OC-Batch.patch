@@ -936,7 +936,7 @@ index d969283650b2ac2ed75a235dd66476cd86255349..8fe579de4d1f57e40be3926e9be95f88
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index b5f1cdc56623e5ad56e340da6d47a73eb490e5d1..22d9c9119ae16928b545f1059bcfa8b59b6293a5 100644
+index 02cb18ab5655c14c33680a50388e42d33fd2212f..80a24246610b4a6464aed90eefb1dce626a60475 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -63,6 +63,9 @@ public class Settings{

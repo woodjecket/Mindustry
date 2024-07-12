@@ -7,16 +7,19 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 修复蓝图大小问题
-1c8c7803 way-zer <himc.wicp@gmail.com> on 2024/4/22 at 0:35
+way-zer <himc.wicp@gmail.com> on 2024/4/22
 
 提前Settings加载时机，优化性能
-570bcd0b way-zer <himc.wicp@gmail.com> on 2024/5/3 at 14:18
+way-zer <himc.wicp@gmail.com> on 2024/5/3
+
+API(Settings) toggle and cycle
+way-zer <himc.wicp@gmail.com> on 2024/7/1
 ---
  core/assets/bundles/bundle-mdtx.properties    | 27 ++++++
  .../ui/dialogs/SettingsMenuDialog.java        | 87 ++++++++++++++-----
  core/src/mindustryX/Hooks.java                |  2 +
- core/src/mindustryX/features/Settings.java    | 72 +++++++++++++++
- 4 files changed, 164 insertions(+), 24 deletions(-)
+ core/src/mindustryX/features/Settings.java    | 80 +++++++++++++++++
+ 4 files changed, 172 insertions(+), 24 deletions(-)
  create mode 100644 core/src/mindustryX/features/Settings.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -298,10 +301,10 @@ index 01d7b62ec79aaef21c2bd0bd7dfcc1dc072b057c..a1f9e743989ef91d28eb1dc17dc607e1
      /** invoke after loading, just before `Mod::init` */
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..be0724ea914562303758d61795617506dbcb678e
+index 0000000000000000000000000000000000000000..4c68c9f8d75a897dd636ac96b9d7a1b1a73cbf44
 --- /dev/null
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -0,0 +1,72 @@
+@@ -0,0 +1,80 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -372,5 +375,13 @@ index 0000000000000000000000000000000000000000..be0724ea914562303758d61795617506
 +            categories.each(LazySettingsCategory::init);
 +            Vars.ui.settings.getCategories().addAll(categories);
 +        });
++    }
++
++    public static void toggle(String name){
++        Core.settings.put(name, !Core.settings.getBool(name));
++    }
++
++    public static void cycle(String name, int max){
++        Core.settings.put(name, (Core.settings.getInt(name) + 1) % max);
 +    }
 +}

@@ -51,14 +51,13 @@ index 1ce00d17c712d417383a3d61f13e6f62e5d91adc..67e4cde70b0dbdc197cf8e9d5f12b5ae
  
 diff --git a/core/src/mindustryX/mods/claj/Claj.java b/core/src/mindustryX/mods/claj/Claj.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ef0deaffdc749b0dc501a0a4b5ae79608f3f2230
+index 0000000000000000000000000000000000000000..fd2d5ad910433779dc0324a5f86e3d28e9f6832c
 --- /dev/null
 +++ b/core/src/mindustryX/mods/claj/Claj.java
 @@ -0,0 +1,31 @@
 +package mindustryX.mods.claj;
 +
 +import arc.scene.ui.layout.*;
-+import arc.struct.*;
 +import mindustry.*;
 +import mindustry.gen.*;
 +import mindustry.mod.*;
@@ -70,6 +69,7 @@ index 0000000000000000000000000000000000000000..ef0deaffdc749b0dc501a0a4b5ae7960
 +
 +    @Override
 +    public void init(){
++        if(Vars.headless) return;
 +        ClajIntegration.load();
 +        joinViaClaj = new JoinViaClajDialog();
 +        manageRooms = new ManageRoomsDialog();

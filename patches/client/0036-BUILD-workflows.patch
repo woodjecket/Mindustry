@@ -2,7 +2,12 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 3 Mar 2024 16:54:20 +0800
 Subject: [PATCH] BUILD workflows
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+拆分Android编译过程
+way-zer <himc.wicp@gmail.com> on 2024/7/13
 ---
  .github/workflows/build.yml      | 61 +++++++++++++++++++++
  .github/workflows/deployment.yml | 93 --------------------------------
@@ -16,7 +21,7 @@ Subject: [PATCH] BUILD workflows
 
 diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
 new file mode 100644
-index 0000000000000000000000000000000000000000..10f800a3a57e1f0c19513526e27d940e6b22aa26
+index 0000000000000000000000000000000000000000..0cd3e1cb4f412b11074f75396882876af2818f59
 --- /dev/null
 +++ b/.github/workflows/build.yml
 @@ -0,0 +1,61 @@
@@ -53,20 +58,20 @@ index 0000000000000000000000000000000000000000..10f800a3a57e1f0c19513526e27d940e
 +          echo "RELEASE_TAG=${GITHUB_REF_NAME}-build"
 +          echo "RELEASE_VERSION=$(date +'%Y.%m.%d').${GITHUB_RUN_NUMBER}-${GITHUB_REF_NAME}" >> $GITHUB_ENV
 +          
-+          echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.txt
-+          openssl enc -d -base64 -in keystore.txt -out ../bekeystore.jks
-+      - name: Create artifacts
++          echo "${{ secrets.KEYSTORE_BASE64 }}" | openssl enc -d -base64 -in - -out ../bekeystore.jks
++      - name: Build
++        run: |
++          gradle desktop:dist core:genLoaderModAll -Pbuildversion=${RELEASE_VERSION}
++          mkdir artifacts
++          mv desktop/build/libs/Mindustry.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}-Desktop.jar
++          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
++      - name: Build Android
 +        env:
 +          keystore_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
 +          keystore_alias_password: ${{ secrets.KEYSTORE_PASSWORD_SECRET }}
 +          keystore_alias: MindustryX
 +        run: |
-+          gradle desktop:dist core:genLoaderModAll android:assembleRelease -Pbuildversion=${RELEASE_VERSION}
-+      - name: Move artifacts
-+        run: |
-+          mkdir artifacts
-+          mv desktop/build/libs/Mindustry.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}-Desktop.jar
-+          mv core/build/distributions/MindustryX.loader.dex.jar artifacts/MindustryX-${{env.RELEASE_VERSION}}.loader.dex.jar
++          gradle android:assembleRelease -Pbuildversion=${RELEASE_VERSION}
 +          mv android/build/outputs/apk/release/android-release.apk artifacts/MindustryX-${{env.RELEASE_VERSION}}-Android.apk
 +      - name: Update Tag
 +        uses: rickstaa/action-create-tag@v1
