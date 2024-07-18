@@ -7,11 +7,11 @@ Subject: [PATCH] prepare for mod-browser
  icon.png  | Bin 0 -> 6855 bytes
  mod.hjson |   8 ++++++++
  2 files changed, 8 insertions(+)
- create mode 120000 icon.png
- create mode 120000 mod.hjson
+ create mode 100644 icon.png
+ create mode 100644 mod.hjson
 
 diff --git a/icon.png b/icon.png
-new file mode 120000
+new file mode 100644
 index 0000000000000000000000000000000000000000..72013d3da3e0e19ca74aa874dc7dcd2fe3a97634
 GIT binary patch
 literal 6855
@@ -153,7 +153,7 @@ literal 0
 HcmV?d00001
 
 diff --git a/mod.hjson b/mod.hjson
-new file mode 120000
+new file mode 100644
 index 0000000000000000000000000000000000000000..e98708a379007d11d7b50378a222c0303297e984
 --- /dev/null
 +++ b/mod.hjson

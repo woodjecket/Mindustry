@@ -98,11 +98,11 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  core/src/mindustry/input/DesktopInput.java    |   98 +-
  core/src/mindustry/input/InputHandler.java    |   62 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
- core/src/mindustry/type/UnitType.java         |  166 ++-
+ core/src/mindustry/type/UnitType.java         |  162 ++-
  core/src/mindustry/type/Weapon.java           |   25 +-
  core/src/mindustry/ui/Fonts.java              |    2 +-
  core/src/mindustry/ui/Minimap.java            |    2 -
- .../ui/dialogs/ContentInfoDialog.java         |   28 +-
+ .../ui/dialogs/ContentInfoDialog.java         |   27 +-
  .../ui/dialogs/CustomRulesDialog.java         |  121 +-
  .../mindustry/ui/dialogs/DatabaseDialog.java  |    9 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |   12 +-
@@ -114,7 +114,7 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  .../mindustry/ui/fragments/HudFragment.java   |  235 +++-
  .../mindustry/ui/fragments/MenuFragment.java  |   59 +-
  .../ui/fragments/PlacementFragment.java       |  212 +++-
- .../ui/fragments/PlayerListFragment.java      |  203 ++-
+ .../ui/fragments/PlayerListFragment.java      |  202 ++-
  core/src/mindustry/world/Block.java           |   18 +-
  core/src/mindustry/world/Build.java           |   50 +
  .../world/blocks/ConstructBlock.java          |   42 +-
@@ -142,7 +142,7 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  .../mindustryX/features/ui/ArcPowerInfo.java  |   70 ++
  .../features/ui/ArcWaveInfoDialog.java        | 1117 +++++++++++++++++
  .../features/ui/BlockSelectDialog.java        |   65 +
- 63 files changed, 5597 insertions(+), 264 deletions(-)
+ 63 files changed, 5594 insertions(+), 261 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcBuilds.java
  create mode 100644 core/src/mindustryX/features/ArcRadar.java
  create mode 100644 core/src/mindustryX/features/ArcUnits.java
@@ -2027,11 +2027,7 @@ index 998caed117d2eeef7f74ad0527c2f01f76f60650..03d218ef76d25d776793493bf34400d0
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1236,9 +1331,13 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-         boolean isPayload = !unit.isAdded();
- 
-+
+@@ -1239,6 +1335,9 @@ public class UnitType extends UnlockableContent implements Senseable{
          Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
          float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
  
@@ -2100,22 +2096,7 @@ index 998caed117d2eeef7f74ad0527c2f01f76f60650..03d218ef76d25d776793493bf34400d0
              }
  
              Draw.reset();
-@@ -1520,6 +1623,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-     public void drawBody(Unit unit){
-         applyColor(unit);
- 
-+
-         Draw.rect(region, unit.x, unit.y, unit.rotation - 90);
- 
-         Draw.reset();
-@@ -1529,13 +1633,14 @@ public class UnitType extends UnlockableContent implements Senseable{
-         applyColor(unit);
- 
-         Draw.color(cellColor(unit));
-+
-         Draw.rect(cellRegion, unit.x, unit.y, unit.rotation - 90);
-         Draw.reset();
-     }
+@@ -1535,7 +1640,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public Color cellColor(Unit unit){
          float f = Mathf.clamp(unit.healthf());
@@ -2142,7 +2123,7 @@ index 998caed117d2eeef7f74ad0527c2f01f76f60650..03d218ef76d25d776793493bf34400d0
                  Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                  Draw.color();
              }
-@@ -1673,13 +1778,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1673,8 +1778,9 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();
  
@@ -2153,11 +2134,6 @@ index 998caed117d2eeef7f74ad0527c2f01f76f60650..03d218ef76d25d776793493bf34400d0
          }
  
          for(int i : Mathf.signs){
-             Draw.mixcol(Tmp.c1.set(mechLegColor).lerp(Color.white, Mathf.clamp(unit.hitTime)), Math.max(Math.max(0, i * extension / mechStride), unit.hitTime));
--
-             Draw.rect(legRegion,
-             unit.x + Angles.trnsx(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
-             unit.y + Angles.trnsy(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
 @@ -1696,6 +1801,8 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.color(Color.white);
          }
@@ -2330,7 +2306,7 @@ index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..ae63f36d28420a67d3a6c852374d4ddb
          });
  
          table.row();
-@@ -89,16 +92,33 @@ public class ContentInfoDialog extends BaseDialog{
+@@ -89,12 +92,30 @@ public class ContentInfoDialog extends BaseDialog{
          }
  
          if(content.details != null){
@@ -2362,10 +2338,6 @@ index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..ae63f36d28420a67d3a6c852374d4ddb
          ScrollPane pane = new ScrollPane(table);
          cont.add(pane);
  
-         show();
-     }
--
- }
 diff --git a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java b/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
 index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098b20c8adb 100644
 --- a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
@@ -4651,12 +4623,6 @@ index 9286aab19502b5cf40556311572157b20c60fef4..0e9a2bdc81c3688fe5cd9928a9b0ad73
              content.row();
          }
  
-@@ -275,5 +365,4 @@ public class PlayerListFragment{
-             search.clearText();
-         }
-     }
--
- }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
 index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc0a625695 100644
 --- a/core/src/mindustry/world/Block.java
@@ -6875,7 +6841,7 @@ index 651e6408d6132a194f63fba2613abac62b60aaf1..1962d9b7db710f08cb7050723d2d4827
      public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 diff --git a/core/src/mindustryX/features/ui/ArcMessageDialog.java b/core/src/mindustryX/features/ui/ArcMessageDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..995f8e92be32d0a8bd1f9af991000120c52f7dc8
+index 0000000000000000000000000000000000000000..14b2cf4fc7e110852f7a0b27a0a6d4996dc9355c
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcMessageDialog.java
 @@ -0,0 +1,419 @@
@@ -7157,7 +7123,7 @@ index 0000000000000000000000000000000000000000..995f8e92be32d0a8bd1f9af991000120
 +                Http.get("https://pastebin.com/raw/" + id, r -> ui.schematics.readShare(r.getResultAsString().replace(" ", "+"), sender));
 +            }
 +            case markPlayer -> {
-+                if(message.split("AT")[1].contains(player.name)) return;
++                if(!message.split("AT")[1].contains(player.name)) return;
 +                if(sender != null)
 +                    ui.announce("[gold]你被[white] " + sender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
 +                else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);

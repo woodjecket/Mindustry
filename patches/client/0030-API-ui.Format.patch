@@ -18,7 +18,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/14
 
 diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..297ed9e0a20b04decf39f58419f8c9b6f9cc7fd8
+index 0000000000000000000000000000000000000000..0a61abc0d266f8c3ba93285b6a35eb85f9190f54
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/Format.kt
 @@ -0,0 +1,123 @@
@@ -31,7 +31,7 @@ index 0000000000000000000000000000000000000000..297ed9e0a20b04decf39f58419f8c9b6
 +import kotlin.math.abs
 +
 +@Suppress("MemberVisibilityCanBePrivate")
-+data class Format @JvmOverloads constructor(private var decimal: Int = 2, private var fixDecimals: Boolean = false) {
++data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimals: Boolean = false) {
 +    /**以固定的有效位数输出*/
 +    fun fixedPrecision(v: Float): String {
 +        val exponent = Mathf.floor(Mathf.log(10f, abs(v)))

@@ -11,14 +11,17 @@ Content-Transfer-Encoding: 8bit
 * 修复注释切换功能；整理代码
 * 实现JUMP跳转按钮
 way-zer <himc.wicp@gmail.com> on 2024/7/13
+
+重制内存元显示 和 处理器快捷显示
+way-zer <himc.wicp@gmail.com> on 2024/7/14
 ---
  core/src/mindustry/logic/LCanvas.java         |  52 +++-
  core/src/mindustry/logic/LExecutor.java       |  19 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
- core/src/mindustry/logic/LogicDialog.java     | 239 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  88 ++++++-
- .../world/blocks/logic/MemoryBlock.java       | 107 ++++++++
- 6 files changed, 464 insertions(+), 53 deletions(-)
+ core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
+ .../world/blocks/logic/LogicBlock.java        |  49 +++-
+ .../world/blocks/logic/MemoryBlock.java       |  52 ++++
+ 6 files changed, 369 insertions(+), 52 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f50139830629 100644
@@ -213,7 +216,7 @@ index 9884b9846f06a48c4596ffa5f29f59279b3c21b7..256792039c9471b7ae130d07070e86e3
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..ee6ef6fa735e30038e3514d6c32484efd10a5545 100644
+index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..022087c76836fd725cba7f288c6d067af7829ad4 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -234,19 +237,18 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..ee6ef6fa735e30038e3514d6c32484ef
  
  import static mindustry.Vars.*;
  import static mindustry.logic.LCanvas.*;
-@@ -26,6 +30,11 @@ public class LogicDialog extends BaseDialog{
+@@ -26,6 +30,10 @@ public class LogicDialog extends BaseDialog{
      public LCanvas canvas;
      Cons<String> consumer = s -> {};
      boolean privileged;
-+    public static float period = 15f;
++    private static float period = 15f;
 +    Table varTable = new Table();
-+    public static boolean refreshing = true;
-+    private static boolean doRefresh, noSave;
++    private static boolean refreshing = true, doRefresh, noSave;
 +
      @Nullable LExecutor executor;
      GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
  
-@@ -40,19 +49,153 @@ public class LogicDialog extends BaseDialog{
+@@ -40,19 +48,153 @@ public class LogicDialog extends BaseDialog{
          addCloseListener();
  
          shown(this::setup);
@@ -401,7 +403,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..ee6ef6fa735e30038e3514d6c32484ef
      public static Color typeColor(LVar s, Color color){
          return color.set(
              !s.isobj ? Pal.place :
-@@ -124,6 +267,17 @@ public class LogicDialog extends BaseDialog{
+@@ -124,6 +266,17 @@ public class LogicDialog extends BaseDialog{
                              ui.showException(e);
                          }
                      }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
@@ -419,7 +421,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..ee6ef6fa735e30038e3514d6c32484ef
                  });
              });
  
-@@ -204,54 +358,60 @@ public class LogicDialog extends BaseDialog{
+@@ -204,54 +357,60 @@ public class LogicDialog extends BaseDialog{
          }).name("variables").disabled(b -> executor == null || executor.vars.length == 0);
  
          buttons.button("@add", Icon.add, () -> {
@@ -518,27 +520,11 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..ee6ef6fa735e30038e3514d6c32484ef
          canvas.statements.clearChildren();
          canvas.rebuild();
          canvas.privileged = privileged;
-@@ -266,7 +426,6 @@ public class LogicDialog extends BaseDialog{
-                 modified.get(result);
-             }
-         };
--
-         show();
-     }
- }
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d500f1c75 100644
+index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0ddc961762f 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-@@ -8,6 +8,7 @@ import arc.graphics.*;
- import arc.graphics.g2d.*;
- import arc.math.*;
- import arc.math.geom.*;
-+import arc.scene.ui.Label;
- import arc.scene.ui.layout.*;
- import arc.struct.Bits;
- import arc.struct.*;
-@@ -27,11 +28,13 @@ import mindustry.world.blocks.ConstructBlock.*;
+@@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
  import mindustry.world.meta.*;
  import mindustryX.*;
  import mindustryX.events.*;
@@ -546,13 +532,7 @@ index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d
  
  import java.io.*;
  import java.util.zip.*;
- 
- import static mindustry.Vars.*;
-+import static mindustry.logic.LogicDialog.*;
- 
- public class LogicBlock extends Block{
-     @MindustryXApi
-@@ -114,7 +117,7 @@ public class LogicBlock extends Block{
+@@ -114,7 +115,7 @@ public class LogicBlock extends Block{
      }
  
      public boolean accessible(){
@@ -561,22 +541,16 @@ index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d
      }
  
      @Override
-@@ -260,6 +263,14 @@ public class LogicBlock extends Block{
+@@ -260,6 +261,8 @@ public class LogicBlock extends Block{
          public @Nullable String tag;
          public char iconTag;
  
-+        Table settingTable = new Table();
-+        boolean showSettingTable = false;
-+        boolean showContent = false;
-+
-+        float counter = 0f;
-+
-+        boolean linkSimplify = false;
++        private static boolean showVars = false;
 +
          /** Block of code to run after load. */
          public @Nullable Runnable loadBlock;
  
-@@ -583,10 +594,12 @@ public class LogicBlock extends Block{
+@@ -583,10 +586,12 @@ public class LogicBlock extends Block{
              }
  
              //draw top text on separate layer
@@ -586,25 +560,19 @@ index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d
                  Building build = world.build(l.x, l.y);
                  if(l.active && validLink(build)){
 -                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);
-+                    build.block.drawPlaceText(linkSimplify ? i++ + "" : l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
++                    build.block.drawPlaceText(l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
                  }
              }
          }
-@@ -638,6 +651,61 @@ public class LogicBlock extends Block{
-             return other != null && other.isValid() && (privileged || (!other.block.privileged && other.team == team && other.within(this, range + other.block.size*tilesize/2f))) && !(other instanceof ConstructBuild);
-         }
+@@ -645,7 +650,45 @@ public class LogicBlock extends Block{
  
-+        private void rebuildSettingTable() {
-+            settingTable.clear();
-+            if (!showSettingTable) return;
-+            settingTable.setColor(Color.lightGray);
-+            settingTable.update(() -> {
-+                counter += Time.delta;
-+                if (counter > period && refreshing) {
-+                    counter = 0;
-+                }
-+            });
-+            settingTable.table(t -> {
+         @Override
+         public void buildConfiguration(Table table){
+-            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
++            table.setBackground(Styles.black3);
++            Table vars = new Table();
++            table.table(t -> {
++                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
 +                t.button(Icon.copy, Styles.cleari, () -> {
 +                    Core.app.setClipboardText(code);
 +                    UIExt.announce("已复制逻辑");
@@ -613,103 +581,58 @@ index 261b6374360c2cbae88f44aa441f55706c181936..87349da6becbe5fcf6464bcc2195d57d
 +                    updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
 +                    UIExt.announce("已导入逻辑(仅单机生效)");
 +                }).size(40);
-+                t.button(Icon.trash, Styles.cleari, () -> {
-+                    code = "";
-+                    updateCode(code);
-+                    UIExt.announce("已清除逻辑(仅单机生效)");
-+                }).size(40);
-+                t.button(Icon.chatSmall, Styles.cleari, () -> {
-+                    linkSimplify = !linkSimplify;
-+                    UIExt.announce(linkSimplify ? "仅显示linkindex" : "显示方块名和linkindex");
-+                }).size(40);
 +                t.button(Icon.info, Styles.cleari, () -> {
-+                    showContent = !showContent;
-+                    rebuildSettingTable();
++                    showVars = !showVars;
++                    vars.clear();
++                    if(showVars) buildVarsTable(vars);
++                    table.pack();
 +                }).size(40);
 +            });
-+            if (showContent && !code.isEmpty()) {
-+                settingTable.row();
-+                settingTable.pane(t -> {
-+                    for (var s : executor.vars) {
-+                        if(s.name.startsWith("___")) continue;
-+                        String text = arcVarsText(s);
-+                        t.table(tt -> {
-+                            tt.labelWrap(s.name + "").color(arcVarsColor(s)).width(100f);
-+                            Label label = tt.labelWrap(" : " + text).width(200f).get();
-+                            tt.update(() -> {
-+                                if (counter + Time.delta > period && refreshing) {
-+                                    label.setText(arcVarsText(s));
-+                                }
-+                            });
-+                        });
-+                        t.row();
-+                    }
-+                }).maxHeight(400f);
-+
-+            }
++            table.row().pane(vars).pad(4).maxHeight(400f);
++            if(showVars) buildVarsTable(vars);
 +        }
 +
-         @Override
-         public boolean shouldShowConfigure(Player player){
-             return accessible();
-@@ -645,7 +713,21 @@ public class LogicBlock extends Block{
- 
-         @Override
-         public void buildConfiguration(Table table){
--            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
-+            if (Core.settings.getBool("logicSupport")){
-+                table.table(t -> {
-+                    t.button(Icon.pencil, Styles.cleari, () -> {
-+                        ui.logic.show(code, executor, privileged, code -> configure(compress(code, relativeConnections())));
-+                    }).size(40);
-+                    t.button(Icon.settings, Styles.cleari, () -> {
-+                        showSettingTable = !showSettingTable;
-+                        rebuildSettingTable();
-+                    }).size(40);
-+                });
++        private void buildVarsTable(Table table){
++            final var vars = executor.vars;
++            table.update(() -> {
++                if(vars != executor.vars){
++                    table.clear();
++                    buildVarsTable(table);
++                }
++            });
++
++            table.setColor(Color.lightGray);
++            for(var s : vars){
++                if(s.name.startsWith("___")) continue;
++                table.add(s.name).color(LogicDialog.arcVarsColor(s)).align(Align.left);
++                table.label(() -> LogicDialog.arcVarsText(s)).align(Align.right);
 +                table.row();
-+                table.add(settingTable);
-+            }else{
-+                table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
 +            }
          }
  
          public void showEditDialog(){
 diff --git a/core/src/mindustry/world/blocks/logic/MemoryBlock.java b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-index 37a6c2af615665c5179c6df5d57e053a07ce4c72..815ae61d974d0ce5ab9a664faceed7cc649e6bee 100644
+index 37a6c2af615665c5179c6df5d57e053a07ce4c72..f8e4227441a914b575b978d68bf4573fade63a7d 100644
 --- a/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-@@ -1,15 +1,29 @@
+@@ -1,9 +1,16 @@
  package mindustry.world.blocks.logic;
  
-+import arc.Core;
++import arc.*;
 +import arc.graphics.Color;
-+import arc.scene.event.Touchable;
-+import arc.scene.ui.Label;
++import arc.scene.event.*;
 +import arc.scene.ui.layout.Table;
-+import arc.util.Time;
  import arc.util.io.*;
  import mindustry.gen.*;
 +import mindustry.ui.Styles;
  import mindustry.world.*;
  import mindustry.world.meta.*;
 +import mindustryX.features.*;
++import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
  
- public class MemoryBlock extends Block{
-     public int memoryCapacity = 32;
- 
-+    boolean showInfo = false;
-+    int numPerRow = 10;
-+    int period = 15;
-+
-+    Table infoTable = new Table();
-+
-     public MemoryBlock(String name){
-         super(name);
-         destructible = true;
-@@ -18,6 +32,7 @@ public class MemoryBlock extends Block{
+@@ -18,6 +25,7 @@ public class MemoryBlock extends Block{
          drawDisabled = false;
          envEnabled = Env.any;
          canOverdrive = false;
@@ -717,16 +640,16 @@ index 37a6c2af615665c5179c6df5d57e053a07ce4c72..815ae61d974d0ce5ab9a664faceed7cc
      }
  
      @Override
-@@ -38,6 +53,8 @@ public class MemoryBlock extends Block{
+@@ -38,6 +46,8 @@ public class MemoryBlock extends Block{
  
      public class MemoryBuild extends Building{
          public double[] memory = new double[memoryCapacity];
-+        float counter = 0f;
-+        int deci = -1;
++        private static int numPerRow = 10;
++        private static final Format format = new Format(0, true);
  
          //massive byte size means picking up causes sync issues
          @Override
-@@ -71,6 +88,96 @@ public class MemoryBlock extends Block{
+@@ -71,6 +81,48 @@ public class MemoryBlock extends Block{
              }
          }
  
@@ -738,88 +661,40 @@ index 37a6c2af615665c5179c6df5d57e053a07ce4c72..815ae61d974d0ce5ab9a664faceed7cc
 +                return;
 +            }
 +
-+            rebuildInfo();
-+            table.add(infoTable);
-+        }
-+
-+        private void rebuildInfo(){
-+            infoTable.clear();
-+            if(!showInfo){
-+                infoTable.button(Icon.pencil, Styles.cleari, () -> {
-+                    showInfo = !showInfo;
-+                    rebuildInfo();
-+                }).size(40);
-+                return;
-+            }
-+            infoTable.update(()->{
-+                counter+= Time.delta;
-+                if(counter>period){
-+                    counter=0;
-+                }
-+            });
-+            infoTable.setColor(Color.lightGray);
-+            infoTable.table(t->{
-+                t.button(Icon.pencil, Styles.cleari, () -> {
-+                    showInfo = !showInfo;
-+                    rebuildInfo();
-+                }).size(40);
-+                t.button(Icon.refreshSmall,Styles.cleari,()->{
-+                    rebuildInfo();
-+                    UIExt.announce("已更新内存元！");
-+                }).size(40);
-+
-+                Label rowNum = t.add("每行 "+numPerRow).get();
-+                t.slider(2, 15,1, numPerRow, res -> {
++            Table vars = new Table();
++            table.background(Styles.black3);
++            table.table(t -> {
++                t.add("每行 " + numPerRow).get();
++                t.slider(2, 15, 1, numPerRow, res -> {
 +                    numPerRow = (int)res;
-+                    rowNum.setText("每行 "+numPerRow);
++                    vars.clear();
++                    buildVarsPane(vars);
++                    table.pack();
 +                });
 +
-+                Label deciL = t.add(deci==-1?"不约化":("约化 "+deci)).get();
-+                t.slider(-1, 15,1, deci, res -> {
-+                    deci = (int)res;
-+                    deciL.setText(deci==-1?"不约化":("约化 "+deci));
-+                });
++                t.add("保留小数: ");
++                t.slider(0, 8, 1, format.getDecimal(), res -> format.setDecimal((int)res));
++            }).row();
++            table.pane(vars).maxWidth(1000f).maxHeight(500f).pad(4);
 +
-+                Label refresh = t.add("刷新 "+period).get();
-+                t.slider(1, 60,1, 20, res -> {
-+                    period = (int)res;
-+                    refresh.setText("刷新 "+period);
-+                });
-+            });
-+            infoTable.row();
-+            infoTable.pane(t->{
-+                int index = 0;
-+                for(double v : memory){
-+                    Label textR = t.add(index + " ").get();
-+                    int finalIndex = index;
-+
-+                    t.table(tt->{
-+                        Label text = tt.add(showString(memory[finalIndex])).get();
-+                        tt.update(()->{
-+                            if(counter + Time.delta>period){
-+                                textR.setText((memory[finalIndex]==0?"[gray]":"") + finalIndex + " ");
-+                                text.setText(showString(memory[finalIndex]));
-+                            }
-+                        });
-+                        tt.touchable = Touchable.enabled;
-+                        tt.tapped(()->{
-+                            Core.app.setClipboardText(memory[finalIndex]+"");
-+                            UIExt.announce("[cyan]复制内存[white]\n " + memory[finalIndex]);
-+                        });
-+                    });
-+                    index+=1;
-+                    if(index % numPerRow==0) t.row();
-+                    else t.add(" " + ((index % numPerRow) % 2 == 0?"[cyan]":"[acid]") + "|[white] ");
-+                }
-+            }).maxWidth(1000f).maxHeight(500f);
++            buildVarsPane(vars);
 +        }
 +
-+        public String showString(double number){
-+            if(number == 0) return "[gray]-";
-+            else if(deci == 0 || number == (int)number) return "[orange]" + (int)number + "";
-+            if(deci == -1) return "[orange]" + number + "";
-+            else return "[orange]" + String.format("%." + deci + "f", number) + "";
++        public void buildVarsPane(Table t){
++            for(int i = 0; i < memory.length; i++){
++                int finalI = i;
++                t.add("" + i).color(Color.lightGray);
++                t.label(() -> format.format((float)memory[finalI])).padLeft(8)
++                .touchable(Touchable.enabled).get().tapped(() -> {
++                    Core.app.setClipboardText(memory[finalI] + "");
++                    UIExt.announce("[cyan]复制内存[white]\n " + memory[finalI]);
++                });
++                if((i + 1) % numPerRow == 0) t.row();
++                else t.add("|").color(((i % numPerRow) % 2 == 0) ? Color.cyan : Color.acid)
++                .padLeft(12).padRight(12);
++            }
 +        }
++
          @Override
          public void read(Reads read, byte revision){
              super.read(read, revision);
