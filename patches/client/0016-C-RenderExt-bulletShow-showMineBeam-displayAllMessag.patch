@@ -11,7 +11,7 @@ Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
  3 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 34c3b537df9075827b24df0f26c83de1cc805bf6..939924880db520a918cc51cf5cace817000fb28d 100644
+index 3408948807b1bc145fa5effb4cd77b9f5ff4a29d..d8999d2001071b91a9976921f66a71562c215e09 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;

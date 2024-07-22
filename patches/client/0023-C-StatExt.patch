@@ -148,7 +148,7 @@ index 79d0177b41b7480488f6131935dbf345b9f4598a..2e67b422063355deac7aecb7dd93b3ed
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 939924880db520a918cc51cf5cace817000fb28d..998caed117d2eeef7f74ad0527c2f01f76f60650 100644
+index d8999d2001071b91a9976921f66a71562c215e09..682d2cdb951823b61c7951c8c19ed8a0a976f396 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -612,29 +612,47 @@ public class UnitType extends UnlockableContent implements Senseable{
@@ -480,7 +480,7 @@ index 97aedf43b5595bcfb63ea9ecce91dc6e57967e92..cd30d93b35b0547658c39c0b0f6e5ef0
  
      public class PointDefenseBuild extends ReloadTurretBuild{
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index 0baea25f9367d45ad3384bbbc69bd4299b9a19a8..df8ecaa3537b0fb9d1ffad0226695af9596b9b81 100644
+index e9f5331bbef3b2110eeeed5934ec10b5f5fc9e12..cf350df9ea21f3654672c99a70c5c9f2ea439413 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -26,6 +26,7 @@ import mindustry.ui.*;
@@ -491,7 +491,7 @@ index 0baea25f9367d45ad3384bbbc69bd4299b9a19a8..df8ecaa3537b0fb9d1ffad0226695af9
  
  import static mindustry.Vars.*;
  
-@@ -152,7 +153,8 @@ public class Turret extends ReloadTurret{
+@@ -153,7 +154,8 @@ public class Turret extends ReloadTurret{
          super.setStats();
  
          stats.add(Stat.inaccuracy, (int)inaccuracy, StatUnit.degrees);

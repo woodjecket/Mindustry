@@ -182,10 +182,10 @@ index 53c0889446bda2891a6417c435ff255953447b92..2d2e5e04d9105714a828cda022f84687
          public float shield = shieldHealth, shieldRadius = 0f;
          public float breakTimer;
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java b/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
-index 93a77b644f2ea6e583346f9899bf73dbf59f28ef..2fbf6a50f7e253798829fce804b6c76f8d039c78 100644
+index 51c07de96f6214aed028845c388ac306461fbe1c..59dd7e060664c7c7be5d0819947586bd36095197 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/ItemTurret.java
-@@ -15,6 +15,7 @@ import mindustry.type.*;
+@@ -16,6 +16,7 @@ import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
@@ -193,7 +193,7 @@ index 93a77b644f2ea6e583346f9899bf73dbf59f28ef..2fbf6a50f7e253798829fce804b6c76f
  
  import static mindustry.Vars.*;
  
-@@ -57,10 +58,9 @@ public class ItemTurret extends Turret{
+@@ -58,10 +59,9 @@ public class ItemTurret extends Turret{
          super.setBars();
  
          addBar("ammo", (ItemTurretBuild entity) ->

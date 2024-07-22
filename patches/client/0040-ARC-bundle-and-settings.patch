@@ -268,10 +268,10 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a
 +waves.group.items = 添加物品
 +waves.group.payloads = 添加载荷
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 9d1fac76623f76f2be91b68bd339c9e821405ede..91683c5510baa62e106b9ba03fce67ed26c4b1f6 100644
+index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82c6e3fbd9 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-@@ -299,11 +299,12 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -300,11 +300,12 @@ public class SettingsMenuDialog extends BaseDialog{
          sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
          sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
@@ -285,7 +285,7 @@ index 9d1fac76623f76f2be91b68bd339c9e821405ede..91683c5510baa62e106b9ba03fce67ed
              if(!ios){
                  game.checkPref("keyboard", false, val -> {
                      control.setInput(val ? new DesktopInput() : new MobileInput());
-@@ -337,11 +338,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -338,11 +339,9 @@ public class SettingsMenuDialog extends BaseDialog{
          game.checkPref("hints", true);
          game.checkPref("logichints", true);
  
@@ -300,7 +300,7 @@ index 9d1fac76623f76f2be91b68bd339c9e821405ede..91683c5510baa62e106b9ba03fce67ed
  
          game.checkPref("doubletapmine", false);
          game.checkPref("commandmodehold", true);
-@@ -363,9 +362,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -364,9 +363,9 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -313,7 +313,7 @@ index 9d1fac76623f76f2be91b68bd339c9e821405ede..91683c5510baa62e106b9ba03fce67ed
  
          int[] lastUiScale = {settings.getInt("uiscale", 100)};
  
-@@ -444,18 +443,18 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -445,18 +444,18 @@ public class SettingsMenuDialog extends BaseDialog{
          graphics.checkPref("destroyedblocks", true);
          graphics.checkPref("blockstatus", false);
          graphics.checkPref("playerchat", true);

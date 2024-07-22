@@ -32,7 +32,7 @@ index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0a904cfeb92b230e7d52fff7a16e1104fe5415fa..00dce3e97b2e02d5119defb2dd5435899c8e4f1c 100644
+index 2e9a8c337ae1182dfa5527a23c50afb6da42f834..a8486eb4247761a56e6d044cddd4f0d39f60003e 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -62,6 +62,10 @@ public class NetClient implements ApplicationListener{
@@ -213,7 +213,7 @@ index 58c186ff3151d8bba395b1bc1a51a821b81c40e1..b3e0318791e123b784e9953b9fb39ea2
              }
  
 diff --git a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
-index 84f5bc221c2f1846d831acf4abf902b15bfc1c59..4a8ef62fb82970df299159e53687f4c87b927f63 100644
+index 54a36cde6eee102c9c8f3bfd5e4c76a2f4d0f1e1..bd810004301a4534c6568fb0bcd85f4a4a0c44ef 100644
 --- a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
 +++ b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
 @@ -138,7 +138,7 @@ public class BlockInventoryFragment{
@@ -240,12 +240,12 @@ index 1e4a9399aac99d771d201d6ac01055295da686d4..fd1ef350517446c74427f85d27372bdd
  
          @Override
 diff --git a/core/src/mindustry/world/blocks/distribution/StackConveyor.java b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
-index 357c3f8705da52d055feea7b092006746b54b0ec..dc63f773385b7bd02ef16deb9dba7ca68407ac55 100644
+index 9bf0bcf4cf84796d64c2ec890c37cb3e3d205bd0..d8984e8d7aa2338f071454d16b3cf9055f7dac74 100644
 --- a/core/src/mindustry/world/blocks/distribution/StackConveyor.java
 +++ b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
-@@ -288,6 +288,8 @@ public class StackConveyor extends Block implements Autotiler{
-                         poofOut();
+@@ -290,6 +290,8 @@ public class StackConveyor extends Block implements Autotiler{
                          lastItem = null;
+                         break;
                      }
 +                    //MDTX: sometime get in dead loop
 +                    if(lastItem != items.first()) break;

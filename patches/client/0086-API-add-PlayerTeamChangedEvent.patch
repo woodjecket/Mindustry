@@ -10,7 +10,7 @@ Subject: [PATCH] API: add PlayerTeamChangedEvent
  create mode 100644 core/src/mindustryX/events/PlayerTeamChangedEvent.java
 
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index f970cfe23b56d283ab271aa7d025155ccbd8a4a9..71b18bedbffcb3eb83a1650f4ff5b2241787a5d8 100644
+index 0ed2a11ad4a242a5515cead2bfc452ac927062aa..bb62444ec4f5a4a2c36541147ca09cf3113328ad 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
 +++ b/core/src/mindustry/entities/comp/PlayerComp.java
 @@ -23,6 +23,7 @@ import mindustry.net.Packets.*;
@@ -21,13 +21,15 @@ index f970cfe23b56d283ab271aa7d025155ccbd8a4a9..71b18bedbffcb3eb83a1650f4ff5b224
  
  import static mindustry.Vars.*;
  
-@@ -190,8 +191,11 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+@@ -191,10 +192,13 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
      }
  
      public void team(Team team){
 +        Team last = this.team;
          this.team = team;
-         unit.team(team);
+         if(unit != null){
+             unit.team(team);
+         }
 +        //MDTX: PlayerTeamChangeEvent
 +        Events.fire(new PlayerTeamChangedEvent(last, self()));
      }

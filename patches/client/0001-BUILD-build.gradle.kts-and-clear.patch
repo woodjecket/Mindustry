@@ -7,8 +7,8 @@ clear and replce jabel(Support record)
 way-zer <himc.wicp@gmail.com> on 2024/6/9
 ---
  .gitignore                                    |   2 +-
- android/build.gradle                          |  80 +++--
- android/proguard-rules.pro                    |   5 +
+ android/build.gradle                          |  78 +++--
+ android/proguard-rules.pro                    |   4 +
  .../com/github/bsideup/jabel/Desugar.java     |  13 +
  .../javax.annotation.processing.Processor     |   6 +
  build.gradle                                  | 241 ++-------------
@@ -17,7 +17,6 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  desktop/build.gradle                          | 162 +---------
  gradle.properties                             |   2 +
  gradle/wrapper/gradle-wrapper.jar             | Bin 59203 -> 43462 bytes
- gradle/wrapper/gradle-wrapper.properties      |   4 +-
  gradlew                                       | 282 +++++++++++-------
  gradlew.bat                                   |  35 ++-
  ios/build.gradle                              |   2 +-
@@ -25,7 +24,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 19 files changed, 389 insertions(+), 611 deletions(-)
+ 18 files changed, 383 insertions(+), 610 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -52,7 +51,7 @@ index dd3f2a0f065d3f774ea84fbc932e337160e4b307..7d91d3191096c431b739d2d5ecd951a7
  /core/assets/locales
  /core/assets/cache/
 diff --git a/android/build.gradle b/android/build.gradle
-index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433853c0c40 100644
+index f1dc45aa74b149babea9cce2535ed7dca8d49a1f..093c328edc2719aa86bb212e1abb1f500044b08a 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -1,18 +1,19 @@
@@ -68,7 +67,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
 +}
  
 -    dependencies{
--        classpath 'com.android.tools.build:gradle:7.2.1'
+-        classpath 'com.android.tools.build:gradle:8.2.2'
 +ext{
 +    findSdkDir = {
 +        //null because IntelliJ doesn't get env variables
@@ -86,7 +85,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
  configurations{ natives }
  
  repositories{
-@@ -20,17 +21,10 @@ repositories{
+@@ -20,16 +21,8 @@ repositories{
      maven{ url "https://maven.google.com" }
  }
  
@@ -99,15 +98,12 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
 -}
 -
  android{
--    buildToolsVersion '33.0.2'
--    compileSdkVersion 33
+-    namespace = "io.anuke.mindustry"
 +    namespace = "com.github.tinylake.mindustryX"
-+    buildToolsVersion = '33.0.2'
-+    compileSdk = 33
+     buildToolsVersion = '34.0.0'
+     compileSdk = 34
      sourceSets{
-         main{
-             manifest.srcFile 'AndroidManifest.xml'
-@@ -50,8 +44,6 @@ android{
+@@ -51,8 +44,6 @@ android{
      }
  
      defaultConfig{
@@ -116,12 +112,13 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
          def versionNameResult = "$versionNumber-$versionType-${getBuildVersion().replace(" ", "-")}"
  
          applicationId "io.anuke.mindustry"
-@@ -59,12 +51,15 @@ android{
-         targetSdkVersion 33
+@@ -60,14 +51,16 @@ android{
+         targetSdkVersion 34
          
          versionName versionNameResult
 -        versionCode = vcode
 +        versionCode = 1
++        multiDexEnabled true
  
          if(project.hasProperty("release")){
 +            Properties props = loadVersionProps()
@@ -131,19 +128,12 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
 +            props.store(file('../core/assets/version.properties').newWriter(), null)
          }
 -        props.store(file('../core/assets/version.properties').newWriter(), null)
+-
+-        multiDexEnabled true
      }
  
      compileOptions{
-@@ -72,7 +67,7 @@ android{
-         targetCompatibility JavaVersion.VERSION_1_8
-     }
- 
--    flavorDimensions "google"
-+    flavorDimensions = ["google"]
- 
-     signingConfigs{
-         release{
-@@ -119,8 +114,8 @@ dependencies{
+@@ -122,8 +115,8 @@ dependencies{
      implementation arcModule("backends:backend-android")
      implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
  
@@ -154,7 +144,7 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
  
      def version;
      def highestVersion;
-@@ -133,24 +128,25 @@ dependencies{
+@@ -136,24 +129,25 @@ dependencies{
      if(sdkFile.exists()) compileOnly files(sdkFile.absolutePath)
  }
  
@@ -196,25 +186,20 @@ index f7f1ce377bb162249e8034db9ab712a75e96bc17..8b9676e3f124728d59ee80367d14f433
 +}
 \ No newline at end of file
 diff --git a/android/proguard-rules.pro b/android/proguard-rules.pro
-index 368b7f4e1e14f4f6cd83f3390fb33899552235fc..7977507301e2bb020346409539c54f8c87e4b320 100644
+index ebda968ae6947db76031a6d37bc74f049e2e3db4..6f53c442978ee6a880dfd05a81a69fde596a783b 100644
 --- a/android/proguard-rules.pro
 +++ b/android/proguard-rules.pro
-@@ -3,9 +3,14 @@
- #these are essential packages that should not be "optimized" in any way
- #the main purpose of d8 here is to shrink the absurdly-large google play games libraries
- -keep class mindustry.** { *; }
-+-keep class mindustryX.** { *; }
- -keep class arc.** { *; }
+@@ -5,6 +5,10 @@
  -keep class net.jpountz.** { *; }
  -keep class rhino.** { *; }
  -keep class com.android.dex.** { *; }
++-keep class mindustryX.** { *; }
 +-keep class kotlin.** { *; }
 +-keep class org.jetbrains.annotations.** { *; }
 +-keep class org.intellij.lang.annotations.** { *; }
+ -keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod
  
-+-dontwarn javax.naming.**
- #-printusage out.txt
-\ No newline at end of file
+ -dontwarn javax.naming.**
 diff --git a/annotations/src/main/java/com/github/bsideup/jabel/Desugar.java b/annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..dcea5cdf03b366f9f59e20511dafee3601e15fb6
@@ -858,7 +843,7 @@ index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..ecb36e1a2a501040d3adee3203eacef2
 +}
 \ No newline at end of file
 diff --git a/gradle.properties b/gradle.properties
-index 087025418f6b5419bcf23f6354c18f53a7eef0dc..f43e22ea642fe0dcd62cf970a518de025db65ea4 100644
+index 827c8445c4ac9ea773041bba50235598c3604fe1..16ce1c54512959ff201113c746e222291fdb11ff 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -21,6 +21,8 @@ kapt.include.compile.classpath=false
@@ -2655,19 +2640,6 @@ z9CObS!0m)Tgg`K#xBM8B(|Z)Wb&DYL{WTYv`;A=q6~Nnx2+!lTIXtj8J7dZE!P_{z
 z#f8w6F}^!?^KE#+ZDv+xd5O&3EmomZzsv?>E-~ygGum45fk!SBN&|eo1rKw^?aZJ4
 E2O(~oYXATM
 
-diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
-index 3994438e229201828cf0e387c24a7c12d78b3972..a80b22ce5cffec8b48ee79b11c67945e91f99d5f 100644
---- a/gradle/wrapper/gradle-wrapper.properties
-+++ b/gradle/wrapper/gradle-wrapper.properties
-@@ -1,5 +1,7 @@
- distributionBase=GRADLE_USER_HOME
- distributionPath=wrapper/dists
--distributionUrl=https\://services.gradle.org/distributions/gradle-7.6.4-bin.zip
-+distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-bin.zip
-+networkTimeout=10000
-+validateDistributionUrl=true
- zipStoreBase=GRADLE_USER_HOME
- zipStorePath=wrapper/dists
 diff --git a/gradlew b/gradlew
 index 4f906e0c811fc9e230eb44819f509cd0627f2600..1aa94a4269074199e6ed2c37e8db3e0826030965 100755
 --- a/gradlew

@@ -58,7 +58,7 @@ index 0cb666446175aa5e952ceaa07669e10a3a023d10..cc639cd1a79b62e9ac252efee35f01f1
 +setting.showminebeam.name = 显示单位挖掘光束
 +#end Settings
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e821405ede 100644
+index 01f7c05a53a570163a1fd83dfd8783c80142ad8c..b93dced65be5c1eea38adc80f8dc2d84c2b3864d 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 @@ -24,6 +24,7 @@ import mindustry.gen.*;
@@ -108,7 +108,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
      }
  
      void addSettings(){
-@@ -378,7 +377,7 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -379,7 +378,7 @@ public class SettingsMenuDialog extends BaseDialog{
  
          graphics.sliderPref("screenshake", 4, 0, 8, i -> (i / 4f) + "x");
  
@@ -117,7 +117,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
          graphics.sliderPref("bloomblur", 2, 1, 16, i -> i + "x");
  
          graphics.sliderPref("fpscap", 240, 10, 245, 5, s -> (s > 240 ? Core.bundle.get("setting.fpscap.none") : Core.bundle.format("setting.fpscap.text", s)));
-@@ -571,13 +570,13 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -572,13 +571,13 @@ public class SettingsMenuDialog extends BaseDialog{
      private void visible(int index){
          prefs.clearChildren();
  
@@ -133,7 +133,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
      }
  
      @Override
-@@ -619,22 +618,39 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -620,22 +619,39 @@ public class SettingsMenuDialog extends BaseDialog{
              table = new SettingsTable();
              builder.get(table);
          }
@@ -174,7 +174,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
          }
  
          public SliderSetting sliderPref(String name, int def, int min, int max, StringProcessor s){
-@@ -645,47 +661,55 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -646,47 +662,55 @@ public class SettingsMenuDialog extends BaseDialog{
              SliderSetting res;
              list.add(res = new SliderSetting(name, def, min, max, step, s));
              settings.defaults(name, def);
@@ -237,7 +237,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
              clearChildren();
  
              for(Setting setting : list){
-@@ -699,6 +723,7 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -700,6 +724,7 @@ public class SettingsMenuDialog extends BaseDialog{
                  }
                  rebuild();
              }).margin(14).width(240f).pad(6);
@@ -245,7 +245,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
          }
  
          public abstract static class Setting{
-@@ -787,6 +812,20 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -788,6 +813,20 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -266,7 +266,7 @@ index 8450dfc699ee79aa25f8e96119da50fcea1b90f9..9d1fac76623f76f2be91b68bd339c9e8
          public static class TextSetting extends Setting{
              String def;
              Cons<String> changed;
-@@ -810,9 +849,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -811,9 +850,9 @@ public class SettingsMenuDialog extends BaseDialog{
                      }
                  });
  

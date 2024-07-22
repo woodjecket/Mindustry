@@ -20,7 +20,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  create mode 100644 core/src/mindustryX/features/ReplayController.java
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index c0960a878e6831e746499bdf13444c2e6ab42f9a..0a904cfeb92b230e7d52fff7a16e1104fe5415fa 100644
+index 3a5b36fd03f48d2c1265884c21b70bb3cdb772bb..2e9a8c337ae1182dfa5527a23c50afb6da42f834 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -24,6 +24,7 @@ import mindustry.net.*;

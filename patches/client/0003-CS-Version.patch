@@ -5,7 +5,6 @@ Subject: [PATCH] CS: Version
 
 ---
  .gitignore                             |  1 +
- android/AndroidManifest.xml            |  3 +--
  android/build.gradle                   |  4 ++--
  android/res/values/strings.xml         |  2 +-
  build.gradle                           |  4 ++--
@@ -15,7 +14,7 @@ Subject: [PATCH] CS: Version
  core/src/mindustry/core/Version.java   | 16 +++++++++++++++-
  core/src/mindustry/net/NetworkIO.java  |  2 +-
  gradle.properties                      |  2 ++
- 11 files changed, 29 insertions(+), 11 deletions(-)
+ 10 files changed, 28 insertions(+), 9 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
@@ -29,20 +28,8 @@ index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa231425414
  /deploy/
  /out/
  ios/libs/
-diff --git a/android/AndroidManifest.xml b/android/AndroidManifest.xml
-index 8cae20eee7a480cef6a14576fc72b096d38271e1..25602c4ab4070b7db9b31803c88281c7e4aa449e 100644
---- a/android/AndroidManifest.xml
-+++ b/android/AndroidManifest.xml
-@@ -1,6 +1,5 @@
- <?xml version="1.0" encoding="utf-8"?>
--<manifest xmlns:android="http://schemas.android.com/apk/res/android"
--          package="io.anuke.mindustry">
-+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
- 
-     <uses-feature android:glEsVersion="0x00020000" android:required="true"/>
-     <uses-feature android:name="android.hardware.type.pc" android:required="false" />
 diff --git a/android/build.gradle b/android/build.gradle
-index 8b9676e3f124728d59ee80367d14f433853c0c40..c39484bf6b00b8031b7ae8862cc172f8946f12cc 100644
+index 093c328edc2719aa86bb212e1abb1f500044b08a..fc719ba8aaa918185c1bba016ba83d7ad975e402 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -18,7 +18,7 @@ configurations{ natives }
@@ -61,7 +48,7 @@ index 8b9676e3f124728d59ee80367d14f433853c0c40..c39484bf6b00b8031b7ae8862cc172f8
 -        applicationId "io.anuke.mindustry"
 +        applicationId "com.github.tinylake.mindustryX"
          minSdkVersion 14
-         targetSdkVersion 33
+         targetSdkVersion 34
          
 diff --git a/android/res/values/strings.xml b/android/res/values/strings.xml
 index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e7c322bed 100644
@@ -119,7 +106,7 @@ index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 8171a89797a0d1cb29fb50364a94b6d3130698ae..6b05845bad6eb3862dea511563e099085d15b479 100644
+index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..5cbdf0a613c067f662a3c7dd4511bb33e35657ae 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -135,6 +135,8 @@ public class NetClient implements ApplicationListener{
@@ -192,13 +179,13 @@ index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129
          buffer.put((byte)state.rules.mode().ordinal());
          buffer.putInt(netServer.admins.getPlayerLimit());
 diff --git a/gradle.properties b/gradle.properties
-index f43e22ea642fe0dcd62cf970a518de025db65ea4..b1921b8ac0d8d0ca7ac86e4d551a694d1ae38ed9 100644
+index 16ce1c54512959ff201113c746e222291fdb11ff..81861490f166f3f5af54997d6bb1ac8adedff122 100644
 --- a/gradle.properties
 +++ b/gradle.properties
-@@ -28,3 +28,5 @@ org.gradle.caching=true
- org.gradle.internal.http.socketTimeout=100000
+@@ -29,3 +29,5 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
- archash=7d6e89dffd
+ android.enableR8.fullMode=false
+ archash=96cd86d08a
 +
-+upstreamBuild=25087
++upstreamBuild=25136
 \ No newline at end of file

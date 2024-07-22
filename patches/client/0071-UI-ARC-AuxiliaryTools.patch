@@ -49,7 +49,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/27
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index e0c292b5231bdf83b8e1e02f2dd9a055020ade68..c41e081b442047b7704401fa9aa8ea1dfb08d7c4 100644
+index 1af8f2e09e9e1812e73b55d9be75f3c6c96118fd..a523403252e6a3dd880301f88c145133dba17024 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -43,6 +43,7 @@ public class HudFragment{

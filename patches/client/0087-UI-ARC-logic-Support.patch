@@ -120,7 +120,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f501
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index f06cac9e1e77f0207895e1502cde6541d01dd6e2..10e2a9930c328e7ca715a8112f62adfa8c7636b1 100644
+index 481895ea4c5ee3a88bd5329593a9a0d9104e8458..963e9d562f1a168fbc63763581a9f16d88c0de2e 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -9,6 +9,7 @@ import arc.util.*;
@@ -168,7 +168,7 @@ index f06cac9e1e77f0207895e1502cde6541d01dd6e2..10e2a9930c328e7ca715a8112f62adfa
              switch(action){
                  case pan -> {
                      control.input.logicCutscene = true;
-@@ -1623,8 +1626,14 @@ public class LExecutor{
+@@ -1624,8 +1627,14 @@ public class LExecutor{
              }
  
              switch(type){
@@ -216,7 +216,7 @@ index 9884b9846f06a48c4596ffa5f29f59279b3c21b7..256792039c9471b7ae130d07070e86e3
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..022087c76836fd725cba7f288c6d067af7829ad4 100644
+index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6e5cbc22d 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -4,6 +4,7 @@ import arc.*;

@@ -24,7 +24,7 @@ index 8376e3f5a5f4aef6c5397567aaba13780eda86ab..e06b393ff7e9de55181a2c069e8a16b3
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index a23af33bb1a25a679616822533f54de3de40831e..09c2f11f0caaa5e99b43a83bc306055bc8dbee37 100644
+index 49146f701cf0e681f12afa3c90d8f9d64d14c67f..091e13a8586e5dee6fc98ec8c8a5acd63b2898a3 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -40,6 +40,7 @@ import mindustry.world.blocks.payloads.*;
@@ -35,7 +35,7 @@ index a23af33bb1a25a679616822533f54de3de40831e..09c2f11f0caaa5e99b43a83bc306055b
  
  import java.util.*;
  
-@@ -1734,7 +1735,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1735,7 +1736,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Unit selectedUnit(){
          Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
