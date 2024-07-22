@@ -4,18 +4,18 @@ function getRef() {
     git ls-tree "$1" "$2" | cut -d' ' -f3 | cut -f1
 }
 
-refHEAD=$(getRef HEAD work)
+refHEAD=$(cd .. && getRef HEAD work || exit 1)
 
-git fetch upstream "$1"
-refRemote=$(git rev-parse FETCH_HEAD)
+git fetch upstream "$1" || exit 1
+refRemote=$(git rev-parse FETCH_HEAD || exit 1)
 
 if [ "$refHEAD" != "$refRemote" ]; then
   echo "$refHEAD -> $refRemote"
   git reset --hard FETCH_HEAD || (echo "Fail reset" && exit 1)
   (cd .. && git add --force work && git commit -m "Update $refHEAD -> $refRemote")
   echo "Rebuilding patches"
-  ../scripts/applyPatches.sh || exit 1
-  ../scripts/genPatches.sh || exit 1
+  ../scripts/applyPatches.sh
+  echo "After resolve conflict, run '../scripts/genPatches.sh'"
 else
   echo "No update, revert to work"
   git reset --hard work
