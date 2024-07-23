@@ -15,56 +15,35 @@ UPDATE5: 修复文字渲染错误
 
 sorted不写回，减少开销。
 way-zer <himc.wicp@gmail.com> on 2024/5/28
+
+新功能：顶点合并
+way-zer <himc.wicp@gmail.com> on 2024/7/23
 ---
- .../plugins/mindustryX/patchArc.gradle.kts    |   5 +
- core/assets/bundles/bundle-mdtx.properties    |   4 +-
- .../arc/graphics/g2d/MySortedSpriteBatch.java | 257 +++++++++
- .../arc/graphics/g2d/SortedSpriteBatch2.java  | 545 ++++++++++++++++++
- core/src/mindustry/ClientLauncher.java        |  11 +-
- core/src/mindustryX/features/RenderExt.java   |   2 +
- core/src/mindustryX/features/Settings.java    |   3 +
- 7 files changed, 816 insertions(+), 11 deletions(-)
- create mode 100644 core/src/arc/graphics/g2d/MySortedSpriteBatch.java
+ core/assets/bundles/bundle-mdtx.properties    |   5 +-
+ .../arc/graphics/g2d/MySortedSpriteBatch.java | 236 ++++++-
+ .../arc/graphics/g2d/SortedSpriteBatch2.java  | 668 ++++++++++++++++++
+ core/src/mindustry/graphics/MultiPacker.java  |   2 +-
+ core/src/mindustryX/features/RenderExt.java   |   3 +
+ core/src/mindustryX/features/Settings.java    |   4 +
+ 6 files changed, 915 insertions(+), 3 deletions(-)
  create mode 100644 core/src/arc/graphics/g2d/SortedSpriteBatch2.java
 
-diff --git a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-index 4715953ea1db8e20fe922911ba8054b8a8231fea..3810100480eb0ab0475ed8538be46e00fc15d742 100644
---- a/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-+++ b/buildPlugins/plugins/mindustryX/patchArc.gradle.kts
-@@ -2,6 +2,7 @@ package mindustryX
- 
- import javassist.ClassPool
- import javassist.CtClass
-+import javassist.Modifier
- import javassist.bytecode.Bytecode
- import javassist.bytecode.Descriptor
- import java.util.zip.ZipFile
-@@ -28,6 +29,10 @@ abstract class PatchArc : TransformAction<TransformParameters.None> {
-                 methodInfo.codeAttribute.iterator().insertEx(code.get())
-                 methodInfo.rebuildStackMapIf6(classPool, classFile)
-             }
-+        },
-+        "arc.graphics.g2d.DrawRequest" to clz@{
-+            modifiers = modifiers or Modifier.PUBLIC
-+//            addField(CtField.make("public int zOffset;", this@clz))
-         }
-     )
- 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 353ba491c42b48dbda2a990730f8a82a9dc4984d..73d44853f9615430d7d462591f0ccbe5d381e3e5 100644
+index 353ba491c42b48dbda2a990730f8a82a9dc4984d..d1d4c57f8d0c658d46ce4b48ca7b32f6cedddcb7 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -66,6 +66,9 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
+@@ -66,6 +66,10 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
  category.entitySettings.name = 实体相关设置
  setting.bulletShow.name = 显示子弹
  setting.showminebeam.name = 显示单位挖掘光束
 +
 +category.developerMode.name = 特殊设置
-+setting.renderSort.name = 渲染排序 [grey]实验性功能，能够提升50%渲染性能，但可能造成渲染错误
++setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减少Draws总数
++setting.renderSort.name = 渲染排序 [grey]多图集(Mod较多)情况下能够提升50%渲染性能，但可能造成渲染错误
  #end Settings
  
  bar.reloadDetail = 装填：{0}%
-@@ -169,7 +172,6 @@ category.arcShareinfo.name = 多人游玩设置
+@@ -169,7 +173,6 @@ category.arcShareinfo.name = 多人游玩设置
  category.arcStrongCheat.name = [red]强作弊功能
  category.arcWeakCheat.name = 弱作弊功能
  category.combat = 战斗
@@ -73,24 +52,26 @@ index 353ba491c42b48dbda2a990730f8a82a9dc4984d..73d44853f9615430d7d462591f0ccbe5
  category.movement = 移动
  category.personalized.name = 自定义客户端     [需要重启]
 diff --git a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787d6021e94
---- /dev/null
+index feca84a8eec0f7d514f9aa6be6f82134d8622721..6cc742960ea554ca0d6631c7ccd83059fd07f7e3 100644
+--- a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
 +++ b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
-@@ -0,0 +1,257 @@
-+package arc.graphics.g2d;
-+
-+import arc.graphics.*;
+@@ -1,10 +1,29 @@
+ package arc.graphics.g2d;
+ 
+ import arc.graphics.*;
 +import arc.math.*;
-+import mindustryX.features.*;
-+
+ import mindustryX.features.*;
+ 
 +import java.util.*;
 +
+ //MDTX: add some DebugUtil count.
+-public class MySortedSpriteBatch extends SortedSpriteBatch{
++//MDTX(WayZer): renderSort
 +public class MySortedSpriteBatch extends SortedSpriteBatch2{
 +    private static final boolean DEBUG = false;
 +    private static final int PRIME1 = 0xbe1f14b1;
 +    private static final int PRIME2 = 0xb4b82e39;
-+    int[] extraZ = new int[10000];
++    int[] extraZ = new int[InitialSize];
 +    //增加小的delta，来保持原来的前后顺序
 +    int orderZ = 0;
 +    int hashZ = 0;//打乱hash值，来检查渲染异常
@@ -102,31 +83,18 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +        super.z(z);
 +    }
 +
-+    @Override
-+    protected void flushRequests(){
-+        if(!flushing){
-+            DebugUtil.lastDrawRequests += numRequests;
-+            super.flushRequests();
-+        }
-+    }
+     @Override
+     protected void flush(){
+         DebugUtil.lastFlushCount++;
+@@ -24,4 +43,219 @@ public class MySortedSpriteBatch extends SortedSpriteBatch{
+         DebugUtil.lastSwitchTexture++;
+         super.switchTexture(texture);
+     }
 +
 +    @Override
 +    protected void expandRequests(){
 +        super.expandRequests();
-+        extraZ = new int[requests.length];
-+    }
-+
-+    @Override
-+    protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
-+        super.draw(region, x, y, originX, originY, width, height, rotation);
-+        if(sort && !flushing && RenderExt.renderSort){
-+            int h = region.texture.hashCode();
-+            if(DEBUG){
-+                h = (h + hashZ) * PRIME1;
-+                h = h ^ (h >>> 16);
-+            }
-+            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
-+        }
++        extraZ = Arrays.copyOf(extraZ, requestZ.length);
 +    }
 +
 +    @Override
@@ -138,11 +106,7 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +                h = (h + hashZ) * PRIME1;
 +                h = h ^ (h >>> 16);
 +            }
-+            int[] extraZ = this.extraZ;
-+            int v = ((orderZ++) << 16) | (h & 0xffff);
-+            for(int i = (count - offset) / SPRITE_SIZE; i > 0; i--){
-+                extraZ[numRequests - i] = v;
-+            }
++            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
 +        }
 +    }
 +
@@ -183,7 +147,11 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +    private static int[] order = new int[1000];
 +    private static int[] order2 = new int[1000];
 +
-+    /** 将输入arr映射到有序的0-n域 */
++    /**
++     * 将输入arr重映射到有序的[0,unique)域
++     * @param arr 待排序数组，输出会映射为id值
++     * @return unique
++     */
 +    private static int sortMap(int[] arr, int len){
 +        var map = MySortedSpriteBatch.vMap;
 +        int[] order = MySortedSpriteBatch.order;
@@ -221,9 +189,13 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +        return unique;
 +    }
 +
++    /**
++     * 计数排序
++     * @param arr 待排序数组，输出为新loc
++     */
 +    private static void countingSortMap(int[] arr, int len){
 +        int[] order = MySortedSpriteBatch.order, counts = MySortedSpriteBatch.order2;
-+        var map = MySortedSpriteBatch.vMap;
++        var map = MySortedSpriteBatch.vMap;//z->id
 +        map.clear();
 +        int unique = 0;
 +        for(int i = 0; i < len; i++){
@@ -246,9 +218,8 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +        //对z值排序
 +        Arrays.sort(order, 0, unique);//order -> z
 +
-+        //将counts转换为locs
-+        int loc = 0;
-+        for(int i = 0; i < unique; i++){
++        //将counts转换为locs(每个id起始位置)
++        for(int i = 0, loc = 0; i < unique; i++){
 +            int id = map.getOrPut(order[i], -1);
 +            int c = counts[id];
 +            counts[id] = loc;
@@ -334,42 +305,53 @@ index 0000000000000000000000000000000000000000..1f0460890b8c7665b5be86bf18cd2787
 +            hasZero = false;
 +        }
 +    }
-+}
+ }
 diff --git a/core/src/arc/graphics/g2d/SortedSpriteBatch2.java b/core/src/arc/graphics/g2d/SortedSpriteBatch2.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d0330259e77393e
+index 0000000000000000000000000000000000000000..21cea70ba788c955e9324f7cedca3b385b3a0282
 --- /dev/null
 +++ b/core/src/arc/graphics/g2d/SortedSpriteBatch2.java
-@@ -0,0 +1,545 @@
+@@ -0,0 +1,668 @@
 +package arc.graphics.g2d;
 +
 +import arc.*;
 +import arc.graphics.*;
 +import arc.graphics.gl.*;
++import arc.math.*;
 +import arc.math.geom.*;
 +import arc.struct.*;
 +import arc.util.*;
++import mindustryX.features.*;
 +
 +import java.util.*;
 +import java.util.concurrent.*;
 +
 +//MDTX modified type of requestZ, from float[] to int[]
-+//MDTX: sorted requests store in copy(instead write back), reduce one copy and prevent memory fragment
++//MDTX: sorted requests store in `copy`(instead write back), reduce one copy and prevent memory fragment
++//MDTX(WayZer, 2024/7/19): optimize req.vertices
 +
 +/** Fast sorting implementation written by zxtej. Don't ask me how it works. */
 +public class SortedSpriteBatch2 extends SpriteBatch{
++    public static class DrawRequest{
++        float color, mixColor;
++        int verticesOffset, verticesLength;
++        Texture texture;
++        Blending blending;
++        Runnable run;
++    }
++
++    private static final float[] EXISTED = new float[0];
++    protected static final int InitialSize = 10000;
 +    static ForkJoinHolder commonPool;
-+
 +    boolean multithreaded = (Core.app.getVersion() >= 21 && !Core.app.isIOS()) || Core.app.isDesktop();
-+    int[] contiguous = new int[2048], contiguousCopy = new int[2048];
-+    DrawRequest[] copy = new DrawRequest[0];
-+    int[] locs = new int[contiguous.length];
 +
-+    protected DrawRequest[] requests = new DrawRequest[10000];
-+    protected boolean sort;
-+    protected boolean flushing;
-+    protected int[] requestZ = new int[10000];
-+    protected int numRequests = 0;
++    protected boolean sort, flushing;
++    protected DrawRequest[] requests = new DrawRequest[InitialSize], copy = new DrawRequest[0];
++    protected int[] requestZ = new int[InitialSize];
++    protected float[] requestVertices = new float[SPRITE_SIZE * InitialSize];
++    protected int numRequests = 0, numVertices = 0;
++    int[] contiguous = new int[2048], contiguousCopy = new int[2048];
++    protected int intZ = Float.floatToRawIntBits(z + 16f);
 +
 +    {
 +        for(int i = 0; i < requests.length; i++){
@@ -407,48 +389,157 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +    }
 +
 +    @Override
++    protected void z(float z){
++        if(this.z == z) return;
++        super.z(z);
++        intZ = Float.floatToRawIntBits(z + 16f);
++    }
++
++    protected int prepareVertices(int toWrite){
++        int idx = numVertices;
++        if(idx + toWrite > requestVertices.length){
++            requestVertices = Arrays.copyOf(requestVertices, requestVertices.length << 1);
++        }
++        numVertices += toWrite;
++        return idx;
++    }
++
++    @Override
 +    protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
 +        if(sort && !flushing){
-+            if(numRequests + count - offset >= this.requests.length) expandRequests();
-+            int[] requestZ = this.requestZ;
-+            DrawRequest[] requests = this.requests;
-+
-+            for(int i = offset; i < count; i += SPRITE_SIZE){
-+                final DrawRequest req = requests[numRequests];
-+                requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
-+                System.arraycopy(spriteVertices, i, req.vertices, 0, req.vertices.length);
-+                req.texture = texture;
-+                req.blending = blending;
-+                req.run = null;
-+                numRequests++;
++            //MDTX: shared vertices, no slice
++            int num = numRequests;
++            //MDTX: 合批优化
++            if(RenderExt.renderMerge && num > 1){
++                final DrawRequest last = requests[num - 1];
++                if(last.run == null && last.texture == texture && last.blending == blending && requestZ[num - 1] == intZ){
++                    if(spriteVertices != EXISTED){
++                        int idx = prepareVertices(count);
++                        System.arraycopy(spriteVertices, offset, requestVertices, idx, count);
++                    }
++                    last.verticesLength += count;
++                    return;
++                }
 +            }
++            if(num >= this.requests.length) expandRequests();
++            final DrawRequest req = requests[num];
++            if(spriteVertices != EXISTED){
++                int idx = req.verticesOffset = prepareVertices(count);
++                System.arraycopy(spriteVertices, offset, requestVertices, idx, count);
++            }else{
++                req.verticesOffset = offset;
++            }
++            req.verticesLength = count;
++            requestZ[num] = intZ;
++            req.texture = texture;
++            req.blending = blending;
++            req.run = null;
++            numRequests++;
 +        }else{
 +            super.draw(texture, spriteVertices, offset, count);
 +        }
 +    }
 +
-+    @Override
-+    protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
-+        if(sort && !flushing){
-+            if(numRequests >= requests.length) expandRequests();
-+            final DrawRequest req = requests[numRequests];
-+            req.x = x;
-+            req.y = y;
-+            requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
-+            req.originX = originX;
-+            req.originY = originY;
-+            req.width = width;
-+            req.height = height;
-+            req.color = colorPacked;
-+            req.rotation = rotation;
-+            req.region.set(region);
-+            req.mixColor = mixColorPacked;
-+            req.blending = blending;
-+            req.texture = null;
-+            req.run = null;
-+            numRequests++;
-+        }else{
++    protected final void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
++        if(!sort || flushing){
 +            super.draw(region, x, y, originX, originY, width, height, rotation);
++            return;
++        }
++        int idx = prepareVertices(SPRITE_SIZE);
++        region2vertices(requestVertices, idx, region, x, y, originX, originY, width, height, rotation);
++        draw(region.texture, EXISTED, idx, SPRITE_SIZE);
++    }
++
++
++    protected final void region2vertices(float[] vertices, int idx, TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
++        float u = region.u;
++        float v = region.v2;
++        float u2 = region.u2;
++        float v2 = region.v;
++
++        float color = this.colorPacked;
++        float mixColor = this.mixColorPacked;
++
++        if(!Mathf.zero(rotation)){
++            //bottom left and top right corner points relative to origin
++            float worldOriginX = x + originX;
++            float worldOriginY = y + originY;
++            float fx = -originX;
++            float fy = -originY;
++            float fx2 = width - originX;
++            float fy2 = height - originY;
++
++            // rotate
++            float cos = Mathf.cosDeg(rotation);
++            float sin = Mathf.sinDeg(rotation);
++
++            float x1 = cos * fx - sin * fy + worldOriginX;
++            float y1 = sin * fx + cos * fy + worldOriginY;
++            float x2 = cos * fx - sin * fy2 + worldOriginX;
++            float y2 = sin * fx + cos * fy2 + worldOriginY;
++            float x3 = cos * fx2 - sin * fy2 + worldOriginX;
++            float y3 = sin * fx2 + cos * fy2 + worldOriginY;
++            float x4 = x1 + (x3 - x2);
++            float y4 = y3 - (y2 - y1);
++
++            vertices[idx] = x1;
++            vertices[idx + 1] = y1;
++            vertices[idx + 2] = color;
++            vertices[idx + 3] = u;
++            vertices[idx + 4] = v;
++            vertices[idx + 5] = mixColor;
++
++            vertices[idx + 6] = x2;
++            vertices[idx + 7] = y2;
++            vertices[idx + 8] = color;
++            vertices[idx + 9] = u;
++            vertices[idx + 10] = v2;
++            vertices[idx + 11] = mixColor;
++
++            vertices[idx + 12] = x3;
++            vertices[idx + 13] = y3;
++            vertices[idx + 14] = color;
++            vertices[idx + 15] = u2;
++            vertices[idx + 16] = v2;
++            vertices[idx + 17] = mixColor;
++
++            vertices[idx + 18] = x4;
++            vertices[idx + 19] = y4;
++            vertices[idx + 20] = color;
++            vertices[idx + 21] = u2;
++            vertices[idx + 22] = v;
++            vertices[idx + 23] = mixColor;
++        }else{
++            float fx2 = x + width;
++            float fy2 = y + height;
++
++            vertices[idx] = x;
++            vertices[idx + 1] = y;
++            vertices[idx + 2] = color;
++            vertices[idx + 3] = u;
++            vertices[idx + 4] = v;
++            vertices[idx + 5] = mixColor;
++
++            vertices[idx + 6] = x;
++            vertices[idx + 7] = fy2;
++            vertices[idx + 8] = color;
++            vertices[idx + 9] = u;
++            vertices[idx + 10] = v2;
++            vertices[idx + 11] = mixColor;
++
++            vertices[idx + 12] = fx2;
++            vertices[idx + 13] = fy2;
++            vertices[idx + 14] = color;
++            vertices[idx + 15] = u2;
++            vertices[idx + 16] = v2;
++            vertices[idx + 17] = mixColor;
++
++            vertices[idx + 18] = fx2;
++            vertices[idx + 19] = y;
++            vertices[idx + 20] = color;
++            vertices[idx + 21] = u2;
++            vertices[idx + 22] = v;
++            vertices[idx + 23] = mixColor;
 +        }
 +    }
 +
@@ -461,7 +552,7 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +            req.blending = blending;
 +            req.mixColor = mixColorPacked;
 +            req.color = colorPacked;
-+            requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
++            requestZ[numRequests] = intZ;
 +            req.texture = null;
 +            numRequests++;
 +        }else{
@@ -470,8 +561,7 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +    }
 +
 +    protected void expandRequests(){
-+        final DrawRequest[] requests = this.requests, newRequests = new DrawRequest[requests.length * 7 / 4];
-+        System.arraycopy(requests, 0, newRequests, 0, Math.min(newRequests.length, requests.length));
++        final DrawRequest[] requests = this.requests, newRequests = Arrays.copyOf(requests, requests.length * 7 / 4);
 +        for(int i = requests.length; i < newRequests.length; i++){
 +            newRequests[i] = new DrawRequest();
 +        }
@@ -481,47 +571,49 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +
 +    @Override
 +    protected void flush(){
-+        flushRequests();
++        if(!flushing){
++            flushing = true;
++            flushRequests();
++            flushing = false;
++        }
 +        super.flush();
 +    }
 +
 +    protected void flushRequests(){
-+        if(!flushing && numRequests > 0){
-+            flushing = true;
-+            sortRequests();
-+            float preColor = colorPacked, preMixColor = mixColorPacked;
-+            Blending preBlending = blending;
++        if(numRequests == 0) return;
++        sortRequests();
++        float preColor = colorPacked, preMixColor = mixColorPacked;
++        Blending preBlending = blending;
 +
-+            DrawRequest[] r = copy;//MDTX: 'copy' instead requests
-+            int num = numRequests;
-+            for(int j = 0; j < num; j++){
-+                final DrawRequest req = r[j];
++        float[] vertices = this.requestVertices;
++        DrawRequest[] r = copy;//MDTX: 'copy' instead requests
++        int num = numRequests;
++        for(int j = 0; j < num; j++){
++            final DrawRequest req = r[j];
 +
-+                colorPacked = req.color;
-+                mixColorPacked = req.mixColor;
++            colorPacked = req.color;
++            mixColorPacked = req.mixColor;
 +
-+                super.setBlending(req.blending);
++            super.setBlending(req.blending);
 +
-+                if(req.run != null){
-+                    req.run.run();
-+                    req.run = null;
-+                }else if(req.texture != null){
-+                    super.draw(req.texture, req.vertices, 0, req.vertices.length);
-+                }else{
-+                    super.draw(req.region, req.x, req.y, req.originX, req.originY, req.width, req.height, req.rotation);
-+                }
++            if(req.run != null){
++                req.run.run();
++                req.run = null;
++            }else if(req.texture != null){
++                super.draw(req.texture, vertices, req.verticesOffset, req.verticesLength);
++            }else{
++                throw new IllegalStateException("No Region Draw");
++//                    super.draw(req.region, req.x, req.y, req.originX, req.originY, req.width, req.height, req.rotation);
 +            }
-+
-+            colorPacked = preColor;
-+            mixColorPacked = preMixColor;
-+            color.abgr8888(colorPacked);
-+            mixColor.abgr8888(mixColorPacked);
-+            blending = preBlending;
-+
-+            numRequests = 0;
-+
-+            flushing = false;
 +        }
++
++        colorPacked = preColor;
++        mixColorPacked = preMixColor;
++        color.abgr8888(colorPacked);
++        mixColor.abgr8888(mixColorPacked);
++        blending = preBlending;
++
++        numRequests = numVertices = 0;
 +    }
 +
 +    protected void sortRequests(){
@@ -564,12 +656,14 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +
 +        final int[] sorted = CountingSort.countingSortMapMT(contiguous, contiguousCopy, L);
 +
-+        if(locs.length < L + 1) locs = new int[L + L / 10];
-+        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
-+        final int[] locs = this.locs;
-+        for(int i = 0; i < L; i++){
-+            locs[i + 1] = locs[i] + sorted[i * 3 + 2];
++
++        final int[] locs = contiguous;
++        locs[0] = 0;
++        for(int i = 0, ptr = 0; i < L; i++){
++            ptr += sorted[i * 3 + 2];
++            locs[i + 1] = ptr;
 +        }
++        if(copy.length < requests.length) copy = new DrawRequest[requests.length];
 +        PopulateTask.tasks = sorted;
 +        PopulateTask.src = requests;
 +        PopulateTask.dest = copy;
@@ -597,7 +691,7 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +                z = itemZ[startI = i];
 +            }
 +        }
-+        contiguous[ci] = Float.floatToRawIntBits(z + 16f);
++        contiguous[ci] = z;
 +        contiguous[ci + 1] = startI;
 +        contiguous[ci + 2] = numRequests - startI;
 +        this.contiguous = contiguous;
@@ -886,65 +980,51 @@ index 0000000000000000000000000000000000000000..180b04dfead464bca258d4a07d033025
 +        }
 +    }
 +}
-diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 07bdf28dbea6e898073a713e08a137c278831acb..27b78ed880bd4e43f96640ffde8fa5bba9f86c14 100644
---- a/core/src/mindustry/ClientLauncher.java
-+++ b/core/src/mindustry/ClientLauncher.java
-@@ -20,7 +20,6 @@ import mindustry.maps.*;
- import mindustry.mod.*;
- import mindustry.net.*;
- import mindustry.ui.*;
--import mindustryX.features.*;
+diff --git a/core/src/mindustry/graphics/MultiPacker.java b/core/src/mindustry/graphics/MultiPacker.java
+index e5f473a7651495f7f61856e6df711fba12dfb1be..f1a3f1cbbac0fbda6dfabe689f25c2108ef58337 100644
+--- a/core/src/mindustry/graphics/MultiPacker.java
++++ b/core/src/mindustry/graphics/MultiPacker.java
+@@ -114,7 +114,7 @@ public class MultiPacker implements Disposable{
+     //editor page (sprites5.png) - all sprites needed for rendering in the editor, including block icons and a few minor sprites
+     public enum PageType{
+         //main page can be massive, but 8192 throws GL_OUT_OF_MEMORY on some GPUs and I can't deal with it yet.
+-        main(4096),
++        main(16384, 4096), //MDTX 更大图集
  
- import static arc.Core.*;
- import static mindustry.Vars.*;
-@@ -72,15 +71,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
- 
-         UI.loadColors();
-         //MDTX: add numRequests count.
--        batch = new SortedSpriteBatch(){
--            @Override
--            protected void flushRequests(){
--                if(!flushing){
--                    DebugUtil.lastDrawRequests += numRequests;
--                }
--                super.flushRequests();
--            }
--        };
-+        batch = new MySortedSpriteBatch();
-         assets = new AssetManager();
-         assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
- 
+         //TODO stuff like this throws OOM on some devices
+         environment(4096, 2048),
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d969283650b2ac2ed75a235dd66476cd86255349..8fe579de4d1f57e40be3926e9be95f88ab873aab 100644
+index d969283650b2ac2ed75a235dd66476cd86255349..2dcf87814b002c0ef9349a02aafa6b01d1120400 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -30,6 +30,7 @@ public class RenderExt{
      public static float overdriveZoneTransparency;
      public static boolean logicDisplayNoBorder, arcDrillMode;
      public static int blockRenderLevel;
-+    public static boolean renderSort;
++    public static boolean renderSort, renderMerge;
  
      public static boolean unitHide = false;
  
-@@ -60,6 +61,7 @@ public class RenderExt{
+@@ -60,6 +61,8 @@ public class RenderExt{
              logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
              arcDrillMode = Core.settings.getBool("arcdrillmode");
              blockRenderLevel = Core.settings.getInt("blockRenderLevel");
 +            renderSort = Core.settings.getBool("renderSort");
++            renderMerge = Core.settings.getBool("renderMerge");
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 02cb18ab5655c14c33680a50388e42d33fd2212f..80a24246610b4a6464aed90eefb1dce626a60475 100644
+index 02cb18ab5655c14c33680a50388e42d33fd2212f..5d9c0d3a96c0cce4ffec16b8eadf1d8d9c3f6541 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -63,6 +63,9 @@ public class Settings{
+@@ -63,6 +63,10 @@ public class Settings{
              c.addCategory("entitySettings");
              c.checkPref("bulletShow", true);
              c.checkPref("showMineBeam".toLowerCase(), true);
 +
 +            c.addCategory("developerMode");
++            c.checkPref("renderMerge", true);
 +            c.checkPref("renderSort", false);
          }));
          ArcOld.init(categories);

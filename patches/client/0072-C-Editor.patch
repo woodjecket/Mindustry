@@ -18,11 +18,11 @@ Content-Transfer-Encoding: 8bit
  7 files changed, 64 insertions(+), 22 deletions(-)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 86fd6840328a5bb56841d4d90833d322ab88769e..5f1077f508f93e62084a81e25002fb5da481bd3d 100644
+index 2d3089584fde7a58b4677bea9033db44edaac812..0205466b46c0a475692a2edef326fa996eb81038 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -90,6 +90,11 @@ category.developerMode.name = 特殊设置
- setting.renderSort.name = 渲染排序 [grey]实验性功能，能够提升50%渲染性能，但可能造成渲染错误
+@@ -91,6 +91,11 @@ setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减
+ setting.renderSort.name = 渲染排序 [grey]多图集(Mod较多)情况下能够提升50%渲染性能，但可能造成渲染错误
  #end Settings
  
 +# editor增强

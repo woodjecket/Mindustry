@@ -14,8 +14,7 @@ Subject: [PATCH] C: misc patch
  .../mindustry/ui/dialogs/KeybindDialog.java   |  9 ++++++---
  .../ui/fragments/BlockInventoryFragment.java  |  2 +-
  .../world/blocks/distribution/Router.java     |  3 ++-
- .../blocks/distribution/StackConveyor.java    |  2 ++
- 11 files changed, 31 insertions(+), 33 deletions(-)
+ 10 files changed, 29 insertions(+), 33 deletions(-)
 
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
 index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb340566af 100644
@@ -239,16 +238,3 @@ index 1e4a9399aac99d771d201d6ac01055295da686d4..fd1ef350517446c74427f85d27372bdd
          }
  
          @Override
-diff --git a/core/src/mindustry/world/blocks/distribution/StackConveyor.java b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
-index 9bf0bcf4cf84796d64c2ec890c37cb3e3d205bd0..d8984e8d7aa2338f071454d16b3cf9055f7dac74 100644
---- a/core/src/mindustry/world/blocks/distribution/StackConveyor.java
-+++ b/core/src/mindustry/world/blocks/distribution/StackConveyor.java
-@@ -290,6 +290,8 @@ public class StackConveyor extends Block implements Autotiler{
-                         lastItem = null;
-                         break;
-                     }
-+                    //MDTX: sometime get in dead loop
-+                    if(lastItem != items.first()) break;
-                 }
-             }else{ //transfer
-                 if(state != stateLoad || (items.total() >= getMaximumAccepted(lastItem))){

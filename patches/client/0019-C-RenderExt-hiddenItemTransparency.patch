@@ -59,7 +59,7 @@ index d91da022ce4ca749164958cf8fc4438ddf777b23..1b8ac44e8773af0b69e40f284a1dfff5
          return index < buffer.length;
      }
 diff --git a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-index 6fe8e90722ef740148d337a09754febd47a7ab10..cf4602f09a5e5e6dfd86eef88ace838ea0309fbf 100644
+index 6fe8e90722ef740148d337a09754febd47a7ab10..8a6de353e073b653abfd14a2610905705cc4e034 100644
 --- a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 @@ -1,9 +1,17 @@
@@ -117,7 +117,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..cf4602f09a5e5e6dfd86eef88ace838e
 +                    float p = Math.min(((Time.time - time) * timeScale / speed), (float)(bufferCapacity - i) / bufferCapacity);
 +
 +                    Draw.alpha(RenderExt.hiddenItemTransparency / 100f);
-+                    Draw.rect(item.uiIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
++                    Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
 +                }
 +            }
 +        }
@@ -127,7 +127,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..cf4602f09a5e5e6dfd86eef88ace838e
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 2663365fc253a5eee6113ff6070b3624bfdceaf6..050e7151487c8d248c0e6e0b48913fbe944164d9 100644
+index 2663365fc253a5eee6113ff6070b3624bfdceaf6..0de0b62d119ca4befb1612374f96690b3434b6b3 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 @@ -17,6 +17,7 @@ import mindustry.input.*;
@@ -149,7 +149,7 @@ index 2663365fc253a5eee6113ff6070b3624bfdceaf6..050e7151487c8d248c0e6e0b48913fbe
 +                int loti = 0;
 +                for(int iid = 0; iid < items.length(); iid++){
 +                    for(int itemid = 1; itemid <= items.get(iid); itemid++){
-+                        Draw.rect(content.item(iid).uiIcon,
++                        Draw.rect(content.item(iid).fullIcon,
 +                        x, y - tilesize / 2f + 1f + 0.6f * (float)(loti++), 4f, 4f
 +                        );
 +                    }
@@ -160,7 +160,7 @@ index 2663365fc253a5eee6113ff6070b3624bfdceaf6..050e7151487c8d248c0e6e0b48913fbe
  
              Tile other = world.tile(link);
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index d02fb844045f4cf7b11050e86661ae6f5529e0dc..698e95ac696a3267bba1eb4bb3da2852154b71a4 100644
+index d02fb844045f4cf7b11050e86661ae6f5529e0dc..a34377db8cec36032d8a27014ea9d1e79f99b0aa 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
 @@ -1,11 +1,17 @@
@@ -202,7 +202,7 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..698e95ac696a3267bba1eb4bb3da2852
 +                    for(int i = 0; (item = buffer.getItem(dir, i)) != null; i++){
 +                        float time = buffer.getTime(dir, i);
 +                        float p = Math.min(((Time.time - time) * timeScale / speed), (float)(capacity - i) / capacity);
-+                        Draw.rect(item.uiIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
++                        Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
 +                    }
 +                }
 +            }

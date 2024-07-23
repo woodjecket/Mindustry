@@ -367,7 +367,7 @@ index 0000000000000000000000000000000000000000..4715953ea1db8e20fe922911ba8054b8
 +}
 \ No newline at end of file
 diff --git a/core/build.gradle.kts b/core/build.gradle.kts
-index 9d9d170c1fb00fbd4bf35c1a2f04bcff6dca09cf..3bd39a625ae9f703cac0d38bde51b8f163ffbae9 100644
+index f5129a036a3655bd41da6e51ed657caddf29dab5..aed5b90878e854f680b6baa716313de7a1788d1f 100644
 --- a/core/build.gradle.kts
 +++ b/core/build.gradle.kts
 @@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile

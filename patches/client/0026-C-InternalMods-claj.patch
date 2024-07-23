@@ -18,37 +18,38 @@ way-zer <himc.wicp@gmail.com> on 2024/4/13 at 19:18
 不可用时隐藏claj按钮
 way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:1
 ---
- .../src/mindustryX/features/InternalMods.java |   2 +
+ .../src/mindustryX/features/InternalMods.java |   4 +-
  core/src/mindustryX/mods/claj/Claj.java       |  31 ++++
  .../mindustryX/mods/claj/ClajIntegration.java | 139 ++++++++++++++++++
  .../mods/claj/dialogs/JoinViaClajDialog.java  | 108 ++++++++++++++
  .../mods/claj/dialogs/ManageRoomsDialog.java  |  99 +++++++++++++
- 5 files changed, 379 insertions(+)
+ 5 files changed, 380 insertions(+), 1 deletion(-)
  create mode 100644 core/src/mindustryX/mods/claj/Claj.java
  create mode 100644 core/src/mindustryX/mods/claj/ClajIntegration.java
  create mode 100644 core/src/mindustryX/mods/claj/dialogs/JoinViaClajDialog.java
  create mode 100644 core/src/mindustryX/mods/claj/dialogs/ManageRoomsDialog.java
 
 diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
-index 1ce00d17c712d417383a3d61f13e6f62e5d91adc..67e4cde70b0dbdc197cf8e9d5f12b5ae26172f08 100644
+index 58af44c6fe4224643a87b23fd79e1e3e220a5ecc..63f413ea5fe200cd88c48bb5efeca4ffe342f438 100644
 --- a/core/src/mindustryX/features/InternalMods.java
 +++ b/core/src/mindustryX/features/InternalMods.java
-@@ -5,6 +5,7 @@ import arc.struct.*;
- import mindustry.core.*;
+@@ -6,13 +6,15 @@ import mindustry.core.*;
  import mindustry.mod.*;
  import mindustry.mod.Mods.*;
+ import mindustryX.*;
 +import mindustryX.mods.claj.*;
  
  import static arc.Core.files;
- import static mindustry.Vars.*;
-@@ -12,6 +13,7 @@ import static mindustry.Vars.*;
+-import static mindustry.Vars.*;
++import static mindustry.Vars.modDirectory;
+ 
  public class InternalMods{
      public static Seq<LoadedMod> load(){
-         return Seq.with(
-+        internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj())
-         );
-     }
- 
+         Seq<LoadedMod> mods = new Seq<>();
++        mods.add(internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()));
+         if(!VarsX.isLoader)
+             mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
+         return mods;
 diff --git a/core/src/mindustryX/mods/claj/Claj.java b/core/src/mindustryX/mods/claj/Claj.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..fd2d5ad910433779dc0324a5f86e3d28e9f6832c

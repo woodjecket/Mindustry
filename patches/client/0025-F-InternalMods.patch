@@ -5,8 +5,8 @@ Subject: [PATCH] F: InternalMods
 
 ---
  core/src/mindustry/mod/Mods.java              |  2 +-
- .../src/mindustryX/features/InternalMods.java | 35 +++++++++++++++++++
- 2 files changed, 36 insertions(+), 1 deletion(-)
+ .../src/mindustryX/features/InternalMods.java | 43 +++++++++++++++++++
+ 2 files changed, 44 insertions(+), 1 deletion(-)
  create mode 100644 core/src/mindustryX/features/InternalMods.java
 
 diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
@@ -24,10 +24,10 @@ index 3ece15b1d9dd00a522a9ea62e13427004155cd96..8b258a35f1a5a6f01d0a2904ed6fbbd5
          .retainAll(f -> f.extEquals("jar") || f.extEquals("zip") || (f.isDirectory() && Structs.contains(metaFiles, meta -> f.child(meta).exists())))
 diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1ce00d17c712d417383a3d61f13e6f62e5d91adc
+index 0000000000000000000000000000000000000000..58af44c6fe4224643a87b23fd79e1e3e220a5ecc
 --- /dev/null
 +++ b/core/src/mindustryX/features/InternalMods.java
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,43 @@
 +package mindustryX.features;
 +
 +import arc.files.*;
@@ -35,14 +35,17 @@ index 0000000000000000000000000000000000000000..1ce00d17c712d417383a3d61f13e6f62
 +import mindustry.core.*;
 +import mindustry.mod.*;
 +import mindustry.mod.Mods.*;
++import mindustryX.*;
 +
 +import static arc.Core.files;
 +import static mindustry.Vars.*;
 +
 +public class InternalMods{
 +    public static Seq<LoadedMod> load(){
-+        return Seq.with(
-+        );
++        Seq<LoadedMod> mods = new Seq<>();
++        if(!VarsX.isLoader)
++            mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
++        return mods;
 +    }
 +
 +    private static ModMeta meta(String id, String displayName, String version, String author){
@@ -61,5 +64,10 @@ index 0000000000000000000000000000000000000000..1ce00d17c712d417383a3d61f13e6f62
 +        Fi file = modDirectory.child("internal-" + meta.name + ".jar");
 +        Fi root = files.internal("/mindustryX/mods/" + meta.name);
 +        return new LoadedMod(file, root, main, InternalMods.class.getClassLoader(), meta);
++    }
++
++    private static LoadedMod internalMod(ModMeta meta){
++        return internalMod(meta, new Mod(){
++        });
 +    }
 +}

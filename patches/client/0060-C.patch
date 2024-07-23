@@ -24,7 +24,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/17 at 20:50
  create mode 100644 core/src/mindustryX/features/ui/NewCoreItemsDisplay.java
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 6751aee0d2320ecc503dd787dbb230155e97ef68..1af8f2e09e9e1812e73b55d9be75f3c6c96118fd 100644
+index 3c69a9e96a33e397a8183676d54d1f565ca9aed7..384b027a18202ea931ebcaf905031f90579c84e1 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -30,6 +30,7 @@ import mindustry.ui.*;
@@ -56,7 +56,7 @@ index 6751aee0d2320ecc503dd787dbb230155e97ef68..1af8f2e09e9e1812e73b55d9be75f3c6
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -317,8 +313,9 @@ public class HudFragment{
+@@ -318,8 +314,9 @@ public class HudFragment{
              t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
  
              t.table(c -> {

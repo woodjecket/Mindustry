@@ -5,12 +5,12 @@ Subject: [PATCH] BUILD Kotlin 1.9.20
 
 ---
  build.gradle                                   | 11 ++---------
- core/src/mindustryX/features/InternalMods.java |  6 ++++--
+ core/src/mindustryX/features/InternalMods.java |  1 +
  gradle.properties                              |  2 +-
- 3 files changed, 7 insertions(+), 12 deletions(-)
+ 3 files changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index fb6808e41d2fbff78c81f3904d01eb4e8e413492..6d6e5b70ad7f8ff44048b561a953d9f6ca8d7617 100644
+index 3c56a228b18f50b16b3abb327fcebf379c0c1348..04c82d033d92261996863efee84d0a3f4a3faadb 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -13,8 +13,8 @@ buildscript{
@@ -39,26 +39,17 @@ index fb6808e41d2fbff78c81f3904d01eb4e8e413492..6d6e5b70ad7f8ff44048b561a953d9f6
      jar{
          exclude("mindustry/entities/comp/**")
 diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
-index 67e4cde70b0dbdc197cf8e9d5f12b5ae26172f08..609d7414566c6c5e860196d56494120997bb9be9 100644
+index 63f413ea5fe200cd88c48bb5efeca4ffe342f438..c2e653f692f743e6ef33a647002f68b5761b8175 100644
 --- a/core/src/mindustryX/features/InternalMods.java
 +++ b/core/src/mindustryX/features/InternalMods.java
-@@ -8,12 +8,14 @@ import mindustry.mod.Mods.*;
- import mindustryX.mods.claj.*;
- 
- import static arc.Core.files;
--import static mindustry.Vars.*;
-+import static mindustry.Vars.modDirectory;
- 
- public class InternalMods{
+@@ -15,6 +15,7 @@ public class InternalMods{
      public static Seq<LoadedMod> load(){
-         return Seq.with(
--        internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj())
-+        internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()),
-+        internalMod(meta("Kotlin", "Kotlin语言标准库", "1.9.20", "Jetbrains"), new Mod(){
-+        })
-         );
-     }
- 
+         Seq<LoadedMod> mods = new Seq<>();
+         mods.add(internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()));
++        mods.add(internalMod(meta("Kotlin", "Kotlin语言标准库", "1.9.20", "Jetbrains")));
+         if(!VarsX.isLoader)
+             mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
+         return mods;
 diff --git a/gradle.properties b/gradle.properties
 index 81861490f166f3f5af54997d6bb1ac8adedff122..85ffb7703a2f41e9ec9d7c4681158d00e12add6c 100644
 --- a/gradle.properties

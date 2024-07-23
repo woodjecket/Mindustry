@@ -502,7 +502,7 @@ index e9f5331bbef3b2110eeeed5934ec10b5f5fc9e12..cf350df9ea21f3654672c99a70c5c9f2
          stats.add(Stat.targetsGround, targetGround);
          if(ammoPerShot != 1) stats.add(Stat.ammoUse, ammoPerShot, StatUnit.perShot);
 diff --git a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
-index cf4602f09a5e5e6dfd86eef88ace838ea0309fbf..ccb6d48fe731ea72fd720caa06c0173a00dc123a 100644
+index 8a6de353e073b653abfd14a2610905705cc4e034..3a206039844a00ea43e9ac3c12e238868392b426 100644
 --- a/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/BufferedItemBridge.java
 @@ -9,6 +9,7 @@ import mindustry.gen.*;
@@ -529,7 +529,7 @@ index cf4602f09a5e5e6dfd86eef88ace838ea0309fbf..ccb6d48fe731ea72fd720caa06c0173a
          ItemBuffer buffer = new ItemBuffer(bufferCapacity);
  
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index 698e95ac696a3267bba1eb4bb3da2852154b71a4..5ed25c723e407a4a95c878c6637a3cf34ec4a820 100644
+index a34377db8cec36032d8a27014ea9d1e79f99b0aa..e3593dbef6fc1c812a9b392de892ad0aed4c4fa6 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
 @@ -30,6 +30,16 @@ public class Junction extends Block{

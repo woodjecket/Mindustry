@@ -11,10 +11,10 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 167 insertions(+), 31 deletions(-)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 21ba8c46a1ab7ab112a0fdab9ec7c56a5296eb63..a757b34259ab42f5a905989475395cef67920ae2 100644
+index eff78f95ed15f8d50133120370a67b1fa2f8425b..c873b049b4a91e54cc9f93f75139b72f85977b67 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -96,6 +96,172 @@ toolmode.square2 = 方形(直径)
+@@ -97,6 +97,172 @@ toolmode.square2 = 方形(直径)
  toolmode.square2.description = 同2方形。但大小为直径(延续学术端功能)
  #end editor增强
  
@@ -187,7 +187,7 @@ index 21ba8c46a1ab7ab112a0fdab9ec7c56a5296eb63..a757b34259ab42f5a905989475395cef
  bar.reloadDetail = 装填：{0}%
  bar.warmupDetail = 充能：{0}%
  bar.ammoDetail = 弹药：{0}/{1}
-@@ -114,7 +280,6 @@ keybind.toggle_unit.name = 切换单位显示
+@@ -115,7 +281,6 @@ keybind.toggle_unit.name = 切换单位显示
  # 学术特色翻译
  ability.energyfield.maxtargets = [lightgray]最大目标: [white]{0}
  ability.energyfield.sametypehealmultiplier = [lightgray]同类回复: [white]{0}%
@@ -195,7 +195,7 @@ index 21ba8c46a1ab7ab112a0fdab9ec7c56a5296eb63..a757b34259ab42f5a905989475395cef
  bar.drilltierreq = 需要{0}级的钻头(当前{1}级)
  bar.heatpercent = 热量: {0} [lightgray]({1}%)
  bar.powerbalance = 电力：{0}/s
-@@ -131,50 +296,21 @@ block.reinforced-liquid-router.name = 强化液体路由器
+@@ -132,50 +297,21 @@ block.reinforced-liquid-router.name = 强化液体路由器
  block.reinforced-liquid-tank.name = 强化储液罐
  block.shield-projector.name = 护盾投影
  block.underflow-duct.name = 反溢运输管

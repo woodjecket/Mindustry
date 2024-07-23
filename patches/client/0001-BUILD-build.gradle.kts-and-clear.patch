@@ -588,7 +588,7 @@ index f7f291ef1ab71577313759a7e9fdfd3c1e0833dc..00000000000000000000000000000000
 \ No newline at end of file
 diff --git a/core/build.gradle.kts b/core/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..e2a6d4ede97677940bc6b73de42f6f5ff71fc0be
+index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd003bb7d96
 --- /dev/null
 +++ b/core/build.gradle.kts
 @@ -0,0 +1,64 @@
@@ -615,7 +615,7 @@ index 0000000000000000000000000000000000000000..e2a6d4ede97677940bc6b73de42f6f5f
 +        outputs.cacheIf { true }
 +        val outFile = projectDir.resolve("assets/locales")
 +        outputs.file(outFile).withPropertyName("outFile")
-+        val bundles = projectDir.resolve("assets/bundles/").list()!!
++        val bundles = listOf("en") + projectDir.resolve("assets/bundles/").list()!!
 +            .filter { it.startsWith("bundle_") }
 +            .map { it.substring("bundle_".length, it.lastIndexOf('.')) }
 +            .sorted()

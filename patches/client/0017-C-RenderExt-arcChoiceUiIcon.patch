@@ -19,7 +19,7 @@ Content-Transfer-Encoding: 8bit
  7 files changed, 18 insertions(+)
 
 diff --git a/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java b/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java
-index 92ccae0e1122e1501ab2d96facb3c0cef5ce8842..e8416d87136fced0e6bc045d93a58be52cb48f31 100644
+index 92ccae0e1122e1501ab2d96facb3c0cef5ce8842..010404a6f75731b1f9ac504c1d4c55259f082827 100644
 --- a/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java
 +++ b/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java
 @@ -14,6 +14,7 @@ import mindustry.world.blocks.*;
@@ -34,12 +34,12 @@ index 92ccae0e1122e1501ab2d96facb3c0cef5ce8842..e8416d87136fced0e6bc045d93a58be5
                  Draw.color(unloadItem.color);
                  Draw.rect(centerRegion, x, y);
                  Draw.color();
-+                if(RenderExt.arcChoiceUiIcon) Draw.rect(unloadItem.uiIcon, x, y,4f,4f);
++                if(RenderExt.arcChoiceUiIcon) Draw.rect(unloadItem.fullIcon, x, y,4f,4f);
              }else{
                  Draw.rect(arrowRegion, x, y, rotdeg());
              }
 diff --git a/core/src/mindustry/world/blocks/distribution/DuctRouter.java b/core/src/mindustry/world/blocks/distribution/DuctRouter.java
-index 502915d2887c3a9a9f78fecc2841bbfdaf10cd26..485301ae729ba660a4cad4dba2c2ddc038a23d32 100644
+index 502915d2887c3a9a9f78fecc2841bbfdaf10cd26..401f813a015c2b8e313a914c71771ecee49c5ebd 100644
 --- a/core/src/mindustry/world/blocks/distribution/DuctRouter.java
 +++ b/core/src/mindustry/world/blocks/distribution/DuctRouter.java
 @@ -12,6 +12,7 @@ import mindustry.type.*;
@@ -54,12 +54,12 @@ index 502915d2887c3a9a9f78fecc2841bbfdaf10cd26..485301ae729ba660a4cad4dba2c2ddc0
                  Draw.color(sortItem.color);
                  Draw.rect("center", x, y);
                  Draw.color();
-+                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.uiIcon, x, y,4f,4f);
++                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.fullIcon, x, y,4f,4f);
              }else{
                  Draw.rect(topRegion, x, y, rotdeg());
              }
 diff --git a/core/src/mindustry/world/blocks/distribution/Sorter.java b/core/src/mindustry/world/blocks/distribution/Sorter.java
-index 805fad17aa2548240be635f75085c158d100fb1f..371a22776d3f569c2a65590ba720432b365cb75b 100644
+index 805fad17aa2548240be635f75085c158d100fb1f..c63355564e9c1f9419b8911af3f4a454681bac82 100644
 --- a/core/src/mindustry/world/blocks/distribution/Sorter.java
 +++ b/core/src/mindustry/world/blocks/distribution/Sorter.java
 @@ -13,6 +13,7 @@ import mindustry.type.*;
@@ -74,12 +74,12 @@ index 805fad17aa2548240be635f75085c158d100fb1f..371a22776d3f569c2a65590ba720432b
                  Draw.color(sortItem.color);
                  Fill.square(x, y, tilesize/2f - 0.00001f);
                  Draw.color();
-+                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.uiIcon, x, y,4f,4f);
++                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.fullIcon, x, y,4f,4f);
              }
  
              super.draw();
 diff --git a/core/src/mindustry/world/blocks/sandbox/ItemSource.java b/core/src/mindustry/world/blocks/sandbox/ItemSource.java
-index 0a7461a7ec54131d4a81f0a80c3039341f3100d1..fe9bd668c42f121d89ac4defea3c9d8981ca32b6 100644
+index 0a7461a7ec54131d4a81f0a80c3039341f3100d1..18a282b760a6adb78e21b8625b19ed6072d390df 100644
 --- a/core/src/mindustry/world/blocks/sandbox/ItemSource.java
 +++ b/core/src/mindustry/world/blocks/sandbox/ItemSource.java
 @@ -11,6 +11,7 @@ import mindustry.type.*;
@@ -94,12 +94,12 @@ index 0a7461a7ec54131d4a81f0a80c3039341f3100d1..fe9bd668c42f121d89ac4defea3c9d89
                  Draw.color(outputItem.color);
                  Fill.square(x, y, tilesize/2f - 0.00001f);
                  Draw.color();
-+                if(RenderExt.arcChoiceUiIcon) Draw.rect(outputItem.uiIcon, x, y,4f,4f);
++                if(RenderExt.arcChoiceUiIcon) Draw.rect(outputItem.fullIcon, x, y,4f,4f);
              }
  
              super.draw();
 diff --git a/core/src/mindustry/world/blocks/storage/Unloader.java b/core/src/mindustry/world/blocks/storage/Unloader.java
-index db0fdbfe1e4746cf55043276f84cd5e9677ec5bf..5e20ab7962934efa7bccd9450137993a46a8bc5d 100644
+index db0fdbfe1e4746cf55043276f84cd5e9677ec5bf..8653e861192ee7ddab781bd03d4843ad83b78c45 100644
 --- a/core/src/mindustry/world/blocks/storage/Unloader.java
 +++ b/core/src/mindustry/world/blocks/storage/Unloader.java
 @@ -17,6 +17,8 @@ import mindustry.world.meta.*;
@@ -116,14 +116,14 @@ index db0fdbfe1e4746cf55043276f84cd5e9677ec5bf..5e20ab7962934efa7bccd9450137993a
              super.draw();
  
 +            if(RenderExt.arcChoiceUiIcon && sortItem != null){
-+                Draw.rect(sortItem.uiIcon, x, y,4f,4f);
++                Draw.rect(sortItem.fullIcon, x, y,4f,4f);
 +                return;
 +            }
              Draw.color(sortItem == null ? Color.clear : sortItem.color);
              Draw.rect(centerRegion, x, y);
              Draw.color();
 diff --git a/core/src/mindustry/world/blocks/units/UnitCargoUnloadPoint.java b/core/src/mindustry/world/blocks/units/UnitCargoUnloadPoint.java
-index d7a2e02c0d81c1935482c3bbb4edb7b555788a43..b536c4f3fdb6b4d850deae290c9de52417deeb26 100644
+index d7a2e02c0d81c1935482c3bbb4edb7b555788a43..3b3e49cca2b424aeddd693d261b5e242cd344913 100644
 --- a/core/src/mindustry/world/blocks/units/UnitCargoUnloadPoint.java
 +++ b/core/src/mindustry/world/blocks/units/UnitCargoUnloadPoint.java
 @@ -12,6 +12,7 @@ import mindustry.type.*;
@@ -138,7 +138,7 @@ index d7a2e02c0d81c1935482c3bbb4edb7b555788a43..b536c4f3fdb6b4d850deae290c9de524
                  Draw.color(item.color);
                  Draw.rect(topRegion, x, y);
                  Draw.color();
-+                if(RenderExt.arcChoiceUiIcon) Draw.rect(item.uiIcon, x, y,4f,4f);
++                if(RenderExt.arcChoiceUiIcon) Draw.rect(item.fullIcon, x, y,4f,4f);
              }
          }
  

@@ -14,7 +14,7 @@ Content-Transfer-Encoding: 8bit
  3 files changed, 5 insertions(+)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 5f1077f508f93e62084a81e25002fb5da481bd3d..21ba8c46a1ab7ab112a0fdab9ec7c56a5296eb63 100644
+index 0205466b46c0a475692a2edef326fa996eb81038..eff78f95ed15f8d50133120370a67b1fa2f8425b 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -85,6 +85,7 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
@@ -24,7 +24,7 @@ index 5f1077f508f93e62084a81e25002fb5da481bd3d..21ba8c46a1ab7ab112a0fdab9ec7c56a
 +setting.noPlayerHitBox.name = 取消玩家自身的碰撞 [gray]轻微作弊
  
  category.developerMode.name = 特殊设置
- setting.renderSort.name = 渲染排序 [grey]实验性功能，能够提升50%渲染性能，但可能造成渲染错误
+ setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减少Draws总数
 diff --git a/core/src/mindustry/async/PhysicsProcess.java b/core/src/mindustry/async/PhysicsProcess.java
 index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692aef1eff361 100644
 --- a/core/src/mindustry/async/PhysicsProcess.java
@@ -46,7 +46,7 @@ index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692ae
              entity.move(ref.body.x - ref.x, ref.body.y - ref.y);
          }
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 80a24246610b4a6464aed90eefb1dce626a60475..1e24c02e81ff84f8d1c839e2e74699980004c0c4 100644
+index 5d9c0d3a96c0cce4ffec16b8eadf1d8d9c3f6541..0de45982c600cbd45ca33f964a7b8e21aa7b7115 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
 @@ -63,6 +63,7 @@ public class Settings{
@@ -56,4 +56,4 @@ index 80a24246610b4a6464aed90eefb1dce626a60475..1e24c02e81ff84f8d1c839e2e7469998
 +            c.checkPref("noPlayerHitBox", false);
  
              c.addCategory("developerMode");
-             c.checkPref("renderSort", false);
+             c.checkPref("renderMerge", true);

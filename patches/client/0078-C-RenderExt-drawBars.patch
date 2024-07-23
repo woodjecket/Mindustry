@@ -8,7 +8,7 @@ Subject: [PATCH] C(RenderExt) drawBars
  1 file changed, 56 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb7459f5d5f04 100644
+index 398c77296e08680b6b1621f2f20174160c1acb92..8df4f323b4e8ed33ba884479a77f1b464d1b2861 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -6,6 +6,8 @@ import arc.graphics.g2d.*;
@@ -29,7 +29,7 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb745
  import static mindustry.Vars.tilesize;
  
 @@ -35,6 +38,8 @@ public class RenderExt{
-     public static boolean renderSort;
+     public static boolean renderSort, renderMerge;
      public static boolean massDriverLine;
      public static int massDriverLineInterval;
 +    public static boolean drawBars, drawBarsMend;
@@ -37,8 +37,8 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb745
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -69,6 +74,9 @@ public class RenderExt{
-             renderSort = Core.settings.getBool("renderSort");
+@@ -70,6 +75,9 @@ public class RenderExt{
+             renderMerge = Core.settings.getBool("renderMerge");
              massDriverLine = Core.settings.getBool("mass_driver_line");
              massDriverLineInterval = Core.settings.getInt("mass_driver_line_interval");
 +            drawBars = Core.settings.getBool("blockBars");
@@ -47,7 +47,7 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb745
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -92,6 +100,8 @@ public class RenderExt{
+@@ -93,6 +101,8 @@ public class RenderExt{
              arcDrillModeDraw(block, drill);
          if(massDriverLine && build instanceof MassDriverBuild b)
              drawMassDriverLine(b);
@@ -56,7 +56,7 @@ index 5f9673b79a87985190aee8083a51607e60af04b7..ac0ebc4e161570f3a5f8a3c0717fb745
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -152,4 +162,50 @@ public class RenderExt{
+@@ -153,4 +163,50 @@ public class RenderExt{
              }
          }
      }
