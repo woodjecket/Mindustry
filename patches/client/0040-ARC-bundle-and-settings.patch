@@ -9,18 +9,18 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 243 ++++++++++++++++++
- .../ui/dialogs/SettingsMenuDialog.java        |  29 +--
- core/src/mindustryX/features/ArcOld.java      | 226 ++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 239 ++++++++++++++++++
+ .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
+ core/src/mindustryX/features/ArcOld.java      | 222 ++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 484 insertions(+), 15 deletions(-)
+ 4 files changed, 475 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a9dc4984d 100644
+index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..f08dd5fe6ce27c8cfbd277ecea0cb933542ec4a4 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -67,3 +67,246 @@ category.entitySettings.name = 实体相关设置
+@@ -67,3 +67,242 @@ category.entitySettings.name = 实体相关设置
  setting.bulletShow.name = 显示子弹
  setting.showminebeam.name = 显示单位挖掘光束
  #end Settings
@@ -170,7 +170,6 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a
 +setting.arcDrillProgress.name = [acid]钻头[white]：显示挖掘进度      [gray]只推荐mod下使用
 +setting.arcPlayerList.name = [acid]简化玩家列表
 +setting.arcSelfName.name = [acid]显示自身名字
-+setting.arcShareMedia.name = 允许接受服务器及玩家发送的音乐和图片
 +setting.arcShareWaveInfo.name = [acid]游戏信息交流[gray](标记物品)  [red]请勿刷屏
 +setting.arcSpecificTable.name = [acid]学术端特制界面     [orange][重启生效]
 +setting.arcTurretPlacementItem.name = [pink]炮台[white]：弹药射界
@@ -206,9 +205,6 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a
 +setting.mass_driver_line_color.name = [pink]质驱引导线[white]：颜色
 +setting.mass_driver_line_interval.name = [acid]质驱引导线[white]：箭头间隔
 +setting.mend_zone.name = [acid]修复范围[white]：不透明度
-+setting.menuFlyersCount.name = 首页兵种数量调整
-+setting.menuFlyersFollower.name = 首页兵种小弟模式
-+setting.menuFlyersRange.name = 首页兵种显示射界
 +setting.oneBlockProperty.name = [acid]复制单个建筑时展示属性       [orange]无需要不建议开启，会导致属性丢失
 +setting.otherCheat.name = [red]其他作弊功能(游戏外)
 +setting.overrideSkipWave.name = [acid]功能[white]：忽视跳波限制
@@ -268,14 +264,10 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..353ba491c42b48dbda2a990730f8a82a
 +waves.group.items = 添加物品
 +waves.group.payloads = 添加载荷
 diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82c6e3fbd9 100644
+index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..b71452eca5b3527f0c2ee15edd8d6ef01ab4365d 100644
 --- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
-@@ -300,11 +300,12 @@ public class SettingsMenuDialog extends BaseDialog{
-         sound.sliderPref("musicvol", 100, 0, 100, 1, i -> i + "%");
-         sound.sliderPref("sfxvol", 100, 0, 100, 1, i -> i + "%");
-         sound.sliderPref("ambientvol", 100, 0, 100, 1, i -> i + "%");
-+        sound.sliderPref("arcvol", settings.getInt("musicvol"), 0, 100, 1, i -> i + "%");
+@@ -303,8 +303,8 @@ public class SettingsMenuDialog extends BaseDialog{
  
          game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
  
@@ -285,7 +277,7 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82
              if(!ios){
                  game.checkPref("keyboard", false, val -> {
                      control.setInput(val ? new DesktopInput() : new MobileInput());
-@@ -338,11 +339,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -338,11 +338,9 @@ public class SettingsMenuDialog extends BaseDialog{
          game.checkPref("hints", true);
          game.checkPref("logichints", true);
  
@@ -300,7 +292,7 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82
  
          game.checkPref("doubletapmine", false);
          game.checkPref("commandmodehold", true);
-@@ -364,9 +363,9 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -364,9 +362,9 @@ public class SettingsMenuDialog extends BaseDialog{
              }
          }
  
@@ -313,7 +305,7 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82
  
          int[] lastUiScale = {settings.getInt("uiscale", 100)};
  
-@@ -445,18 +444,18 @@ public class SettingsMenuDialog extends BaseDialog{
+@@ -445,18 +443,18 @@ public class SettingsMenuDialog extends BaseDialog{
          graphics.checkPref("destroyedblocks", true);
          graphics.checkPref("blockstatus", false);
          graphics.checkPref("playerchat", true);
@@ -340,10 +332,10 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..c56d6bf691ba20d0d97fde2295819f82
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..3cafd2e7f08c2ad7c9528a914df7eab1bdec9e87
+index 0000000000000000000000000000000000000000..bdae0373b7a37c73f60a5d9a6ad19285ad68a9f5
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,226 @@
+@@ -0,0 +1,222 @@
 +package mindustryX.features;
 +
 +import arc.func.*;
@@ -534,7 +526,6 @@ index 0000000000000000000000000000000000000000..3cafd2e7f08c2ad7c9528a914df7eab1
 +            c.sliderPref("editorBrush", 4, 3, 12, i -> i + "");
 +            c.checkPref("autoSelSchematic", false);
 +            c.checkPref("researchViewer", false);
-+            c.checkPref("arcShareMedia", true);
 +
 +
 +            c.addCategory("arcRadar");
@@ -550,9 +541,6 @@ index 0000000000000000000000000000000000000000..3cafd2e7f08c2ad7c9528a914df7eab1
 +
 +            c.addCategory("personalized");
 +            c.checkPref("menuFloatText", true);
-+            c.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
-+            c.checkPref("menuFlyersRange", false);
-+            c.checkPref("menuFlyersFollower", false);
 +            c.checkPref("colorizedContent", false);
 +            c.textPref("arcBackgroundPath", "");
 +

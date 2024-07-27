@@ -67,7 +67,7 @@ index 1ca61ee0140d29c28239ed87a165f1fedf11cd97..5a7b4ccabac13d75cd273904d9528e9b
                  float dx = x - size * tilesize/2f, dy = y + size * tilesize/2f, s = iconSmall / 4f;
                  Draw.mixcol(Color.darkGray, 1f);
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 9c981c82076b7ff94256f198eaeb6cef07b3b9a8..3d2f0fbec71c512b72a118a40a6ce2a4c7531fac 100644
+index d09842fd55f775dc9c6a238ba98e04638540b8fd..43fe44b6e0e7793d1e88a92a06fe010aa5968196 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -3,16 +3,19 @@ package mindustryX.features;
@@ -93,15 +93,15 @@ index 9c981c82076b7ff94256f198eaeb6cef07b3b9a8..3d2f0fbec71c512b72a118a40a6ce2a4
 @@ -25,6 +28,7 @@ public class RenderExt{
      public static int hiddenItemTransparency;
      public static int blockBarMinHealth;
-     public static float overdriveZoneTransparency;
+     public static float overdriveZoneTransparency, mendZoneTransparency;
 +    public static boolean logicDisplayNoBorder, arcDrillMode;
  
      public static boolean unitHide = false;
- 
+     private static Effect placementEffect;
 @@ -52,6 +56,8 @@ public class RenderExt{
-             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
              blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
              overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+             mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
 +            logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
 +            arcDrillMode = Core.settings.getBool("arcdrillmode");
          });

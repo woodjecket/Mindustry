@@ -18,7 +18,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/ui/ItemImage.java          |  22 ++
  core/src/mindustry/world/Block.java           |   4 +-
  .../world/blocks/defense/ForceProjector.java  |   7 +-
- .../world/blocks/defense/MendProjector.java   |   7 +-
+ .../world/blocks/defense/MendProjector.java   |   6 +-
  .../world/blocks/defense/RegenProjector.java  |   5 +-
  .../world/blocks/defense/ShieldWall.java      |   4 +
  .../defense/turrets/PointDefenseTurret.java   |   1 +
@@ -38,7 +38,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/world/meta/StatCat.java    |   5 +-
  core/src/mindustry/world/meta/StatValues.java | 254 ++++++++++++++----
  core/src/mindustryX/features/StatExt.java     |  96 +++++++
- 29 files changed, 504 insertions(+), 91 deletions(-)
+ 29 files changed, 503 insertions(+), 91 deletions(-)
  create mode 100644 core/src/mindustryX/features/StatExt.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -388,18 +388,10 @@ index 74f0fd4860644903c3ce81318681596f0a60d317..4b7d6968838780299971c9a827752e51
      }
  
 diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
-index 369d0eecea48320fb8559acdf6de9cf2c74447c9..5c9f7369c72dbd5b6b4345008e7dc896e48b02b4 100644
+index edafc65164c72b570b779eaa6f65ab4029d946c9..b6d7155bb8ed1cc1351c9e1d07b1e1a9aabf4224 100644
 --- a/core/src/mindustry/world/blocks/defense/MendProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
-@@ -13,6 +13,7 @@ import mindustry.logic.*;
- import mindustry.world.*;
- import mindustry.world.consumers.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.*;
- 
- import static mindustry.Vars.*;
- 
-@@ -51,13 +52,15 @@ public class MendProjector extends Block{
+@@ -52,13 +52,15 @@ public class MendProjector extends Block{
          stats.timePeriod = useTime;
          super.setStats();
  

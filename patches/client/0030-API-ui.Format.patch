@@ -18,7 +18,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/14
 
 diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..0a61abc0d266f8c3ba93285b6a35eb85f9190f54
+index 0000000000000000000000000000000000000000..293e186b306383f1a87f6916dd51cc16688a6698
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/Format.kt
 @@ -0,0 +1,123 @@
@@ -104,7 +104,7 @@ index 0000000000000000000000000000000000000000..0a61abc0d266f8c3ba93285b6a35eb85
 +    }
 +
 +    @JvmOverloads
-+    fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent < 0.95f): String {
++    fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent < 0.95f): String {
 +        return buildString {
 +            if (Mathf.zero(percent, 0.1f)) append('\uE815') else append(format(cur))
 +            if (percent < 0.99f) {
@@ -113,7 +113,7 @@ index 0000000000000000000000000000000000000000..0a61abc0d266f8c3ba93285b6a35eb85
 +            }
 +            if (showPercent) {
 +                append(" [lightgray]| ")
-+                append(percent.toInt())
++                append((percent * 100).toInt())
 +                append('%')
 +            }
 +        }
@@ -127,7 +127,7 @@ index 0000000000000000000000000000000000000000..0a61abc0d266f8c3ba93285b6a35eb85
 +object FormatDefault {
 +    @JvmOverloads
 +    @JvmStatic
-+    fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent <= 0.99f): String = Format.default.percent(cur, max, percent, showPercent)
++    fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent <= 0.99f): String = Format.default.percent(cur, max, percent, showPercent)
 +
 +    @JvmStatic
 +    fun format(number: Float): String = Format.default.format(number)

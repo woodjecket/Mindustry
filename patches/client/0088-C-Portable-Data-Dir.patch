@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Wed, 24 Jul 2024 17:56:15 +0800
+Subject: [PATCH] C: Portable Data Dir
+
+---
+ core/src/mindustry/ClientLauncher.java | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
+index 7c897514ef279333ed007b17a7b4c242880d8b22..ddc6e4171a58f4b344b48934c16882606b6421ab 100644
+--- a/core/src/mindustry/ClientLauncher.java
++++ b/core/src/mindustry/ClientLauncher.java
+@@ -37,6 +37,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+     @Override
+     public void setup(){
+         String dataDir = OS.env("MINDUSTRY_DATA_DIR");
++        if(app.isDesktop() && dataDir == null && Fi.get("config").isDirectory()){
++            dataDir = "config";
++        }
+         if(dataDir != null){
+             Core.settings.setDataDirectory(files.absolute(dataDir));
+         }

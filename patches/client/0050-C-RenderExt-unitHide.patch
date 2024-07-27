@@ -7,8 +7,8 @@ Subject: [PATCH] C(RenderExt) unitHide
  core/src/mindustry/input/Binding.java       | 2 +-
  core/src/mindustry/input/InputHandler.java  | 3 ++-
  core/src/mindustryX/Hooks.java              | 4 ++++
- core/src/mindustryX/features/RenderExt.java | 5 ++++-
- 4 files changed, 11 insertions(+), 3 deletions(-)
+ core/src/mindustryX/features/RenderExt.java | 4 +++-
+ 4 files changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
 index 8376e3f5a5f4aef6c5397567aaba13780eda86ab..e06b393ff7e9de55181a2c069e8a16b37c021bbb 100644
@@ -24,7 +24,7 @@ index 8376e3f5a5f4aef6c5397567aaba13780eda86ab..e06b393ff7e9de55181a2c069e8a16b3
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 49146f701cf0e681f12afa3c90d8f9d64d14c67f..091e13a8586e5dee6fc98ec8c8a5acd63b2898a3 100644
+index 41bcbf240ab2ffd1d0cce051b18f59925cfd69d5..b63fa723820b0c4e28b227d89fa615097af0b97f 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -40,6 +40,7 @@ import mindustry.world.blocks.payloads.*;
@@ -35,7 +35,7 @@ index 49146f701cf0e681f12afa3c90d8f9d64d14c67f..091e13a8586e5dee6fc98ec8c8a5acd6
  
  import java.util.*;
  
-@@ -1735,7 +1736,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1736,7 +1737,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Unit selectedUnit(){
          Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
@@ -67,20 +67,19 @@ index 66c54877a8c14ea43294c2db818583fcd7191351..af7d31b4674b0efb198643fdfa7dc8b6
  
      private static void registerBundle(){
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index f2dc213e01b2f8114a3d4ca7e018b4c231019dde..9c981c82076b7ff94256f198eaeb6cef07b3b9a8 100644
+index 6cd82be98b657e3aa36b29c46d6d172f5f4d9dd6..d09842fd55f775dc9c6a238ba98e04638540b8fd 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -25,6 +25,9 @@ public class RenderExt{
+@@ -25,6 +25,8 @@ public class RenderExt{
      public static int hiddenItemTransparency;
      public static int blockBarMinHealth;
-     public static float overdriveZoneTransparency;
+     public static float overdriveZoneTransparency, mendZoneTransparency;
 +
 +    public static boolean unitHide = false;
-+
      private static Effect placementEffect;
  
      public static void init(){
-@@ -41,7 +44,7 @@ public class RenderExt{
+@@ -41,7 +43,7 @@ public class RenderExt{
  
          Events.run(Trigger.preDraw, () -> {
              bulletShow = Core.settings.getBool("bulletShow");

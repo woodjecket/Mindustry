@@ -8,10 +8,10 @@ Subject: [PATCH] C(RenderExt) showPlacementEffect
  1 file changed, 48 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 936e714c690d884258097765a25369f7dc089e07..f2dc213e01b2f8114a3d4ca7e018b4c231019dde 100644
+index 32fa3691159506083aa110c90a182665aeb49844..6cd82be98b657e3aa36b29c46d6d172f5f4d9dd6 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -1,32 +1,57 @@
+@@ -1,33 +1,58 @@
  package mindustryX.features;
  
  import arc.*;
@@ -38,7 +38,7 @@ index 936e714c690d884258097765a25369f7dc089e07..f2dc213e01b2f8114a3d4ca7e018b4c2
 +    public static boolean showPlacementEffect;
      public static int hiddenItemTransparency;
 +    public static int blockBarMinHealth;
-     public static float overdriveZoneTransparency;
+     public static float overdriveZoneTransparency, mendZoneTransparency;
 +    private static Effect placementEffect;
  
      public static void init(){
@@ -63,13 +63,14 @@ index 936e714c690d884258097765a25369f7dc089e07..f2dc213e01b2f8114a3d4ca7e018b4c2
              hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
 +            blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
              overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+             mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
          });
          Events.run(Trigger.draw, RenderExt::draw);
 +        Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
      }
  
      private static void draw(){
-@@ -43,4 +68,27 @@ public class RenderExt{
+@@ -44,4 +69,27 @@ public class RenderExt{
          if(displayAllMessage && build instanceof MessageBuild)
              Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
      }

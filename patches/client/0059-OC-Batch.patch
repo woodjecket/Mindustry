@@ -20,16 +20,16 @@ way-zer <himc.wicp@gmail.com> on 2024/5/28
 way-zer <himc.wicp@gmail.com> on 2024/7/23
 ---
  core/assets/bundles/bundle-mdtx.properties    |   5 +-
- .../arc/graphics/g2d/MySortedSpriteBatch.java | 236 ++++++-
+ .../arc/graphics/g2d/MySortedSpriteBatch.java | 237 ++++++-
  .../arc/graphics/g2d/SortedSpriteBatch2.java  | 668 ++++++++++++++++++
  core/src/mindustry/graphics/MultiPacker.java  |   2 +-
  core/src/mindustryX/features/RenderExt.java   |   3 +
  core/src/mindustryX/features/Settings.java    |   4 +
- 6 files changed, 915 insertions(+), 3 deletions(-)
+ 6 files changed, 915 insertions(+), 4 deletions(-)
  create mode 100644 core/src/arc/graphics/g2d/SortedSpriteBatch2.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 353ba491c42b48dbda2a990730f8a82a9dc4984d..d1d4c57f8d0c658d46ce4b48ca7b32f6cedddcb7 100644
+index f08dd5fe6ce27c8cfbd277ecea0cb933542ec4a4..b7f9b825de0e7b5b0ba72b5fcb294552523bcf50 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -66,6 +66,10 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
@@ -52,7 +52,7 @@ index 353ba491c42b48dbda2a990730f8a82a9dc4984d..d1d4c57f8d0c658d46ce4b48ca7b32f6
  category.movement = 移动
  category.personalized.name = 自定义客户端     [需要重启]
 diff --git a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
-index feca84a8eec0f7d514f9aa6be6f82134d8622721..6cc742960ea554ca0d6631c7ccd83059fd07f7e3 100644
+index feca84a8eec0f7d514f9aa6be6f82134d8622721..9f56c24264dcb7d0ccc5db464d6d6deaa1d08f20 100644
 --- a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
 +++ b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
 @@ -1,10 +1,29 @@
@@ -86,7 +86,15 @@ index feca84a8eec0f7d514f9aa6be6f82134d8622721..6cc742960ea554ca0d6631c7ccd83059
      @Override
      protected void flush(){
          DebugUtil.lastFlushCount++;
-@@ -24,4 +43,219 @@ public class MySortedSpriteBatch extends SortedSpriteBatch{
+@@ -13,7 +32,6 @@ public class MySortedSpriteBatch extends SortedSpriteBatch{
+ 
+     @Override
+     protected void flushRequests(){
+-        if(flushing) return;
+         DebugUtil.lastVertices += numVertices / 6;
+         DebugUtil.lastDrawRequests += numRequests;
+         super.flushRequests();
+@@ -24,4 +42,219 @@ public class MySortedSpriteBatch extends SortedSpriteBatch{
          DebugUtil.lastSwitchTexture++;
          super.switchTexture(texture);
      }
@@ -994,17 +1002,17 @@ index e5f473a7651495f7f61856e6df711fba12dfb1be..f1a3f1cbbac0fbda6dfabe689f25c210
          //TODO stuff like this throws OOM on some devices
          environment(4096, 2048),
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d969283650b2ac2ed75a235dd66476cd86255349..2dcf87814b002c0ef9349a02aafa6b01d1120400 100644
+index 7b5d21f77cd8d15d0541cd70a051aad660c21e1d..e3721adf4c7e215ef3b944512d4608922d22fd11 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -30,6 +30,7 @@ public class RenderExt{
-     public static float overdriveZoneTransparency;
+     public static float overdriveZoneTransparency, mendZoneTransparency;
      public static boolean logicDisplayNoBorder, arcDrillMode;
      public static int blockRenderLevel;
 +    public static boolean renderSort, renderMerge;
  
      public static boolean unitHide = false;
- 
+     private static Effect placementEffect;
 @@ -60,6 +61,8 @@ public class RenderExt{
              logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
              arcDrillMode = Core.settings.getBool("arcdrillmode");

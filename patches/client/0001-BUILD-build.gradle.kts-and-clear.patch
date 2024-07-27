@@ -14,7 +14,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  build.gradle                                  | 241 ++-------------
  core/build.gradle                             |   2 -
  core/build.gradle.kts                         |  64 ++++
- desktop/build.gradle                          | 162 +---------
+ desktop/build.gradle                          | 164 +---------
  gradle.properties                             |   2 +
  gradle/wrapper/gradle-wrapper.jar             | Bin 59203 -> 43462 bytes
  gradlew                                       | 282 +++++++++++-------
@@ -24,7 +24,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 18 files changed, 383 insertions(+), 610 deletions(-)
+ 18 files changed, 384 insertions(+), 611 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -658,10 +658,10 @@ index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd0
 +}
 \ No newline at end of file
 diff --git a/desktop/build.gradle b/desktop/build.gradle
-index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..ecb36e1a2a501040d3adee3203eacef2743e7764 100644
+index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..b63f4a3ca7964f41f02a3fa12a068f859b51f96c 100644
 --- a/desktop/build.gradle
 +++ b/desktop/build.gradle
-@@ -3,11 +3,6 @@ sourceSets.main.java.srcDirs = ["src/"]
+@@ -3,12 +3,7 @@ sourceSets.main.java.srcDirs = ["src/"]
  project.ext.mainClassName = "mindustry.desktop.DesktopLauncher"
  project.ext.assetsDir = new File("../core/assets")
  
@@ -670,9 +670,11 @@ index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..ecb36e1a2a501040d3adee3203eacef2
 -def ICON_DIR = new File("$rootDir/core/assets/icons/icon.icns")
 -def platforms = ["Linux64", "Windows64", "Windows32", "MacOS"]
 -
- task run(dependsOn: classes, type: JavaExec){
+-task run(dependsOn: classes, type: JavaExec){
++task run(dependsOn: [classes, ":core:allAssets"], type: JavaExec){
      mainClass = project.mainClassName
      classpath = sourceSets.main.runtimeClasspath
+     standardInput = System.in
 @@ -44,7 +39,7 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
      from files(sourceSets.main.output.classesDirs)
      from files(sourceSets.main.output.resourcesDir)

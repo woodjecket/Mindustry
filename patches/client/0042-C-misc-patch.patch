@@ -31,7 +31,7 @@ index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 2e9a8c337ae1182dfa5527a23c50afb6da42f834..a8486eb4247761a56e6d044cddd4f0d39f60003e 100644
+index cd9ef6e4832961bef095ed8deec2b69d88b14d28..5bef0c490bf785c3ca1cb41d5206a0df4cb53053 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -62,6 +62,10 @@ public class NetClient implements ApplicationListener{
@@ -212,7 +212,7 @@ index 58c186ff3151d8bba395b1bc1a51a821b81c40e1..b3e0318791e123b784e9953b9fb39ea2
              }
  
 diff --git a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
-index 54a36cde6eee102c9c8f3bfd5e4c76a2f4d0f1e1..bd810004301a4534c6568fb0bcd85f4a4a0c44ef 100644
+index 84f5bc221c2f1846d831acf4abf902b15bfc1c59..4a8ef62fb82970df299159e53687f4c87b927f63 100644
 --- a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
 +++ b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
 @@ -138,7 +138,7 @@ public class BlockInventoryFragment{

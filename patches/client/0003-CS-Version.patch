@@ -100,7 +100,7 @@ index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..5cbdf0a613c067f662a3c7dd4511bb33e35657ae 100644
+index d0e444a4a7a9ced372a2c93102860991ac922112..72db086039f01b7358023c494a3355db24433117 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -135,6 +135,8 @@ public class NetClient implements ApplicationListener{

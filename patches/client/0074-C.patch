@@ -14,7 +14,7 @@ Content-Transfer-Encoding: 8bit
  3 files changed, 5 insertions(+)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 0205466b46c0a475692a2edef326fa996eb81038..eff78f95ed15f8d50133120370a67b1fa2f8425b 100644
+index 4b2dfebc198217e2ae699c405edfa501b5f15a19..c76acc18976cedb47ca58b75cdf2074ec7224f4f 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -85,6 +85,7 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级

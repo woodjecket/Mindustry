@@ -24,7 +24,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/17 at 20:50
  create mode 100644 core/src/mindustryX/features/ui/NewCoreItemsDisplay.java
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 3c69a9e96a33e397a8183676d54d1f565ca9aed7..384b027a18202ea931ebcaf905031f90579c84e1 100644
+index 6f8bb852edfe397c4abbbe9268f8b5648c19add3..37a57b425a423ddff029268c938423f6711340c8 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -30,6 +30,7 @@ import mindustry.ui.*;

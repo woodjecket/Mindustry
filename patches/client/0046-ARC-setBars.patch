@@ -4,12 +4,15 @@ Date: Sun, 24 Mar 2024 00:02:12 +0800
 Subject: [PATCH] ARC setBars
 
 ---
+ .../entities/abilities/ShieldArcAbility.java  |  3 ++-
  core/src/mindustry/world/Block.java           | 23 +++++++++++++------
  .../world/blocks/defense/ForceProjector.java  |  7 +++++-
  .../world/blocks/defense/MendProjector.java   |  7 ++++++
  .../blocks/defense/OverdriveProjector.java    |  4 +++-
  .../world/blocks/defense/ShieldWall.java      | 11 +++++++++
  .../blocks/defense/turrets/ItemTurret.java    |  8 +++----
+ .../blocks/defense/turrets/ReloadTurret.java  | 13 +++++++++++
+ .../world/blocks/defense/turrets/Turret.java  |  9 ++++++++
  .../world/blocks/heat/HeatConductor.java      |  4 ++--
  .../world/blocks/heat/HeatProducer.java       |  4 +++-
  .../world/blocks/payloads/BlockProducer.java  |  5 +++-
@@ -24,8 +27,28 @@ Subject: [PATCH] ARC setBars
  .../world/blocks/units/Reconstructor.java     |  6 ++++-
  .../world/blocks/units/UnitAssembler.java     |  6 ++++-
  .../world/blocks/units/UnitFactory.java       | 10 +++++++-
- 20 files changed, 102 insertions(+), 40 deletions(-)
+ 23 files changed, 126 insertions(+), 41 deletions(-)
 
+diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
+index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4733b1bb3 100644
+--- a/core/src/mindustry/entities/abilities/ShieldArcAbility.java
++++ b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
+@@ -13,6 +13,7 @@ import mindustry.gen.*;
+ import mindustry.graphics.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
++import mindustryX.features.ui.*;
+ 
+ public class ShieldArcAbility extends Ability{
+     private static Unit paramUnit;
+@@ -135,6 +136,6 @@ public class ShieldArcAbility extends Ability{
+ 
+     @Override
+     public void displayBars(Unit unit, Table bars){
+-        bars.add(new Bar("stat.shieldhealth", Pal.accent, () -> data / max)).row();
++        bars.add(new Bar(() -> (data < 0 ? "[red]" : "") + "\uE84D " + FormatDefault.percent(data, max), () -> Pal.accent, () -> data / max)).row();
+     }
+ }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
 index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a525592c16 100644
 --- a/core/src/mindustry/world/Block.java
@@ -111,7 +134,7 @@ index 4b7d6968838780299971c9a827752e516d74ea0c..5cc4088121fd85ccb4971465494b2f00
  
      @Override
 diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
-index 5c9f7369c72dbd5b6b4345008e7dc896e48b02b4..f52a5307bdd8c79fbccb82b7ff74dc856d615edb 100644
+index b6d7155bb8ed1cc1351c9e1d07b1e1a9aabf4224..8ae4dec654dd860c1dd7de479521c9e163c106a2 100644
 --- a/core/src/mindustry/world/blocks/defense/MendProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
 @@ -10,6 +10,7 @@ import mindustry.content.*;
@@ -207,6 +230,66 @@ index 51c07de96f6214aed028845c388ac306461fbe1c..59dd7e060664c7c7be5d0819947586bd
              )
          );
      }
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java b/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
+index 92038694598090f098af6ac10f41c286e195e0d7..6b692dea2d5098c18a6632efb4b2fec000e99d35 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
+@@ -1,9 +1,13 @@
+ package mindustry.world.blocks.defense.turrets;
+ 
++import arc.Core;
+ import arc.math.*;
+ import arc.struct.*;
+ import arc.util.*;
++import arc.scene.ui.layout.Table;
+ import mindustry.type.*;
++import mindustry.graphics.Pal;
++import mindustry.ui.Bar;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
+ 
+@@ -60,5 +64,14 @@ public class ReloadTurret extends BaseTurret{
+         protected float baseReloadSpeed(){
+             return efficiency;
+         }
++
++        @Override
++        public void displayBars(Table bars){
++            super.displayBars(bars);
++            //bar for shoot cd
++            bars.add(new Bar(() -> Core.bundle.format("bar.reloadDetail", (int)(reloadCounter * 100 / reload)), () -> Pal.ammo, () -> reloadCounter / reload));
++            bars.row();
++        }
++
+     }
+ }
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
+index cf350df9ea21f3654672c99a70c5c9f2ea439413..f51c1cb0e700f473d7eef816fcc08b5a6f623767 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
+@@ -7,6 +7,7 @@ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
+ import arc.math.geom.*;
++import arc.scene.ui.layout.Table;
+ import arc.struct.*;
+ import arc.util.*;
+ import arc.util.io.*;
+@@ -678,6 +679,14 @@ public class Turret extends ReloadTurret{
+             rotation = oldRot;
+             reloadCounter = oldReload;
+         }
++
++        @Override
++        public void displayBars(Table bars) {
++            super.displayBars(bars);
++            if (minWarmup > 0f) {
++                bars.add(new Bar(() -> Core.bundle.format("bar.warmupDetail", (int)(shootWarmup * 100 / minWarmup)), () -> Pal.ammo, () -> shootWarmup / minWarmup)).row();
++            }
++        }
+     }
+ 
+     public static class BulletEntry{
 diff --git a/core/src/mindustry/world/blocks/heat/HeatConductor.java b/core/src/mindustry/world/blocks/heat/HeatConductor.java
 index 8ca9446de3177bbd18cf08c1911ed72b09bec532..1db74176ac71b528c0ec5fa8b83b87f38b89755b 100644
 --- a/core/src/mindustry/world/blocks/heat/HeatConductor.java
@@ -362,7 +445,7 @@ index 21babe1f3e89b0a33bbc93c8e79bc9d76505ad5f..1ca61ee0140d29c28239ed87a165f1fe
  
      public Item getDrop(Tile tile){
 diff --git a/core/src/mindustry/world/blocks/production/HeatCrafter.java b/core/src/mindustry/world/blocks/production/HeatCrafter.java
-index 5af67c37c74871553a35e9b5ff9757869072b6da..39a2956d60c1da89f2bb89ab345462cbb1a7a7dc 100644
+index 5af67c37c74871553a35e9b5ff9757869072b6da..8c7ef00a68c89b1b82d8a1dbfbf63ad65e9c91cf 100644
 --- a/core/src/mindustry/world/blocks/production/HeatCrafter.java
 +++ b/core/src/mindustry/world/blocks/production/HeatCrafter.java
 @@ -6,6 +6,7 @@ import mindustry.graphics.*;
@@ -380,7 +463,7 @@ index 5af67c37c74871553a35e9b5ff9757869072b6da..39a2956d60c1da89f2bb89ab345462cb
 -            new Bar(() ->
 -            Core.bundle.format("bar.heatpercent", (int)(entity.heat + 0.01f), (int)(entity.efficiencyScale() * 100 + 0.01f)),
 +            new Bar(
-+            () -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatRequirement, entity.efficiencyScale() * 100, true),
++            () -> Core.bundle.get("bar.heat") + " " + FormatDefault.percent(entity.heat, heatRequirement, entity.efficiencyScale(), true),
              () -> Pal.lightOrange,
              () -> entity.heat / heatRequirement));
      }

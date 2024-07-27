@@ -5,9 +5,9 @@ Subject: [PATCH] BUILD ci
 
 ---
  .github/actions/.gitignore        |  2 ++
- .github/actions/clearOldAssets.ts | 22 ++++++++++++++++++++++
+ .github/actions/clearOldAssets.ts | 23 +++++++++++++++++++++++
  .github/workflows/build.yml       |  6 ++++++
- 3 files changed, 30 insertions(+)
+ 3 files changed, 31 insertions(+)
  create mode 100644 .github/actions/.gitignore
  create mode 100644 .github/actions/clearOldAssets.ts
 
@@ -22,14 +22,15 @@ index 0000000000000000000000000000000000000000..eba3e54426a2115c8ddba3b231c1ae3f
 \ No newline at end of file
 diff --git a/.github/actions/clearOldAssets.ts b/.github/actions/clearOldAssets.ts
 new file mode 100644
-index 0000000000000000000000000000000000000000..190f9670e3daef4ad772f464ab6ee23c70b10f30
+index 0000000000000000000000000000000000000000..224d9a7d2bfd5e4fb17f9d5325b4e9f31cc21efa
 --- /dev/null
 +++ b/.github/actions/clearOldAssets.ts
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,23 @@
 +import * as core from "@actions/core"
 +import {context, getOctokit} from "@actions/github"
 +
 +const octokit = getOctokit(import.meta.env.GITHUB_TOKEN) as import("@octokit/plugin-rest-endpoint-methods/dist-types/types").Api
++const selfBuild = import.meta.env.RELEASE_VERSION
 +
 +async function clearOldAssets(tag: string, keep: number = 9) {
 +    const release = await octokit.rest.repos.getReleaseByTag({
@@ -38,7 +39,7 @@ index 0000000000000000000000000000000000000000..190f9670e3daef4ad772f464ab6ee23c
 +    const assets = release.data.assets.sort((a, b) => a.name < b.name ? 1 : -1)
 +    if (assets.length <= keep) return
 +    const toRemove = assets.slice(keep)
-+    toRemove.push(...assets.filter(it => it.name.includes("server")))
++    toRemove.push(...assets.filter(it => it.name.includes("server") && !it.name.includes(selfBuild)))
 +    console.log("ToRemove", toRemove.map(it => it.name))
 +    await Promise.all(toRemove.map(it =>
 +        octokit.rest.repos.deleteReleaseAsset({

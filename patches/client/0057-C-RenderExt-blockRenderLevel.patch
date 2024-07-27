@@ -138,19 +138,19 @@ index 9981f2963b730173d8c03e29440e2e9ee404d4d3..28892eb7f43aa7d903541b9d8412018c
  
      private static void registerBundle(){
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 3d2f0fbec71c512b72a118a40a6ce2a4c7531fac..d969283650b2ac2ed75a235dd66476cd86255349 100644
+index 43fe44b6e0e7793d1e88a92a06fe010aa5968196..7b5d21f77cd8d15d0541cd70a051aad660c21e1d 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -29,6 +29,7 @@ public class RenderExt{
      public static int blockBarMinHealth;
-     public static float overdriveZoneTransparency;
+     public static float overdriveZoneTransparency, mendZoneTransparency;
      public static boolean logicDisplayNoBorder, arcDrillMode;
 +    public static int blockRenderLevel;
  
      public static boolean unitHide = false;
- 
+     private static Effect placementEffect;
 @@ -58,6 +59,7 @@ public class RenderExt{
-             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+             mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
              logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
              arcDrillMode = Core.settings.getBool("arcdrillmode");
 +            blockRenderLevel = Core.settings.getInt("blockRenderLevel");

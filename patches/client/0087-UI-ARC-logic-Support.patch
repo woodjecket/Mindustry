@@ -15,16 +15,16 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
 重制内存元显示 和 处理器快捷显示
 way-zer <himc.wicp@gmail.com> on 2024/7/14
 ---
- core/src/mindustry/logic/LCanvas.java         |  52 +++-
+ core/src/mindustry/logic/LCanvas.java         |  54 +++-
  core/src/mindustry/logic/LExecutor.java       |  19 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
  .../world/blocks/logic/LogicBlock.java        |  49 +++-
  .../world/blocks/logic/MemoryBlock.java       |  52 ++++
- 6 files changed, 369 insertions(+), 52 deletions(-)
+ 6 files changed, 371 insertions(+), 52 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
-index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f50139830629 100644
+index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94da087dcc 100644
 --- a/core/src/mindustry/logic/LCanvas.java
 +++ b/core/src/mindustry/logic/LCanvas.java
 @@ -18,6 +18,8 @@ import mindustry.gen.*;
@@ -72,7 +72,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f501
  
                  t.addListener(new InputListener(){
                      float lastx, lasty;
-@@ -436,6 +447,37 @@ public class LCanvas extends Table{
+@@ -436,6 +447,39 @@ public class LCanvas extends Table{
              }
          }
  
@@ -100,8 +100,10 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f501
 +            statements.addChildBefore(this, newElem);
 +            remove();
 +            for(Element c : statements.getChildren()){
-+                if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem))
++                if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem)){
++                    if(0 > jst.destIndex || jst.destIndex >= statements.getChildren().size) continue;
 +                    jst.dest = (StatementElem)statements.getChildren().get(jst.destIndex);
++                }
 +            }
 +            statements.layout();
 +        }
@@ -110,7 +112,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f501
          @Override
          public void draw(){
              float pad = 5f;
-@@ -584,7 +626,7 @@ public class LCanvas extends Table{
+@@ -584,7 +628,7 @@ public class LCanvas extends Table{
              float dist = 100f;
  
              //square jumps
@@ -120,7 +122,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..b4455067b25e4e626c01f28af8c8f501
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 481895ea4c5ee3a88bd5329593a9a0d9104e8458..963e9d562f1a168fbc63763581a9f16d88c0de2e 100644
+index 8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c..51477ab08f78a14682ce4940195f9a4931e546ed 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -9,6 +9,7 @@ import arc.util.*;

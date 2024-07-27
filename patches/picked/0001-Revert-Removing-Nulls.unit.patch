@@ -1,0 +1,719 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Tue, 23 Jul 2024 14:08:52 +0800
+Subject: [PATCH] Revert "Removing Nulls.unit"
+
+This reverts commit 29557314
+---
+ .../annotations/entity/EntityProcess.java     | 83 +++++++++++++++++++
+ core/src/mindustry/core/NetClient.java        | 19 ++---
+ core/src/mindustry/core/NetServer.java        | 49 +++++------
+ .../mindustry/entities/comp/EntityComp.java   |  4 +
+ .../mindustry/entities/comp/PlayerComp.java   | 44 +++++-----
+ core/src/mindustry/input/InputHandler.java    | 35 ++++----
+ core/src/mindustry/input/MobileInput.java     | 31 +++----
+ core/src/mindustry/io/TypeIO.java             | 11 +--
+ core/src/mindustry/logic/LExecutor.java       |  2 +-
+ .../ui/fragments/BlockInventoryFragment.java  |  2 +-
+ .../mindustry/ui/fragments/HintsFragment.java |  6 +-
+ .../mindustry/ui/fragments/HudFragment.java   |  2 +-
+ 12 files changed, 186 insertions(+), 102 deletions(-)
+
+diff --git a/annotations/src/main/java/mindustry/annotations/entity/EntityProcess.java b/annotations/src/main/java/mindustry/annotations/entity/EntityProcess.java
+index 3abd583158111d34ab1ca7a7126b7126bdbd5d4f..3fa62d844643147aba65a54b4d5f67d39d1c57ff 100644
+--- a/annotations/src/main/java/mindustry/annotations/entity/EntityProcess.java
++++ b/annotations/src/main/java/mindustry/annotations/entity/EntityProcess.java
+@@ -851,6 +851,89 @@ public class EntityProcess extends BaseProcessor{
+             for(TypeSpec.Builder b : baseClasses){
+                 write(b, imports.toSeq());
+             }
++
++            //TODO nulls were an awful idea
++            //store nulls
++            TypeSpec.Builder nullsBuilder = TypeSpec.classBuilder("Nulls").addModifiers(Modifier.PUBLIC).addModifiers(Modifier.FINAL);
++            //TODO should be dynamic
++            ObjectSet<String> nullList = ObjectSet.with("unit");
++
++            //create mock types of all components
++            for(Stype interf : allInterfaces){
++                //indirect interfaces to implement methods for
++                Seq<Stype> dependencies = interf.allInterfaces().add(interf);
++                Seq<Smethod> methods = dependencies.flatMap(Stype::methods);
++                methods.sortComparing(Object::toString);
++
++                //optionally add superclass
++                Stype superclass = dependencies.map(this::interfaceToComp).find(s -> s != null && s.annotation(Component.class).base());
++                //use the base type when the interface being emulated has a base
++                TypeName type = superclass != null && interfaceToComp(interf).annotation(Component.class).base() ? tname(baseName(superclass)) : interf.tname();
++
++                //used method signatures
++                ObjectSet<String> signatures = new ObjectSet<>();
++
++                //create null builder
++                String baseName = interf.name().substring(0, interf.name().length() - 1);
++
++                //prevent Nulls bloat
++                if(!nullList.contains(Strings.camelize(baseName))){
++                    continue;
++                }
++
++                String className = "Null" + baseName;
++                TypeSpec.Builder nullBuilder = TypeSpec.classBuilder(className)
++                .addModifiers(Modifier.FINAL);
++
++                skipDeprecated(nullBuilder);
++
++                nullBuilder.addSuperinterface(interf.tname());
++                if(superclass != null) nullBuilder.superclass(tname(baseName(superclass)));
++
++                for(Smethod method : methods){
++                    String signature = method.toString();
++                    if(!signatures.add(signature)) continue;
++
++                    Stype compType = interfaceToComp(method.type());
++                    MethodSpec.Builder builder = MethodSpec.overriding(method.e).addModifiers(Modifier.PUBLIC, Modifier.FINAL);
++                    int index = 0;
++                    for(ParameterSpec spec : builder.parameters){
++                        Reflect.set(spec, "name",  "arg" + index++);
++                    }
++                    builder.addAnnotation(OverrideCallSuper.class); //just in case
++
++                    if(!method.isVoid()){
++                        String methodName = method.name();
++                        switch(methodName){
++                            case "isNull":
++                                builder.addStatement("return true");
++                                break;
++                            case "id":
++                                builder.addStatement("return -1");
++                                break;
++                            case "toString":
++                                builder.addStatement("return $S", className);
++                                break;
++                            default:
++                                Svar variable = compType == null || method.params().size > 0 ? null : compType.fields().find(v -> v.name().equals(methodName));
++                                String desc = variable == null ? null : variable.descString();
++                                if(variable == null || !varInitializers.containsKey(desc)){
++                                    builder.addStatement("return " + getDefault(method.ret().toString()));
++                                }else{
++                                    String init = varInitializers.get(desc);
++                                    builder.addStatement("return " + (init.equals("{}") ? "new " + variable.mirror().toString() : "") + init);
++                                }
++                        }
++                    }
++                    nullBuilder.addMethod(builder.build());
++                }
++
++                nullsBuilder.addField(FieldSpec.builder(type, Strings.camelize(baseName)).initializer("new " + className + "()").addModifiers(Modifier.FINAL, Modifier.STATIC, Modifier.PUBLIC).build());
++
++                write(nullBuilder, imports.toSeq());
++            }
++
++            write(nullsBuilder);
+         }
+     }
+ 
+diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
+index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..d0e444a4a7a9ced372a2c93102860991ac922112 100644
+--- a/core/src/mindustry/core/NetClient.java
++++ b/core/src/mindustry/core/NetClient.java
+@@ -622,22 +622,21 @@ public class NetClient implements ApplicationListener{
+ 
+     void sync(){
+         if(timer.get(0, playerSyncTime)){
+-            boolean dead = player.dead();
+-            Unit unit = dead ? null : player.unit();
+-            int uid = dead || unit == null ? -1 : unit.id;
++            Unit unit = player.dead() ? Nulls.unit : player.unit();
++            int uid = player.dead() ? -1 : unit.id;
+ 
+             Call.clientSnapshot(
+             lastSent++,
+             uid,
+-            dead,
+-            dead ? player.x : unit.x, dead ? player.y : unit.y,
+-            dead ? 0f : unit.aimX(), dead ? 0f : unit.aimY(),
+-            unit == null ? 0f : unit.rotation,
++            player.dead(),
++            player.dead() ? player.x : unit.x, player.dead() ? player.y : unit.y,
++            player.unit().aimX(), player.unit().aimY(),
++            unit.rotation,
+             unit instanceof Mechc m ? m.baseRotation() : 0,
+-            unit == null ? 0f : unit.vel.x, unit == null ? 0f : unit.vel.y,
+-            dead ? null : unit.mineTile,
++            unit.vel.x, unit.vel.y,
++            player.unit().mineTile,
+             player.boosting, player.shooting, ui.chatfrag.shown(), control.input.isBuilding,
+-            player.isBuilder() && unit != null ? unit.plans : null,
++            player.isBuilder() ? player.unit().plans : null,
+             Core.camera.position.x, Core.camera.position.y,
+             Core.camera.width, Core.camera.height
+             );
+diff --git a/core/src/mindustry/core/NetServer.java b/core/src/mindustry/core/NetServer.java
+index 5f4be7102424474dde9e91ba7331fbd077a10445..0bbcce38fe9a5b4d2d7429547990b690fcc5b392 100644
+--- a/core/src/mindustry/core/NetServer.java
++++ b/core/src/mindustry/core/NetServer.java
+@@ -98,7 +98,7 @@ public class NetServer implements ApplicationListener{
+     private boolean closing = false, pvpAutoPaused = true;
+     private Interval timer = new Interval(10);
+     private IntSet buildHealthChanged = new IntSet();
+-
++    
+     /** Current kick session. */
+     public @Nullable VoteSession currentlyKicking = null;
+     /** Duration of a kick in seconds. */
+@@ -548,10 +548,10 @@ public class NetServer implements ApplicationListener{
+     @Remote(targets = Loc.client, variants = Variant.one)
+     public static void requestDebugStatus(Player player){
+         int flags =
+-        (player.con.hasDisconnected ? 1 : 0) |
+-        (player.con.hasConnected ? 2 : 0) |
+-        (player.isAdded() ? 4 : 0) |
+-        (player.con.hasBegunConnecting ? 8 : 0);
++            (player.con.hasDisconnected ? 1 : 0) |
++            (player.con.hasConnected ? 2 : 0) |
++            (player.isAdded() ? 4 : 0) |
++            (player.con.hasBegunConnecting ? 8 : 0);
+ 
+         Call.debugStatusClient(player.con, flags, player.con.lastReceivedClientSnapshot, player.con.snapshotsSent);
+         Call.debugStatusClientUnreliable(player.con, flags, player.con.lastReceivedClientSnapshot, player.con.snapshotsSent);
+@@ -610,18 +610,18 @@ public class NetServer implements ApplicationListener{
+ 
+     @Remote(targets = Loc.client, unreliable = true)
+     public static void clientSnapshot(
+-    Player player,
+-    int snapshotID,
+-    int unitID,
+-    boolean dead,
+-    float x, float y,
+-    float pointerX, float pointerY,
+-    float rotation, float baseRotation,
+-    float xVelocity, float yVelocity,
+-    Tile mining,
+-    boolean boosting, boolean shooting, boolean chatting, boolean building,
+-    @Nullable Queue<BuildPlan> plans,
+-    float viewX, float viewY, float viewWidth, float viewHeight
++        Player player,
++        int snapshotID,
++        int unitID,
++        boolean dead,
++        float x, float y,
++        float pointerX, float pointerY,
++        float rotation, float baseRotation,
++        float xVelocity, float yVelocity,
++        Tile mining,
++        boolean boosting, boolean shooting, boolean chatting, boolean building,
++        @Nullable Queue<BuildPlan> plans,
++        float viewX, float viewY, float viewWidth, float viewHeight
+     ){
+         NetConnection con = player.con;
+         if(con == null || snapshotID < con.lastReceivedClientSnapshot) return;
+@@ -660,11 +660,12 @@ public class NetServer implements ApplicationListener{
+         player.shooting = shooting;
+         player.boosting = boosting;
+ 
+-        @Nullable var unit = player.unit();
++        player.unit().controlWeapons(shooting, shooting);
++        player.unit().aim(pointerX, pointerY);
+ 
+         if(player.isBuilder()){
+-            unit.clearBuilding();
+-            unit.updateBuilding(building);
++            player.unit().clearBuilding();
++            player.unit().updateBuilding(building);
+ 
+             if(plans != null){
+                 for(BuildPlan req : plans){
+@@ -693,12 +694,12 @@ public class NetServer implements ApplicationListener{
+             }
+         }
+ 
++        player.unit().mineTile = mining;
++
+         con.rejectedRequests.clear();
+ 
+         if(!player.dead()){
+-            unit.controlWeapons(shooting, shooting);
+-            unit.aim(pointerX, pointerY);
+-            unit.mineTile = mining;
++            Unit unit = player.unit();
+ 
+             long elapsed = Math.min(Time.timeSinceMillis(con.lastReceivedClientTime), 1500);
+             float maxSpeed = unit.speed();
+@@ -1124,7 +1125,7 @@ public class NetServer implements ApplicationListener{
+             voted.put(admins.getInfo(player.uuid()).lastIP, d);
+ 
+             Call.sendMessage(Strings.format("[lightgray]@[lightgray] has voted on kicking[orange] @[lightgray].[accent] (@/@)\n[lightgray]Type[orange] /vote <y/n>[] to agree.",
+-            player.name, target.name, votes, votesRequired()));
++                player.name, target.name, votes, votesRequired()));
+ 
+             checkPass();
+         }
+diff --git a/core/src/mindustry/entities/comp/EntityComp.java b/core/src/mindustry/entities/comp/EntityComp.java
+index 37b7bb7a2b9c4feaac6932abbcb06eb38185cbfb..fdba35a7379ad5c46c3b39adde05f532d50859a7 100644
+--- a/core/src/mindustry/entities/comp/EntityComp.java
++++ b/core/src/mindustry/entities/comp/EntityComp.java
+@@ -35,6 +35,10 @@ abstract class EntityComp{
+         return ((Object)this) instanceof Unitc u && u.isPlayer() && !isLocal();
+     }
+ 
++    boolean isNull(){
++        return false;
++    }
++
+     /** Replaced with `this` after code generation. */
+     <T extends Entityc> T self(){
+         return (T)this;
+diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
+index 0ed2a11ad4a242a5515cead2bfc452ac927062aa..4d038e00d0ec3461746471f281db77beb04accb6 100644
+--- a/core/src/mindustry/entities/comp/PlayerComp.java
++++ b/core/src/mindustry/entities/comp/PlayerComp.java
+@@ -33,7 +33,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+ 
+     @Import float x, y;
+ 
+-    @ReadOnly @Nullable Unit unit;
++    @ReadOnly Unit unit = Nulls.unit;
+     transient @Nullable NetConnection con;
+     @ReadOnly Team team = Team.sharded;
+     @SyncLocal boolean typing, shooting, boosting;
+@@ -49,12 +49,12 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+     transient float textFadeTime;
+     transient Ratekeeper itemDepositRate = new Ratekeeper();
+ 
+-    transient private @Nullable Unit lastReadUnit;
++    transient private Unit lastReadUnit = Nulls.unit;
+     transient private int wrongReadUnits;
+     transient @Nullable Unit justSwitchFrom, justSwitchTo;
+ 
+     public boolean isBuilder(){
+-        return unit != null && unit.canBuild();
++        return unit.canBuild();
+     }
+ 
+     public @Nullable CoreBuild closestCore(){
+@@ -89,7 +89,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+         x = y = 0f;
+         if(!dead()){
+             unit.resetController();
+-            unit = null;
++            unit = Nulls.unit;
+         }
+     }
+ 
+@@ -105,7 +105,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+ 
+     @Replace
+     public float clipSize(){
+-        return unit == null ? 20 : unit.type.hitSize * 2f;
++        return unit.isNull() ? 20 : unit.type.hitSize * 2f;
+     }
+ 
+     @Override
+@@ -131,18 +131,17 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+         unit = lastReadUnit;
+         unit(set);
+         lastReadUnit = unit;
+-        if(unit != null){
+-            unit.aim(mouseX, mouseY);
+-            //this is only necessary when the thing being controlled isn't synced
+-            unit.controlWeapons(shooting, shooting);
+-            //extra precaution, necessary for non-synced things
+-            unit.controller(this);
+-        }
++
++        unit.aim(mouseX, mouseY);
++        //this is only necessary when the thing being controlled isn't synced
++        unit.controlWeapons(shooting, shooting);
++        //extra precaution, necessary for non-synced things
++        unit.controller(this);
+     }
+ 
+     @Override
+     public void update(){
+-        if(unit != null && !unit.isValid()){
++        if(!unit.isValid()){
+             clearUnit();
+         }
+ 
+@@ -182,11 +181,11 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+     @Override
+     public void remove(){
+         //clear unit upon removal
+-        if(unit != null){
++        if(!unit.isNull()){
+             clearUnit();
+         }
+ 
+-        lastReadUnit = null;
++        lastReadUnit = Nulls.unit;
+         justSwitchTo = justSwitchFrom = null;
+     }
+ 
+@@ -198,27 +197,28 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+     }
+ 
+     public void clearUnit(){
+-        unit(null);
++        unit(Nulls.unit);
+     }
+ 
+-    public @Nullable Unit unit(){
++    public Unit unit(){
+         return unit;
+     }
+ 
+-    public void unit(@Nullable Unit unit){
++    public void unit(Unit unit){
+         //refuse to switch when the unit was just transitioned from
+         if(isLocal() && unit == justSwitchFrom && justSwitchFrom != null && justSwitchTo != null){
+             return;
+         }
+ 
++        if(unit == null) throw new IllegalArgumentException("Unit cannot be null. Use clearUnit() instead.");
+         if(this.unit == unit) return;
+ 
+         //save last command this unit had
+-        if(unit != null && unit.controller() instanceof CommandAI ai){
++        if(unit.controller() instanceof CommandAI ai){
+             lastCommand = ai.command;
+         }
+ 
+-        if(this.unit != null){
++        if(this.unit != Nulls.unit){
+             //un-control the old unit
+             this.unit.resetController();
+             //restore last command issued before it was controlled
+@@ -227,7 +227,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+             }
+         }
+         this.unit = unit;
+-        if(unit != null){
++        if(unit != Nulls.unit){
+             unit.team(team);
+             unit.controller(this);
+ 
+@@ -246,7 +246,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+     }
+ 
+     boolean dead(){
+-        return unit == null || !unit.isValid();
++        return unit.isNull() || !unit.isValid();
+     }
+ 
+     String ip(){
+diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
+index 49146f701cf0e681f12afa3c90d8f9d64d14c67f..41bcbf240ab2ffd1d0cce051b18f59925cfd69d5 100644
+--- a/core/src/mindustry/input/InputHandler.java
++++ b/core/src/mindustry/input/InputHandler.java
+@@ -116,9 +116,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+     private WidgetGroup group = new WidgetGroup();
+ 
+     private final Eachable<BuildPlan> allPlans = cons -> {
+-        if(!player.dead()){
+-            player.unit().plans().each(cons);
+-        }
++        player.unit().plans().each(cons);
+         selectPlans.each(cons);
+         linePlans.each(cons);
+     };
+@@ -238,6 +236,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+     public static void commandUnits(Player player, int[] unitIds, @Nullable Building buildTarget, @Nullable Unit unitTarget, @Nullable Vec2 posTarget, boolean queueCommand, boolean finalBatch){
+         if(player == null || unitIds == null) return;
+ 
++        //why did I ever think this was a good idea
++        if(unitTarget != null && unitTarget.isNull()) unitTarget = null;
++
+         if(net.server() && !netServer.admins.allowAction(player, ActionType.commandUnits, event -> {
+             event.unitIDs = unitIds;
+         })){
+@@ -259,7 +260,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+                 }
+ 
+                 if(teamTarget != null && teamTarget.team() != player.team() &&
+-                !(teamTarget instanceof Unit u && !unit.canTarget(u)) && !(teamTarget instanceof Building && !unit.type.targetGround)){
++                    !(teamTarget instanceof Unit u && !unit.canTarget(u)) && !(teamTarget instanceof Building && !unit.type.targetGround)){
+ 
+                     anyCommandedTarget = true;
+                     if(queueCommand){
+@@ -281,7 +282,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+                 if(ai.commandQueue.size <= 0){
+                     ai.group = null;
+                 }
+-
++                
+                 //remove when other player command
+                 if(!headless && player != Vars.player){
+                     control.input.selectedUnits.remove(unit);
+@@ -488,6 +489,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+ 
+     @Remote(targets = Loc.server, called = Loc.server)
+     public static void pickedUnitPayload(Unit unit, Unit target){
++        if(target == Nulls.unit) return;
++
+         if(target != null && unit instanceof Payloadc pay){
+             pay.pickup(target);
+         }else if(target != null){
+@@ -596,7 +599,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         if(build == null) return;
+ 
+         if(net.server() && (!Units.canInteract(player, build) ||
+-        !netServer.admins.allowAction(player, ActionType.rotate, build.tile(), action -> action.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4)))){
++            !netServer.admins.allowAction(player, ActionType.rotate, build.tile(), action -> action.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4)))){
+             throw new ValidateException(player, "Player cannot rotate a block.");
+         }
+ 
+@@ -615,7 +618,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         if(build == null) return;
+ 
+         if(net.server() && (!Units.canInteract(player, build) ||
+-        !netServer.admins.allowAction(player, ActionType.configure, build.tile, action -> action.config = value))){
++            !netServer.admins.allowAction(player, ActionType.configure, build.tile, action -> action.config = value))){
+ 
+             if(player.con != null){
+                 var packet = new TileConfigCallPacket(); //undo the config on the client
+@@ -694,7 +697,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+ 
+             player.unit(unit);
+ 
+-            if(before != null){
++            if(before != null && !before.isNull()){
+                 if(before.spawnedByCore){
+                     unit.dockedType = before.type;
+                 }else if(before.dockedType != null && before.dockedType.coreUnitDock){
+@@ -809,9 +812,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         }
+ 
+         playerPlanTree.clear();
+-        if(!player.dead()){
+-            player.unit().plans.each(playerPlanTree::insert);
+-        }
++        player.unit().plans.each(playerPlanTree::insert);
+ 
+         player.typing = ui.chatfrag.shown();
+ 
+@@ -823,7 +824,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+             player.unit().updateBuilding(isBuilding);
+         }
+ 
+-        if(!player.dead() && player.shooting && !wasShooting && player.unit().hasWeapons() && state.rules.unitAmmo && !player.team().rules().infiniteAmmo && player.unit().ammo <= 0){
++        if(player.shooting && !wasShooting && player.unit().hasWeapons() && state.rules.unitAmmo && !player.team().rules().infiniteAmmo && player.unit().ammo <= 0){
+             player.unit().type.weapons.first().noAmmoSound.at(player.unit());
+         }
+ 
+@@ -1672,9 +1673,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+ 
+     boolean canMine(Tile tile){
+         return !Core.scene.hasMouse()
+-        && player.unit().validMine(tile)
+-        && player.unit().acceptsItem(player.unit().getMineResult(tile))
+-        && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
++            && player.unit().validMine(tile)
++            && player.unit().acceptsItem(player.unit().getMineResult(tile))
++            && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
+     }
+ 
+     /** Returns the tile at the specified MOUSE coordinates. */
+@@ -1840,7 +1841,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+ 
+     public boolean canShoot(){
+         return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
+-        !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
++            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
+     }
+ 
+     public boolean onConfigurable(){
+@@ -1866,7 +1867,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         ItemStack stack = player.unit().stack;
+ 
+         if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
+-        build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
++                build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
+ 
+             if(!(state.rules.onlyDepositCore && !(build instanceof CoreBuild)) && itemDepositCooldown <= 0f){
+                 Call.transferInventory(player, build);
+diff --git a/core/src/mindustry/input/MobileInput.java b/core/src/mindustry/input/MobileInput.java
+index ce16f8d91596a937835b7ab55977be5ea490df76..2d0fc1bec1fb644a44e4b38e2cdab671e44ac9af 100644
+--- a/core/src/mindustry/input/MobileInput.java
++++ b/core/src/mindustry/input/MobileInput.java
+@@ -90,7 +90,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+     void checkTargets(float x, float y){
+         Unit unit = Units.closestEnemy(player.team(), x, y, 20f, u -> !u.dead);
+ 
+-        if(unit != null && !player.dead() && player.unit().type.canAttack){
++        if(unit != null && player.unit().type.canAttack){
+             player.unit().mineTile = null;
+             target = unit;
+         }else{
+@@ -126,21 +126,18 @@ public class MobileInput extends InputHandler implements GestureListener{
+             }
+         }
+ 
+-        if(!player.dead()){
+-            for(var plan : player.unit().plans()){
+-                Tile other = world.tile(plan.x, plan.y);
++        for(var plan : player.unit().plans()){
++            Tile other = world.tile(plan.x, plan.y);
+ 
+-                if(other == null || plan.breaking) continue;
++            if(other == null || plan.breaking) continue;
+ 
+-                r1.setSize(plan.block.size * tilesize);
+-                r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);
++            r1.setSize(plan.block.size * tilesize);
++            r1.setCenter(other.worldx() + plan.block.offset, other.worldy() + plan.block.offset);
+ 
+-                if(r2.overlaps(r1)){
+-                    return true;
+-                }
++            if(r2.overlaps(r1)){
++                return true;
+             }
+         }
+-
+         return false;
+     }
+ 
+@@ -266,7 +263,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+     }
+ 
+     boolean showCancel(){
+-        return !player.dead() && (player.unit().isBuilding() || block != null || mode == breaking || !selectPlans.isEmpty()) && !hasSchem();
++        return (player.unit().isBuilding() || block != null || mode == breaking || !selectPlans.isEmpty()) && !hasSchem();
+     }
+ 
+     boolean hasSchem(){
+@@ -280,9 +277,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+             t.visible(this::showCancel);
+             t.bottom().left();
+             t.button("@cancel", Icon.cancel, () -> {
+-                if(!player.dead()){
+-                    player.unit().clearBuilding();
+-                }
++                player.unit().clearBuilding();
+                 selectPlans.clear();
+                 mode = none;
+                 block = null;
+@@ -869,7 +864,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+             }
+         }
+ 
+-        if(player.shooting && !player.dead() && (player.unit().activelyBuilding() || player.unit().mining())){
++        if(player.shooting && (player.unit().activelyBuilding() || player.unit().mining())){
+             player.shooting = false;
+         }
+     }
+@@ -1042,7 +1037,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+         unit.movePref(movement);
+ 
+         //update shooting if not building + not mining
+-        if(!unit.activelyBuilding() && unit.mineTile == null){
++        if(!player.unit().activelyBuilding() && player.unit().mineTile == null){
+ 
+             //autofire targeting
+             if(manualShooting){
+@@ -1051,7 +1046,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+             }else if(target == null){
+                 player.shooting = false;
+                 if(Core.settings.getBool("autotarget") && !(player.unit() instanceof BlockUnitUnit u && u.tile() instanceof ControlBlock c && !c.shouldAutoTarget())){
+-                    if(unit.type.canAttack){
++                    if(player.unit().type.canAttack){
+                         target = Units.closestTarget(unit.team, unit.x, unit.y, range, u -> u.checkTarget(type.targetAir, type.targetGround), u -> type.targetGround);
+                     }
+ 
+diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
+index c02ceb4ae69d9f7e5bea93df94c546d7a06cd1e2..70d1543c366b4eeef80c67f4eaeb05643c93451e 100644
+--- a/core/src/mindustry/io/TypeIO.java
++++ b/core/src/mindustry/io/TypeIO.java
+@@ -279,7 +279,7 @@ public class TypeIO{
+     }
+ 
+     public static void writeUnit(Writes write, Unit unit){
+-        write.b(unit == null ? 0 : unit instanceof BlockUnitc ? 1 : 2);
++        write.b(unit == null || unit.isNull() ? 0 : unit instanceof BlockUnitc ? 1 : 2);
+ 
+         //block units are special
+         if(unit instanceof BlockUnitc){
+@@ -295,14 +295,15 @@ public class TypeIO{
+         byte type = read.b();
+         int id = read.i();
+         //nothing
+-        if(type == 0) return null;
++        if(type == 0) return Nulls.unit;
+         if(type == 2){ //standard unit
+-            return Groups.unit.getByID(id);
++            Unit unit = Groups.unit.getByID(id);
++            return unit == null ? Nulls.unit : unit;
+         }else if(type == 1){ //block
+             Building tile = world.build(id);
+-            return tile instanceof ControlBlock cont ? cont.unit() : null;
++            return tile instanceof ControlBlock cont ? cont.unit() : Nulls.unit;
+         }
+-        return null;
++        return Nulls.unit;
+     }
+ 
+     public static void writeCommand(Writes write, @Nullable UnitCommand command){
+diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
+index 481895ea4c5ee3a88bd5329593a9a0d9104e8458..8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c 100644
+--- a/core/src/mindustry/logic/LExecutor.java
++++ b/core/src/mindustry/logic/LExecutor.java
+@@ -1242,7 +1242,7 @@ public class LExecutor{
+                         result.setobj(units == null || i < 0 || i >= units.size ? null : units.get(i));
+                     }
+                 }
+-                case player -> result.setobj(i < 0 || i >= data.players.size ? null : data.players.get(i).unit());
++                case player -> result.setobj(i < 0 || i >= data.players.size || data.players.get(i).unit().isNull() ? null : data.players.get(i).unit());
+                 case core -> result.setobj(i < 0 || i >= data.cores.size ? null : data.cores.get(i));
+                 case build -> {
+                     Block block = extra.obj() instanceof Block b ? b : null;
+diff --git a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
+index 54a36cde6eee102c9c8f3bfd5e4c76a2f4d0f1e1..84f5bc221c2f1846d831acf4abf902b15bfc1c59 100644
+--- a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
++++ b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
+@@ -152,7 +152,7 @@ public class BlockInventoryFragment{
+ 
+                 container.add(i);
+ 
+-                Boolp canPick = () -> !player.dead() && player.unit().acceptsItem(item) && !state.isPaused() && player.within(build, itemTransferRange);
++                Boolp canPick = () -> player.unit().acceptsItem(item) && !state.isPaused() && player.within(build, itemTransferRange);
+ 
+                 HandCursorListener l = new HandCursorListener();
+                 l.enabled = canPick;
+diff --git a/core/src/mindustry/ui/fragments/HintsFragment.java b/core/src/mindustry/ui/fragments/HintsFragment.java
+index 77d333511979770e66f834a16267bc45674fb9fb..75528b9923e9128933494bf383e340934219bb65 100644
+--- a/core/src/mindustry/ui/fragments/HintsFragment.java
++++ b/core/src/mindustry/ui/fragments/HintsFragment.java
+@@ -167,7 +167,7 @@ public class HintsFragment{
+         zoom(visibleDesktop, () -> Core.input.axis(KeyCode.scroll) != 0),
+         breaking(() -> isTutorial.get() && state.rules.defaultTeam.data().getCount(Blocks.conveyor) > 5, () -> ui.hints.events.contains("break")),
+         desktopShoot(visibleDesktop, () -> isSerpulo() && Vars.state.enemies > 0, () -> player.shooting),
+-        depositItems(() -> !player.dead() && player.unit().hasItem(), () -> !player.dead() && !player.unit().hasItem()),
++        depositItems(() -> player.unit().hasItem(), () -> !player.unit().hasItem()),
+         desktopPause(visibleDesktop, () -> isTutorial.get() && !Vars.net.active() && state.wave >= 2, () -> Core.input.keyTap(Binding.pause)),
+         unitControl(() -> isSerpulo() && state.rules.defaultTeam.data().units.size > 2 && !net.active() && !player.dead(), () -> !player.dead() && !player.unit().spawnedByCore),
+         unitSelectControl(() -> isSerpulo() && state.rules.defaultTeam.data().units.size > 3 && !net.active() && !player.dead(),
+@@ -179,8 +179,8 @@ public class HintsFragment{
+         boost(visibleDesktop, () -> !player.dead() && player.unit().type.canBoost, () -> Core.input.keyDown(Binding.boost)),
+         blockInfo(() -> !(state.isCampaign() && state.rules.sector == SectorPresets.groundZero.sector && state.wave < 3), () -> ui.content.isShown()),
+         derelict(() -> ui.hints.events.contains("derelictmouse") && !isTutorial.get(), () -> ui.hints.events.contains("derelictbreak")),
+-        payloadPickup(() -> isSerpulo() && !player.dead() && player.unit() instanceof Payloadc p && p.payloads().isEmpty(), () -> player.unit() instanceof Payloadc p && p.payloads().any()),
+-        payloadDrop(() -> !player.dead() && player.unit() instanceof Payloadc p && p.payloads().any(), () -> player.unit() instanceof Payloadc p && p.payloads().isEmpty()),
++        payloadPickup(() -> isSerpulo() && !player.unit().dead && player.unit() instanceof Payloadc p && p.payloads().isEmpty(), () -> player.unit() instanceof Payloadc p && p.payloads().any()),
++        payloadDrop(() -> !player.unit().dead && player.unit() instanceof Payloadc p && p.payloads().any(), () -> player.unit() instanceof Payloadc p && p.payloads().isEmpty()),
+         waveFire(() -> Groups.fire.size() > 0 && Blocks.wave.unlockedNow(), () -> indexer.getFlagged(state.rules.defaultTeam, BlockFlag.extinguisher).size > 0),
+         generator(() -> control.input.block == Blocks.combustionGenerator, () -> ui.hints.placedBlocks.contains(Blocks.combustionGenerator)),
+         rebuildSelect(() -> state.rules.defaultTeam.data().plans.size >= 10, () -> control.input.isRebuildSelecting()),
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index 70a1d1527966d34cef0fbc2b2f5dd8a4e9f67817..23d4ad03c71131265f82478a0285110cdf71059d 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -767,7 +767,7 @@ public class HudFragment{
+                 }
+             });
+ 
+-            t.add(new SideBar(() -> player.dead() ? 0f : player.unit().healthf(), () -> true, true)).width(bw).growY().padRight(pad);
++            t.add(new SideBar(() -> player.unit().healthf(), () -> true, true)).width(bw).growY().padRight(pad);
+             t.image(() -> player.icon()).scaling(Scaling.bounded).grow().maxWidth(54f);
+             t.add(new SideBar(() -> player.dead() ? 0f : player.displayAmmo() ? player.unit().ammof() : player.unit().healthf(), () -> !player.displayAmmo(), false)).width(bw).growY().padLeft(pad).update(b -> {
+                 b.color.set(player.displayAmmo() ? player.dead() || player.unit() instanceof BlockUnitc ? Pal.ammo : player.unit().type.ammoType.color() : Pal.health);

@@ -18,7 +18,7 @@ Content-Transfer-Encoding: 8bit
  7 files changed, 64 insertions(+), 22 deletions(-)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 2d3089584fde7a58b4677bea9033db44edaac812..0205466b46c0a475692a2edef326fa996eb81038 100644
+index 7e2e9c0bb009a9a6360427178fd7f2c3759481ca..4b2dfebc198217e2ae699c405edfa501b5f15a19 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -91,6 +91,11 @@ setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减
