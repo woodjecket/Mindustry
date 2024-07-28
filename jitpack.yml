@@ -5,6 +5,7 @@ install:
   - git submodule update --init --recursive --depth 2000
   - git config --global user.email "ci@noreply.example.com"
   - git config --global user.name "jitpack"
-  - sh ./scripts/applyPatches.sh && cd work/
+  - cd work
+  - sh ../scripts/applyPatches.sh
   - ./gradlew publishToMavenLocal
   - echo -n > gradle.properties #zero out gradle.properties

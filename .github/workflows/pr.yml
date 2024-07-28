@@ -21,7 +21,7 @@ jobs:
       run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions"
-        ./scripts/applyPatches.sh
+        cd work && ../scripts/applyPatches.sh
 
     - name: Run unit tests and build JAR
       run: cd ./work && ./gradlew test server:dist
