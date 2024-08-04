@@ -9,29 +9,29 @@ Content-Transfer-Encoding: 8bit
 更多统计信息
 way-zer <himc.wicp@gmail.com> on 2024/7/21
 ---
- .../arc/graphics/g2d/MySortedSpriteBatch.java | 27 +++++++++++++++++++
- core/src/mindustry/ClientLauncher.java        |  3 ++-
+ core/src/arc/graphics/g2d/MySpriteBatch.java  | 26 +++++++++++++++++++
+ core/src/mindustry/ClientLauncher.java        |  2 +-
  core/src/mindustry/core/Logic.java            |  3 +++
  .../mindustry/ui/fragments/HudFragment.java   |  7 +++++
  core/src/mindustryX/Hooks.java                |  1 +
  core/src/mindustryX/features/DebugUtil.java   | 21 +++++++++++++++
- 6 files changed, 61 insertions(+), 1 deletion(-)
- create mode 100644 core/src/arc/graphics/g2d/MySortedSpriteBatch.java
+ 6 files changed, 59 insertions(+), 1 deletion(-)
+ create mode 100644 core/src/arc/graphics/g2d/MySpriteBatch.java
  create mode 100644 core/src/mindustryX/features/DebugUtil.java
 
-diff --git a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
+diff --git a/core/src/arc/graphics/g2d/MySpriteBatch.java b/core/src/arc/graphics/g2d/MySpriteBatch.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..feca84a8eec0f7d514f9aa6be6f82134d8622721
+index 0000000000000000000000000000000000000000..e2bdb30e190a210f25130c423c853892798e4c28
 --- /dev/null
-+++ b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
-@@ -0,0 +1,27 @@
++++ b/core/src/arc/graphics/g2d/MySpriteBatch.java
+@@ -0,0 +1,26 @@
 +package arc.graphics.g2d;
 +
 +import arc.graphics.*;
 +import mindustryX.features.*;
 +
 +//MDTX: add some DebugUtil count.
-+public class MySortedSpriteBatch extends SortedSpriteBatch{
++public class MySpriteBatch extends SpriteBatch{
 +    @Override
 +    protected void flush(){
 +        DebugUtil.lastFlushCount++;
@@ -40,8 +40,7 @@ index 0000000000000000000000000000000000000000..feca84a8eec0f7d514f9aa6be6f82134
 +
 +    @Override
 +    protected void flushRequests(){
-+        if(flushing) return;
-+        DebugUtil.lastVertices += numVertices / 6;
++        DebugUtil.lastVertices += requestVertOffset / 6;
 +        DebugUtil.lastDrawRequests += numRequests;
 +        super.flushRequests();
 +    }
@@ -53,28 +52,20 @@ index 0000000000000000000000000000000000000000..feca84a8eec0f7d514f9aa6be6f82134
 +    }
 +}
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 01c14129869a0b38fe0943b0172db597e3b491a5..7c897514ef279333ed007b17a7b4c242880d8b22 100644
+index 6042c38333736e5cb7d33db2e3effa8a1e261ca5..068a243ba87023201aaf0c287e9ee35341e312a3 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -20,6 +20,7 @@ import mindustry.maps.*;
- import mindustry.mod.*;
- import mindustry.net.*;
- import mindustry.ui.*;
-+import mindustryX.features.*;
- 
- import static arc.Core.*;
- import static mindustry.Vars.*;
-@@ -70,7 +71,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -70,7 +70,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          });
  
          UI.loadColors();
--        batch = new SortedSpriteBatch();
-+        batch = new MySortedSpriteBatch();
+-        batch = new SpriteBatch();
++        batch = new MySpriteBatch();
          assets = new AssetManager();
          assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
  
 diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
-index 7d1a7bb5b951ab9b07c0ad8edfd83e75e57ad751..784e1b493873ee74cd95bae4b1da54ba7d780bd3 100644
+index 59f9b3cdcd0a11e30959e5f8ba2a1cbcaf472cff..788f23d4a1a3b498a0f451f90c426a1b86516e5c 100644
 --- a/core/src/mindustry/core/Logic.java
 +++ b/core/src/mindustry/core/Logic.java
 @@ -16,6 +16,7 @@ import mindustry.type.*;
@@ -85,7 +76,7 @@ index 7d1a7bb5b951ab9b07c0ad8edfd83e75e57ad751..784e1b493873ee74cd95bae4b1da54ba
  
  import java.util.*;
  
-@@ -414,6 +415,7 @@ public class Logic implements ApplicationListener{
+@@ -415,6 +416,7 @@ public class Logic implements ApplicationListener{
  
      @Override
      public void update(){
@@ -93,7 +84,7 @@ index 7d1a7bb5b951ab9b07c0ad8edfd83e75e57ad751..784e1b493873ee74cd95bae4b1da54ba
          Events.fire(Trigger.update);
          universe.updateGlobal();
  
-@@ -497,6 +499,7 @@ public class Logic implements ApplicationListener{
+@@ -498,6 +500,7 @@ public class Logic implements ApplicationListener{
          }else if(netServer.isWaitingForPlayers() && runStateCheck){
              checkGameState();
          }

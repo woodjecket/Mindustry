@@ -51,7 +51,7 @@ index 63f413ea5fe200cd88c48bb5efeca4ffe342f438..c2e653f692f743e6ef33a647002f68b5
              mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
          return mods;
 diff --git a/gradle.properties b/gradle.properties
-index 81861490f166f3f5af54997d6bb1ac8adedff122..85ffb7703a2f41e9ec9d7c4681158d00e12add6c 100644
+index 82e277deb64d1f368ec2dfc6b02ef2011c8c7370..27667713782de440711293558d22979f28458fe0 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -18,7 +18,7 @@ kapt.use.worker.api=true
@@ -62,4 +62,4 @@ index 81861490f166f3f5af54997d6bb1ac8adedff122..85ffb7703a2f41e9ec9d7c4681158d00
 +#kotlin.stdlib.default.dependency=false
  #needed for android compilation
  android.useAndroidX=true
- # AGP 8 update
+ org.gradle.caching=true

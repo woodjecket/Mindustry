@@ -173,13 +173,13 @@ index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129
          buffer.put((byte)state.rules.mode().ordinal());
          buffer.putInt(netServer.admins.getPlayerLimit());
 diff --git a/gradle.properties b/gradle.properties
-index 16ce1c54512959ff201113c746e222291fdb11ff..81861490f166f3f5af54997d6bb1ac8adedff122 100644
+index 048ee4d9efe3907eacdd135f80bc38bc7d97c605..82e277deb64d1f368ec2dfc6b02ef2011c8c7370 100644
 --- a/gradle.properties
 +++ b/gradle.properties
-@@ -29,3 +29,5 @@ org.gradle.internal.http.socketTimeout=100000
+@@ -27,3 +27,5 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=96cd86d08a
+ archash=6676d38433
 +
-+upstreamBuild=25136
++upstreamBuild=25162
 \ No newline at end of file

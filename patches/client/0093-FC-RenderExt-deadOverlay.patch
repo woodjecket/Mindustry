@@ -31,7 +31,7 @@ index 8346eb94d62f3d9cb57e4f63ed39ac34cb07c84d..fe8d7dc18df91b5f8484e87f0d37ab8d
          InputHandler input = control.input;
  
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 65256e11a2cdfd785b96dcff619fac0a615ea0ac..269e2571a440517f257237920a5155a9eb5032a2 100644
+index d2d9a53895e5d44302b6532307d12d26ad876970..bd74e46042b9d40a5bd3e7eb6f4ae3ca60cc8840 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -41,6 +41,7 @@ public class RenderExt{
@@ -42,7 +42,7 @@ index 65256e11a2cdfd785b96dcff619fac0a615ea0ac..269e2571a440517f257237920a5155a9
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -82,6 +83,7 @@ public class RenderExt{
+@@ -81,6 +82,7 @@ public class RenderExt{
              drawBarsMend = Core.settings.getBool("blockBars_mend");
              healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
              payloadPreview = Core.settings.getBool("payloadpreview");

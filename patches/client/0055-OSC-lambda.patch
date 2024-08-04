@@ -68,10 +68,10 @@ index 659112d57a88c0550f161849111a196fba503d03..4050fbd3bfb3365d671c20cf5787e76a
                  result = e;
                  cdist = cost;
 diff --git a/core/src/mindustry/entities/bullet/BulletType.java b/core/src/mindustry/entities/bullet/BulletType.java
-index 85bd903395a602ebe91efd42ad743cbdb316d5fb..f817e6e8c42c12c8310189ff3c6c5fe6c05acf43 100644
+index 74fb8a7365206ff4ac557ebd4c19d584a3a7db1a..39ae758712d7c44e3831ff42b7b3eb769f15a62e 100644
 --- a/core/src/mindustry/entities/bullet/BulletType.java
 +++ b/core/src/mindustry/entities/bullet/BulletType.java
-@@ -621,6 +621,7 @@ public class BulletType extends Content implements Cloneable{
+@@ -628,6 +628,7 @@ public class BulletType extends Content implements Cloneable{
          }
      }
  
@@ -79,7 +79,7 @@ index 85bd903395a602ebe91efd42ad743cbdb316d5fb..f817e6e8c42c12c8310189ff3c6c5fe6
      public void updateHoming(Bullet b){
          if(homingPower > 0.0001f && b.time >= homingDelay){
              float realAimX = b.aimX < 0 ? b.x : b.aimX;
-@@ -628,20 +629,22 @@ public class BulletType extends Content implements Cloneable{
+@@ -635,20 +636,22 @@ public class BulletType extends Content implements Cloneable{
  
              Teamc target;
              //home in on allies if possible
@@ -107,7 +107,7 @@ index 85bd903395a602ebe91efd42ad743cbdb316d5fb..f817e6e8c42c12c8310189ff3c6c5fe6
              if(target != null){
                  b.vel.setAngle(Angles.moveToward(b.rotation(), b.angleTo(target), homingPower * Time.delta * 50f));
 diff --git a/core/src/mindustry/graphics/LightRenderer.java b/core/src/mindustry/graphics/LightRenderer.java
-index a0cab5c03ea751a90a4bedb198af313c8c8d61b1..9e542b5c6b678e4ee464f0d384ae28249fb9c57d 100644
+index 7c30b947965d0b29a2cabadf7d2ffa4ce03456f9..b3513f16a28ef923685974f78543973b95e33bac 100644
 --- a/core/src/mindustry/graphics/LightRenderer.java
 +++ b/core/src/mindustry/graphics/LightRenderer.java
 @@ -8,6 +8,7 @@ import arc.math.*;
@@ -307,7 +307,7 @@ index a0cab5c03ea751a90a4bedb198af313c8c8d61b1..9e542b5c6b678e4ee464f0d384ae2824
              float rot = Mathf.angleExact(x2 - x, y2 - y);
 -            TextureRegion ledge = Core.atlas.find("circle-end"), lmid = Core.atlas.find("circle-mid");
 -
-             float color = Draw.getColor().toFloatBits();
+             float color = Draw.getColorPacked();
              float u = lmid.u;
              float v = lmid.v2;
 @@ -178,60 +294,6 @@ public class LightRenderer{

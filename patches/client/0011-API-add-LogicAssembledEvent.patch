@@ -34,7 +34,7 @@ index 6f65e9981f2291d1c892c23f3ec8603aec8e3a4c..32133826223d3e4fe1be991c8abd3bc2
                  }
                  line ++;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index 3ca506e0e0ec45bf4bfbc58029e2db65673a4c60..9884b9846f06a48c4596ffa5f29f59279b3c21b7 100644
+index a27e35304befd452e741012aa23d6a59a9f30b54..a176f45e5d76ed8396f2d91cc1b25d528f78aefe 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
 @@ -20,6 +20,7 @@ import mindustry.logic.LogicFx.*;

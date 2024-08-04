@@ -52,15 +52,15 @@ index 95cce8bab650b7357a7b675ea34c04601a1ec66a..00000000000000000000000000000000
 -      - uses: actions/checkout@v4
 -      - uses: gradle/wrapper-validation-action@v2
 diff --git a/gradle.properties b/gradle.properties
-index 85ffb7703a2f41e9ec9d7c4681158d00e12add6c..9db1da94af1f4ffa5e487905fb718f4f0e57db68 100644
+index 27667713782de440711293558d22979f28458fe0..0447c5af5adeec02d0738a506c1e2cda0aced33e 100644
 --- a/gradle.properties
 +++ b/gradle.properties
-@@ -30,4 +30,5 @@ org.gradle.internal.http.connectionTimeout=100000
+@@ -28,4 +28,5 @@ org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=96cd86d08a
+ archash=6676d38433
  
--upstreamBuild=25136
+-upstreamBuild=25162
 \ No newline at end of file
-+upstreamBuild=25136
++upstreamBuild=25162
 +versionType=bleeding-edge
 \ No newline at end of file

@@ -50,7 +50,7 @@ index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4
      }
  }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a525592c16 100644
+index 766a0e295b0d165fb39014a2b51d43f70a23c48e..17eb52a168f9aef61edcdb31a5664dff3eedb6eb 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
@@ -61,7 +61,7 @@ index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a5
  
  import java.lang.reflect.*;
  import java.util.*;
-@@ -578,7 +579,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -586,7 +587,7 @@ public class Block extends UnlockableContent implements Senseable{
  
      public void addLiquidBar(Liquid liq){
          addBar("liquid-" + liq.name, entity -> !liq.unlockedNow() ? null : new Bar(
@@ -70,7 +70,7 @@ index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a5
              liq::barColor,
              () -> entity.liquids.get(liq) / liquidCapacity
          ));
-@@ -586,15 +587,19 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -594,15 +595,19 @@ public class Block extends UnlockableContent implements Senseable{
  
      /** Adds a liquid bar that dynamically displays a liquid type. */
      public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
@@ -95,7 +95,7 @@ index c1dde3fda61032c7e404f3ec3628a6fcfa3df9af..01098e5f4564f3e1e7491d34cbbca1a5
  
          if(consPower != null){
              boolean buffered = consPower.buffered;
-@@ -602,7 +607,11 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -610,7 +615,11 @@ public class Block extends UnlockableContent implements Senseable{
  
              addBar("power", entity -> new Bar(
                  () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :

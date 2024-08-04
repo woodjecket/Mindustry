@@ -122,10 +122,10 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c..51477ab08f78a14682ce4940195f9a4931e546ed 100644
+index fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2..a3c19189ecdb9fe1cf9220aa61e943d52d991c1a 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
-@@ -9,6 +9,7 @@ import arc.util.*;
+@@ -10,6 +10,7 @@ import arc.util.*;
  import mindustry.*;
  import mindustry.ai.types.*;
  import mindustry.annotations.Annotations.*;
@@ -133,7 +133,7 @@ index 8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c..51477ab08f78a14682ce4940195f9a49
  import mindustry.content.*;
  import mindustry.core.*;
  import mindustry.ctype.*;
-@@ -30,6 +31,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
+@@ -31,6 +32,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
  import mindustry.world.blocks.logic.MessageBlock.*;
  import mindustry.world.blocks.payloads.*;
  import mindustry.world.meta.*;
@@ -170,7 +170,7 @@ index 8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c..51477ab08f78a14682ce4940195f9a49
              switch(action){
                  case pan -> {
                      control.input.logicCutscene = true;
-@@ -1624,8 +1627,14 @@ public class LExecutor{
+@@ -1630,8 +1633,14 @@ public class LExecutor{
              }
  
              switch(type){
@@ -188,7 +188,7 @@ index 8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c..51477ab08f78a14682ce4940195f9a49
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index 9884b9846f06a48c4596ffa5f29f59279b3c21b7..256792039c9471b7ae130d07070e86e3b9766db6 100644
+index a176f45e5d76ed8396f2d91cc1b25d528f78aefe..f58d28a47532017a421c427fd27f27d2a4d6cb06 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
 @@ -21,6 +21,7 @@ import mindustry.type.*;

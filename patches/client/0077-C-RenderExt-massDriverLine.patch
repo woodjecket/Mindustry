@@ -8,7 +8,7 @@ Subject: [PATCH] C(RenderExt) massDriverLine
  1 file changed, 27 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index e3721adf4c7e215ef3b944512d4608922d22fd11..d4a39291133a960b3dc42e76d77d881ee2cf5539 100644
+index 4386f5f364e847324b147c44f8c8748fd5c16537..41bb25494e541e74e1112fd24ec0bce733707f30 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -30,7 +30,7 @@ index e3721adf4c7e215ef3b944512d4608922d22fd11..d4a39291133a960b3dc42e76d77d881e
 @@ -31,8 +33,12 @@ public class RenderExt{
      public static boolean logicDisplayNoBorder, arcDrillMode;
      public static int blockRenderLevel;
-     public static boolean renderSort, renderMerge;
+     public static boolean renderSort;
 +    public static boolean massDriverLine;
 +    public static int massDriverLineInterval;
  
@@ -40,16 +40,16 @@ index e3721adf4c7e215ef3b944512d4608922d22fd11..d4a39291133a960b3dc42e76d77d881e
      private static Effect placementEffect;
  
      public static void init(){
-@@ -63,6 +69,8 @@ public class RenderExt{
+@@ -62,6 +68,8 @@ public class RenderExt{
+             arcDrillMode = Core.settings.getBool("arcdrillmode");
              blockRenderLevel = Core.settings.getInt("blockRenderLevel");
              renderSort = Core.settings.getBool("renderSort");
-             renderMerge = Core.settings.getBool("renderMerge");
 +            massDriverLine = Core.settings.getBool("mass_driver_line");
 +            massDriverLineInterval = Core.settings.getInt("mass_driver_line_interval");
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -84,6 +92,8 @@ public class RenderExt{
+@@ -83,6 +91,8 @@ public class RenderExt{
              Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
          if(arcDrillMode && build instanceof DrillBuild drill)
              arcDrillModeDraw(block, drill);
@@ -58,7 +58,7 @@ index e3721adf4c7e215ef3b944512d4608922d22fd11..d4a39291133a960b3dc42e76d77d881e
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -127,4 +137,21 @@ public class RenderExt{
+@@ -126,4 +136,21 @@ public class RenderExt{
              Lines.arc(dx, dy, iconSize * 0.75f, eff);
          }
      }

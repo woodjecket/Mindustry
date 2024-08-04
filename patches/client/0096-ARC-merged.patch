@@ -630,7 +630,7 @@ index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf26
  
      /**
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index e29e267954380f9227dd3e7543ee94232c951389..dbb727b732244f80c372d1cf62afcb0c350ad5d1 100644
+index 6646df00e2c060899ec80ea5bde1e1fa444654a9..19c6566a3b96ef3c286a8ef78eb35f73abfb32dc 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
 +++ b/core/src/mindustry/entities/comp/PlayerComp.java
 @@ -21,6 +21,8 @@ import mindustry.net.Administration.*;
@@ -642,7 +642,7 @@ index e29e267954380f9227dd3e7543ee94232c951389..dbb727b732244f80c372d1cf62afcb0c
  import mindustry.world.blocks.storage.*;
  import mindustry.world.blocks.storage.CoreBlock.*;
  import mindustryX.events.*;
-@@ -301,7 +303,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+@@ -298,7 +300,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
          font.getData().setScale(0.25f / Scl.scl(1f));
          layout.setText(font, name);
  
@@ -651,7 +651,7 @@ index e29e267954380f9227dd3e7543ee94232c951389..dbb727b732244f80c372d1cf62afcb0c
              Draw.color(0f, 0f, 0f, 0.3f);
              Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);
              Draw.color();
-@@ -366,6 +368,24 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
+@@ -363,6 +365,24 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
          }
      }
  
@@ -967,7 +967,7 @@ index ea5060298da5e478b234e8d0575ab2ceedb5b6e6..e59bff905f7398b0eb3c780c0cda5a30
                  }
                  Draw.reset();
 diff --git a/core/src/mindustry/graphics/Drawf.java b/core/src/mindustry/graphics/Drawf.java
-index 44cbc6b38ede0697af8af3321c342c7f117bdcbd..ed4bd9d05114a32e45e18117e02c2a60976f1498 100644
+index db7db61dd56a71310f66aabbd9dc4a6d1a23dfd4..47fbc966aa01b76b3bd58d9eeb25a06f1c0e081f 100644
 --- a/core/src/mindustry/graphics/Drawf.java
 +++ b/core/src/mindustry/graphics/Drawf.java
 @@ -148,6 +148,13 @@ public class Drawf{
@@ -4210,7 +4210,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..0e6d6d3834e751851bccd15a3352317a
          }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc0a625695 100644
+index 17eb52a168f9aef61edcdb31a5664dff3eedb6eb..4d6c46d0cf24cfb993b6d9026572ba7b44afe238 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -368,7 +368,7 @@ public class Block extends UnlockableContent implements Senseable{
@@ -4222,7 +4222,7 @@ index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc
  
      protected TextureRegion[] generatedIcons;
      protected TextureRegion[] editorVariantRegions;
-@@ -490,6 +490,11 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -498,6 +498,11 @@ public class Block extends UnlockableContent implements Senseable{
              .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
      }
  
@@ -4234,7 +4234,7 @@ index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc
      public TextureRegion getDisplayIcon(Tile tile){
          return tile.build == null ? uiIcon : tile.build.getDisplayIcon();
      }
-@@ -546,7 +551,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -554,7 +559,7 @@ public class Block extends UnlockableContent implements Senseable{
              }
          }
  
@@ -4243,7 +4243,7 @@ index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc
              stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
              stats.add(Stat.buildCost, StatValues.items(false, requirements));
          }
-@@ -720,7 +725,12 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -728,7 +733,12 @@ public class Block extends UnlockableContent implements Senseable{
  
      public void drawPlan(BuildPlan plan, Eachable<BuildPlan> list, boolean valid, float alpha){
          Draw.reset();
@@ -4257,7 +4257,7 @@ index 01098e5f4564f3e1e7491d34cbbca1a525592c16..cb3874a23f5c4c612af25d78728032fc
          Draw.alpha(alpha);
          float prevScale = Draw.scl;
          Draw.scl *= plan.animScale;
-@@ -907,7 +917,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -915,7 +925,7 @@ public class Block extends UnlockableContent implements Senseable{
      }
  
      public boolean isPlaceable(){
@@ -4693,7 +4693,7 @@ index a55bc18a055c74d4e7de3332bd1315beb3c42a63..16ab256b1c5d8ac6c722a9c406dd2b53
      }
  }
 diff --git a/core/src/mindustry/world/blocks/storage/CoreBlock.java b/core/src/mindustry/world/blocks/storage/CoreBlock.java
-index c3d50f69d72df5f5e4d30a1e99d1bf7a78ebc627..92495f3bb3497c162b1b5cae2bc3b6b8b4b26061 100644
+index 15a80f0c6e61210c702cf42d672ebc24a6cfc0f6..a3feeffe80258f74116ab767bf1b12b386226b0e 100644
 --- a/core/src/mindustry/world/blocks/storage/CoreBlock.java
 +++ b/core/src/mindustry/world/blocks/storage/CoreBlock.java
 @@ -90,6 +90,7 @@ public class CoreBlock extends StorageBlock{
@@ -6278,7 +6278,7 @@ index 0000000000000000000000000000000000000000..b3bf32d2d3da28f6adc38c56ea3d2440
 +    }
 +}
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 269e2571a440517f257237920a5155a9eb5032a2..93583a5386d0702d886d8c70ce9ed3b0f125cfe4 100644
+index bd74e46042b9d40a5bd3e7eb6f4ae3ca60cc8840..b4480893703144f38eb958f4ceff741c04968fbe 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -9,12 +9,14 @@ import arc.util.*;
@@ -6313,7 +6313,7 @@ index 269e2571a440517f257237920a5155a9eb5032a2..93583a5386d0702d886d8c70ce9ed3b0
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -84,6 +89,9 @@ public class RenderExt{
+@@ -83,6 +88,9 @@ public class RenderExt{
              healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
              payloadPreview = Core.settings.getBool("payloadpreview");
              deadOverlay = Core.settings.getBool("deadOverlay");
@@ -6323,7 +6323,7 @@ index 269e2571a440517f257237920a5155a9eb5032a2..93583a5386d0702d886d8c70ce9ed3b0
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -109,6 +117,8 @@ public class RenderExt{
+@@ -108,6 +116,8 @@ public class RenderExt{
              drawMassDriverLine(b);
          if(build != null && drawBars)
              drawBars(build);
@@ -6332,7 +6332,7 @@ index 269e2571a440517f257237920a5155a9eb5032a2..93583a5386d0702d886d8c70ce9ed3b0
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -197,7 +207,7 @@ public class RenderExt{
+@@ -196,7 +206,7 @@ public class RenderExt{
          if(buildRatio >= 0){
              drawBar(build, Color.black, Pal.accent, buildRatio);
              String progressT = Strings.format("[stat]@% | @s", (int)(Mathf.clamp(buildRatio, 0f, 1f) * 100), leftTime < 0 ? Iconc.cancel : Strings.fixed(leftTime / (60f * Vars.state.rules.unitBuildSpeed(build.team) * build.timeScale()), 0));

@@ -10,7 +10,7 @@ Subject: [PATCH] API: add PlayerTeamChangedEvent
  create mode 100644 core/src/mindustryX/events/PlayerTeamChangedEvent.java
 
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index 4d038e00d0ec3461746471f281db77beb04accb6..e29e267954380f9227dd3e7543ee94232c951389 100644
+index fee7e8c71fc07f8cbea36997afc8a4fda8c8c3f1..6646df00e2c060899ec80ea5bde1e1fa444654a9 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
 +++ b/core/src/mindustry/entities/comp/PlayerComp.java
 @@ -23,6 +23,7 @@ import mindustry.net.Packets.*;

@@ -127,7 +127,7 @@ index 6fe8e90722ef740148d337a09754febd47a7ab10..8a6de353e073b653abfd14a261090570
          public void write(Writes write){
              super.write(write);
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 2663365fc253a5eee6113ff6070b3624bfdceaf6..0de0b62d119ca4befb1612374f96690b3434b6b3 100644
+index 0ec2e16bcd63482b2d3a24a50d8700b2f6b33afe..fa11e9f00f1e62b7bfb78067d1da88e405f91ab3 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 @@ -17,6 +17,7 @@ import mindustry.input.*;
@@ -138,7 +138,7 @@ index 2663365fc253a5eee6113ff6070b3624bfdceaf6..0de0b62d119ca4befb1612374f96690b
  
  import static mindustry.Vars.*;
  
-@@ -354,6 +355,20 @@ public class ItemBridge extends Block{
+@@ -356,6 +357,20 @@ public class ItemBridge extends Block{
          public void draw(){
              super.draw();
  

@@ -150,7 +150,7 @@ index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..d0e444a4a7a9ced372a2c93102860991
              Core.camera.width, Core.camera.height
              );
 diff --git a/core/src/mindustry/core/NetServer.java b/core/src/mindustry/core/NetServer.java
-index 5f4be7102424474dde9e91ba7331fbd077a10445..0bbcce38fe9a5b4d2d7429547990b690fcc5b392 100644
+index 3558877cbbc3cfd75e78dd6db18a78db701aef4f..3980dfc6b9fe1032c1da45da3a0d1ac7ca092265 100644
 --- a/core/src/mindustry/core/NetServer.java
 +++ b/core/src/mindustry/core/NetServer.java
 @@ -98,7 +98,7 @@ public class NetServer implements ApplicationListener{
@@ -265,7 +265,7 @@ index 37b7bb7a2b9c4feaac6932abbcb06eb38185cbfb..fdba35a7379ad5c46c3b39adde05f532
      <T extends Entityc> T self(){
          return (T)this;
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index 0ed2a11ad4a242a5515cead2bfc452ac927062aa..4d038e00d0ec3461746471f281db77beb04accb6 100644
+index 834d4c239aa261afd9828f0b4d17a97fb8809621..fee7e8c71fc07f8cbea36997afc8a4fda8c8c3f1 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
 +++ b/core/src/mindustry/entities/comp/PlayerComp.java
 @@ -33,7 +33,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
@@ -655,7 +655,7 @@ index c02ceb4ae69d9f7e5bea93df94c546d7a06cd1e2..70d1543c366b4eeef80c67f4eaeb0564
  
      public static void writeCommand(Writes write, @Nullable UnitCommand command){
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 481895ea4c5ee3a88bd5329593a9a0d9104e8458..8ccfd4627f296b5cd2058fb11ab6f1ab92a41a7c 100644
+index 4a977b3dcde31c824908cda422c20386b66bc254..fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -1242,7 +1242,7 @@ public class LExecutor{

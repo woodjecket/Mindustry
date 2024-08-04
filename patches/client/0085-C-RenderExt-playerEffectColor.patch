@@ -32,7 +32,7 @@ index ad69511c62759552d9611ed901d0ef8bc4accbc8..17009f955dd1f407bdfa3c9731daba67
                  case 0 -> "关闭";
                  case 1 -> "虚圆";
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 038ce925395842f49a603c6b226c3210b0370543..e499bbee122b00d8a094df477924677a91b50323 100644
+index 9c0cdc44d75e857cdb5711fd9930767fe4ed19a0..20bf23e68ce8e751b66905b022c54aa2f72d9862 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -42,6 +42,7 @@ public class RenderExt{

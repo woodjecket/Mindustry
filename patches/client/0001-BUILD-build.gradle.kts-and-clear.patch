@@ -15,7 +15,6 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  core/build.gradle                             |   2 -
  core/build.gradle.kts                         |  64 ++++
  desktop/build.gradle                          | 164 +---------
- gradle.properties                             |   2 +
  gradle/wrapper/gradle-wrapper.jar             | Bin 59203 -> 43462 bytes
  gradlew                                       | 282 +++++++++++-------
  gradlew.bat                                   |  35 ++-
@@ -24,7 +23,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 18 files changed, 384 insertions(+), 611 deletions(-)
+ 17 files changed, 382 insertions(+), 611 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -844,19 +843,6 @@ index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..b63f4a3ca7964f41f02a3fa12a068f85
 -}
 +}
 \ No newline at end of file
-diff --git a/gradle.properties b/gradle.properties
-index 827c8445c4ac9ea773041bba50235598c3604fe1..16ce1c54512959ff201113c746e222291fdb11ff 100644
---- a/gradle.properties
-+++ b/gradle.properties
-@@ -21,6 +21,8 @@ kapt.include.compile.classpath=false
- kotlin.stdlib.default.dependency=false
- #needed for android compilation
- android.useAndroidX=true
-+# AGP 8 update
-+android.enableR8.fullMode=false
- org.gradle.caching=true
- #used for slow jitpack builds; TODO see if this actually works
- org.gradle.internal.http.socketTimeout=100000
 diff --git a/gradle/wrapper/gradle-wrapper.jar b/gradle/wrapper/gradle-wrapper.jar
 index e708b1c023ec8b20f512888fe07c5bd3ff77bb8f..d64cd4917707c1f8861d8cb53dd15194d4248596 100644
 GIT binary patch

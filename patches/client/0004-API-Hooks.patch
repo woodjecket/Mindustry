@@ -12,7 +12,7 @@ Subject: [PATCH] API: Hooks
  create mode 100644 core/src/mindustryX/Hooks.java
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 2a7b133588279145272136f6aa2a02276f34d824..fa6e5c5b52cfdb83de5b50539d57c579aa6e0c95 100644
+index 2e8d7396c1ac3eea65a6d0fa8bf03f86088768df..e3bf01fb63b179f4669e99c43891b842bcae66a6 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -171,6 +171,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform

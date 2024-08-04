@@ -10,7 +10,7 @@ Subject: [PATCH] FC(RenderExt) payloadPreview
  create mode 100644 core/src/mindustryX/features/draw/PayloadDropHint.java
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index e499bbee122b00d8a094df477924677a91b50323..65256e11a2cdfd785b96dcff619fac0a615ea0ac 100644
+index 20bf23e68ce8e751b66905b022c54aa2f72d9862..d2d9a53895e5d44302b6532307d12d26ad876970 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
 @@ -21,8 +21,9 @@ import mindustry.world.blocks.logic.MessageBlock.*;
@@ -32,7 +32,7 @@ index e499bbee122b00d8a094df477924677a91b50323..65256e11a2cdfd785b96dcff619fac0a
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -79,13 +81,14 @@ public class RenderExt{
+@@ -78,13 +80,14 @@ public class RenderExt{
              drawBars = Core.settings.getBool("blockBars");
              drawBarsMend = Core.settings.getBool("blockBars_mend");
              healthBarMinHealth = Core.settings.getInt("blockbarminhealth");

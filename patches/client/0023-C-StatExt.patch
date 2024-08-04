@@ -320,7 +320,7 @@ index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..728b0d8423dfc2e09f5a8d4ca74fca04
          this(stack.item.uiIcon, stack.amount);
      }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index d2b2cbf2fa285ede7df166c8171c73936196cab1..c1dde3fda61032c7e404f3ec3628a6fcfa3df9af 100644
+index 1576cfb1623ba1b1cdfc791e70b5efc1535c25c8..766a0e295b0d165fb39014a2b51d43f70a23c48e 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -32,6 +32,7 @@ import mindustry.world.blocks.environment.*;
@@ -331,7 +331,7 @@ index d2b2cbf2fa285ede7df166c8171c73936196cab1..c1dde3fda61032c7e404f3ec3628a6fc
  
  import java.lang.reflect.*;
  import java.util.*;
-@@ -544,7 +545,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -552,7 +553,7 @@ public class Block extends UnlockableContent implements Senseable{
              }
          }
  
@@ -340,7 +340,7 @@ index d2b2cbf2fa285ede7df166c8171c73936196cab1..c1dde3fda61032c7e404f3ec3628a6fc
              stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
              stats.add(Stat.buildCost, StatValues.items(false, requirements));
          }
-@@ -556,6 +557,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -564,6 +565,7 @@ public class Block extends UnlockableContent implements Senseable{
          for(var c : consumers){
              c.display(stats);
          }

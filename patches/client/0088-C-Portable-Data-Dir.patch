@@ -8,10 +8,10 @@ Subject: [PATCH] C: Portable Data Dir
  1 file changed, 3 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 7c897514ef279333ed007b17a7b4c242880d8b22..cad052077f8431c7011cdddd4d4589ee39479de7 100644
+index 068a243ba87023201aaf0c287e9ee35341e312a3..519811a14b711d7192ad7d0b7d6e5b51e91b6b88 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -37,6 +37,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -36,6 +36,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
      @Override
      public void setup(){
          String dataDir = OS.env("MINDUSTRY_DATA_DIR");

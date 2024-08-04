@@ -29,10 +29,10 @@ index 2c0077cc99557c80f49d0cf496c92309b31e482e..341b81c8ec8cae795b3e5c3872e253f9
      }
  }
 diff --git a/core/src/mindustry/world/blocks/distribution/ItemBridge.java b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-index 0de0b62d119ca4befb1612374f96690b3434b6b3..3d683489543d469c2910d016b917d3f66976f266 100644
+index fa11e9f00f1e62b7bfb78067d1da88e405f91ab3..0bb4a1343cd3d5a030fd1ced7217317234493c15 100644
 --- a/core/src/mindustry/world/blocks/distribution/ItemBridge.java
 +++ b/core/src/mindustry/world/blocks/distribution/ItemBridge.java
-@@ -530,5 +530,17 @@ public class ItemBridge extends Block{
+@@ -532,5 +532,17 @@ public class ItemBridge extends Block{
                  wasMoved = moved = read.bool();
              }
          }
