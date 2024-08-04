@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 2 Aug 2024 23:36:02 +0800
+Subject: [PATCH] FC(RenderExt) deadOverlay
+
+---
+ core/src/mindustry/graphics/OverlayRenderer.java | 4 ++--
+ core/src/mindustryX/features/RenderExt.java      | 2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
+index 8346eb94d62f3d9cb57e4f63ed39ac34cb07c84d..fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f 100644
+--- a/core/src/mindustry/graphics/OverlayRenderer.java
++++ b/core/src/mindustry/graphics/OverlayRenderer.java
+@@ -71,7 +71,7 @@ public class OverlayRenderer{
+     public void drawBottom(){
+         InputHandler input = control.input;
+ 
+-        if(player.dead()) return;
++        if(player.dead() && !RenderExt.deadOverlay) return;
+ 
+         if(player.isBuilder()){
+             player.unit().drawBuildPlans();
+@@ -113,7 +113,7 @@ public class OverlayRenderer{
+             }
+         }
+ 
+-        if(player.dead()) return; //dead players don't draw
++        if(player.dead() && !RenderExt.deadOverlay) return; //dead players don't draw
+ 
+         InputHandler input = control.input;
+ 
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index 65256e11a2cdfd785b96dcff619fac0a615ea0ac..269e2571a440517f257237920a5155a9eb5032a2 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -41,6 +41,7 @@ public class RenderExt{
+     public static boolean drawBars, drawBarsMend;
+     public static float healthBarMinHealth;
+     public static boolean payloadPreview;
++    public static boolean deadOverlay;
+ 
+     public static boolean unitHide = false;
+     public static Color massDriverLineColor = Color.clear;
+@@ -82,6 +83,7 @@ public class RenderExt{
+             drawBarsMend = Core.settings.getBool("blockBars_mend");
+             healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
+             payloadPreview = Core.settings.getBool("payloadpreview");
++            deadOverlay = Core.settings.getBool("deadOverlay");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);

@@ -9,7 +9,7 @@ Subject: [PATCH] C(RenderExt) playerEffectColor
  2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
-index bdae0373b7a37c73f60a5d9a6ad19285ad68a9f5..d498b911575861c53dcefe39434c3593fa594a4c 100644
+index ad69511c62759552d9611ed901d0ef8bc4accbc8..17009f955dd1f407bdfa3c9731daba67df6388d2 100644
 --- a/core/src/mindustryX/features/ArcOld.java
 +++ b/core/src/mindustryX/features/ArcOld.java
 @@ -127,7 +127,17 @@ public class ArcOld{
@@ -32,10 +32,10 @@ index bdae0373b7a37c73f60a5d9a6ad19285ad68a9f5..d498b911575861c53dcefe39434c3593
                  case 0 -> "关闭";
                  case 1 -> "虚圆";
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 6095f9a83f0d5ed190d5f814972570dfa2678b98..f90dc699fdf4e83af3011322042315a081f9f2bc 100644
+index 038ce925395842f49a603c6b226c3210b0370543..e499bbee122b00d8a094df477924677a91b50323 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -43,6 +43,7 @@ public class RenderExt{
+@@ -42,6 +42,7 @@ public class RenderExt{
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;

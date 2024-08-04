@@ -9,20 +9,20 @@ Content-Transfer-Encoding: 8bit
 移除一些无效设置
 way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/assets/bundles/bundle-mdtx.properties    | 239 ++++++++++++++++++
- .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
- core/src/mindustryX/features/ArcOld.java      | 222 ++++++++++++++++
+ core/assets/bundles/bundle-mdtx.properties    | 237 ++++++++++++++++++
+ .../ui/dialogs/SettingsMenuDialog.java        |  28 +--
+ core/src/mindustryX/features/ArcOld.java      | 221 ++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 475 insertions(+), 15 deletions(-)
+ 4 files changed, 472 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..f08dd5fe6ce27c8cfbd277ecea0cb933542ec4a4 100644
+index 623d778207282303a60e9efc99981131a99eb253..70ed79fdf385216999a98244f5128f6c47e29d78 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -67,3 +67,242 @@ category.entitySettings.name = 实体相关设置
- setting.bulletShow.name = 显示子弹
- setting.showminebeam.name = 显示单位挖掘光束
+@@ -77,3 +77,240 @@ category.developerMode.name = 特殊设置
+ setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减少Draws总数
+ setting.renderSort.name = 渲染排序 [grey]多图集(Mod较多)情况下能够提升50%渲染性能，但可能造成渲染错误
  #end Settings
 +
 +bar.reloadDetail = 装填：{0}%
@@ -126,7 +126,6 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..f08dd5fe6ce27c8cfbd277ecea0cb933
 +category.arcStrongCheat.name = [red]强作弊功能
 +category.arcWeakCheat.name = 弱作弊功能
 +category.combat = 战斗
-+category.developerMode.name = 特殊设置
 +category.moreContent.name = 更多内容适配
 +category.movement = 移动
 +category.personalized.name = 自定义客户端     [需要重启]
@@ -168,7 +167,6 @@ index cc639cd1a79b62e9ac252efee35f01f10bfcdff7..f08dd5fe6ce27c8cfbd277ecea0cb933
 +setting.arcCoreItemsCol.name = [acid]arc核心物资列数
 +setting.arcDisableModWarning.name = [orange]我已知晓且同意学术端的mod使用原则
 +setting.arcDrillProgress.name = [acid]钻头[white]：显示挖掘进度      [gray]只推荐mod下使用
-+setting.arcPlayerList.name = [acid]简化玩家列表
 +setting.arcSelfName.name = [acid]显示自身名字
 +setting.arcShareWaveInfo.name = [acid]游戏信息交流[gray](标记物品)  [red]请勿刷屏
 +setting.arcSpecificTable.name = [acid]学术端特制界面     [orange][重启生效]
@@ -332,10 +330,10 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..b71452eca5b3527f0c2ee15edd8d6ef0
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..bdae0373b7a37c73f60a5d9a6ad19285ad68a9f5
+index 0000000000000000000000000000000000000000..ad69511c62759552d9611ed901d0ef8bc4accbc8
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,222 @@
+@@ -0,0 +1,221 @@
 +package mindustryX.features;
 +
 +import arc.func.*;
@@ -492,7 +490,6 @@ index 0000000000000000000000000000000000000000..bdae0373b7a37c73f60a5d9a6ad19285
 +                case 3 -> "全部记录";
 +                default -> s + "";
 +            });
-+            c.checkPref("arcPlayerList", true);
 +            c.checkPref("ShowInfoPopup", true);
 +            c.checkPref("arcShareWaveInfo", false);
 +            c.checkPref("arcAlwaysTeamColor", false);
@@ -559,12 +556,12 @@ index 0000000000000000000000000000000000000000..bdae0373b7a37c73f60a5d9a6ad19285
 +    }
 +}
 diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 4c68c9f8d75a897dd636ac96b9d7a1b1a73cbf44..02cb18ab5655c14c33680a50388e42d33fd2212f 100644
+index 16e86681d53afc40025ca4376d490d1cb574b786..e39fe4572259cc157de0351765ff7b6f75ad1696 100644
 --- a/core/src/mindustryX/features/Settings.java
 +++ b/core/src/mindustryX/features/Settings.java
-@@ -64,6 +64,7 @@ public class Settings{
-             c.checkPref("bulletShow", true);
-             c.checkPref("showMineBeam".toLowerCase(), true);
+@@ -74,6 +74,7 @@ public class Settings{
+             c.checkPref("renderMerge", true);
+             c.checkPref("renderSort", false);
          }));
 +        ArcOld.init(categories);
          Events.on(ClientLoadEvent.class, e -> {

@@ -52,7 +52,7 @@ index 7664e5cd240e9e933373cbd1a3eeb382886e94f8..1a33e4f6c9509d0b34422eb360687ffc
      public static void buildPositionRow(Table tt, Vec2 vec){
 diff --git a/core/src/mindustryX/features/ui/AdvanceBuildTool.java b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7ba0a9616e783872f93fb28e4d7a366071db0b6c
+index 0000000000000000000000000000000000000000..1a8bcf05dc875853598e50841f1558a9d41733a3
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceBuildTool.java
 @@ -0,0 +1,377 @@
@@ -131,7 +131,7 @@ index 0000000000000000000000000000000000000000..7ba0a9616e783872f93fb28e4d7a3660
 +                }).tooltip("[cyan]玩家建造区").size(30f);
 +                tt.update(() -> {
 +                    if(placement != BuildRange.zone) return;
-+                    FuncX.drawText(selection.getCenter(Tmp.v1).scl(tilesize), "建造区域", Scl.scl(1.25f), Color.white, Align.bottom);
++                    FuncX.drawText(selection.getCenter(Tmp.v1).scl(tilesize), "建造区域", Scl.scl(1.25f), Color.white);
 +                    Draw.color(Pal.stat, 0.7f);
 +                    Draw.z(Layer.effect - 1f);
 +                    Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);

@@ -15,7 +15,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/type/StatusEffect.java     |   2 +
  core/src/mindustry/type/UnitType.java         |  40 ++-
  core/src/mindustry/type/Weapon.java           |  22 +-
- core/src/mindustry/ui/ItemImage.java          |  22 ++
+ core/src/mindustry/ui/ItemImage.java          |  13 +
  core/src/mindustry/world/Block.java           |   4 +-
  .../world/blocks/defense/ForceProjector.java  |   7 +-
  .../world/blocks/defense/MendProjector.java   |   6 +-
@@ -38,7 +38,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/world/meta/StatCat.java    |   5 +-
  core/src/mindustry/world/meta/StatValues.java | 254 ++++++++++++++----
  core/src/mindustryX/features/StatExt.java     |  96 +++++++
- 29 files changed, 503 insertions(+), 91 deletions(-)
+ 29 files changed, 494 insertions(+), 91 deletions(-)
  create mode 100644 core/src/mindustryX/features/StatExt.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -284,7 +284,7 @@ index d67a1ca03202019648a65863d0114c96fb21cd78..f9ec8feac6e944e76b5e2309da9b78e9
  
          StatValues.ammo(ObjectMap.of(u, bullet)).display(t);
 diff --git a/core/src/mindustry/ui/ItemImage.java b/core/src/mindustry/ui/ItemImage.java
-index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..6f20b9cd229a15a67d629e56762d86df3ec97012 100644
+index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..728b0d8423dfc2e09f5a8d4ca74fca047dccf368 100644
 --- a/core/src/mindustry/ui/ItemImage.java
 +++ b/core/src/mindustry/ui/ItemImage.java
 @@ -1,11 +1,15 @@
@@ -303,21 +303,12 @@ index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..6f20b9cd229a15a67d629e56762d86df
  
  public class ItemImage extends Stack{
  
-@@ -25,6 +29,24 @@ public class ItemImage extends Stack{
+@@ -25,6 +29,15 @@ public class ItemImage extends Stack{
          }
      }
  
 +    public ItemImage(TextureRegion region, int reqAmount, Intp curAmount){
-+        add(new Table(o -> {
-+            o.left();
-+            o.add(new Image(region)).size(32f).scaling(Scaling.fit);
-+        }));
-+
-+        add(new Table(t -> {
-+            t.left().bottom();
-+            t.add(String.valueOf(reqAmount)).get().setFontScale(1f);
-+            t.pack();
-+        }));
++        this(region, reqAmount);
 +        add(new Table(t -> {
 +            t.left().top();
 +            t.label(() -> String.valueOf(curAmount.get())).get().setFontScale(0.6f);

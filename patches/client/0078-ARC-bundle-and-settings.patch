@@ -1,26 +1,30 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Wed, 5 Jun 2024 23:26:51 +0800
-Subject: [PATCH] C(RenderExt) drawBars
+Subject: [PATCH] ARC bundle and settings
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+移除一些无效设置
+way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
- core/src/mindustryX/features/RenderExt.java | 56 +++++++++++++++++++++
- 1 file changed, 56 insertions(+)
+ core/src/mindustryX/features/RenderExt.java | 55 +++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d4a39291133a960b3dc42e76d77d881ee2cf5539..6095f9a83f0d5ed190d5f814972570dfa2678b98 100644
+index d4a39291133a960b3dc42e76d77d881ee2cf5539..038ce925395842f49a603c6b226c3210b0370543 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -6,6 +6,8 @@ import arc.graphics.g2d.*;
+@@ -6,6 +6,7 @@ import arc.graphics.g2d.*;
  import arc.math.*;
  import arc.math.geom.*;
  import arc.util.*;
 +import mindustry.*;
-+import mindustry.arcModule.draw.*;
  import mindustry.entities.*;
  import mindustry.game.EventType.*;
  import mindustry.gen.*;
-@@ -19,6 +21,7 @@ import mindustry.world.blocks.logic.*;
+@@ -19,6 +20,7 @@ import mindustry.world.blocks.logic.*;
  import mindustry.world.blocks.logic.MessageBlock.*;
  import mindustry.world.blocks.production.Drill.*;
  import mindustry.world.blocks.storage.*;
@@ -28,7 +32,7 @@ index d4a39291133a960b3dc42e76d77d881ee2cf5539..6095f9a83f0d5ed190d5f814972570df
  
  import static mindustry.Vars.tilesize;
  
-@@ -35,6 +38,8 @@ public class RenderExt{
+@@ -35,6 +37,8 @@ public class RenderExt{
      public static boolean renderSort, renderMerge;
      public static boolean massDriverLine;
      public static int massDriverLineInterval;
@@ -37,7 +41,7 @@ index d4a39291133a960b3dc42e76d77d881ee2cf5539..6095f9a83f0d5ed190d5f814972570df
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -71,6 +76,9 @@ public class RenderExt{
+@@ -71,6 +75,9 @@ public class RenderExt{
              renderMerge = Core.settings.getBool("renderMerge");
              massDriverLine = Core.settings.getBool("mass_driver_line");
              massDriverLineInterval = Core.settings.getInt("mass_driver_line_interval");
@@ -47,7 +51,7 @@ index d4a39291133a960b3dc42e76d77d881ee2cf5539..6095f9a83f0d5ed190d5f814972570df
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -94,6 +102,8 @@ public class RenderExt{
+@@ -94,6 +101,8 @@ public class RenderExt{
              arcDrillModeDraw(block, drill);
          if(massDriverLine && build instanceof MassDriverBuild b)
              drawMassDriverLine(b);
@@ -56,7 +60,7 @@ index d4a39291133a960b3dc42e76d77d881ee2cf5539..6095f9a83f0d5ed190d5f814972570df
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -154,4 +164,50 @@ public class RenderExt{
+@@ -154,4 +163,50 @@ public class RenderExt{
              }
          }
      }

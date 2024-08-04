@@ -82,11 +82,15 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
 * fix no uiIcon
 * remove menuFlyers
 way-zer <himc.wicp@gmail.com> on 2024/7/13
+
+* 整理PlayerListFragment
+* fix #CN-ARC/Mindustry-CN-ARC:85
+way-zer <himc.wicp@gmail.com> on 2024/7/28
 ---
  core/src/mindustry/ai/BlockIndexer.java       |  116 ++
  core/src/mindustry/core/Renderer.java         |    3 +-
  core/src/mindustry/core/UI.java               |    3 +
- core/src/mindustry/editor/MapInfoDialog.java  |  141 ++-
+ core/src/mindustry/editor/MapInfoDialog.java  |  139 +-
  .../mindustry/entities/comp/BuildingComp.java |   18 +-
  .../mindustry/entities/comp/PlayerComp.java   |   22 +-
  .../mindustry/entities/comp/ShieldComp.java   |    6 +
@@ -98,7 +102,7 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  .../mindustry/graphics/OverlayRenderer.java   |   84 +-
  core/src/mindustry/input/Binding.java         |   12 +-
  core/src/mindustry/input/DesktopInput.java    |   98 +-
- core/src/mindustry/input/InputHandler.java    |   56 +-
+ core/src/mindustry/input/InputHandler.java    |   55 +-
  core/src/mindustry/input/MobileInput.java     |   17 +-
  core/src/mindustry/type/UnitType.java         |  162 ++-
  core/src/mindustry/type/Weapon.java           |   25 +-
@@ -114,7 +118,7 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  .../mindustry/ui/fragments/HudFragment.java   |  229 +++-
  .../mindustry/ui/fragments/MenuFragment.java  |   59 +-
  .../ui/fragments/PlacementFragment.java       |  212 +++-
- .../ui/fragments/PlayerListFragment.java      |  202 ++-
+ .../ui/fragments/PlayerListFragment.java      |   68 +-
  core/src/mindustry/world/Block.java           |   18 +-
  core/src/mindustry/world/Build.java           |   50 +
  .../world/blocks/ConstructBlock.java          |   42 +-
@@ -135,13 +139,14 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
  .../mindustryX/features/ArcWaveSpawner.java   |  258 ++++
  core/src/mindustryX/features/MarkerType.java  |   12 +-
  .../mindustryX/features/PicToMindustry.java   |  343 +++++
- core/src/mindustryX/features/RenderExt.java   |   13 +-
+ core/src/mindustryX/features/RenderExt.java   |   12 +-
  core/src/mindustryX/features/UIExt.java       |    1 +
  .../features/ui/ArcMessageDialog.java         |  419 +++++++
  .../mindustryX/features/ui/ArcPowerInfo.java  |   70 ++
  .../features/ui/ArcWaveInfoDialog.java        | 1117 +++++++++++++++++
  .../features/ui/BlockSelectDialog.java        |   65 +
- 58 files changed, 5433 insertions(+), 247 deletions(-)
+ .../features/ui/auxiliary/MapInfoTable.java   |   14 +-
+ 59 files changed, 5332 insertions(+), 224 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcBuilds.java
  create mode 100644 core/src/mindustryX/features/ArcRadar.java
  create mode 100644 core/src/mindustryX/features/ArcUnits.java
@@ -339,7 +344,7 @@ index d21aa28efe895c7d76dfd903a9942a03f5a012b9..9e28b63e85dff5119c43f7dd3b278536
              if(landCore == null || landTime <= 0f) return;
              landCore.drawLanding(launching && launchCoreType != null ? launchCoreType : (CoreBlock)landCore.block);
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index 34ac2770a91fb02b7500fe46ec12f47bc384a061..0502e5341aaf07020b87bd4ae06b83dfbf211f7a 100644
+index 39deed997df547bf6fe986fe39643209ca99b0ce..9de31563d7940d8cbb3ac345259c58b0006e1ea9 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -28,6 +28,7 @@ import mindustry.logic.*;
@@ -350,7 +355,7 @@ index 34ac2770a91fb02b7500fe46ec12f47bc384a061..0502e5341aaf07020b87bd4ae06b83df
  
  import static arc.scene.actions.Actions.*;
  import static mindustry.Vars.*;
-@@ -372,6 +373,7 @@ public class UI implements ApplicationListener, Loadable{
+@@ -368,6 +369,7 @@ public class UI implements ApplicationListener, Loadable{
  
      /** Shows a fading label at the top of the screen. */
      public void showInfoToast(String info, float duration){
@@ -358,7 +363,7 @@ index 34ac2770a91fb02b7500fe46ec12f47bc384a061..0502e5341aaf07020b87bd4ae06b83df
          var cinfo = Core.scene.find("coreinfo");
          Table table = new Table();
          table.touchable = Touchable.disabled;
-@@ -388,6 +390,7 @@ public class UI implements ApplicationListener, Loadable{
+@@ -384,6 +386,7 @@ public class UI implements ApplicationListener, Loadable{
  
      /** Shows a label at some position on the screen. Does not fade. */
      public void showInfoPopup(String info, float duration, int align, int top, int left, int bottom, int right){
@@ -367,7 +372,7 @@ index 34ac2770a91fb02b7500fe46ec12f47bc384a061..0502e5341aaf07020b87bd4ae06b83df
          table.setFillParent(true);
          table.touchable = Touchable.disabled;
 diff --git a/core/src/mindustry/editor/MapInfoDialog.java b/core/src/mindustry/editor/MapInfoDialog.java
-index ebc1f0b300d295e45333f1db38ea299c9658ec20..dbacadb84aa76aa1e89c2ccfb52be42c13e1a9e4 100644
+index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e9c8f743b 100644
 --- a/core/src/mindustry/editor/MapInfoDialog.java
 +++ b/core/src/mindustry/editor/MapInfoDialog.java
 @@ -1,5 +1,6 @@
@@ -406,7 +411,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..dbacadb84aa76aa1e89c2ccfb52be42c
                  tags.put("name", text);
              }).size(400, 55f).maxTextLength(50).get();
              name.setMessageText("@unknown");
-@@ -46,14 +48,78 @@ public class MapInfoDialog extends BaseDialog{
+@@ -46,14 +48,76 @@ public class MapInfoDialog extends BaseDialog{
              t.row();
              t.add("@editor.description").padRight(8).left();
  
@@ -422,61 +427,59 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..dbacadb84aa76aa1e89c2ccfb52be42c
 +                tags.put("modeName", text);
 +            }).size(400f, 55f).maxTextLength(1000).get();
 +
-+            if (Core.settings.getBool("arcPlayerList")) {
-+                t.row();
-+                t.add("[cyan]服务器标签").padRight(8).left();
-+                t.button("编辑...", () -> {
-+                    BaseDialog dialog = new BaseDialog("地图标签");
++            t.row();
++            t.add("[cyan]服务器特殊标签").padRight(8).left();
++            t.button("编辑...", () -> {
++                BaseDialog dialog = new BaseDialog("地图标签");
 +
-+                    dialog.cont.pane(td -> {
-+                        td.add("[cyan]微泽系服务器标签编辑器 \n[white]BY [violet]Lucky Clover"
-+                                + "\n\n[white]用于国内新版微泽系插件标签。"
-+                                + "\n[orange]如果您发现标签无效，可能是您所在的服务器插件版本过低。请联系服主更新插件"
-+                                + "\n所有标签与主服同步"
-+                                + "\n\n[red]需要退出地图界面后重新打开才会更新"
-+                                + "\n\n[white]如果有bug欢迎提出"
-+                        );
-+                        td.row();
-+                        td.row();
++                dialog.cont.pane(td -> {
++                    td.add("[cyan]微泽系服务器标签编辑器 \n[white]BY [violet]Lucky Clover"
++                            + "\n\n[white]用于国内新版微泽系插件标签。"
++                            + "\n[orange]如果您发现标签无效，可能是您所在的服务器插件版本过低。请联系服主更新插件"
++                            + "\n所有标签与主服同步"
++                            + "\n\n[red]需要退出地图界面后重新打开才会更新"
++                            + "\n\n[white]如果有bug欢迎提出"
++                    );
++                    td.row();
++                    td.row();
 +
-+                        td.add("PVP保护时间(s)").left();
-+                        td.field(arcReadStringLabel("@pvpProtect"), pama -> {
-+                            arcAddStringLabel(pama, "@pvpProtect");
-+                        }).maxTextLength(5).left();
-+                        td.row();
-+                        td.add("禁用队伍(如1,2,3...)").left();
-+                        td.field(arcReadStringLabel("@banTeam"), pama -> {
-+                            arcAddStringLabel(pama, "@banTeam");
-+                        }).maxTextLength(5).left();
-+                        td.row();
-+                        td.add("插件选择").left();
-+                        td.field(arcReadStringLabel("@mapScript"), pama -> {
-+                            arcAddStringLabel(pama, "@mapScript");
-+                        }).maxTextLength(6).left();
-+                        td.row();
-+                        td.check("空域管制 [acid]敌方核心保护区内禁止空军", arcreadBoolLable("[@limitAir]"), islimit -> {
-+                            arcAddBoolLable(islimit, "[@limitAir]");
-+                        }).left();
-+                        td.row();
-+                        td.check("塔防模式 [acid]怪物仅会在出生点地板移动，不会攻击", arcreadBoolLable("[@towerDefend]"), islimit -> {
-+                            arcAddBoolLable(islimit, "[@towerDefend]");
-+                        }).left();
-+                        td.row();
-+                        td.check("敌人掉落 [acid]非塔防模式下，打怪掉落资源", arcreadBoolLable("[@TDDrop]"), islimit -> {
-+                            arcAddBoolLable(islimit, "[@TDDrop]");
-+                        }).left();
-+                        td.row();
-+                        td.check("水漫金山 [acid]蓝队核心会释放洪水淹没你的核心", arcreadBoolLable("[@floodV2]"), islimit -> {
-+                            arcAddBoolLable(islimit, "[@flood]");
-+                        }).left();
++                    td.add("PVP保护时间(s)").left();
++                    td.field(arcReadStringLabel("@pvpProtect"), pama -> {
++                        arcAddStringLabel(pama, "@pvpProtect");
++                    }).maxTextLength(5).left();
++                    td.row();
++                    td.add("禁用队伍(如1,2,3...)").left();
++                    td.field(arcReadStringLabel("@banTeam"), pama -> {
++                        arcAddStringLabel(pama, "@banTeam");
++                    }).maxTextLength(5).left();
++                    td.row();
++                    td.add("插件选择").left();
++                    td.field(arcReadStringLabel("@mapScript"), pama -> {
++                        arcAddStringLabel(pama, "@mapScript");
++                    }).maxTextLength(6).left();
++                    td.row();
++                    td.check("空域管制 [acid]敌方核心保护区内禁止空军", arcreadBoolLable("[@limitAir]"), islimit -> {
++                        arcAddBoolLable(islimit, "[@limitAir]");
 +                    }).left();
-+                    dialog.row();
-+                    dialog.addCloseButton();
-+                    dialog.margin(16f);
++                    td.row();
++                    td.check("塔防模式 [acid]怪物仅会在出生点地板移动，不会攻击", arcreadBoolLable("[@towerDefend]"), islimit -> {
++                        arcAddBoolLable(islimit, "[@towerDefend]");
++                    }).left();
++                    td.row();
++                    td.check("敌人掉落 [acid]非塔防模式下，打怪掉落资源", arcreadBoolLable("[@TDDrop]"), islimit -> {
++                        arcAddBoolLable(islimit, "[@TDDrop]");
++                    }).left();
++                    td.row();
++                    td.check("水漫金山 [acid]蓝队核心会释放洪水淹没你的核心", arcreadBoolLable("[@floodV2]"), islimit -> {
++                        arcAddBoolLable(islimit, "[@flood]");
++                    }).left();
++                }).left();
++                dialog.row();
++                dialog.addCloseButton();
++                dialog.margin(16f);
 +
-+                    dialog.show();
-+                }).left().width(200f);
-+            }
++                dialog.show();
++            }).left().width(200f);
 +
 +
              t.row();
@@ -487,7 +490,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..dbacadb84aa76aa1e89c2ccfb52be42c
                  tags.put("author", text);
              }).size(400, 55f).maxTextLength(50).get();
              author.setMessageText("@unknown");
-@@ -117,9 +183,74 @@ public class MapInfoDialog extends BaseDialog{
+@@ -117,9 +181,74 @@ public class MapInfoDialog extends BaseDialog{
  
              name.change();
              description.change();
@@ -1043,7 +1046,7 @@ index 44cbc6b38ede0697af8af3321c342c7f117bdcbd..ed4bd9d05114a32e45e18117e02c2a60
          laser(line, edge, edge, x, y, x2, y2, 1f);
      }
 diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
-index 8346eb94d62f3d9cb57e4f63ed39ac34cb07c84d..4d8a5c1d39dc3daac4b27fb078c0327c629512c1 100644
+index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..5a245c5b2e1a960ba79122ac7f84c15274086112 100644
 --- a/core/src/mindustry/graphics/OverlayRenderer.java
 +++ b/core/src/mindustry/graphics/OverlayRenderer.java
 @@ -15,8 +15,8 @@ import mindustry.game.*;
@@ -1389,7 +1392,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..68df7b6759f42ffabc36bffdd204370c
          //update payload input
          if(unit instanceof Payloadc){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df5274f84ebd 100644
+index b63fa723820b0c4e28b227d89fa615097af0b97f..31de77f007dc97c6a2b12ba3fb8d4d082328ba1a 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -36,11 +36,13 @@ import mindustry.world.*;
@@ -1406,16 +1409,15 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
  
  import java.util.*;
  
-@@ -58,6 +60,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -58,6 +60,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      final static int maxLength = 100;
      final static Rect r1 = new Rect(), r2 = new Rect();
      final static Seq<Unit> tmpUnits = new Seq<>(false);
 +    public static Player follow;
-+    public static int followIndex = 0;
      final static Binding[] controlGroupBindings = {
      Binding.block_select_01,
      Binding.block_select_02,
-@@ -108,6 +112,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -108,6 +111,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      /** Groups of units saved to different hotkeys */
      public IntSeq[] controlGroups = new IntSeq[controlGroupBindings.length];
  
@@ -1423,7 +1425,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
      private Seq<BuildPlan> plansOut = new Seq<>(BuildPlan.class);
      private QuadTree<BuildPlan> playerPlanTree = new QuadTree<>(new Rect());
  
-@@ -629,7 +634,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -629,7 +633,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  player.con.send(packet, true);
              }
  
@@ -1432,7 +1434,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
          }
          build.configured(player == null || player.dead() ? null : player.unit(), value);
          Events.fire(new ConfigEvent(build, player, value));
-@@ -653,9 +658,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -653,9 +657,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              throw new ValidateException(player, "Player cannot control a building.");
          }
  
@@ -1443,7 +1445,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
              build.onControlSelect(player.unit());
  
              if(!before.dead && before.spawnedByCore && !before.isPlayer()){
-@@ -854,6 +858,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -854,6 +857,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  }
              }
          }
@@ -1454,7 +1456,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
      }
  
      public void checkUnit(){
-@@ -1007,6 +1015,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1007,6 +1014,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                      attack = selectedEnemyUnit(target.x, target.y);
                  }
  
@@ -1463,7 +1465,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
                  int[] ids = new int[selectedUnits.size];
                  for(int i = 0; i < ids.length; i++){
                      ids[i] = selectedUnits.get(i).id;
-@@ -1202,6 +1212,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1202,6 +1211,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          });
      }
  
@@ -1475,7 +1477,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
      public void rotatePlans(Seq<BuildPlan> plans, int direction){
          int ox = schemOriginX(), oy = schemOriginY();
  
-@@ -1235,6 +1250,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1235,6 +1249,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              plan.x = World.toTile(wx - plan.block.offset) + ox;
              plan.y = World.toTile(wy - plan.block.offset) + oy;
              plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));
@@ -1495,7 +1497,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
          });
      }
  
-@@ -1266,6 +1294,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1266,6 +1293,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              //flip rotation
              plan.block.flipRotation(plan, x);
@@ -1510,12 +1512,12 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
          });
      }
  
-@@ -1390,12 +1426,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1390,12 +1425,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength, Color col1, Color col2){
          NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
  
 +        String arcSelectionSize = Math.abs(x2 - x1) + 1 + "×" + (Math.abs(y1 - y2) + 1);
-+        FuncX.drawText(Tmp.v1.set((x1 + x2) / 2f, Math.max(y1, y2) + 1).scl(tilesize), arcSelectionSize, 2f, Pal.accent, Align.top);
++        FuncX.drawText(Tmp.v1.set((x1 + x2) / 2f, Math.max(y1, y2) + 1).scl(tilesize), arcSelectionSize, 2f, Pal.accent, Align.bottom);
          Lines.stroke(2f);
  
          Draw.color(col1);
@@ -1528,7 +1530,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
      }
  
      protected void flushSelectPlans(Seq<BuildPlan> plans){
-@@ -1581,7 +1622,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1581,7 +1621,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build.block.commandable && commandMode){
              //TODO handled in tap.
              consumed = true;
@@ -1537,7 +1539,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
              consumed = true;
              if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
              //alternatively, the current selected block can 'agree' to switch config tiles
-@@ -1610,7 +1651,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1610,7 +1650,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          //consume tap event if necessary
          if(build.interactable(player.team()) && build.block.consumesTap){
              consumed = true;
@@ -1546,7 +1548,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
              if(build.block.hasItems && build.items.total() > 0){
                  inv.showFor(build);
                  consumed = true;
-@@ -1755,7 +1796,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1755,7 +1795,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){
          Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
@@ -1555,7 +1557,7 @@ index b63fa723820b0c4e28b227d89fa615097af0b97f..715032817201c1f3235ec867af03df52
              return build;
          }
          return null;
-@@ -1841,6 +1882,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1841,6 +1881,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public boolean canShoot(){
@@ -2025,7 +2027,7 @@ index f9ec8feac6e944e76b5e2309da9b78e9d1269348..54aecfe829705b2f0f39743f476fbc8d
      }
  
 diff --git a/core/src/mindustry/ui/Fonts.java b/core/src/mindustry/ui/Fonts.java
-index c02e09ff53a80aaf540223828208ad86b96d4bec..491a2a32020bd658941ce8e74d8becd0da5ab720 100644
+index 916b2ba5102ef670704e64a1f058c477c992d6dc..749c2180b6682361b568ca6d171675bc0552a22c 100644
 --- a/core/src/mindustry/ui/Fonts.java
 +++ b/core/src/mindustry/ui/Fonts.java
 @@ -30,7 +30,7 @@ public class Fonts{
@@ -2615,7 +2617,7 @@ index c8f4fb44c2d382c3430964e6197cde3f45bf8695..6af74ac5d883532c2fcb5c031bcebd81
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index 3907f10dbee3695599e0f70bdfde13c34c53b50d..4b7cb241f7801895227073ba10ac22a5f67b6a51 100644
+index 5095be6c1d92f1049829b96a34efabb9854f0e55..5b8be2f3b6bdeb95bd2ead6650bee5fabcca67e5 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 @@ -15,6 +15,12 @@ import arc.scene.ui.layout.*;
@@ -3056,7 +3058,7 @@ index 3907f10dbee3695599e0f70bdfde13c34c53b50d..4b7cb241f7801895227073ba10ac22a5
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -790,13 +1130,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -793,13 +1133,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
@@ -3184,7 +3186,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63a6353475 100644
+index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..16b01adb80bbe1ad8162d39234dec38bb33a5297 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
@@ -3195,7 +3197,15 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
  import mindustry.annotations.Annotations.*;
  import mindustry.content.*;
  import mindustry.core.GameState.*;
-@@ -34,6 +35,7 @@ import mindustryX.features.ui.*;
+@@ -27,6 +28,7 @@ import mindustry.input.*;
+ import mindustry.net.Packets.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
++import mindustry.world.blocks.defense.turrets.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustryX.features.*;
+@@ -34,6 +36,7 @@ import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
  import static mindustry.gen.Tex.*;
@@ -3203,7 +3213,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
  
  public class HudFragment{
      private static final float dsize = 65f, pauseHeight = 36f;
-@@ -45,6 +47,8 @@ public class HudFragment{
+@@ -45,6 +48,8 @@ public class HudFragment{
      public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
      private AuxiliaryTools auxiliaryTools;
  
@@ -3212,7 +3222,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
      private String hudText = "";
      private boolean showHudText;
  
-@@ -52,6 +56,8 @@ public class HudFragment{
+@@ -52,6 +57,8 @@ public class HudFragment{
      private Table lastUnlockLayout;
      private long lastToast;
  
@@ -3221,7 +3231,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
      public void build(Group parent){
          auxiliaryTools = new AuxiliaryTools();
  
-@@ -92,6 +98,11 @@ public class HudFragment{
+@@ -92,6 +99,11 @@ public class HudFragment{
              showToast(Icon.warning, Core.bundle.format("sector.attacked", e.sector.name()));
          });
  
@@ -3233,7 +3243,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -116,13 +127,16 @@ public class HudFragment{
+@@ -116,13 +128,16 @@ public class HudFragment{
              t.add(new Minimap()).name("minimap");
              t.row();
              //position
@@ -3257,7 +3267,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
              if(Core.settings.getInt("AuxiliaryTable") == 3){
                  t.row();
                  t.table(infoWave -> {
-@@ -219,12 +233,16 @@ public class HudFragment{
+@@ -219,12 +234,16 @@ public class HudFragment{
              Table wavesMain, editorMain;
  
              cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
@@ -3275,7 +3285,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
                  //wave info button with text
                  s.add(makeStatusTable()).grow().name("status");
  
-@@ -245,7 +263,13 @@ public class HudFragment{
+@@ -245,7 +264,13 @@ public class HudFragment{
                          logic.skipWave();
                      }
                  }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
@@ -3290,7 +3300,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
  
              wavesMain.row();
  
-@@ -261,6 +285,7 @@ public class HudFragment{
+@@ -261,6 +286,7 @@ public class HudFragment{
  
              editorMain.name = "editor";
              editorMain.table(Tex.buttonEdge4, t -> {
@@ -3298,7 +3308,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
                  //t.margin(0f);
                  t.name = "teams";
                  t.add("@editor.teams").growX().left();
-@@ -279,6 +304,7 @@ public class HudFragment{
+@@ -279,6 +305,7 @@ public class HudFragment{
                              teams.row();
                          }
                      }
@@ -3306,7 +3316,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
                  }).left();
              }).width(dsize * 5 + 4f);
              editorMain.visible(() -> shown && state.isEditor());
-@@ -303,6 +329,8 @@ public class HudFragment{
+@@ -303,6 +330,8 @@ public class HudFragment{
                  IntFormat mem = new IntFormat("memory");
                  IntFormat memnative = new IntFormat("memory2");
  
@@ -3315,7 +3325,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -311,6 +339,10 @@ public class HudFragment{
+@@ -311,6 +340,10 @@ public class HudFragment{
                  info.label(() -> Strings.format("D/V/T/F @/@/@/@",
                  DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw");
                  info.row();
@@ -3326,7 +3336,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -390,7 +422,7 @@ public class HudFragment{
+@@ -390,7 +423,7 @@ public class HudFragment{
                  }
                  return max == 0f ? 0f : val / max;
              }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
@@ -3335,12 +3345,12 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
  
              t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
                  p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
-@@ -921,6 +953,143 @@ public class HudFragment{
+@@ -921,6 +954,142 @@ public class HudFragment{
          return table;
      }
  
 +
-+    private Table makeStatusTableArc() {
++    private Table makeStatusTableArc(){
 +        Table table = new Table(buttonEdge4);
 +
 +        table.name = "waves";
@@ -3350,7 +3360,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
 +        table.table(t -> {
 +            t.margin(0);
 +            t.clicked(() -> {
-+                if (!player.dead() && mobile) {
++                if(!player.dead() && mobile){
 +                    Call.unitClear(player);
 +                    control.input.recentRespawnTimer = 1f;
 +                    control.input.controlledType = null;
@@ -3359,27 +3369,26 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
 +            t.image(() -> player.icon()).size(iconMed);
 +            t.row();
 +            t.add(new Bar(
-+                    () -> {
-+                        if (player.unit().shield > 0) {
-+                            return UI.formatAmount((long) player.unit().health) + "[gray]+[white]" + UI.formatAmount((long) player.unit().shield);
-+                        } else {
-+                            return UI.formatAmount((long) player.unit().health);
-+                        }
-+                    },
-+                    () -> Pal.health,
-+                    () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
++            () -> {
++                if(player.unit().shield > 0){
++                    return UI.formatAmount((long)player.unit().health) + "[gray]+[white]" + UI.formatAmount((long)player.unit().shield);
++                }else{
++                    return UI.formatAmount((long)player.unit().health);
++                }
++            },
++            () -> Pal.health,
++            () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
 +            t.row();
 +            t.add(new Bar(
-+                    () -> {
-+                        if (state.rules.unitAmmo)
-+                            return player.unit().type.ammoType.icon() + (int) player.unit().ammo + "/" + player.unit().type.ammoCapacity;
-+                        else return player.unit().type.ammoType.icon();
-+                    },
-+                    () -> player.unit().type.ammoType.barColor(),
-+                    () -> {
-+                        if (state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
-+                        else return 1;
-+                    })).height(18).growX();
++            () -> {
++                if(player.unit() instanceof BlockUnitUnit u && u.tile().buildOn() instanceof ItemTurret.ItemTurretBuild it)
++                    return ((float)it.totalAmmo > 0 ? ((ItemTurret.ItemEntry)it.ammo.peek()).item.emoji() + it.totalAmmo + "/" + ((ItemTurret)it.block).maxAmmo : "");
++                if(state.rules.unitAmmo)
++                    return player.unit().type.ammoType.icon() + (int)player.unit().ammo + "/" + player.unit().type.ammoCapacity;
++                else return player.unit().type.ammoType.icon();
++            },
++            () -> player.unit().type.ammoType.barColor(),
++            () -> player.unit().ammof())).height(18).growX();
 +            t.row();
 +
 +        }).size(110, 80).padRight(4);
@@ -3388,7 +3397,7 @@ index 98fa34b4f9a8b77d483508a3eb8c24dac76ed339..583a47f872aafe3e405d5d67bc04db63
 +        table.add(arcStatus).growX().pad(4f);
 +
 +        // Power bar display
-+        if (Core.settings.getBool("powerStatistic")) {
++        if(Core.settings.getBool("powerStatistic")){
 +            table.row();
 +            table.add(ArcPowerInfo.getBars()).growX().colspan(table.getColumns());
 +        }
@@ -4054,10 +4063,10 @@ index 2c3e6ad5249a532799dde66f1abde1ac5884a2a8..cd6b06189153afbe838a8a2d862044ad
 +    }
  }
 diff --git a/core/src/mindustry/ui/fragments/PlayerListFragment.java b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-index 9286aab19502b5cf40556311572157b20c60fef4..1165df86591dea2b418802c309a55c2bc7a6bfef 100644
+index 9286aab19502b5cf40556311572157b20c60fef4..0e6d6d3834e751851bccd15a3352317a2bb95386 100644
 --- a/core/src/mindustry/ui/fragments/PlayerListFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-@@ -10,23 +10,29 @@ import arc.scene.ui.ImageButton.*;
+@@ -10,14 +10,16 @@ import arc.scene.ui.ImageButton.*;
  import arc.scene.ui.layout.*;
  import arc.struct.*;
  import arc.util.*;
@@ -4075,62 +4084,41 @@ index 9286aab19502b5cf40556311572157b20c60fef4..1165df86591dea2b418802c309a55c2b
 +import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
-+import static mindustry.input.InputHandler.follow;
  
- public class PlayerListFragment{
-     public Table content = new Table().marginRight(13f).marginLeft(13f);
-     private boolean visible = false;
-     private Interval timer = new Interval();
-     private TextField search;
--    private Seq<Player> players = new Seq<>();
-+    public Seq<Player> players = new Seq<>();
-+
-+    private float buttonSize = 30f;
-+    private boolean teamMode = false;
- 
-     public void build(Group parent){
-         content.name = "players";
-@@ -63,23 +69,23 @@ public class PlayerListFragment{
-                     menu.defaults().growX().height(50f).fillY();
-                     menu.name = "menu";
- 
-+                    if (Core.settings.getBool("arcPlayerList") && Core.settings.getBool("easyJS")) menu.button("js换队",() -> teamMode = !teamMode).checked(t->teamMode);
-                     menu.button("@server.bans", ui.bans::show).disabled(b -> net.client());
-                     menu.button("@server.admins", ui.admins::show).disabled(b -> net.client());
+@@ -68,7 +70,7 @@ public class PlayerListFragment{
                      menu.button("@close", this::toggle);
                  }).margin(0f).pad(10f).growX();
  
 -            }).touchable(Touchable.enabled).margin(14f).minWidth(360f);
-+            }).touchable(Touchable.enabled).margin(14f).minWidth(720f);
++            }).touchable(Touchable.enabled).margin(14f).minWidth(620f);
          });
  
          rebuild();
-     }
+@@ -79,7 +81,7 @@ public class PlayerListFragment{
  
-     public void rebuild(){
--        boolean allowTeamSwitch = !state.isCampaign() && (state.rules.pvp || state.rules.infiniteResources);
--
          content.clear();
  
 -        float h = 50f;
 +        float h = 40f;
-+        float bs = (h) - 2f;
          boolean found = false;
  
          players.clear();
-@@ -95,6 +101,7 @@ public class PlayerListFragment{
-             NetConnection connection = user.con;
+@@ -87,7 +89,7 @@ public class PlayerListFragment{
  
-             if(connection == null && net.server() && !user.isLocal()) return;
-+            if(search.getText().length() > 0 && !user.name().toLowerCase().contains(search.getText().toLowerCase()) && !Strings.stripColors(user.name().toLowerCase()).contains(search.getText().toLowerCase())) return;
+         players.sort(Structs.comps(Structs.comparing(Player::team), Structs.comparingBool(p -> !p.admin)));
+         if(search.getText().length() > 0){
+-            players.retainAll(p -> Strings.stripColors(p.name().toLowerCase()).contains(search.getText().toLowerCase()));
++            players.retainAll(p -> p.name().toLowerCase().contains(search.getText().toLowerCase()) || Strings.stripColors(p.name().toLowerCase()).contains(search.getText().toLowerCase()));
+         }
  
-             Table button = new Table();
-             button.left();
-@@ -121,28 +128,16 @@ public class PlayerListFragment{
+         for(var user : players){
+@@ -120,28 +122,25 @@ public class PlayerListFragment{
+                 iconTable.addListener(listener);
                  iconTable.addListener(new HandCursorListener());
              }
-             iconTable.margin(8);
--            iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
+-            iconTable.margin(8);
++            iconTable.margin(4);
+             iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
              iconTable.name = user.name();
              iconTable.touchable = Touchable.enabled;
  
@@ -4145,221 +4133,79 @@ index 9286aab19502b5cf40556311572157b20c60fef4..1165df86591dea2b418802c309a55c2b
                  }
              });
  
--            button.add(iconTable).size(h);
+             button.add(iconTable).size(h);
 -            button.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).style(Styles.outlineLabel).width(170f).pad(10);
 -            button.add().grow();
--
++            button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).pad(4).get().updateVisibility();
++            button.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).style(Styles.outlineLabel).growX();
+ 
 -            button.background(Tex.underline);
--
++            button.background(Tex.underlineWhite);
++            button.setColor(state.rules.pvp || Core.settings.getBool("arcAlwaysTeamColor") ? user.team().color : Pal.gray);
+ 
 -            button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).padRight(5).get().updateVisibility();
--
+ 
              var ustyle = new ImageButtonStyle(){{
                  down = Styles.none;
-                 up = Styles.none;
-@@ -151,10 +146,105 @@ public class PlayerListFragment{
+@@ -151,11 +150,37 @@ public class PlayerListFragment{
                  imageOverColor = Color.lightGray;
              }};
  
--            if(net.server() || (player.admin && (!user.admin || user == player))){
--                button.add().growY();
-+            iconTable.margin(4);
-+            iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
-+            iconTable.name = user.name();
-+
-+            if (Core.settings.getBool("arcPlayerList")){
-+                button.add(iconTable).size(h);
-+                button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).size(bs).get().updateVisibility();
-+                button.table(
-+                    t -> {
-+                        t.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).minWidth(380f);
-+                        t.touchable = Touchable.enabled;
-+                        t.tapped(()->{
-+                            Core.app.setClipboardText(user.name);
-+                            UIExt.announce("复制昵称：" + user.name);
-+                        });
++            button.button(Icon.copySmall, ustyle, () -> {
++                Core.app.setClipboardText(user.name);
++                UIExt.announce("已复制昵称：" + user.name);
++            }).size(iconMed);
++            button.button(Icon.linkSmall, ustyle, () -> ArcMessageDialog.share("AT", "戳了" + user.name + "[white]一下，并提醒你留意对话框")).size(iconMed);
++            button.button(Icon.lockSmall, ustyle, () -> {
++                if(InputHandler.follow != user){
++                    InputHandler.follow = user;
++                    if(control.input instanceof DesktopInput d){
++                        d.panning = true;
 +                    }
-+                ).width(400f).pad(10f).left();
-+
-+                button.add().grow();
-+
-+                button.button("♐", Styles.cleart, () -> {
-+                    ArcMessageDialog.share("AT", "戳了" + user.name + "[white]一下，并提醒你留意对话框");
-+                }).color(Pal.accent).size(buttonSize);
-+
-+                button.button(String.valueOf(Iconc.lock), Styles.cleart, () -> {
-+                    if(follow != user){
-+                        follow = user;
-+                    }else {
-+                        follow = null;
-+                    }
-+                    if(control.input instanceof DesktopInput){
-+                        ((DesktopInput) control.input).panning = follow == user;
-+                        UIExt.announce("追踪玩家：" + user.name);
-+                    }
-+                }).checked(b -> {
-+                    boolean checked = follow == user;
-+                    b.setText(checked ? String.valueOf(Iconc.lock) : String.valueOf(Iconc.lockOpen));
-+                    return checked;
-+                }).size(buttonSize);
-+
-+                button.button("[coral]" + Iconc.planeOutline, Styles.cleart,
-+                () -> {
-+                    ui.showConfirm("@confirm", Core.bundle.format("confirmvotekick",  user.name()), () -> {
-+                        Call.sendChatMessage("/votekick " + user.name());
-+                    });
-+                }).size(buttonSize);
-+
-+                if((net.server() || player.admin) && !user.isLocal() && (!user.admin || net.server())){
-+                    button.button("[gold]" + Iconc.zoom, Styles.cleart, () -> Call.adminRequest(user, AdminAction.trace, null)).size(buttonSize);
-+                    button.button("[gold]" + Iconc.cancel, Styles.cleart,
-+                            () -> ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick, null))).size(buttonSize);
-+                    button.button("[gold]" + Iconc.hammer, Styles.cleart,
-+                            () -> ui.showConfirm("@confirm", Core.bundle.format("confirmban",  user.name()), () -> Call.adminRequest(user, AdminAction.ban, null))).size(buttonSize);
++                }else{
++                    InputHandler.follow = null;
 +                }
-+                if (teamMode) {
-+                    if (state.teams.getActive().size <= 5){
-+                        state.teams.getActive().each(teamData -> button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
-+                                () -> Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + teamData.team.id + "))")).size(buttonSize));
-+                    }
-+                    button.button("[violet]+", Styles.cleart, () -> UIExt.teamSelect.pickOne(team ->
-+                    Call.sendChatMessage("/js Groups.player.find(e=>e.name== \"" + user.name + "\").team(Team.get(" + team.id + "))"), user.team())).size(buttonSize);
-+                } else if (net.server() || (player.admin && (!user.admin || user == player))) {
-+                    if (state.teams.getActive().size <= 5){
-+                        state.teams.getActive().each(teamData -> button.button("[#" + teamData.team.color + "]" + teamData.team.localized(), Styles.cleart,
-+                                () -> Call.adminRequest(user, AdminAction.switchTeam, teamData.team)).size(buttonSize));
-+                    }
-+                    button.button("[violet]+",Styles.cleart,()-> UIExt.teamSelect.pickOne(team -> Call.adminRequest(user, AdminAction.switchTeam, team), user.team())).size(buttonSize);
-+                }
-+                if((net.server() || (player.admin && (!user.admin || user == player))) && !net.client() && !user.isLocal()){
-+                    button.button("" + Iconc.admin,Styles.cleart, () -> {
-+                        String id = user.uuid();
++                UIExt.announce("追踪玩家：" + user.name);
++            }).checked(b -> {
++                boolean checked = InputHandler.follow == user;
++                b.getImage().setDrawable(checked ? Icon.lockSmall : Icon.lockOpenSmall);
++                return checked;
++            }).size(iconMed);
 +
-+                        if(user.admin){
-+                            ui.showConfirm("@confirm", Core.bundle.format("confirmunadmin",  user.name()), () -> {
-+                                netServer.admins.unAdminPlayer(id);
-+                                user.admin = false;
-+                            });
-+                        }else{
-+                            ui.showConfirm("@confirm", Core.bundle.format("confirmadmin",  user.name()), () -> {
-+                                netServer.admins.adminPlayer(id, user.usid());
-+                                user.admin = true;
-+                            });
-+                        }
-+                    }).checked(b -> user.admin).row();
-+                }
-+            }
-+            //原版模式
-+            else {
-+                button.add(iconTable).size(h);
-+                button.labelWrap("[#" + user.color().toString().toUpperCase() + "]" + user.name()).style(Styles.outlineLabel).width(170f).pad(10);
-+                button.add().grow();
++            button.button(Icon.planeOutlineSmall, ustyle, () ->
++            ui.showTextInput("@votekick.reason", Core.bundle.format("votekick.reason.message", user.name()), "", reason ->
++            Call.sendChatMessage("/votekick #" + user.id + " " + reason))
++            ).size(iconMed);
 +
-+                button.background(Tex.underline);
-+
-+                button.image(Icon.admin).visible(() -> user.admin && !(!user.isLocal() && net.server())).padRight(5).get().updateVisibility();
-+
-+                if(net.server() || (player.admin && (!user.admin || user == player))){
-+                    button.add().growY();
+             if(net.server() || (player.admin && (!user.admin || user == player))){
+                 button.add().growY();
  
--                if(allowTeamSwitch || user != player){
-                     button.button(Icon.menu, ustyle, () -> {
+                 if(allowTeamSwitch || user != player){
+-                    button.button(Icon.menu, ustyle, () -> {
++                    button.button(Icon.wrenchSmall, ustyle, () -> {
                          var dialog = new BaseDialog(user.coloredName());
  
-@@ -181,43 +271,42 @@ public class PlayerListFragment{
-                                     ui.showConfirm("@confirm", Core.bundle.format("confirmkick",  user.name()), () -> Call.adminRequest(user, AdminAction.kick, null));
-                                     dialog.hide();
-                                 }).row();
-+                            }
- 
-+                            if(!user.isLocal()){
-                                 t.button("@player.trace", Icon.zoom, bstyle, () -> {
-                                     Call.adminRequest(user, AdminAction.trace, null);
-                                     dialog.hide();
-                                 }).row();
-                             }
- 
--                            //there's generally no reason to team switch outside PvP or sandbox, and it's basically an easy way to cheat
--                            if(allowTeamSwitch){
--                                t.button("@player.team", Icon.redo, bstyle, () -> {
--                                    var teamSelect = new BaseDialog(Core.bundle.get("player.team") + ": " + user.name);
--                                    teamSelect.setFillParent(false);
-+                            t.button("@player.team", Icon.redo, bstyle, () -> {
-+                                var teamSelect = new BaseDialog(Core.bundle.get("player.team") + ": " + user.name);
-+                                teamSelect.setFillParent(false);
- 
--                                    var group = new ButtonGroup<>();
-+                                var group = new ButtonGroup<>();
- 
--                                    int i = 0;
-+                                int i = 0;
- 
--                                    for(Team team : Team.baseTeams){
--                                        var b = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);
--                                        b.margin(4f);
--                                        b.getImageCell().grow();
--                                        b.getStyle().imageUpColor = team.color;
--                                        b.clicked(() -> {
--                                            Call.adminRequest(user, AdminAction.switchTeam, team);
--                                            teamSelect.hide();
--                                        });
--                                        teamSelect.cont.add(b).size(50f).checked(a -> user.team() == team).group(group);
-+                                for(Team team : Team.baseTeams){
-+                                    var b = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);
-+                                    b.margin(4f);
-+                                    b.getImageCell().grow();
-+                                    b.getStyle().imageUpColor = team.color;
-+                                    b.clicked(() -> {
-+                                        Call.adminRequest(user, AdminAction.switchTeam, team);
-+                                        teamSelect.hide();
-+                                    });
-+                                    teamSelect.cont.add(b).size(50f).checked(a -> user.team() == team).group(group);
- 
--                                        if(i++ % 3 == 2) teamSelect.cont.row();
--                                    }
-+                                    if(i++ % 3 == 2) teamSelect.cont.row();
-+                                }
- 
--                                    teamSelect.addCloseButton();
--                                    teamSelect.show();
-+                                teamSelect.addCloseButton();
-+                                teamSelect.show();
- 
--                                    dialog.hide();
--                                }).row();
--                            }
-+                                dialog.hide();
-+                            }).row();
- 
-                             if(!net.client() && !user.isLocal()){
-                                 t.button("@player.admin", Icon.admin, Styles.togglet, () -> {
-@@ -242,20 +331,21 @@ public class PlayerListFragment{
+                         dialog.title.setColor(Color.white);
+@@ -242,20 +267,11 @@ public class PlayerListFragment{
                          dialog.cont.button("@back", Icon.left, dialog::hide).padTop(-1f).size(220f, 55f);
  
                          dialog.show();
-+                    }).size(h);
- 
-+                }else if(!user.isLocal() && !user.admin && net.client() && Groups.player.size() >= 3 && player.team() == user.team()){ //votekick
-+                    button.add().growY();
- 
+-
+-
 -                    }).size(h);
-+                    button.button(Icon.hammer, ustyle,
-+                        () -> ui.showTextInput("@votekick.reason", Core.bundle.format("votekick.reason.message", user.name()), "",
-+                        reason -> Call.sendChatMessage("/votekick #" + user.id + " " + reason)))
-+                    .size(h);
++                    }).size(iconMed);
                  }
 -            }else if(!user.isLocal() && !user.admin && net.client() && Groups.player.size() >= 3 && player.team() == user.team()){ //votekick
 -                button.add().growY();
- 
+-
 -                button.button(Icon.hammer, ustyle,
 -                    () -> ui.showTextInput("@votekick.reason", Core.bundle.format("votekick.reason.message", user.name()), "",
 -                    reason -> Call.sendChatMessage("/votekick #" + user.id + " " + reason)))
 -                .size(h);
              }
--
+ 
 -            content.add(button).width(350f).height(h + 14);
-+            content.add(button).padBottom(-6).width(700f).maxHeight(h + 14);
-+            content.row();
-+            content.image().height(4f).color(state.rules.pvp|| Core.settings.getBool("arcAlwaysTeamColor") ? user.team().color : Pal.gray).growX();
++            content.add(button).width(600f).height(h + 14);
              content.row();
          }
  
@@ -4504,7 +4350,7 @@ index a47363df2f463338875a2937dfeffdd0411d492a..03fd8c4d74637c02a3a12353ec35e8c0
      }
  }
 diff --git a/core/src/mindustry/world/blocks/ConstructBlock.java b/core/src/mindustry/world/blocks/ConstructBlock.java
-index f45822964a30770bc15e4865429ef7749b4ce620..61425f62a03c91b5a6bc88d18a35de566bb2cb5e 100644
+index f45822964a30770bc15e4865429ef7749b4ce620..6c28b1574e70a7aa38b3edc200d3aee7ec01543d 100644
 --- a/core/src/mindustry/world/blocks/ConstructBlock.java
 +++ b/core/src/mindustry/world/blocks/ConstructBlock.java
 @@ -3,14 +3,17 @@ package mindustry.world.blocks;
@@ -4577,7 +4423,7 @@ index f45822964a30770bc15e4865429ef7749b4ce620..61425f62a03c91b5a6bc88d18a35de56
 +                requirements.append(stack.item.emoji()).append(hasItem ? "[#ffd37f]" : "[#e55454]").append(investItem).append("/").append(needItem).append("/").append(UI.formatAmount(coreAmount)).append("[]");
 +            }
 +            pos.set(this).add(-buildHitSize / 2f, -buildHitSize / 2f);//左下角
-+            FuncX.drawText(pos, requirements.toString(), scl, Color.white, Align.bottomLeft);
++            FuncX.drawText(pos, requirements.toString(), scl, Color.white, Align.topLeft);
 +        }
 +
          @Override
@@ -5097,7 +4943,7 @@ index 0000000000000000000000000000000000000000..94e5146690c6394393ea218f67ef1db8
 +    }
 +}
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
-index d498b911575861c53dcefe39434c3593fa594a4c..e9fa2ec00f4bc18b4e9659ef5e1be0c71c975d1e 100644
+index 17009f955dd1f407bdfa3c9731daba67df6388d2..de04c90eb7ec50b58a95bb9f4ead27a9eeac58ae 100644
 --- a/core/src/mindustryX/features/ArcOld.java
 +++ b/core/src/mindustryX/features/ArcOld.java
 @@ -1,15 +1,20 @@
@@ -5121,7 +4967,7 @@ index d498b911575861c53dcefe39434c3593fa594a4c..e9fa2ec00f4bc18b4e9659ef5e1be0c7
  import static mindustry.Vars.*;
  
  public class ArcOld{
-@@ -229,4 +234,41 @@ public class ArcOld{
+@@ -228,4 +233,41 @@ public class ArcOld{
              c.checkPref("developMode", false);
          }));
      }
@@ -6432,20 +6278,17 @@ index 0000000000000000000000000000000000000000..b3bf32d2d3da28f6adc38c56ea3d2440
 +    }
 +}
 diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index f90dc699fdf4e83af3011322042315a081f9f2bc..e45a96437cd84779f9d0499fbfc0d20346df6372 100644
+index 269e2571a440517f257237920a5155a9eb5032a2..93583a5386d0702d886d8c70ce9ed3b0f125cfe4 100644
 --- a/core/src/mindustryX/features/RenderExt.java
 +++ b/core/src/mindustryX/features/RenderExt.java
-@@ -7,8 +7,8 @@ import arc.math.*;
- import arc.math.geom.*;
- import arc.util.*;
+@@ -9,12 +9,14 @@ import arc.util.*;
  import mindustry.*;
--import mindustry.arcModule.draw.*;
  import mindustry.entities.*;
-+import mindustry.game.*;
  import mindustry.game.EventType.*;
++import mindustry.game.*;
  import mindustry.gen.*;
  import mindustry.graphics.*;
-@@ -16,12 +16,14 @@ import mindustry.type.*;
+ import mindustry.type.*;
  import mindustry.world.*;
  import mindustry.world.blocks.defense.*;
  import mindustry.world.blocks.defense.turrets.*;
@@ -6453,33 +6296,34 @@ index f90dc699fdf4e83af3011322042315a081f9f2bc..e45a96437cd84779f9d0499fbfc0d203
  import mindustry.world.blocks.distribution.MassDriver.*;
  import mindustry.world.blocks.logic.*;
  import mindustry.world.blocks.logic.MessageBlock.*;
- import mindustry.world.blocks.production.Drill.*;
+@@ -22,6 +24,7 @@ import mindustry.world.blocks.production.Drill.*;
  import mindustry.world.blocks.storage.*;
  import mindustry.world.blocks.units.*;
+ import mindustryX.features.draw.*;
 +import mindustryX.features.func.*;
  
- import static mindustry.Vars.tilesize;
+ import static mindustry.Vars.*;
  
-@@ -40,6 +42,8 @@ public class RenderExt{
-     public static int massDriverLineInterval;
-     public static boolean drawBars, drawBarsMend;
+@@ -42,6 +45,8 @@ public class RenderExt{
      public static float healthBarMinHealth;
+     public static boolean payloadPreview;
+     public static boolean deadOverlay;
 +    public static boolean drawBlockDisabled;
 +    public static boolean showOtherInfo;
  
      public static boolean unitHide = false;
      public static Color massDriverLineColor = Color.clear;
-@@ -80,6 +84,9 @@ public class RenderExt{
-             drawBars = Core.settings.getBool("blockBars");
-             drawBarsMend = Core.settings.getBool("blockBars_mend");
+@@ -84,6 +89,9 @@ public class RenderExt{
              healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
+             payloadPreview = Core.settings.getBool("payloadpreview");
+             deadOverlay = Core.settings.getBool("deadOverlay");
 +            drawBlockDisabled = Core.settings.getBool("blockdisabled");
 +            showOtherInfo = Core.settings.getBool("showOtherTeamState");
 +            showOtherInfo |= Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp;
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-@@ -105,6 +112,8 @@ public class RenderExt{
+@@ -109,6 +117,8 @@ public class RenderExt{
              drawMassDriverLine(b);
          if(build != null && drawBars)
              drawBars(build);
@@ -6488,7 +6332,7 @@ index f90dc699fdf4e83af3011322042315a081f9f2bc..e45a96437cd84779f9d0499fbfc0d203
      }
  
      private static void placementEffect(float x, float y, float lifetime, float range, Color color){
-@@ -193,7 +202,7 @@ public class RenderExt{
+@@ -197,7 +207,7 @@ public class RenderExt{
          if(buildRatio >= 0){
              drawBar(build, Color.black, Pal.accent, buildRatio);
              String progressT = Strings.format("[stat]@% | @s", (int)(Mathf.clamp(buildRatio, 0f, 1f) * 100), leftTime < 0 ? Iconc.cancel : Strings.fixed(leftTime / (60f * Vars.state.rules.unitBuildSpeed(build.team) * build.timeScale()), 0));
@@ -8206,3 +8050,29 @@ index 0000000000000000000000000000000000000000..4af00d9add5776e8d966880336121b05
 +        });
 +    }
 +}
+diff --git a/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
+index f0ac04dfb87f841f5c4662e6bfe3a77e51d5ced9..8c88817b7dd08f3a8fe98dbdb6d05bdc4cb6bde7 100644
+--- a/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
++++ b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
+@@ -35,15 +35,13 @@ public class MapInfoTable extends AuxiliaryTools.Table{
+         button(Items.copper.emoji(), RStyles.clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
+         button(Icon.chatSmall, RStyles.clearAccentNonei, () -> UIExt.arcMessageDialog.show()).tooltip("中央监控室");
+         button(Icon.playersSmall, RStyles.clearAccentNonei, () -> {
+-            if(ui.listfrag.players.size > 1){
+-                if(control.input instanceof DesktopInput){
+-                    ((DesktopInput)control.input).panning = true;
+-                }
+-                if(InputHandler.follow == null) InputHandler.follow = ui.listfrag.players.get(0);
+-                InputHandler.followIndex = (InputHandler.followIndex + 1) >= ui.listfrag.players.size ? 0 : InputHandler.followIndex + 1;
+-                InputHandler.follow = ui.listfrag.players.get(InputHandler.followIndex);
+-                UIExt.announce("视角追踪：" + InputHandler.follow.name);
++            var players = Groups.player.copy();
++            if(players.isEmpty())return;
++            if(control.input instanceof DesktopInput){
++                ((DesktopInput)control.input).panning = true;
+             }
++            InputHandler.follow = players.get((players.indexOf(InputHandler.follow, true) + 1) % players.size);
++            UIExt.announce("视角追踪：" + InputHandler.follow.name);
+         }).tooltip("切换跟踪玩家");
+         if(!mobile) button(Icon.editSmall, RStyles.clearAccentNonei, this::uiTable).tooltip("ui大全");
+     }

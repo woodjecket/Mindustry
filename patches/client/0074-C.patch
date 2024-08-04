@@ -8,23 +8,9 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/assets/bundles/bundle-mdtx.properties   | 1 +
  core/src/mindustry/async/PhysicsProcess.java | 3 +++
- core/src/mindustryX/features/Settings.java   | 1 +
- 3 files changed, 5 insertions(+)
+ 1 file changed, 3 insertions(+)
 
-diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 4b2dfebc198217e2ae699c405edfa501b5f15a19..c76acc18976cedb47ca58b75cdf2074ec7224f4f 100644
---- a/core/assets/bundles/bundle-mdtx.properties
-+++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -85,6 +85,7 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
- category.entitySettings.name = 实体相关设置
- setting.bulletShow.name = 显示子弹
- setting.showminebeam.name = 显示单位挖掘光束
-+setting.noPlayerHitBox.name = 取消玩家自身的碰撞 [gray]轻微作弊
- 
- category.developerMode.name = 特殊设置
- setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减少Draws总数
 diff --git a/core/src/mindustry/async/PhysicsProcess.java b/core/src/mindustry/async/PhysicsProcess.java
 index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692aef1eff361 100644
 --- a/core/src/mindustry/async/PhysicsProcess.java
@@ -45,15 +31,3 @@ index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692ae
              //move by delta
              entity.move(ref.body.x - ref.x, ref.body.y - ref.y);
          }
-diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 5d9c0d3a96c0cce4ffec16b8eadf1d8d9c3f6541..0de45982c600cbd45ca33f964a7b8e21aa7b7115 100644
---- a/core/src/mindustryX/features/Settings.java
-+++ b/core/src/mindustryX/features/Settings.java
-@@ -63,6 +63,7 @@ public class Settings{
-             c.addCategory("entitySettings");
-             c.checkPref("bulletShow", true);
-             c.checkPref("showMineBeam".toLowerCase(), true);
-+            c.checkPref("noPlayerHitBox", false);
- 
-             c.addCategory("developerMode");
-             c.checkPref("renderMerge", true);

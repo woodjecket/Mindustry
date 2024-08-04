@@ -1,0 +1,138 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Fri, 2 Aug 2024 23:32:56 +0800
+Subject: [PATCH] FC(RenderExt) payloadPreview
+
+---
+ core/src/mindustryX/features/RenderExt.java   |  7 +-
+ .../features/draw/PayloadDropHint.java        | 81 +++++++++++++++++++
+ 2 files changed, 86 insertions(+), 2 deletions(-)
+ create mode 100644 core/src/mindustryX/features/draw/PayloadDropHint.java
+
+diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
+index e499bbee122b00d8a094df477924677a91b50323..65256e11a2cdfd785b96dcff619fac0a615ea0ac 100644
+--- a/core/src/mindustryX/features/RenderExt.java
++++ b/core/src/mindustryX/features/RenderExt.java
+@@ -21,8 +21,9 @@ import mindustry.world.blocks.logic.MessageBlock.*;
+ import mindustry.world.blocks.production.Drill.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.units.*;
++import mindustryX.features.draw.*;
+ 
+-import static mindustry.Vars.tilesize;
++import static mindustry.Vars.*;
+ 
+ public class RenderExt{
+     public static boolean bulletShow, showMineBeam, displayAllMessage;
+@@ -39,6 +40,7 @@ public class RenderExt{
+     public static int massDriverLineInterval;
+     public static boolean drawBars, drawBarsMend;
+     public static float healthBarMinHealth;
++    public static boolean payloadPreview;
+ 
+     public static boolean unitHide = false;
+     public static Color massDriverLineColor = Color.clear;
+@@ -79,13 +81,14 @@ public class RenderExt{
+             drawBars = Core.settings.getBool("blockBars");
+             drawBarsMend = Core.settings.getBool("blockBars_mend");
+             healthBarMinHealth = Core.settings.getInt("blockbarminhealth");
++            payloadPreview = Core.settings.getBool("payloadpreview");
+         });
+         Events.run(Trigger.draw, RenderExt::draw);
+         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
+     }
+ 
+     private static void draw(){
+-
++        if(RenderExt.payloadPreview) PayloadDropHint.draw(player);
+     }
+ 
+     public static void onGroupDraw(Drawc t){
+diff --git a/core/src/mindustryX/features/draw/PayloadDropHint.java b/core/src/mindustryX/features/draw/PayloadDropHint.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b0da94c798af6477f9fe78d5979c1cd52b71087e
+--- /dev/null
++++ b/core/src/mindustryX/features/draw/PayloadDropHint.java
+@@ -0,0 +1,81 @@
++package mindustryX.features.draw;
++
++import arc.graphics.*;
++import arc.graphics.g2d.*;
++import mindustry.*;
++import mindustry.entities.*;
++import mindustry.gen.*;
++import mindustry.graphics.*;
++import mindustry.world.*;
++import mindustry.world.blocks.payloads.*;
++
++// pick from https://github.com/MinRi2/MinerTools/blob/8ab2fe090cf24f0a5c8eaa0dcbea01f0a5447dd8/src/MinerTools/graphics/draw/player/PayloadDropHint.java
++public class PayloadDropHint{
++    public static void draw(Player player){
++        var unit = player.unit() instanceof Payloadc ? (Unit & Payloadc)player.unit() : null;
++        if(unit == null) return;
++
++        Draw.z(Layer.flyingUnit + 0.1f);
++        if(unit.payloads().any()){
++            Payload payload = unit.payloads().peek();
++            if(payload instanceof BuildPayload p){
++                buildDropHint(unit, p);
++            }else if(payload instanceof UnitPayload p){
++                unitDropHint(unit, p);
++            }
++        }
++
++        if(!unitPickUpHint(unit)){
++            buildPickUpHint(unit);
++        }
++    }
++
++    private static void buildPickUpHint(Payloadc unit){
++        Tile tile = unit.tileOn();
++        if(tile == null) return;
++        Building build = tile.build;
++        if(build == null || !unit.canPickup(build)) return;
++
++        Block block = build.block;
++        float size = block.size * Vars.tilesize;
++
++        Draw.color(Pal.accent, 0.6f);
++        Draw.rect(block.fullIcon, build.x, build.y, size, size, build.rotation * 90);
++        Lines.square(build.x, build.y, size * 0.9f, 20);
++        Draw.color();
++    }
++
++    private static <T extends Unit&Payloadc> boolean unitPickUpHint(T unit){
++        Unit target = Units.closest(unit.team(), unit.x, unit.y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && unit.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
++        if(target == null) return false;
++        Draw.color(Pal.accent, 0.6f);
++        Draw.rect(target.type.fullIcon, target.x, target.y, target.rotation - 90);
++        Lines.square(target.x, target.y, target.type.hitSize, 20);
++        Draw.color();
++        return true;
++    }
++
++    private static void buildDropHint(Unit unit, BuildPayload payload){
++        Building build = payload.build;
++        Block block = build.block;
++        Tile on = Vars.world.tileWorld(unit.x - block.offset, unit.y - block.offset);
++        if(on == null) return;
++
++        boolean valid = Build.validPlace(block, build.team, on.x, on.y, build.rotation, false);
++        float size = block.size * Vars.tilesize;
++        int rot = block.rotate ? (int)((unit.rotation + 45f) / 90f) % 4 * 90 : 0;
++
++        Draw.color(!valid ? Color.red : Pal.accent, 0.6f);
++        Draw.rect(block.fullIcon, on.x * Vars.tilesize, on.y * Vars.tilesize, size, size, rot);
++        Draw.color();
++    }
++
++    private static void unitDropHint(Unit unit, UnitPayload payload){
++        Unit u = payload.unit;
++        boolean valid = u.canPass(unit.tileX(), unit.tileY()) && Units.count(unit.x, unit.y, u.physicSize(), Flyingc::isGrounded) <= 1;
++
++        Draw.color(!valid ? Color.red : Pal.accent, 0.6f);
++        Draw.rect(u.type.fullIcon, unit.x, unit.y, unit.rotation - 90);
++        Draw.color();
++    }
++}
+\ No newline at end of file

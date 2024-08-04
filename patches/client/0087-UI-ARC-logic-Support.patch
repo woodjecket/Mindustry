@@ -19,9 +19,9 @@ way-zer <himc.wicp@gmail.com> on 2024/7/14
  core/src/mindustry/logic/LExecutor.java       |  19 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  49 +++-
+ .../world/blocks/logic/LogicBlock.java        |  55 +++-
  .../world/blocks/logic/MemoryBlock.java       |  52 ++++
- 6 files changed, 371 insertions(+), 52 deletions(-)
+ 6 files changed, 374 insertions(+), 55 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94da087dcc 100644
@@ -523,7 +523,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0ddc961762f 100644
+index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc5641f029d3a 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -534,15 +534,6 @@ index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0dd
  
  import java.io.*;
  import java.util.zip.*;
-@@ -114,7 +115,7 @@ public class LogicBlock extends Block{
-     }
- 
-     public boolean accessible(){
--        return !privileged || state.rules.editor || state.playtestingMap != null;
-+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
-     }
- 
-     @Override
 @@ -260,6 +261,8 @@ public class LogicBlock extends Block{
          public @Nullable String tag;
          public char iconTag;
@@ -552,7 +543,25 @@ index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0dd
          /** Block of code to run after load. */
          public @Nullable Runnable loadBlock;
  
-@@ -583,10 +586,12 @@ public class LogicBlock extends Block{
+@@ -424,7 +427,7 @@ public class LogicBlock extends Block{
+ 
+         @Override
+         public boolean displayable(){
+-            return accessible();
++            return accessible() || RenderExt.showOtherInfo;
+         }
+ 
+         @Override
+@@ -447,7 +450,7 @@ public class LogicBlock extends Block{
+ 
+         @Override
+         public Cursor getCursor(){
+-            return !accessible() ? SystemCursor.arrow : super.getCursor();
++            return !accessible() && !RenderExt.showOtherInfo ? SystemCursor.arrow : super.getCursor();
+         }
+ 
+         //logic blocks cause write problems when picked up
+@@ -583,17 +586,19 @@ public class LogicBlock extends Block{
              }
  
              //draw top text on separate layer
@@ -566,7 +575,21 @@ index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0dd
                  }
              }
          }
-@@ -645,7 +650,45 @@ public class LogicBlock extends Block{
+ 
+         @Override
+         public void drawSelect(){
+-            if(!accessible()) return;
++            if(!accessible() && !RenderExt.showOtherInfo) return;
+ 
+             Groups.unit.each(u -> u.controller() instanceof LogicAI ai && ai.controller == this, unit -> {
+                 Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);
+@@ -640,12 +645,50 @@ public class LogicBlock extends Block{
+ 
+         @Override
+         public boolean shouldShowConfigure(Player player){
+-            return accessible();
++            return accessible() || RenderExt.showOtherInfo;
+         }
  
          @Override
          public void buildConfiguration(Table table){
@@ -574,7 +597,7 @@ index 261b6374360c2cbae88f44aa441f55706c181936..b34e84904c0dff843f0d962c3661f0dd
 +            table.setBackground(Styles.black3);
 +            Table vars = new Table();
 +            table.table(t -> {
-+                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
++                t.button(Icon.pencil, Styles.cleari, () -> showEditDialog(RenderExt.showOtherInfo)).size(40);
 +                t.button(Icon.copy, Styles.cleari, () -> {
 +                    Core.app.setClipboardText(code);
 +                    UIExt.announce("已复制逻辑");

@@ -19,38 +19,13 @@ way-zer <himc.wicp@gmail.com> on 2024/5/28
 新功能：顶点合并
 way-zer <himc.wicp@gmail.com> on 2024/7/23
 ---
- core/assets/bundles/bundle-mdtx.properties    |   5 +-
  .../arc/graphics/g2d/MySortedSpriteBatch.java | 237 ++++++-
  .../arc/graphics/g2d/SortedSpriteBatch2.java  | 668 ++++++++++++++++++
  core/src/mindustry/graphics/MultiPacker.java  |   2 +-
  core/src/mindustryX/features/RenderExt.java   |   3 +
- core/src/mindustryX/features/Settings.java    |   4 +
- 6 files changed, 915 insertions(+), 4 deletions(-)
+ 4 files changed, 907 insertions(+), 3 deletions(-)
  create mode 100644 core/src/arc/graphics/g2d/SortedSpriteBatch2.java
 
-diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index f08dd5fe6ce27c8cfbd277ecea0cb933542ec4a4..b7f9b825de0e7b5b0ba72b5fcb294552523bcf50 100644
---- a/core/assets/bundles/bundle-mdtx.properties
-+++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -66,6 +66,10 @@ setting.blockRenderLevel.name = [cyan]建筑渲染等级
- category.entitySettings.name = 实体相关设置
- setting.bulletShow.name = 显示子弹
- setting.showminebeam.name = 显示单位挖掘光束
-+
-+category.developerMode.name = 特殊设置
-+setting.renderMerge.name = 顶点合并渲染 [grey]实验性功能，可以减少Draws总数
-+setting.renderSort.name = 渲染排序 [grey]多图集(Mod较多)情况下能够提升50%渲染性能，但可能造成渲染错误
- #end Settings
- 
- bar.reloadDetail = 装填：{0}%
-@@ -169,7 +173,6 @@ category.arcShareinfo.name = 多人游玩设置
- category.arcStrongCheat.name = [red]强作弊功能
- category.arcWeakCheat.name = 弱作弊功能
- category.combat = 战斗
--category.developerMode.name = 特殊设置
- category.moreContent.name = 更多内容适配
- category.movement = 移动
- category.personalized.name = 自定义客户端     [需要重启]
 diff --git a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java b/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
 index feca84a8eec0f7d514f9aa6be6f82134d8622721..9f56c24264dcb7d0ccc5db464d6d6deaa1d08f20 100644
 --- a/core/src/arc/graphics/g2d/MySortedSpriteBatch.java
@@ -1022,18 +997,3 @@ index 7b5d21f77cd8d15d0541cd70a051aad660c21e1d..e3721adf4c7e215ef3b944512d460892
          });
          Events.run(Trigger.draw, RenderExt::draw);
          Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index 02cb18ab5655c14c33680a50388e42d33fd2212f..5d9c0d3a96c0cce4ffec16b8eadf1d8d9c3f6541 100644
---- a/core/src/mindustryX/features/Settings.java
-+++ b/core/src/mindustryX/features/Settings.java
-@@ -63,6 +63,10 @@ public class Settings{
-             c.addCategory("entitySettings");
-             c.checkPref("bulletShow", true);
-             c.checkPref("showMineBeam".toLowerCase(), true);
-+
-+            c.addCategory("developerMode");
-+            c.checkPref("renderMerge", true);
-+            c.checkPref("renderSort", false);
-         }));
-         ArcOld.init(categories);
-         Events.on(ClientLoadEvent.class, e -> {
