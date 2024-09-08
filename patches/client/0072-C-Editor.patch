@@ -85,7 +85,7 @@ index 38839e610819e60fe2d9780f730404979fb48976..1145b88cd87b1c860facda79cf8f05a1
  
                  if(wx < 0 || wy < 0 || wx >= width() || wy >= height()){
 diff --git a/core/src/mindustry/editor/MapEditorDialog.java b/core/src/mindustry/editor/MapEditorDialog.java
-index a4c2de9dc3662040bf4723db8e67a40172264fb4..7b5929e8fc8ac2a69d10185cce99cbfc4a36fec6 100644
+index c1f3a6e888bac8657385cdf0cb5028ee8ad2c337..96f4613c7648da483167fc663cfe6c2f98d7ae4c 100644
 --- a/core/src/mindustry/editor/MapEditorDialog.java
 +++ b/core/src/mindustry/editor/MapEditorDialog.java
 @@ -30,6 +30,7 @@ import mindustry.world.*;
@@ -145,7 +145,7 @@ index a4c2de9dc3662040bf4723db8e67a40172264fb4..7b5929e8fc8ac2a69d10185cce99cbfc
                      for(int j = 0; j < MapEditor.brushSizes.length; j++){
                          if(MapEditor.brushSizes[j] == editor.brushSize){
                              slider.setValue(j);
-@@ -793,7 +805,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
+@@ -771,7 +783,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
  
              if(i == 0) editor.drawBlock = block;
  
@@ -177,7 +177,7 @@ index 7a5c15ce71ac487492b0685e7cc99d061bae5b76..531e545323ec177de4a0ae29a2986dfa
                  table.row();
              }
 diff --git a/core/src/mindustry/editor/MapView.java b/core/src/mindustry/editor/MapView.java
-index dd1c447f6192caa90dfc39d3cdce89368e148f3c..98f3f31e284a04c5fd3ac35fd625cc52067b1042 100644
+index 4131bc2bcd213e315fa6abeaf6ee94d6f30e7144..8423f67663e99616d2cfa431ba454519f1ef5f94 100644
 --- a/core/src/mindustry/editor/MapView.java
 +++ b/core/src/mindustry/editor/MapView.java
 @@ -254,6 +254,11 @@ public class MapView extends Element implements GestureListener{

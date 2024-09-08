@@ -339,7 +339,7 @@ index d21aa28efe895c7d76dfd903a9942a03f5a012b9..14a4b72a0881327ce3a9bb65d0cc24b8
      public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
  
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index 39deed997df547bf6fe986fe39643209ca99b0ce..9de31563d7940d8cbb3ac345259c58b0006e1ea9 100644
+index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..1de9f9267961db96ceb6f405f12508f44e9106cb 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -28,6 +28,7 @@ import mindustry.logic.*;
@@ -561,7 +561,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e
      }
  }
 diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
-index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf2666c98d69 100644
+index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..9b999e9cf6a02711e6b25e55764b18a04fefacbb 100644
 --- a/core/src/mindustry/entities/comp/BuildingComp.java
 +++ b/core/src/mindustry/entities/comp/BuildingComp.java
 @@ -41,6 +41,7 @@ import mindustry.world.blocks.power.*;
@@ -580,7 +580,7 @@ index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf26
  
      @Nullable PowerModule power;
      @Nullable ItemModule items;
-@@ -1421,7 +1423,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1425,7 +1427,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          //derelict team icon currently doesn't display
          return team == Team.derelict ?
              block.localizedName + "\n" + Core.bundle.get("block.derelict") :
@@ -590,7 +590,7 @@ index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf26
      }
  
      public TextureRegion getDisplayIcon(){
-@@ -1445,7 +1448,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1449,7 +1452,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          table.row();
  
          //only display everything else if the team is the same
@@ -599,7 +599,7 @@ index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf26
              table.table(bars -> {
                  bars.defaults().growX().height(18f).pad(4);
  
-@@ -1546,6 +1549,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1550,6 +1553,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
              table.add(result).growX();
              table.row();
          }
@@ -615,7 +615,7 @@ index f060739fd6a7005a039088151160f8865297dd14..32b2d39b2a86efbeeea90f636211bf26
      }
  
       /** Called when this block is tapped to build a UI on the table.
-@@ -1561,7 +1573,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1565,7 +1577,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
  
      /** Returns whether a hand cursor should be shown over this block. */
      public Cursor getCursor(){
@@ -1203,7 +1203,7 @@ index fcbcc2483e5d7dbc71ce769840cdbbd61c3e8095..6ed26ed4a5f078fe36495fd219c2d2e7
      toggle_unit(KeyCode.unset, "mindustryX"),
      point(KeyCode.j),
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840b4715770 100644
+index 48d6d9c6b7c365b75e60431957cec7d695681ce3..abc2b8f68565f4e283bbf8b1c40e311595d42c7c 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -14,17 +14,25 @@ import arc.scene.ui.layout.*;
@@ -1253,7 +1253,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
              }).margin(6f);
          });
      }
-@@ -229,7 +244,8 @@ public class DesktopInput extends InputHandler{
+@@ -233,7 +248,8 @@ public class DesktopInput extends InputHandler{
          }
  
          if((Math.abs(Core.input.axis(Binding.move_x)) > 0 || Math.abs(Core.input.axis(Binding.move_y)) > 0 || input.keyDown(Binding.mouse_move)) && (!scene.hasField())){
@@ -1263,7 +1263,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
          }
  
          if(!locked){
-@@ -404,7 +420,8 @@ public class DesktopInput extends InputHandler{
+@@ -408,7 +424,8 @@ public class DesktopInput extends InputHandler{
              }
          }
  
@@ -1273,7 +1273,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
              cursorType = SystemCursor.arrow;
              if(!Core.scene.hasMouse()){
                  Core.graphics.cursor(cursorType);
-@@ -772,6 +789,14 @@ public class DesktopInput extends InputHandler{
+@@ -778,6 +795,14 @@ public class DesktopInput extends InputHandler{
                  Core.settings.put("lasersopacity", 0);
              }
          }
@@ -1288,7 +1288,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
      }
  
      @Override
-@@ -846,7 +871,7 @@ public class DesktopInput extends InputHandler{
+@@ -852,7 +877,7 @@ public class DesktopInput extends InputHandler{
      }
  
      protected void updateMovement(Unit unit){
@@ -1297,7 +1297,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
  
          float speed = unit.speed();
          float xa = Core.input.axis(Binding.move_x);
-@@ -858,21 +883,63 @@ public class DesktopInput extends InputHandler{
+@@ -864,21 +889,63 @@ public class DesktopInput extends InputHandler{
              movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);
          }
  
@@ -1368,7 +1368,7 @@ index 1fc15522d18bf8ca80f7365d68f4a7a7b1fd076c..a95c861ee40a8c37ded30e4b0cf1a840
          player.mouseY = unit.aimY();
  
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index b63fa723820b0c4e28b227d89fa615097af0b97f..31de77f007dc97c6a2b12ba3fb8d4d082328ba1a 100644
+index 9be58ec46ccab9a86d84f75e05e200c04ae405a2..4cd7f39d6cd882f36086c5c317147ec2c0831c30 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -36,11 +36,13 @@ import mindustry.world.*;
@@ -1585,7 +1585,7 @@ index 2d0fc1bec1fb644a44e4b38e2cdab671e44ac9af..6f16bb8b0a07d4ced31710eec57c15d2
          unit.movePref(movement);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd55293987f5b 100644
+index e6c38c601c937c3810d3ef44db97ed9547baf176..a29f972b13258b6640464cfa5a387c1c2b3adeee 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -17,6 +17,7 @@ import mindustry.ai.*;
@@ -1775,7 +1775,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1239,6 +1334,9 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1241,6 +1336,9 @@ public class UnitType extends UnlockableContent implements Senseable{
          Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
          float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
  
@@ -1785,7 +1785,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          if(unit.controller().isBeingControlled(player.unit())){
              drawControl(unit);
          }
-@@ -1378,7 +1476,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1380,7 +1478,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawShield(Unit unit){
@@ -1794,7 +1794,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          float radius = unit.hitSize() * 1.3f;
          Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,
              Color.clear,
-@@ -1390,6 +1488,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1392,6 +1490,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);
  
          Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));
@@ -1802,7 +1802,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);
  
          Draw.reset();
-@@ -1403,7 +1502,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1405,7 +1504,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          float dest = floor.canShadow ? 1f : 0f;
          //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
          unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
@@ -1811,7 +1811,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
  
          Draw.rect(shadowRegion, unit.x + shadowTX * e, unit.y + shadowTY * e, unit.rotation - 90);
          Draw.color();
-@@ -1418,7 +1517,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1420,7 +1519,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawSoftShadow(float x, float y, float rotation, float alpha){
@@ -1820,7 +1820,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          float rad = 1.6f;
          float size = Math.max(region.width, region.height) * region.scl();
          Draw.rect(softShadowRegion, x, y, size * rad * Draw.xscl, size * rad * Draw.yscl, rotation - 90);
-@@ -1441,18 +1540,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1443,18 +1542,21 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.mixcol();
  
              size = ((3f + sin) * unit.itemTime + 0.5f) * 2;
@@ -1844,7 +1844,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
              }
  
              Draw.reset();
-@@ -1535,7 +1637,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1537,7 +1639,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public Color cellColor(Unit unit){
          float f = Mathf.clamp(unit.healthf());
@@ -1853,7 +1853,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
      }
  
      public void drawLight(Unit unit){
-@@ -1576,7 +1678,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1578,7 +1680,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          if(footRegion.found()){
              for(Leg leg : legs){
@@ -1862,7 +1862,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
              }
          }
  
-@@ -1594,7 +1696,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1596,7 +1698,7 @@ public class UnitType extends UnlockableContent implements Senseable{
              if(footRegion.found() && leg.moving && shadowElevation > 0){
                  float scl = shadowElevation * invDrown;
                  float elev = Mathf.slope(1f - leg.stage) * scl;
@@ -1871,7 +1871,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
                  Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                  Draw.color();
              }
-@@ -1673,8 +1775,9 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1675,8 +1777,9 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();
  
@@ -1882,7 +1882,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          }
  
          for(int i : Mathf.signs){
-@@ -1696,6 +1799,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1698,6 +1801,8 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.color(Color.white);
          }
  
@@ -1891,7 +1891,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
  
          Draw.mixcol();
-@@ -1703,12 +1808,12 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1705,12 +1810,12 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void applyOutlineColor(Unit unit){
          if(unit.drownTime > 0 && unit.lastDrownFloor != null){
@@ -1906,7 +1906,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
          if(healFlash){
              Tmp.c1.set(Color.white).lerp(healColor, Mathf.clamp(unit.healTime - unit.hitTime));
          }
-@@ -1723,6 +1828,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1725,6 +1830,13 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
      }
  
@@ -1920,7 +1920,7 @@ index 682d2cdb951823b61c7951c8c19ed8a0a976f396..6fe66d0efcbe76539b01be6bd2dfd552
      //endregion
  
      public static class UnitEngine implements Cloneable{
-@@ -1761,13 +1873,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1763,13 +1875,13 @@ public class UnitType extends UnlockableContent implements Senseable{
              );
              Draw.z(z);*/
  
@@ -2074,7 +2074,7 @@ index 8defe26a2482e54d24d9b12e4a9ae453e13348f3..bd97f9cc7c1c491b1cb7eee0c19a3204
          cont.add(pane);
  
 diff --git a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java b/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
-index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098b20c8adb 100644
+index 247625c2486445bf2c9c57e9710e3d7bdf65b594..a4be208fa0afbf444a95828984cdd00b6bda42f1 100644
 --- a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
 +++ b/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
 @@ -3,6 +3,7 @@ package mindustry.ui.dialogs;
@@ -2130,8 +2130,8 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
 +        number("@rules.initialwavespacing", false, f -> rules.initialWaveSpacing = f * 60f, () -> rules.initialWaveSpacing / 60f, () -> rules.waves && rules.waveTimer, 0, Float.MAX_VALUE);
          number("@rules.dropzoneradius", false, f -> rules.dropZoneRadius = f * tilesize, () -> rules.dropZoneRadius / tilesize, () -> rules.waves);
  
- 
-@@ -247,7 +250,7 @@ public class CustomRulesDialog extends BaseDialog{
+         category("resourcesbuilding");
+@@ -237,7 +240,7 @@ public class CustomRulesDialog extends BaseDialog{
          check("@rules.reactorexplosions", b -> rules.reactorExplosions = b, () -> rules.reactorExplosions);
          check("@rules.schematic", b -> rules.schematicsAllowed = b, () -> rules.schematicsAllowed);
          check("@rules.coreincinerates", b -> rules.coreIncinerates = b, () -> rules.coreIncinerates);
@@ -2140,7 +2140,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          check("@rules.disableworldprocessors", b -> rules.disableWorldProcessors = b, () -> rules.disableWorldProcessors);
          number("@rules.buildcostmultiplier", false, f -> rules.buildCostMultiplier = f, () -> rules.buildCostMultiplier, () -> !rules.infiniteResources);
          number("@rules.buildspeedmultiplier", f -> rules.buildSpeedMultiplier = f, () -> rules.buildSpeedMultiplier, 0.001f, 50f);
-@@ -267,6 +270,9 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -257,6 +260,9 @@ public class CustomRulesDialog extends BaseDialog{
          if(Core.bundle.get("bannedblocks").toLowerCase().contains(ruleSearch)){
              current.button("@bannedblocks", () -> showBanned("@bannedblocks", ContentType.block, rules.bannedBlocks, Block::canBeBuilt)).left().width(300f).row();
          }
@@ -2150,7 +2150,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          check("@rules.hidebannedblocks", b -> rules.hideBannedBlocks = b, () -> rules.hideBannedBlocks);
          check("@bannedblocks.whitelist", b -> rules.blockWhitelist = b, () -> rules.blockWhitelist);
  
-@@ -299,6 +305,7 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -289,6 +295,7 @@ public class CustomRulesDialog extends BaseDialog{
          check("@rules.explosions", b -> rules.damageExplosions = b, () -> rules.damageExplosions);
          check("@rules.fire", b -> rules.fire = b, () -> rules.fire);
          check("@rules.fog", b -> rules.fog = b, () -> rules.fog);
@@ -2158,7 +2158,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          check("@rules.lighting", b -> rules.lighting = b, () -> rules.lighting);
  
          if(experimental){
-@@ -322,11 +329,50 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -312,11 +319,50 @@ public class CustomRulesDialog extends BaseDialog{
                  b.add("@rules.ambientlight");
              }, () -> ui.picker.show(rules.ambientLight, rules.ambientLight::set)).left().width(250f).row();
          }
@@ -2209,7 +2209,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
  
          category("planet");
          if(Core.bundle.get("rules.title.planet").toLowerCase().contains(ruleSearch)){
-@@ -337,10 +383,10 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -327,10 +373,10 @@ public class CustomRulesDialog extends BaseDialog{
  
                  t.defaults().size(140f, 50f);
  
@@ -2224,7 +2224,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
  
                      if(t.getChildren().size % 3 == 0){
                          t.row();
-@@ -361,10 +407,29 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -350,10 +396,29 @@ public class CustomRulesDialog extends BaseDialog{
          if(showRuleEditRule){
              check("@rules.allowedit", b -> rules.allowEditRules = b, () -> rules.allowEditRules);
          }
@@ -2255,7 +2255,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
              boolean[] shown = {false};
              Table wasCurrent = current;
  
-@@ -381,6 +446,10 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -370,6 +435,10 @@ public class CustomRulesDialog extends BaseDialog{
                  current = c;
                  TeamRule teams = rules.teams.get(team);
  
@@ -2266,7 +2266,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
                  number("@rules.blockhealthmultiplier", f -> teams.blockHealthMultiplier = f, () -> teams.blockHealthMultiplier);
                  number("@rules.blockdamagemultiplier", f -> teams.blockDamageMultiplier = f, () -> teams.blockDamageMultiplier);
  
-@@ -412,6 +481,32 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -401,6 +470,32 @@ public class CustomRulesDialog extends BaseDialog{
              }, () -> shown[0]).left().growX().row();
          }
  
@@ -2299,7 +2299,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          additionalSetup.each(Runnable::run);
  
          for(var i = 0; i < categories.size; i++){
-@@ -446,6 +541,7 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -435,6 +530,7 @@ public class CustomRulesDialog extends BaseDialog{
                      cons.get(team);
                  }).pad(1f).checked(b -> prov.get() == team).size(60f).tooltip(team.coloredName()).with(i -> i.getStyle().imageUpColor = team.color);
              }
@@ -2307,7 +2307,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          }).padTop(0).row();
      }
  
-@@ -478,7 +574,7 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -467,7 +563,7 @@ public class CustomRulesDialog extends BaseDialog{
              t.field((prov.get()) + "", s -> cons.get(Strings.parseInt(s)))
                  .update(a -> a.setDisabled(!condition.get()))
                  .padRight(100f)
@@ -2316,7 +2316,7 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          }).padTop(0).row();
      }
  
-@@ -491,7 +587,8 @@ public class CustomRulesDialog extends BaseDialog{
+@@ -480,7 +576,8 @@ public class CustomRulesDialog extends BaseDialog{
              t.field((integer ? (int)prov.get() : prov.get()) + "", s -> cons.get(Strings.parseFloat(s)))
              .padRight(100f)
              .update(a -> a.setDisabled(!condition.get()))
@@ -2327,10 +2327,10 @@ index a277593dd3ca7ecab8e2b49410f1a7e3ef27c4b2..e88487d6754008cc415c47b054f83098
          current.row();
      }
 diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-index 49b820de46ff4232022e22c8c78985afd3182a5c..85422fc94d173156ca86bbaf397fe2fe49a8e972 100644
+index efc8530fbdb5837cb14d4a0e80de8e8ffbdac588..07567778b10e34f9f3a4b6705444746118bc437c 100644
 --- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 +++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-@@ -18,8 +18,8 @@ import mindustry.ui.*;
+@@ -20,8 +20,8 @@ import mindustry.ui.*;
  import mindustry.world.*;
  import mindustryX.features.*;
  
@@ -2340,15 +2340,15 @@ index 49b820de46ff4232022e22c8c78985afd3182a5c..85422fc94d173156ca86bbaf397fe2fe
  
  public class DatabaseDialog extends BaseDialog{
      private TextField search;
-@@ -42,6 +42,7 @@ public class DatabaseDialog extends BaseDialog{
+@@ -58,6 +58,7 @@ public class DatabaseDialog extends BaseDialog{
          }).fillX().padBottom(4).row();
  
          cont.pane(all).scrollX(false);
 +        colorizeContent();
      }
  
-     void rebuild(){
-@@ -100,7 +101,7 @@ public class DatabaseDialog extends BaseDialog{
+     void checkTabList(){
+@@ -150,7 +151,7 @@ public class DatabaseDialog extends BaseDialog{
                                  ui.content.show(unlock);
                              }
                          });
@@ -2395,7 +2395,7 @@ index 677b3d53ed8c1614e0b802d6712e5d4b219e7bea..cec75cca43ea5852d2427ae6b6ba230d
      }
  
 diff --git a/core/src/mindustry/ui/dialogs/PlanetDialog.java b/core/src/mindustry/ui/dialogs/PlanetDialog.java
-index c8f4fb44c2d382c3430964e6197cde3f45bf8695..6af74ac5d883532c2fcb5c031bcebd810a079072 100644
+index 6ef9bb6397a1f91c554e658aea179e312678649b..4d73111b10a23a711154365ee44a56c4a16a65e8 100644
 --- a/core/src/mindustry/ui/dialogs/PlanetDialog.java
 +++ b/core/src/mindustry/ui/dialogs/PlanetDialog.java
 @@ -36,6 +36,8 @@ import mindustry.type.*;
@@ -3634,7 +3634,7 @@ index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba9
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 52b40e1cb9280646a5086973d81121c3ff40041b..aca6bcb3698586b0d65cc432bfb30a43024d3b79 100644
+index f3e80f7394b03c141052c9f8f8b4f5373ff112f1..9d7c45082b63f5b9dacd042ddf239f4a597a020d 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -3851,7 +3851,7 @@ index 52b40e1cb9280646a5086973d81121c3ff40041b..aca6bcb3698586b0d65cc432bfb30a43
 -                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(194f).update(pane -> {
 +                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(maxRow * 46f + 10f).update(pane -> {
                              if(pane.hasScroll()){
-                                 Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
+                                 Element result = Core.scene.getHoverElement();
                                  if(result == null || !result.isDescendantOf(pane)){
 @@ -677,6 +765,17 @@ public class PlacementFragment{
                          boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
@@ -4118,7 +4118,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 7e57937901ff3f030d78fbe58216fe6d69c3861d..398c725d05ad7953851c87f9fb20dec34f48c0e8 100644
+index 6517a6bd0fbe18040117962683bc3ea79bd408fc..0b8e579e86669b5cb85b16cc995b1f13b2c84ea1 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -368,7 +368,7 @@ public class Block extends UnlockableContent implements Senseable{
@@ -4166,7 +4166,7 @@ index 7e57937901ff3f030d78fbe58216fe6d69c3861d..398c725d05ad7953851c87f9fb20dec3
          float prevScale = Draw.scl;
          Draw.scl *= plan.animScale;
 diff --git a/core/src/mindustry/world/blocks/ConstructBlock.java b/core/src/mindustry/world/blocks/ConstructBlock.java
-index f45822964a30770bc15e4865429ef7749b4ce620..6c28b1574e70a7aa38b3edc200d3aee7ec01543d 100644
+index a68424552b03b8b0e43d61c59a8c40dc641930dc..3724d50fce644e67159eb20893c7f1577bd40ce5 100644
 --- a/core/src/mindustry/world/blocks/ConstructBlock.java
 +++ b/core/src/mindustry/world/blocks/ConstructBlock.java
 @@ -3,14 +3,17 @@ package mindustry.world.blocks;
@@ -4255,7 +4255,7 @@ index f45822964a30770bc15e4865429ef7749b4ce620..6c28b1574e70a7aa38b3edc200d3aee7
  
                  Draw.color();
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index 5cc4088121fd85ccb4971465494b2f00ee59a878..5562ba66cfc257d53058e56bb3eff52302298b8e 100644
+index 46956f7db1e3dd6b8e51e46432a0f052910bab2c..4f0baae73105cdd11a9910a096c4792b14aab23a 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
 @@ -1,6 +1,7 @@
@@ -4266,7 +4266,7 @@ index 5cc4088121fd85ccb4971465494b2f00ee59a878..5562ba66cfc257d53058e56bb3eff523
  import arc.func.*;
  import arc.graphics.*;
  import arc.graphics.g2d.*;
-@@ -124,6 +125,7 @@ public class ForceProjector extends Block{
+@@ -125,6 +126,7 @@ public class ForceProjector extends Block{
          Draw.color(player.team().color);
          Lines.stroke(1f);
          Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius, shieldRotation);

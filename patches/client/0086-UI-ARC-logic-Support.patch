@@ -27,7 +27,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  6 files changed, 376 insertions(+), 57 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
-index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94da087dcc 100644
+index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
 --- a/core/src/mindustry/logic/LCanvas.java
 +++ b/core/src/mindustry/logic/LCanvas.java
 @@ -18,6 +18,8 @@ import mindustry.gen.*;
@@ -48,7 +48,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94
      }
  
      public static void tooltip(Cell<?> cell, String key){
-@@ -351,14 +353,23 @@ public class LCanvas extends Table{
+@@ -344,14 +346,23 @@ public class LCanvas extends Table{
  
                  addressLabel = t.add(index + "").style(Styles.outlineLabel).color(color).padRight(8).get();
  
@@ -75,7 +75,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94
  
                  t.addListener(new InputListener(){
                      float lastx, lasty;
-@@ -436,6 +447,39 @@ public class LCanvas extends Table{
+@@ -429,6 +440,39 @@ public class LCanvas extends Table{
              }
          }
  
@@ -115,7 +115,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94
          @Override
          public void draw(){
              float pad = 5f;
-@@ -584,7 +628,7 @@ public class LCanvas extends Table{
+@@ -577,7 +621,7 @@ public class LCanvas extends Table{
              float dist = 100f;
  
              //square jumps
@@ -125,7 +125,7 @@ index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2..a3c19189ecdb9fe1cf9220aa61e943d52d991c1a 100644
+index 7848f7c4d7111de48e38d821dab5c4532d576c5e..558e3b2b6909d9e6d0d822d63616c8941ea5fc0e 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -10,6 +10,7 @@ import arc.util.*;
@@ -164,7 +164,7 @@ index fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2..a3c19189ecdb9fe1cf9220aa61e943d5
  
                  if(type == LAccess.enabled && !p1.bool()){
                      b.lastDisabler = exec.build;
-@@ -1192,7 +1195,7 @@ public class LExecutor{
+@@ -1191,7 +1194,7 @@ public class LExecutor{
          @Override
          public void run(LExecutor exec){
              if(headless) return;
@@ -191,7 +191,7 @@ index fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2..a3c19189ecdb9fe1cf9220aa61e943d5
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index a176f45e5d76ed8396f2d91cc1b25d528f78aefe..f58d28a47532017a421c427fd27f27d2a4d6cb06 100644
+index 580202ec1745ae6982dc5b485c16914e24439b93..d4ad76458ac0aee2f84d11443a7a630eafdda578 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
 @@ -21,6 +21,7 @@ import mindustry.type.*;
@@ -221,7 +221,7 @@ index a176f45e5d76ed8396f2d91cc1b25d528f78aefe..f58d28a47532017a421c427fd27f27d2
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6e5cbc22d 100644
+index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4af34bfb3 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -252,11 +252,11 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
 +
      @Nullable LExecutor executor;
      GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
- 
-@@ -40,19 +48,153 @@ public class LogicDialog extends BaseDialog{
-         addCloseListener();
- 
-         shown(this::setup);
+     boolean wasRows, wasPortrait;
+@@ -45,23 +53,157 @@ public class LogicDialog extends BaseDialog{
+             wasRows = LCanvas.useRows();
+             wasPortrait = Core.graphics.isPortrait();
+         });
 -        hidden(() -> consumer.get(canvas.save()));
 +        hidden(() -> {
 +            if(!noSave){
@@ -265,9 +265,13 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
 +                noSave = false;
 +            }});
          onResize(() -> {
-             setup();
-             canvas.rebuild();
-+            buildVarsTable();
+             if(wasRows != LCanvas.useRows() || wasPortrait != Core.graphics.isPortrait()){
+                 setup();
+                 canvas.rebuild();
++                buildVarsTable();
+                 wasPortrait = Core.graphics.isPortrait();
+                 wasRows = LCanvas.useRows();
+             }
          });
  
          add(canvas).grow().name("canvas");
@@ -408,7 +412,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
      public static Color typeColor(LVar s, Color color){
          return color.set(
              !s.isobj ? Pal.place :
-@@ -124,6 +266,17 @@ public class LogicDialog extends BaseDialog{
+@@ -133,6 +275,17 @@ public class LogicDialog extends BaseDialog{
                              ui.showException(e);
                          }
                      }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
@@ -426,7 +430,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
                  });
              });
  
-@@ -204,54 +357,60 @@ public class LogicDialog extends BaseDialog{
+@@ -213,54 +366,60 @@ public class LogicDialog extends BaseDialog{
          }).name("variables").disabled(b -> executor == null || executor.vars.length == 0);
  
          buttons.button("@add", Icon.add, () -> {
@@ -526,7 +530,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 261b6374360c2cbae88f44aa441f55706c181936..8db4fd016e391344fe022ebfac5d64fd0b794fb5 100644
+index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..ff42e7496df421614e9c4c2ad2437e3ad2481ee9 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -546,8 +550,8 @@ index 261b6374360c2cbae88f44aa441f55706c181936..8db4fd016e391344fe022ebfac5d64fd
      }
  
      public boolean accessible(){
--        return !privileged || state.rules.editor || state.playtestingMap != null;
-+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo && !net.client();
+-        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors;
++        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || RenderExt.showOtherInfo && !net.client();
 +    }
 +
 +    private boolean accessibleRead(){
@@ -654,7 +658,7 @@ index 261b6374360c2cbae88f44aa441f55706c181936..8db4fd016e391344fe022ebfac5d64fd
  
          public void showEditDialog(){
 diff --git a/core/src/mindustry/world/blocks/logic/MemoryBlock.java b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-index 37a6c2af615665c5179c6df5d57e053a07ce4c72..f8e4227441a914b575b978d68bf4573fade63a7d 100644
+index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..4a57729cfdb0193fc0421cb5940ae85cc0582ffb 100644
 --- a/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 @@ -1,9 +1,16 @@

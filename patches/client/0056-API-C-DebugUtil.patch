@@ -52,10 +52,10 @@ index 0000000000000000000000000000000000000000..e2bdb30e190a210f25130c423c853892
 +    }
 +}
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 7dc8ff3a7ad0d08f70f55137c1e4357a453cbe31..5475b11294275e35c1bf9ec3cf554b7fb2b6be75 100644
+index 32bd6153151b5072ec8d66fa21a6692cff7dddd6..d884b269bd44e73ac10eb052e7c05d0b3dce7422 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -70,7 +70,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -72,7 +72,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          });
  
          UI.loadColors();
@@ -65,7 +65,7 @@ index 7dc8ff3a7ad0d08f70f55137c1e4357a453cbe31..5475b11294275e35c1bf9ec3cf554b7f
          assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
  
 diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
-index 59f9b3cdcd0a11e30959e5f8ba2a1cbcaf472cff..788f23d4a1a3b498a0f451f90c426a1b86516e5c 100644
+index d1c7c5ca602c6c765cc62c9e2f0b384c3ad0a254..b640803511bcae93b5c8d8c71ffdc23b4292e8c6 100644
 --- a/core/src/mindustry/core/Logic.java
 +++ b/core/src/mindustry/core/Logic.java
 @@ -16,6 +16,7 @@ import mindustry.type.*;
@@ -76,7 +76,7 @@ index 59f9b3cdcd0a11e30959e5f8ba2a1cbcaf472cff..788f23d4a1a3b498a0f451f90c426a1b
  
  import java.util.*;
  
-@@ -415,6 +416,7 @@ public class Logic implements ApplicationListener{
+@@ -411,6 +412,7 @@ public class Logic implements ApplicationListener{
  
      @Override
      public void update(){
@@ -84,7 +84,7 @@ index 59f9b3cdcd0a11e30959e5f8ba2a1cbcaf472cff..788f23d4a1a3b498a0f451f90c426a1b
          Events.fire(Trigger.update);
          universe.updateGlobal();
  
-@@ -498,6 +500,7 @@ public class Logic implements ApplicationListener{
+@@ -494,6 +496,7 @@ public class Logic implements ApplicationListener{
          }else if(netServer.isWaitingForPlayers() && runStateCheck){
              checkGameState();
          }

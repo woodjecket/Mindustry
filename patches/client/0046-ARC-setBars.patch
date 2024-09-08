@@ -50,7 +50,7 @@ index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4
      }
  }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 766a0e295b0d165fb39014a2b51d43f70a23c48e..17eb52a168f9aef61edcdb31a5664dff3eedb6eb 100644
+index cd7c4b23817475b8b60dc8e877efc420077ac8a8..529e78fee44bd40ae281f46ea7302755d1f67e3f 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
@@ -109,10 +109,10 @@ index 766a0e295b0d165fb39014a2b51d43f70a23c48e..17eb52a168f9aef61edcdb31a5664dff
                  () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
              );
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index 4b7d6968838780299971c9a827752e516d74ea0c..5cc4088121fd85ccb4971465494b2f00ee59a878 100644
+index a562d29a519aadaadfcbd3de00e9c20340bd40f1..46956f7db1e3dd6b8e51e46432a0f052910bab2c 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-@@ -21,6 +21,7 @@ import mindustry.world.*;
+@@ -22,6 +22,7 @@ import mindustry.world.*;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
  import mindustryX.features.*;
@@ -120,7 +120,7 @@ index 4b7d6968838780299971c9a827752e516d74ea0c..5cc4088121fd85ccb4971465494b2f00
  
  import static mindustry.Vars.*;
  
-@@ -83,7 +84,11 @@ public class ForceProjector extends Block{
+@@ -84,7 +85,11 @@ public class ForceProjector extends Block{
      @Override
      public void setBars(){
          super.setBars();

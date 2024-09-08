@@ -14,7 +14,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/15 at 21:43
  1 file changed, 31 insertions(+), 28 deletions(-)
 
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index 3c3fd58ba4206c416fb400710a03d7168839a4af..de542e4eadea52dbd73abf9a6e4c432bd2b64d36 100644
+index e4c8bee7163b4fb05b8649381583358727106c01..633789f52c2b49e74354503136d1f18ce2168539 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
 @@ -60,21 +60,23 @@ public class JoinDialog extends BaseDialog{

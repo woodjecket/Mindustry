@@ -34,7 +34,7 @@ index 6f65e9981f2291d1c892c23f3ec8603aec8e3a4c..32133826223d3e4fe1be991c8abd3bc2
                  }
                  line ++;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index a27e35304befd452e741012aa23d6a59a9f30b54..a176f45e5d76ed8396f2d91cc1b25d528f78aefe 100644
+index 9d8faa880a9e518d6b303c7d0e67f4419026e208..580202ec1745ae6982dc5b485c16914e24439b93 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
 @@ -20,6 +20,7 @@ import mindustry.logic.LogicFx.*;
@@ -63,7 +63,7 @@ index a27e35304befd452e741012aa23d6a59a9f30b54..a176f45e5d76ed8396f2d91cc1b25d52
          @Override
          public void build(Table table){
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 6f4d08ac40d461d0c41dbb292866add7565ed784..261b6374360c2cbae88f44aa441f55706c181936 100644
+index b0af04af3eb5311bee7ef27fa0208f99d23d7894..12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -1,5 +1,6 @@

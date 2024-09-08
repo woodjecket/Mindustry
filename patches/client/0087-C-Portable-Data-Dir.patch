@@ -8,7 +8,7 @@ Subject: [PATCH] C: Portable Data Dir
  1 file changed, 3 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 5475b11294275e35c1bf9ec3cf554b7fb2b6be75..e475075010377f3acfbb7a82251954170c94c81b 100644
+index d884b269bd44e73ac10eb052e7c05d0b3dce7422..53d6a0d364508c2dbafdcaa38178d0aaf362e3c2 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -36,6 +36,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform

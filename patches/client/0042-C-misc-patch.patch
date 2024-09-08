@@ -20,10 +20,10 @@ Subject: [PATCH] C: misc patch
  13 files changed, 43 insertions(+), 42 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index dffbb9df1312c2c7842c533bb2801b4810328747..1eaf2eb3ccbc433068d421d48963441c359c566b 100644
+index 46d9d838b42182024ebc8c0547361137900b1452..a97a7800b18985760bcb6cba82fc917c76335dac 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -252,7 +252,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -254,7 +254,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
              if(nextFrame > current){
                  long toSleep = nextFrame - current;
                  Threads.sleep(toSleep / 1000000, (int)(toSleep % 1000000));
@@ -93,7 +93,7 @@ index e987766b74de1fbb8d3d9e0a8f1863b0821a49db..b7fb1f87c211a34ec3698fe3176446be
      }
  
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index d634e122b506cbf6de41626686b3bc7d22585c1b..34ac2770a91fb02b7500fe46ec12f47bc384a061 100644
+index 085f97d6d83be5c8ed212406b5bc15e69be971df..f4d33d1e88e9cfc9477d8922b1d2d23dd60189d6 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -593,7 +593,7 @@ public class UI implements ApplicationListener, Loadable{

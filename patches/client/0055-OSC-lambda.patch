@@ -14,10 +14,10 @@ Content-Transfer-Encoding: 8bit
  3 files changed, 165 insertions(+), 85 deletions(-)
 
 diff --git a/core/src/mindustry/entities/Units.java b/core/src/mindustry/entities/Units.java
-index 659112d57a88c0550f161849111a196fba503d03..4050fbd3bfb3365d671c20cf5787e76a7fbb197f 100644
+index c0f02cb196e4988e442df1520daec9c4e477ed72..b9e287341dc613073a72bd8ced6a78e4d07d9748 100644
 --- a/core/src/mindustry/entities/Units.java
 +++ b/core/src/mindustry/entities/Units.java
-@@ -269,6 +269,10 @@ public class Units{
+@@ -270,6 +270,10 @@ public class Units{
          }
      }
  
@@ -28,7 +28,7 @@ index 659112d57a88c0550f161849111a196fba503d03..4050fbd3bfb3365d671c20cf5787e76a
      /** Returns the closest enemy of this team. Filter by predicate. */
      public static Unit closestEnemy(Team team, float x, float y, float range, Boolf<Unit> predicate){
          if(team == Team.derelict) return null;
-@@ -277,11 +281,16 @@ public class Units{
+@@ -278,11 +282,16 @@ public class Units{
          cdist = 0f;
          cpriority = -99999f;
  
@@ -48,7 +48,7 @@ index 659112d57a88c0550f161849111a196fba503d03..4050fbd3bfb3365d671c20cf5787e76a
                  result = e;
                  cdist = dst2;
                  cpriority = e.type.targetPriority;
-@@ -299,10 +308,16 @@ public class Units{
+@@ -300,10 +309,16 @@ public class Units{
          cdist = 0f;
          cpriority = -99999f;
  
@@ -68,7 +68,7 @@ index 659112d57a88c0550f161849111a196fba503d03..4050fbd3bfb3365d671c20cf5787e76a
                  result = e;
                  cdist = cost;
 diff --git a/core/src/mindustry/entities/bullet/BulletType.java b/core/src/mindustry/entities/bullet/BulletType.java
-index 74fb8a7365206ff4ac557ebd4c19d584a3a7db1a..39ae758712d7c44e3831ff42b7b3eb769f15a62e 100644
+index e3e025bd363521725ac12fb3feff73d3413b857f..160a45d8d245cdf0fe60baaa1c92ca135bf53a5c 100644
 --- a/core/src/mindustry/entities/bullet/BulletType.java
 +++ b/core/src/mindustry/entities/bullet/BulletType.java
 @@ -628,6 +628,7 @@ public class BulletType extends Content implements Cloneable{

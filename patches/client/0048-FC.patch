@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 12 insertions(+), 4 deletions(-)
 
 diff --git a/core/src/mindustry/ui/Minimap.java b/core/src/mindustry/ui/Minimap.java
-index 99c7a32303c86d93f9d56dbc7fcf0288e23a0403..adbc80fcd5cfb2b4e127603b1241b9c5b133e5e9 100644
+index ee03fc2435166bbdb72f1f416c992efffa178371..037dea9ae4e54db3661071cb388d3850f6a156c0 100644
 --- a/core/src/mindustry/ui/Minimap.java
 +++ b/core/src/mindustry/ui/Minimap.java
 @@ -13,16 +13,15 @@ import mindustry.gen.*;

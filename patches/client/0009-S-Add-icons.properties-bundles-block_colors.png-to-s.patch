@@ -10,7 +10,7 @@ Subject: [PATCH] S: Add icons.properties,bundles,block_colors.png to server
  2 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/server/build.gradle b/server/build.gradle
-index badc019ded25d495a139efe134085184640eb500..f212b7bf9d8a3e46179ba62d8987fcb15efa5568 100644
+index 079379178548b8c3fc9257668f85c3bf9935c9cc..d57060fff7ec12b93198dca4b447ca68f4c9c076 100644
 --- a/server/build.gradle
 +++ b/server/build.gradle
 @@ -31,18 +31,18 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
@@ -42,8 +42,8 @@ index badc019ded25d495a139efe134085184640eb500..f212b7bf9d8a3e46179ba62d8987fcb1
 +        include "*.*"
 +    }
  
-     manifest{
-         attributes 'Main-Class': project.mainClassName
+     duplicatesStrategy = 'exclude'
+ 
 diff --git a/server/src/mindustry/server/ServerLauncher.java b/server/src/mindustry/server/ServerLauncher.java
 index 1799c999b2affdc0de392841212edc1f544e4751..81683e05cc3f38d943ae94f00621da01e09a1f31 100644
 --- a/server/src/mindustry/server/ServerLauncher.java

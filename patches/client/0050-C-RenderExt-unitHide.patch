@@ -24,7 +24,7 @@ index 8376e3f5a5f4aef6c5397567aaba13780eda86ab..e06b393ff7e9de55181a2c069e8a16b3
  
      private final KeybindValue defaultValue;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 41bcbf240ab2ffd1d0cce051b18f59925cfd69d5..b63fa723820b0c4e28b227d89fa615097af0b97f 100644
+index 5079c0afc523f36b870527b580c6b4f2bfe565c2..9be58ec46ccab9a86d84f75e05e200c04ae405a2 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -40,6 +40,7 @@ import mindustry.world.blocks.payloads.*;

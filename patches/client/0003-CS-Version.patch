@@ -66,12 +66,12 @@ index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e
 +    <string name="app_name">MindustryX</string>
  </resources>
 diff --git a/build.gradle b/build.gradle
-index 0cb5c6337c2d6a41243907d2c34c679b63112d61..3c56a228b18f50b16b3abb327fcebf379c0c1348 100644
+index 3ac0012a751b893f2bed04484034e4fb004cd8ac..d64047c2ff2f1f6b4ead7354f4edee748c2347b1 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -21,7 +21,7 @@ allprojects{
      apply plugin: 'maven-publish'
-     
+ 
      version = project.hasProperty("packageVersion") ? project.getProperty("packageVersion") : 'release'
 -    group = 'com.github.Anuken'
 +    group = 'cf.wayzer.MindustryX'
@@ -92,7 +92,7 @@ index f1a2bfd729db5c05cb4bc9b0e5af6dd003bb7d96..f5129a036a3655bd41da6e51ed657cad
      processResources.configure {
          dependsOn(generateLocales, generateBasePartNames, writeVersion)
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46aa85b3c2 100644
+index e7bca60cd616dbf699329909fc67c37d92e335df..d7756c3df025ba0e76882f656501d7d560c87114 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -77,7 +77,7 @@ public class Vars implements Loadable{
@@ -177,13 +177,13 @@ index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129
          buffer.put((byte)state.rules.mode().ordinal());
          buffer.putInt(netServer.admins.getPlayerLimit());
 diff --git a/gradle.properties b/gradle.properties
-index 048ee4d9efe3907eacdd135f80bc38bc7d97c605..82e277deb64d1f368ec2dfc6b02ef2011c8c7370 100644
+index 0c6c42e01d70bb59166e3e21e91a41801e7c113f..5fcc2f6a7455a09fc17437e4f73e6e6f4d818f86 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,5 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=6676d38433
+ archash=29c4199b83
 +
 +upstreamBuild=25162
 \ No newline at end of file

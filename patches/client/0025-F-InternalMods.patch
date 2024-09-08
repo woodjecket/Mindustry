@@ -10,10 +10,10 @@ Subject: [PATCH] F: InternalMods
  create mode 100644 core/src/mindustryX/features/InternalMods.java
 
 diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
-index 3ece15b1d9dd00a522a9ea62e13427004155cd96..8b258a35f1a5a6f01d0a2904ed6fbbd5f0c76ee1 100644
+index 9fa83c39eed59a3b4b7a8f973ec45f8376f2adf6..7268b78aa02b0571246593310df60cc6e3f5be9e 100644
 --- a/core/src/mindustry/mod/Mods.java
 +++ b/core/src/mindustry/mod/Mods.java
-@@ -448,7 +448,7 @@ public class Mods implements Loadable{
+@@ -449,7 +449,7 @@ public class Mods implements Loadable{
      /** Loads all mods from the folder, but does not call any methods on them.*/
      public void load(){
          var candidates = new Seq<Fi>();

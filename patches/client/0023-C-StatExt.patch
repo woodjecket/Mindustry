@@ -13,7 +13,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/type/Item.java             |   5 +
  core/src/mindustry/type/Liquid.java           |   2 +
  core/src/mindustry/type/StatusEffect.java     |   2 +
- core/src/mindustry/type/UnitType.java         |  40 ++-
+ core/src/mindustry/type/UnitType.java         |  36 ++-
  core/src/mindustry/type/Weapon.java           |  22 +-
  core/src/mindustry/ui/ItemImage.java          |  13 +
  core/src/mindustry/world/Block.java           |   4 +-
@@ -38,7 +38,7 @@ way-zer <himc.wicp@gmail.com> on 2024/5/4 at 22:17
  core/src/mindustry/world/meta/StatCat.java    |   5 +-
  core/src/mindustry/world/meta/StatValues.java | 254 ++++++++++++++----
  core/src/mindustryX/features/StatExt.java     |  96 +++++++
- 29 files changed, 494 insertions(+), 91 deletions(-)
+ 29 files changed, 492 insertions(+), 89 deletions(-)
  create mode 100644 core/src/mindustryX/features/StatExt.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
@@ -85,7 +85,7 @@ index 87ca026cadc01f80b5e927ed210bc78f7c7fc13b..0cb666446175aa5e952ceaa07669e10a
 +
 +#end StatExt
 diff --git a/core/src/mindustry/type/Item.java b/core/src/mindustry/type/Item.java
-index 1c59b0d07a396614c8ee3ebbe90f0c80b3f30d38..6cd22e27e6f1a0910a1e51a9e1cb3f2da87ee915 100644
+index 5d81790919f016776eff80c6d241b1d034f76d11..ff81bc3b9d0a54e7aa0e8dae9e12d48612a9d2ab 100644
 --- a/core/src/mindustry/type/Item.java
 +++ b/core/src/mindustry/type/Item.java
 @@ -12,6 +12,7 @@ import mindustry.graphics.MultiPacker.*;
@@ -96,7 +96,7 @@ index 1c59b0d07a396614c8ee3ebbe90f0c80b3f30d38..6cd22e27e6f1a0910a1e51a9e1cb3f2d
  
  import static mindustry.Vars.*;
  
-@@ -115,6 +116,10 @@ public class Item extends UnlockableContent implements Senseable{
+@@ -112,6 +113,10 @@ public class Item extends UnlockableContent implements Senseable{
          stats.addPercent(Stat.flammability, flammability);
          stats.addPercent(Stat.radioactivity, radioactivity);
          stats.addPercent(Stat.charge, charge);
@@ -128,7 +128,7 @@ index 9032b4bf9bdcacd31826eb95fedc7781465cc87a..ccb3c4b63be9aebc1c66f1003e4b17f1
  
      @Override
 diff --git a/core/src/mindustry/type/StatusEffect.java b/core/src/mindustry/type/StatusEffect.java
-index 79d0177b41b7480488f6131935dbf345b9f4598a..2e67b422063355deac7aecb7dd93b3edae3ab647 100644
+index 0e36616cd45d520b78352254a1a46f095fb9948b..3bb15a79144f74b620fb1b4a14c5604c040ccbe3 100644
 --- a/core/src/mindustry/type/StatusEffect.java
 +++ b/core/src/mindustry/type/StatusEffect.java
 @@ -13,6 +13,7 @@ import mindustry.gen.*;
@@ -139,7 +139,7 @@ index 79d0177b41b7480488f6131935dbf345b9f4598a..2e67b422063355deac7aecb7dd93b3ed
  
  public class StatusEffect extends UnlockableContent{
      /** Damage dealt by the unit with the effect. */
-@@ -93,6 +94,7 @@ public class StatusEffect extends UnlockableContent{
+@@ -95,6 +96,7 @@ public class StatusEffect extends UnlockableContent{
          if(speedMultiplier != 1) stats.addPercent(Stat.speedMultiplier, speedMultiplier);
          if(reloadMultiplier != 1) stats.addPercent(Stat.reloadMultiplier, reloadMultiplier);
          if(buildSpeedMultiplier != 1) stats.addPercent(Stat.buildSpeedMultiplier, buildSpeedMultiplier);
@@ -148,7 +148,7 @@ index 79d0177b41b7480488f6131935dbf345b9f4598a..2e67b422063355deac7aecb7dd93b3ed
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index d8999d2001071b91a9976921f66a71562c215e09..682d2cdb951823b61c7951c8c19ed8a0a976f396 100644
+index 8db65f2bdfe17ec8e9250b7cd599616092812a6c..e6c38c601c937c3810d3ef44db97ed9547baf176 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -612,29 +612,47 @@ public class UnitType extends UnlockableContent implements Senseable{
@@ -216,7 +216,7 @@ index d8999d2001071b91a9976921f66a71562c215e09..682d2cdb951823b61c7951c8c19ed8a0
          if(immunities.size > 0){
              var imm = immunities.toSeq().sort();
              //it's redundant to list wet for naval units
-@@ -682,6 +704,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -684,6 +706,8 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          allowLegStep = example instanceof Legsc;
  
@@ -225,21 +225,6 @@ index d8999d2001071b91a9976921f66a71562c215e09..682d2cdb951823b61c7951c8c19ed8a0
          //water preset
          if(example instanceof WaterMovec){
              naval = true;
-@@ -1312,12 +1336,12 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-         Draw.reset();
-     }
--        
-+
-     //...where do I put this
-     public Color shieldColor(Unit unit){
-         return shieldColor == null ? unit.team.color : shieldColor;
-     }
--    
-+
- 
-     public void drawMining(Unit unit){
-         if(!unit.mining()) return;
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
 index d67a1ca03202019648a65863d0114c96fb21cd78..f9ec8feac6e944e76b5e2309da9b78e9d1269348 100644
 --- a/core/src/mindustry/type/Weapon.java
@@ -320,7 +305,7 @@ index 874fa6ceff4c1ea412db02eb2adfb4e491771b19..728b0d8423dfc2e09f5a8d4ca74fca04
          this(stack.item.uiIcon, stack.amount);
      }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 1576cfb1623ba1b1cdfc791e70b5efc1535c25c8..766a0e295b0d165fb39014a2b51d43f70a23c48e 100644
+index c324ae4978e2d3c19fb1dda5fe57e01b3b5568f8..cd7c4b23817475b8b60dc8e877efc420077ac8a8 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -32,6 +32,7 @@ import mindustry.world.blocks.environment.*;
@@ -349,10 +334,10 @@ index 1576cfb1623ba1b1cdfc791e70b5efc1535c25c8..766a0e295b0d165fb39014a2b51d43f7
          //Note: Power stats are added by the consumers.
          if(hasLiquids) stats.add(Stat.liquidCapacity, liquidCapacity, StatUnit.liquidUnits);
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index 74f0fd4860644903c3ce81318681596f0a60d317..4b7d6968838780299971c9a827752e516d74ea0c 100644
+index 58ee4b6c2d520246b0142ec68e40e963c6b0dc95..a562d29a519aadaadfcbd3de00e9c20340bd40f1 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-@@ -20,6 +20,7 @@ import mindustry.ui.*;
+@@ -21,6 +21,7 @@ import mindustry.ui.*;
  import mindustry.world.*;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
@@ -360,7 +345,7 @@ index 74f0fd4860644903c3ce81318681596f0a60d317..4b7d6968838780299971c9a827752e51
  
  import static mindustry.Vars.*;
  
-@@ -96,13 +97,15 @@ public class ForceProjector extends Block{
+@@ -97,13 +98,15 @@ public class ForceProjector extends Block{
  
          if(consItems) stats.timePeriod = phaseUseTime;
          super.setStats();

@@ -10,7 +10,7 @@ Subject: [PATCH] BUILD Kotlin 1.9.20
  3 files changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index 3c56a228b18f50b16b3abb327fcebf379c0c1348..04c82d033d92261996863efee84d0a3f4a3faadb 100644
+index d64047c2ff2f1f6b4ead7354f4edee748c2347b1..e13f9df614deb5d24668053bf6e6ef0a417341bc 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -13,8 +13,8 @@ buildscript{
@@ -51,7 +51,7 @@ index 63f413ea5fe200cd88c48bb5efeca4ffe342f438..c2e653f692f743e6ef33a647002f68b5
              mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
          return mods;
 diff --git a/gradle.properties b/gradle.properties
-index 82e277deb64d1f368ec2dfc6b02ef2011c8c7370..27667713782de440711293558d22979f28458fe0 100644
+index 5fcc2f6a7455a09fc17437e4f73e6e6f4d818f86..fad521726aa1c9205be065f31e31c75e845aeadd 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -18,7 +18,7 @@ kapt.use.worker.api=true

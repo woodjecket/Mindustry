@@ -11,7 +11,7 @@ Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
  3 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 3408948807b1bc145fa5effb4cd77b9f5ff4a29d..d8999d2001071b91a9976921f66a71562c215e09 100644
+index af3cd1b562c8eaa7750ba7d1c665bf5b052ebdfa..8db65f2bdfe17ec8e9250b7cd599616092812a6c 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;
@@ -22,7 +22,7 @@ index 3408948807b1bc145fa5effb4cd77b9f5ff4a29d..d8999d2001071b91a9976921f66a7156
  
  import static arc.graphics.g2d.Draw.*;
  import static mindustry.Vars.*;
-@@ -1207,7 +1208,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1209,7 +1210,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          unit.drawBuilding();
  

@@ -150,7 +150,7 @@ index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..d0e444a4a7a9ced372a2c93102860991
              Core.camera.width, Core.camera.height
              );
 diff --git a/core/src/mindustry/core/NetServer.java b/core/src/mindustry/core/NetServer.java
-index 3558877cbbc3cfd75e78dd6db18a78db701aef4f..3980dfc6b9fe1032c1da45da3a0d1ac7ca092265 100644
+index bcf22cedd64953ff3fbd9e9495d9731c3e6dcf22..837b1d9b673c2f9be3917023c2c1a72b0458022b 100644
 --- a/core/src/mindustry/core/NetServer.java
 +++ b/core/src/mindustry/core/NetServer.java
 @@ -98,7 +98,7 @@ public class NetServer implements ApplicationListener{
@@ -403,7 +403,7 @@ index 834d4c239aa261afd9828f0b4d17a97fb8809621..fee7e8c71fc07f8cbea36997afc8a4fd
  
      String ip(){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 49146f701cf0e681f12afa3c90d8f9d64d14c67f..41bcbf240ab2ffd1d0cce051b18f59925cfd69d5 100644
+index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2bfe565c2 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -116,9 +116,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
@@ -655,18 +655,18 @@ index c02ceb4ae69d9f7e5bea93df94c546d7a06cd1e2..70d1543c366b4eeef80c67f4eaeb0564
  
      public static void writeCommand(Writes write, @Nullable UnitCommand command){
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 4a977b3dcde31c824908cda422c20386b66bc254..fde5b319eaa2114ffdd06ae5b46fb7c3a867aad2 100644
+index e74d4134affd4e040f14d42b2f74738eb6344cce..7848f7c4d7111de48e38d821dab5c4532d576c5e 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
-@@ -1242,7 +1242,7 @@ public class LExecutor{
+@@ -1241,7 +1241,7 @@ public class LExecutor{
                          result.setobj(units == null || i < 0 || i >= units.size ? null : units.get(i));
                      }
                  }
--                case player -> result.setobj(i < 0 || i >= data.players.size ? null : data.players.get(i).unit());
-+                case player -> result.setobj(i < 0 || i >= data.players.size || data.players.get(i).unit().isNull() ? null : data.players.get(i).unit());
+-                case player -> result.setobj(i < 0 || i >= data.players.size ? null :
++                case player -> result.setobj(i < 0 || i >= data.players.size || data.players.get(i).unit().isNull() ? null :
+                     data.players.get(i).unit() instanceof BlockUnitc block ? block.tile() : data.players.get(i).unit());
                  case core -> result.setobj(i < 0 || i >= data.cores.size ? null : data.cores.get(i));
                  case build -> {
-                     Block block = extra.obj() instanceof Block b ? b : null;
 diff --git a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java b/core/src/mindustry/ui/fragments/BlockInventoryFragment.java
 index 54a36cde6eee102c9c8f3bfd5e4c76a2f4d0f1e1..84f5bc221c2f1846d831acf4abf902b15bfc1c59 100644
 --- a/core/src/mindustry/ui/fragments/BlockInventoryFragment.java

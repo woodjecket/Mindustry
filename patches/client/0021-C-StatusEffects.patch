@@ -41,7 +41,7 @@ index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..87ca026cadc01f80b5e927ed210bc78f
 +status.fast.name = 迅捷
 +
 diff --git a/core/src/mindustry/content/StatusEffects.java b/core/src/mindustry/content/StatusEffects.java
-index ff3dcf43df95bb50b1e8f28e965af02ed912c086..1dc361fe2a3f5a32da09b63220bc79e6025ac9e7 100644
+index 1ccaabc80faeabf0acaf38ae371fcc1f98bd9750..c58b4ec28d39f53104fc4555646e4284917364cb 100644
 --- a/core/src/mindustry/content/StatusEffects.java
 +++ b/core/src/mindustry/content/StatusEffects.java
 @@ -202,6 +202,7 @@ public class StatusEffects{

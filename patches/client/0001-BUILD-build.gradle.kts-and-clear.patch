@@ -231,7 +231,7 @@ index 0000000000000000000000000000000000000000..181b87c1d5f3755f16a01c0528d0a89f
 +mindustry.annotations.misc.LogicStatementProcessor
 +mindustry.annotations.remote.RemoteProcess
 diff --git a/build.gradle b/build.gradle
-index 9bca8edb256e33ff341e5cae71c6b2922811a720..0cb5c6337c2d6a41243907d2c34c679b63112d61 100644
+index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb004cd8ac 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -7,22 +7,9 @@ buildscript{
@@ -242,7 +242,7 @@ index 9bca8edb256e33ff341e5cae71c6b2922811a720..0cb5c6337c2d6a41243907d2c34c679b
 +            return "com.github.anuken${localArc ? "" : ".Arc"}:$name:$arcHash"
          }
      }
--    
+-
 -    repositories{
 -        mavenLocal()
 -        mavenCentral()
@@ -657,7 +657,7 @@ index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd0
 +}
 \ No newline at end of file
 diff --git a/desktop/build.gradle b/desktop/build.gradle
-index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..b63f4a3ca7964f41f02a3fa12a068f859b51f96c 100644
+index b4d9955e70e7cfbf4792d5196bbe17e06c3762bd..b63f4a3ca7964f41f02a3fa12a068f859b51f96c 100644
 --- a/desktop/build.gradle
 +++ b/desktop/build.gradle
 @@ -3,12 +3,7 @@ sourceSets.main.java.srcDirs = ["src/"]
@@ -748,20 +748,20 @@ index 7f4ecdcf0a6407ffce7181234527dc6cbc4d484b..b63f4a3ca7964f41f02a3fa12a068f85
 -                }
 -            }else{
 -                def jarPath = JDK_DIR + "packr.jar"
--                def args = ["java", "-jar", jarPath] as String[]
+-                def args = new String[]{"java", "-jar", jarPath}
 -
--                args += [
--                    "--platform", platform == "MacOS" ? "Mac" : platform.toString(),
--                    "--jdk", JDK_DIR + "jre-${platform.toString().toLowerCase()}",
--                    "--executable", appName,
--                    "--classpath", "$rootDir/desktop/build/packr/desktop.jar".toString(),
--                    "--mainclass", project.ext.mainClassName,
--                    "--verbose",
--                    "--bundle", getPackage() + ".mac",
--                    "--icon", ICON_DIR,
--                    "--output", "$rootDir/desktop/build/packr/output".toString(),
--                    "--removelibs", "$rootDir/desktop/build/packr/desktop.jar".toString()
--                ]
+-                args += new String[]{
+-                        "--platform", platform == "MacOS" ? "Mac" : platform.toString(),
+-                        "--jdk", JDK_DIR + "jre-${platform.toString().toLowerCase()}",
+-                        "--executable", appName,
+-                        "--classpath", "$rootDir/desktop/build/packr/desktop.jar".toString(),
+-                        "--mainclass", project.ext.mainClassName,
+-                        "--verbose",
+-                        "--bundle", getPackage() + ".mac",
+-                        "--icon", ICON_DIR,
+-                        "--output", "$rootDir/desktop/build/packr/output".toString(),
+-                        "--removelibs", "$rootDir/desktop/build/packr/desktop.jar".toString()
+-                }
 -
 -                args += "--vmargs"
 -
@@ -3073,7 +3073,7 @@ index d0ec38f0a9c9f7d07c240a3d0c8c24bd0f6c1ebf..44d6d24b5b4d43514c8c5bf535bf7077
  launchIPhoneSimulator.dependsOn build
  launchIPadSimulator.dependsOn build
 diff --git a/server/build.gradle b/server/build.gradle
-index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..badc019ded25d495a139efe134085184640eb500 100644
+index f348e41dbf38a2ad4c676ce243e1fe4389bfefaf..079379178548b8c3fc9257668f85c3bf9935c9cc 100644
 --- a/server/build.gradle
 +++ b/server/build.gradle
 @@ -3,10 +3,6 @@ sourceSets.main.java.srcDirs = ["src/"]
@@ -3100,7 +3100,7 @@ index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..badc019ded25d495a139efe134085184
      exclude("sprites/**")
      exclude("music/**")
      exclude("sounds/**")
-@@ -51,40 +48,3 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
+@@ -53,40 +50,3 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
          attributes 'Main-Class': project.mainClassName
      }
  }
@@ -3142,7 +3142,7 @@ index 7359fdac3cb101aec25a7be9e8b9813ed1afd547..badc019ded25d495a139efe134085184
 -
 -dist.dependsOn classes
 diff --git a/settings.gradle b/settings.gradle
-index b74305dad2bd47c96c697e92b902717e9b36b73e..17add3c489d87175c3ceb175b03cba0b3a22ee79 100644
+index dafd6bdf99f48074cd7f2a1a819236433e3c6a55..304e893b1657dd6d23f87a0c6c2939ac7c1d5c84 100644
 --- a/settings.gradle
 +++ b/settings.gradle
 @@ -1,8 +1,16 @@
@@ -3153,8 +3153,8 @@ index b74305dad2bd47c96c697e92b902717e9b36b73e..17add3c489d87175c3ceb175b03cba0b
 +    }
 +}
 +
- if(JavaVersion.current().ordinal() < JavaVersion.VERSION_16.ordinal()){
-     throw new Exception("!!! YOU MUST USE JAVA 16 OR ABOVE TO COMPILE AND RUN MINDUSTRY !!! Read the README. Your version: ${System.properties["java.version"]}")
+ if(JavaVersion.current().ordinal() < JavaVersion.VERSION_17.ordinal()){
+     throw new Exception("!!! YOU MUST USE JAVA 17 OR ABOVE TO COMPILE AND RUN MINDUSTRY !!! Read the README. Your version: ${System.properties["java.version"]}")
  }
  
 -include 'desktop', 'core', 'server', 'ios', 'annotations', 'tools', 'tests'
