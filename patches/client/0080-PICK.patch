@@ -11,7 +11,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 167 insertions(+), 31 deletions(-)
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index d18879584d2b1e32b0de38b8a3ff783f3a1a7bd8..a1929a161bc6f75df101c80e99975824b102fa81 100644
+index 6c1d71ab711e58f215195712bfb36eeccc2b50b8..935b1f1cbeeff82fe9d1a6f4f8ee18a9e39e0a39 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -102,6 +102,172 @@ toolmode.square2 = 方形(直径)

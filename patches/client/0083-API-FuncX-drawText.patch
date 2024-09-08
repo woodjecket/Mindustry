@@ -4,17 +4,18 @@ Date: Sat, 15 Jun 2024 20:22:04 +0800
 Subject: [PATCH] API(FuncX) drawText
 
 ---
- core/src/mindustryX/features/func/drawText.kt | 59 +++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ core/src/mindustryX/features/func/drawText.kt | 60 +++++++++++++++++++
+ 1 file changed, 60 insertions(+)
  create mode 100644 core/src/mindustryX/features/func/drawText.kt
 
 diff --git a/core/src/mindustryX/features/func/drawText.kt b/core/src/mindustryX/features/func/drawText.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..8278810706e76db2054c2a51e58945d9dc057d46
+index 0000000000000000000000000000000000000000..0b32ad4b2c62da8321d55eb26569e1dfc6fbc7e7
 --- /dev/null
 +++ b/core/src/mindustryX/features/func/drawText.kt
-@@ -0,0 +1,59 @@
+@@ -0,0 +1,60 @@
 +@file:JvmName("FuncX")
++@file:JvmMultifileClass
 +
 +package mindustryX.features.func
 +

@@ -26,8 +26,8 @@ Subject: [PATCH] ARC setBars
  .../world/blocks/sandbox/LiquidSource.java    |  7 ------
  .../world/blocks/units/Reconstructor.java     |  6 ++++-
  .../world/blocks/units/UnitAssembler.java     |  6 ++++-
- .../world/blocks/units/UnitFactory.java       | 10 +++++++-
- 23 files changed, 126 insertions(+), 41 deletions(-)
+ .../world/blocks/units/UnitFactory.java       |  4 +++-
+ 23 files changed, 120 insertions(+), 41 deletions(-)
 
 diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4733b1bb3 100644
@@ -416,7 +416,7 @@ index 9b0ef63732d2cd574bf37f9f0a5fd0f3af378fd9..4c1065a12000cc5f9f4bb5a9fedda458
              () -> entity.productionEfficiency));
          }
 diff --git a/core/src/mindustry/world/blocks/production/BeamDrill.java b/core/src/mindustry/world/blocks/production/BeamDrill.java
-index 163019c9c2562301984912c212e5d5558a028e36..6eadc089446a92e4dd1d649a66132dfd58419dcb 100644
+index 85ec19d8a4d07d7c02245226b5ce39589edf01b4..5a74059ee97060da05ef3fbb8c631990db35e392 100644
 --- a/core/src/mindustry/world/blocks/production/BeamDrill.java
 +++ b/core/src/mindustry/world/blocks/production/BeamDrill.java
 @@ -83,7 +83,7 @@ public class BeamDrill extends Block{
@@ -540,23 +540,17 @@ index 2d2a40115e383eca8ab3c33226054c9c7772f64a..3dfd6208c237a8b89de69ce862c47ac7
          addBar("units", (UnitAssemblerBuild e) ->
              new Bar(() ->
 diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
-index b89d945c65fc20339d0433a0a2125b8544ceaca1..81e8b9fdcc6995a9b1bedf76404bef32026bf763 100644
+index b89d945c65fc20339d0433a0a2125b8544ceaca1..fab08595bf27b4d57c23fb6137a425379b001a11 100644
 --- a/core/src/mindustry/world/blocks/units/UnitFactory.java
 +++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
-@@ -84,7 +84,15 @@ public class UnitFactory extends UnitBlock{
+@@ -84,7 +84,9 @@ public class UnitFactory extends UnitBlock{
      @Override
      public void setBars(){
          super.setBars();
 -        addBar("progress", (UnitFactoryBuild e) -> new Bar("bar.progress", Pal.ammo, e::fraction));
-+        addBar("progress", (UnitFactoryBuild e) -> {
-+            if(e.currentPlan == -1){
-+                return new Bar(Iconc.units + "[red] " + Iconc.cancel, Pal.ammo, e::fraction);
-+            }
-+            return new Bar(() -> e.currentPlan == -1 ? "[red] X" : (Iconc.units + " " + Strings.fixed(e.progress * 100f / plans.get(e.currentPlan).time, 0) + "% | " +
-+            Strings.fixed((plans.get(e.currentPlan).time - e.progress) / (60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()), 0) + " s"
-+            ), () -> Pal.ammo, e::fraction
-+            );
-+        });
++        addBar("progress", (UnitFactoryBuild e) -> new Bar(() -> e.currentPlan == -1 ? Iconc.units + "[red] " + Iconc.cancel :
++        (Iconc.units + " " + Strings.fixed(e.progress * 100f / plans.get(e.currentPlan).time, 0) + "% | " + Strings.fixed((plans.get(e.currentPlan).time - e.progress) / (60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()), 0) + " s"), () -> Pal.ammo, e::fraction
++        ));
  
          addBar("units", (UnitFactoryBuild e) ->
          new Bar(

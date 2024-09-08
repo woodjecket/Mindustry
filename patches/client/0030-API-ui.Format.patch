@@ -18,7 +18,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/14
 
 diff --git a/core/src/mindustryX/features/ui/Format.kt b/core/src/mindustryX/features/ui/Format.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..293e186b306383f1a87f6916dd51cc16688a6698
+index 0000000000000000000000000000000000000000..63dc96567e610f20f1244b90fc2fb731549cc989
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/Format.kt
 @@ -0,0 +1,123 @@
@@ -34,7 +34,7 @@ index 0000000000000000000000000000000000000000..293e186b306383f1a87f6916dd51cc16
 +data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimals: Boolean = false) {
 +    /**以固定的有效位数输出*/
 +    fun fixedPrecision(v: Float): String {
-+        val exponent = Mathf.floor(Mathf.log(10f, abs(v)))
++        val exponent = Mathf.floor(Mathf.log(10f, abs(v))).coerceAtLeast(0)
 +        if (exponent >= decimal) return v.toInt().toString()
 +        return Strings.fixed(v, decimal - exponent)
 +    }
@@ -106,7 +106,7 @@ index 0000000000000000000000000000000000000000..293e186b306383f1a87f6916dd51cc16
 +    @JvmOverloads
 +    fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent < 0.95f): String {
 +        return buildString {
-+            if (Mathf.zero(percent, 0.1f)) append('\uE815') else append(format(cur))
++            append(format(cur))
 +            if (percent < 0.99f) {
 +                append('/')
 +                append(format(max))

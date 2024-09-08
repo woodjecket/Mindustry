@@ -17,13 +17,16 @@ way-zer <himc.wicp@gmail.com> on 2024/6/6
 
 移动到showQuickToolTable中
 way-zer <himc.wicp@gmail.com> on 2024/6/10
+
+* 合并强制放置到创世神，并分离到LogicExt
+* 增加警告和规则编辑快捷按钮
+* 整理ARC单位工厂界面
+way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustryX/features/UIExt.java       |   8 +-
- core/src/mindustryX/features/UnitExt.java     |  21 +
- .../features/ui/AdvanceToolTable.kt           | 128 +++++
- .../features/ui/ArcUnitFactoryDialog.java     | 452 ++++++++++++++++++
- 4 files changed, 606 insertions(+), 3 deletions(-)
- create mode 100644 core/src/mindustryX/features/UnitExt.java
+ .../features/ui/AdvanceToolTable.kt           | 111 +++++
+ .../features/ui/ArcUnitFactoryDialog.java     | 440 ++++++++++++++++++
+ 3 files changed, 556 insertions(+), 3 deletions(-)
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
  create mode 100644 core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
 
@@ -53,56 +56,27 @@ index 1a33e4f6c9509d0b34422eb360687ffc6c35f3ab..c09b83d494c64733e6ec9389fa8dfb2b
              t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showQuickToolTable"));
          });
      }
-diff --git a/core/src/mindustryX/features/UnitExt.java b/core/src/mindustryX/features/UnitExt.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..200a2295b5c2d0c662097df7538742ea020141fa
---- /dev/null
-+++ b/core/src/mindustryX/features/UnitExt.java
-@@ -0,0 +1,21 @@
-+package mindustryX.features;
-+
-+import arc.struct.*;
-+import arc.util.*;
-+import mindustry.entities.units.*;
-+import mindustry.gen.*;
-+
-+public class UnitExt{
-+    public static Seq<StatusEntry> getStatuses(Unit unit){
-+        Class<?> cls = unit.getClass();
-+        if(cls.isAnonymousClass()) cls = cls.getSuperclass();
-+        while(true){
-+            try{
-+                return Reflect.get(cls, unit, "statuses");
-+            }catch(Exception e){
-+                cls = cls.getSuperclass();
-+                if(cls == Unit.class) return Seq.with();
-+            }
-+        }
-+    }
-+}
 diff --git a/core/src/mindustryX/features/ui/AdvanceToolTable.kt b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f71600547093d860
+index 0000000000000000000000000000000000000000..c8b246040bb04c2581ebeb042dbc791552ba2998
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,111 @@
 +package mindustryX.features.ui
 +
-+import arc.Core
-+import arc.Events
++import arc.graphics.Color
 +import arc.math.Mathf
 +import arc.struct.Seq
-+import arc.util.Reflect
 +import mindustry.Vars
 +import mindustry.content.Items
 +import mindustry.content.UnitTypes
-+import mindustry.game.EventType
 +import mindustry.game.Team
 +import mindustry.gen.Icon
 +import mindustry.gen.Iconc
 +import mindustry.gen.Payloadc
 +import mindustry.gen.Unit
 +import mindustry.ui.Styles
++import mindustry.ui.dialogs.CustomRulesDialog
 +import mindustry.world.blocks.payloads.Payload
 +import mindustryX.features.LogicExt
 +import mindustryX.features.Settings
@@ -111,34 +85,19 @@ index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f7160054
 +
 +//move from mindustry.arcModule.ui.AdvanceToolTable
 +class AdvanceToolTable : ToolTableBase() {
-+    companion object {
-+        @JvmField
-+        var worldCreator: Boolean = false
-+
-+        @JvmField
-+        var forcePlacement: Boolean = false
-+
-+        @JvmField
-+        var allBlocksReveal: Boolean = false
-+    }
-+
 +    val factoryDialog: ArcUnitFactoryDialog = ArcUnitFactoryDialog()
++    private val rulesDialog = CustomRulesDialog()
 +
 +    init {
 +        icon = Iconc.wrench.toString()
 +        rebuild()
-+        Events.on(EventType.ResetEvent::class.java) { _ ->
-+            if (!Vars.state.rules.editor) {
-+                worldCreator = false
-+                forcePlacement = false
-+                allBlocksReveal = false
-+            }
-+        }
 +    }
 +
 +    override fun buildTable() {
 +        with(table().get()) {
 +            background = Styles.black6
++            row().add("警告：该页功能主要供单机使用").color(Color.yellow).colspan(2)
++
 +            row().add("单位：")
 +            with(table().get()) {
 +                button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
@@ -170,14 +129,11 @@ index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f7160054
 +
 +            row().add("建筑：")
 +            with(table().get()) {
-+                button("创世神", Styles.flatToggleMenut) { worldCreator = !worldCreator }
-+                    .checked { worldCreator }.size(70f, 30f)
-+                button("强制放置", Styles.flatToggleMenut) { forcePlacement = !forcePlacement }
-+                    .checked { forcePlacement }.size(72f, 30f)
++                button("创世神", Styles.flatToggleMenut) { Settings.toggle("worldCreator") }
++                    .checked { LogicExt.worldCreator }.size(70f, 30f)
 +                button("解禁", Styles.flatToggleMenut) {
-+                    allBlocksReveal = !allBlocksReveal
-+                    Reflect.invoke<Any>(Vars.ui.hudfrag.blockfrag, "rebuild")
-+                }.checked { allBlocksReveal }
++                    Settings.toggle("allUnlocked")
++                }.checked { LogicExt.allUnlocked }
 +                    .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
 +                button("地形蓝图", Styles.flatToggleMenut) { Settings.toggle("terrainSchematic") }
 +                    .checked { LogicExt.terrainSchematic }.size(72f, 30f)
@@ -191,6 +147,9 @@ index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f7160054
 +                    .checked { Vars.state.rules.editor }.size(70f, 30f)
 +                button("沙盒", Styles.flatToggleMenut) { Vars.state.rules.infiniteResources = !Vars.state.rules.infiniteResources }
 +                    .checked { Vars.state.rules.infiniteResources }.size(50f, 30f)
++                button(Iconc.edit.toString(), Styles.cleart) {
++                    rulesDialog.show(Vars.state.rules) { Vars.state.rules }
++                }.width(40f)
 +            }
 +
 +            row().add("沙漏：")
@@ -217,10 +176,10 @@ index 0000000000000000000000000000000000000000..682ef3890b590fa34af775e1f7160054
 \ No newline at end of file
 diff --git a/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e876173059
+index 0000000000000000000000000000000000000000..310de89da824ff51939c28465ecfd46e35ade7a3
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
-@@ -0,0 +1,452 @@
+@@ -0,0 +1,440 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -251,7 +210,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +    private int unitCount = 1;
 +    private float unitRandDst = 1f;
 +    private final Vec2 unitLoc = new Vec2(0, 0);
-+    private final Unit spawnUnit = UnitTypes.emanate.create(Team.sharded);
++    private Unit spawnUnit = UnitTypes.emanate.create(Team.sharded);
 +    private final OrderedSet<StatusEntry> unitStatus = new OrderedSet<>();
 +    private final float[] statusTime = {10, 30f, 60f, 120f, 180f, 300f, 600f, 900f, 1200f, 1500f, 1800f, 2700f, 3600f, Float.MAX_VALUE};
 +    private float chatTime = 0;
@@ -282,12 +241,10 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +            r.add("数量：");
 +            r.field("" + unitCount, text -> unitCount = Integer.parseInt(text))
 +            .valid(Strings::canParsePositiveInt).maxTextLength(4);
-+        }).row();
 +
-+        cont.table((r) -> {
 +            r.add("生成范围：");
 +            r.field(Strings.autoFixed(unitRandDst, 3), text -> unitRandDst = Float.parseFloat(text))
-+            .valid(Strings::canParsePositiveFloat).tooltip("在目标点附近的这个范围内随机生成").maxTextLength(8);
++            .valid(Strings::canParsePositiveFloat).maxTextLength(8).tooltip("在目标点附近的这个范围内随机生成");
 +            r.add("格");
 +        }).row();
 +
@@ -302,10 +259,8 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +            Vec2 pos = Tmp.v1.set(unitLoc).scl(tilesize);
 +            for(var n = 0; n < unitCount; n++){
 +                Tmp.v2.rnd(Mathf.random(unitRandDst * tilesize));
-+                Unit unit = cloneUnit(spawnUnit);
-+                if(elevation) unit.elevation = 1f;
++                Unit unit = createUnit();
 +                unit.set(Tmp.v2.add(pos));
-+                UnitExt.getStatuses(unit).addAll(unitStatus);
 +                unit.add();
 +            }
 +            control.input.panCamera(pos);
@@ -319,14 +274,8 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +            chatTime = 1f;
 +            ui.showInfoFade("已生成单个单位。\n[gray]请不要短时多次使用本功能，否则容易因ddos被服务器ban", 5f);
 +            Tmp.v1.rnd(Mathf.random(unitRandDst)).add(unitLoc.x, unitLoc.y).scl(tilesize);
-+            sendFormatChat("/js u = UnitTypes.@.create(Team.get(@))",
-+            spawnUnit.type.name,
-+            spawnUnit.team.id
-+            );
-+            sendFormatChat("/js u.set(@,@)",
-+            unitLoc.x * tilesize,
-+            unitLoc.y * tilesize
-+            );
++            sendFormatChat("/js u = UnitTypes.@.create(Team.get(@))", spawnUnit.type.name, spawnUnit.team.id);
++            sendFormatChat("/js u.set(@,@)", unitLoc.x * tilesize, unitLoc.y * tilesize);
 +            if(spawnUnit.health != spawnUnit.type.health){
 +                sendFormatChat("/js u.health = @", spawnUnit.health);
 +                if(spawnUnit.health > spawnUnit.type.health){
@@ -365,21 +314,19 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                t.add("加工单位：");
 +                t.image(spawnUnit.type.uiIcon).scaling(Scaling.fit).size(iconMed);
 +            }).grow();
-+        }, Styles.togglet, () -> showUnitSelect = !showUnitSelect).fillX().minWidth(400f).row();
++        }, Styles.togglet, () -> showUnitSelect = !showUnitSelect).growX().minWidth(400f).row();
 +        table.collapser(list -> {
 +            int i = 0;
-+            for(UnitType unit : content.units()){
++            for(UnitType type : content.units()){
 +                if(i++ % 8 == 0) list.row();
-+                list.button((b) -> {
-+                    b.image(unit.uiIcon).scaling(Scaling.fit);
-+                }, cleart, () -> {
-+                    if(spawnUnit.type != unit){
-+                        changeUnitType(spawnUnit, unit);
++                list.button((b) -> b.image(type.uiIcon).scaling(Scaling.fit), cleart, () -> {
++                    if(spawnUnit.type != type){
++                        spawnUnit = type.create(spawnUnit.team);
 +                        buildUnitFabricator(table);
 +                    }
 +                    showUnitSelect = !showUnitSelect;
 +                    buildUnitFabricator(table);
-+                }).tooltip(unit.localizedName).width(50f).height(50f);
++                }).tooltip(type.localizedName).width(50f).height(50f);
 +            }
 +        }, () -> showUnitSelect).row();
 +
@@ -436,19 +383,20 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +
 +            t.row();
 +
-+            float[] status = {1f, 1f, 1f, 1f};
-+            unitStatus.each(s -> {
-+                status[0] *= s.effect.healthMultiplier;
-+                status[1] *= s.effect.damageMultiplier;
-+                status[2] *= s.effect.reloadMultiplier;
-+                status[3] *= s.effect.speedMultiplier;
-+            });
 +            t.table(tt -> {
++                tt.defaults().pad(0, 8, 0, 8);
 +                tt.add("[acid]血量");
 +                tt.add("[red]伤害");
 +                tt.add("[violet]攻速");
 +                tt.add("[cyan]移速");
 +                tt.row();
++                float[] status = {1f, 1f, 1f, 1f};
++                unitStatus.each(s -> {
++                    status[0] *= s.effect.healthMultiplier;
++                    status[1] *= s.effect.damageMultiplier;
++                    status[2] *= s.effect.reloadMultiplier;
++                    status[3] *= s.effect.speedMultiplier;
++                });
 +                tt.add(FormatDefault.format(status[0]));
 +                tt.add(FormatDefault.format(status[1]));
 +                tt.add(FormatDefault.format(status[2]));
@@ -465,17 +413,14 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                        list.add("<瞬间状态>");
 +                    }else{
 +                        list.table(et -> {
-+                            TextField sField = et.field(checkInf(entry.time), text -> entry.time = Objects.equals(text, "Inf") ? Float.MAX_VALUE : Float.parseFloat(text)).valid(text -> Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text)).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
-+
++                            TextField sField = et.field(checkInf(entry.time), text -> entry.time = Objects.equals(text, "Inf") ? Float.MAX_VALUE : Float.parseFloat(text))
++                            .valid(text -> Objects.equals(text, "Inf") || Strings.canParsePositiveFloat(text)).tooltip("buff持续时间(单位：秒)").maxTextLength(10).get();
 +                            et.add("秒");
 +
 +                            Slider sSlider = et.slider(0f, statusTime.length - 1f, 1f, statusTimeIndex(entry.time), n -> {
-+                                if(statusTimeIndex(entry.time) != n){
-+                                    sField.setText(checkInf(statusTime[(int)n]));
-+                                }
-+                                entry.time = statusTime[(int)n];
++                                if(statusTimeIndex(entry.time) == n) return;
++                                sField.setText(checkInf(entry.time = statusTime[(int)n]));
 +                            }).get();
-+
 +                            sField.update(() -> sSlider.setValue(statusTimeIndex(entry.time)));
 +                        });
 +                    }
@@ -510,7 +455,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                        }
 +                        buildUnitFabricator(table);
 +                    }).size(50f).left().tooltip(item.localizedName);
-+                    if(++i % 6 == 0) ptt.row();
++                    if(++i % 8 == 0) ptt.row();
 +                }
 +            });
 +            if(spawnUnit.stack.amount > 0){
@@ -528,7 +473,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                        spawnUnit.stack.amount = spawnUnit.type.itemCapacity;
 +                        buildUnitFabricator(table);
 +                    }).tooltip("设置物品数量为单位最大容量");
-+                    ptt.button(Icon.down, cleari, () -> {
++                    ptt.button(Icon.cancel, cleari, () -> {
 +                        spawnUnit.stack.amount = 0;
 +                        buildUnitFabricator(table);
 +                    }).tooltip("清空单位物品");
@@ -547,6 +492,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                }).grow();
 +            }, Styles.togglet, () -> showPayload = !showPayload).fillX().checked(showPayload).row();
 +            table.collapser(p -> {
++                p.defaults().growX().padLeft(32).padRight(32);
 +                p.table(pt -> pay.payloads().each(payload -> {
 +                    if(payload instanceof Payloadc payloadUnit){
 +                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).size(iconMed).getTable().add("[red]*"), squareTogglet, () -> {
@@ -562,7 +508,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                    if(pay.payloads().indexOf(payload) % 8 == 7) pt.row();
 +                })).row();
 +
-+                p.button("载入单位 " + UnitTypes.mono.emoji(), showSelectPayload ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> showSelectPayload = !showSelectPayload).width(300f).row();
++                p.button("载入单位 " + UnitTypes.mono.emoji(), showSelectPayload ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> showSelectPayload = !showSelectPayload).row();
 +                p.collapser((c) -> {
 +                    c.table(list -> {
 +                        int i = 0;
@@ -577,7 +523,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                    c.row();
 +                    c.table(pt -> {
 +                        pt.button("[cyan]自递归", () -> {
-+                            pay.pickup(cloneUnit(spawnUnit));
++                            pay.pickup(createUnit());
 +                            buildUnitFabricator(table);
 +                        }).width(200f);
 +                        pt.button("?", () -> ui.showInfo("""
@@ -589,7 +535,7 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +                    }).row();
 +                }, () -> showSelectPayload).row();
 +
-+                p.button("载入建筑 " + Blocks.surgeWallLarge.emoji(), showPayloadBlock ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> showPayloadBlock = !showPayloadBlock).width(300f).row();
++                p.button("载入建筑 " + Blocks.surgeWallLarge.emoji(), showPayloadBlock ? Icon.upOpen : Icon.downOpen, Styles.togglet, () -> showPayloadBlock = !showPayloadBlock).row();
 +                p.collapser(list -> {
 +                    int i = 0;
 +                    for(Block payBlock : content.blocks()){
@@ -606,7 +552,9 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +        }
 +
 +        table.button("[red]重置出厂状态", () -> {
-+            resetUnitType(spawnUnit, spawnUnit.type);
++            elevation = false;
++            spawnUnit = spawnUnit.type.create(spawnUnit.team);
++            unitStatus.clear();
 +            buildUnitFabricator(table);
 +        }).fillX().row();
 +        //table.add("[orange]单位加工车间。 [white]Made by [violet]Lucky Clover\n").width(400f);
@@ -628,8 +576,10 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +        return 0;
 +    }
 +
-+    private Unit cloneUnit(Unit unit){
++    private Unit createUnit(){
++        Unit unit = spawnUnit;
 +        Unit reUnit = unit.type.create(unit.team);
++        reUnit.afterRead();
 +        reUnit.health = unit.health;
 +        reUnit.shield = unit.shield;
 +        reUnit.stack = unit.stack.copy();
@@ -637,30 +587,14 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +        if(unit instanceof Payloadc pay && reUnit instanceof Payloadc rePay){
 +            pay.payloads().each(rePay::addPayload);
 +        }
++
++        if(elevation) reUnit.elevation = 1f;
++        var statuses = getStatuses(reUnit);
++        for(var it : unitStatus){
++            statuses.add(new StatusEntry().set(it.effect, it.time * 60f));
++        }
++
 +        return reUnit;
-+    }
-+
-+
-+    private void resetUnitType(Unit unit, UnitType unitType){
-+        elevation = false;
-+        unit.type = unitType;
-+        unit.health = unitType.health;
-+        unit.shield = 0;
-+        unit.stack.amount = 0;
-+        if(unit instanceof Payloadc pay){
-+            pay.payloads().clear();
-+        }
-+        unitStatus.clear();
-+    }
-+
-+    private void changeUnitType(Unit unit, UnitType unitType){
-+        unit.type = unitType;
-+        unit.health = unitType.health;
-+        unit.shield = 0;
-+        if(unit.stack.amount > unit.itemCapacity()){
-+            unit.stack.amount = unit.itemCapacity();
-+        }
-+        unitStatus.clear();
 +    }
 +
 +    private void sendFormatChat(String format, Object... args){
@@ -671,5 +605,18 @@ index 0000000000000000000000000000000000000000..e7fb6517a19ad196e51f79c507fab9e8
 +        }
 +        Time.run(chatTime, () -> Call.sendChatMessage(Strings.format(format, args)));
 +        chatTime = chatTime + 10f;
++    }
++
++    public static Seq<StatusEntry> getStatuses(Unit unit){
++        Class<?> cls = unit.getClass();
++        if(cls.isAnonymousClass()) cls = cls.getSuperclass();
++        while(true){
++            try{
++                return Reflect.get(cls, unit, "statuses");
++            }catch(Exception e){
++                cls = cls.getSuperclass();
++                if(cls == Unit.class) return Seq.with();
++            }
++        }
 +    }
 +}

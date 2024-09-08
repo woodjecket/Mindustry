@@ -52,7 +52,7 @@ index 0000000000000000000000000000000000000000..e2bdb30e190a210f25130c423c853892
 +    }
 +}
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 6042c38333736e5cb7d33db2e3effa8a1e261ca5..068a243ba87023201aaf0c287e9ee35341e312a3 100644
+index 7dc8ff3a7ad0d08f70f55137c1e4357a453cbe31..5475b11294275e35c1bf9ec3cf554b7fb2b6be75 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -70,7 +70,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform

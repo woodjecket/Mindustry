@@ -13,9 +13,9 @@ way-zer <himc.wicp@gmail.com> on 2024/6/10
  core/src/mindustry/input/Binding.java         |   2 +
  .../mindustry/ui/fragments/ChatFragment.java  |   4 +-
  core/src/mindustryX/Hooks.java                |   9 +
- core/src/mindustryX/features/MarkerType.java  | 215 ++++++++++++++++++
+ core/src/mindustryX/features/MarkerType.java  | 225 ++++++++++++++++++
  core/src/mindustryX/features/UIExt.java       |  23 +-
- 5 files changed, 245 insertions(+), 8 deletions(-)
+ 5 files changed, 255 insertions(+), 8 deletions(-)
  create mode 100644 core/src/mindustryX/features/MarkerType.java
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
@@ -82,10 +82,10 @@ index af7d31b4674b0efb198643fdfa7dc8b65e17d38a..3d1491a497b4f3a7dad96620cdc66383
      private static void registerBundle(){
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d701681ffb
+index 0000000000000000000000000000000000000000..58a3232027734be1786229aa86b626c4eb18d7e7
 --- /dev/null
 +++ b/core/src/mindustryX/features/MarkerType.java
-@@ -0,0 +1,215 @@
+@@ -0,0 +1,225 @@
 +package mindustryX.features;
 +
 +import arc.*;
@@ -94,15 +94,15 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +import arc.graphics.g2d.*;
 +import arc.math.*;
 +import arc.math.geom.*;
++import arc.scene.ui.layout.*;
 +import arc.struct.*;
 +import arc.util.*;
 +import mindustry.*;
-+import mindustry.arcModule.*;
-+import mindustry.arcModule.ui.dialogs.*;
 +import mindustry.entities.*;
 +import mindustry.game.EventType.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
++import mindustryX.features.func.*;
 +import mindustryX.features.ui.*;
 +
 +import java.util.regex.*;
@@ -138,14 +138,16 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +            stroke(1f);
 +            Lines.circle(e.x, e.y, 4f * tilesize * (e.finpow() * 8f - (int)(e.finpow() * 8f)));
 +            for(int j = 0; j < 4; j++){
++                Draw.alpha(Math.min(1f, j - e.fout() * 3));
 +                if(e.fout() * 3 < j){
 +                    for(int i = 0; i < 8; i++){
 +                        float rot = i * 45f;
 +                        float radius = 4f * tilesize + j * 6f + 4f;
-+                        Drawf.simpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 4f, 2f, Color.cyan, Math.min(1f, j - e.fout() * 3));
++                        drawSimpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 4f, 2f);
 +                    }
 +                }
 +            }
++            Draw.color();
 +        }), Color.cyan);
 +        attackMark = new MarkerType("Attack", new Effect(1800, e -> {
 +            color(e.color);
@@ -155,7 +157,7 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +            Lines.circle(e.x, e.y, radius);
 +            for(int i = 0; i < 4; i++){
 +                float rot = i * 90f + 45f + (-Time.time) % 360f;
-+                Drawf.simpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 6f + 4 * e.finpow(), 2f + 4 * e.finpow());
++                drawSimpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 6f + 4 * e.finpow(), 2f + 4 * e.finpow());
 +            }
 +        }), Color.valueOf("#DC143C"));
 +        defenseMark = new MarkerType("Defend", new Effect(1800, e -> {
@@ -169,7 +171,7 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +            for(int i = 0; i < 16; i++){
 +                float rot = i * 22.5f;
 +                if((e.fin() - 0.2f) * 50 > i)
-+                    Drawf.simpleArrow(e.x, e.y, e.x + Angles.trnsx(rot, 120f), e.y + Angles.trnsy(rot, 120f), 96f, 4f);
++                    drawSimpleArrow(e.x, e.y, e.x + Angles.trnsx(rot, 120f), e.y + Angles.trnsy(rot, 120f), 96f, 4f);
 +            }
 +        }), Color.acid);
 +        quesMark = new MarkerType("What", new Effect(1200, e -> {
@@ -243,7 +245,6 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +        var exists = (MarkElement)Groups.draw.find(it -> it instanceof MarkElement e && e.message == null && e.within(pos.scl(tilesize), 2 * tilesize));
 +        last = exists != null ? exists : type.at(pos.scl(tilesize));
 +        last.message = text;
-+        MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
 +        return true;
 +    }
 +
@@ -262,6 +263,14 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +
 +    public static @Nullable Position getLastPos(){
 +        return last;
++    }
++
++    /** 在x,y附近length范围，绘制一个指向x2,y2的三角箭头，箭头大小radius */
++    private static void drawSimpleArrow(float x, float y, float x2, float y2, float length, float radius){
++        float angle = Angles.angle(x, y, x2, y2);
++        Tmp.v1.set(x2, y2).sub(x, y).limit(length);
++        float vx = Tmp.v1.x + x, vy = Tmp.v1.y + y;
++        Fill.poly(vx, vy, 3, radius, angle);
 +    }
 +
 +
@@ -287,9 +296,10 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +        @Override
 +        public void draw(){
 +            super.draw();
++            Draw.z(Layer.overlayUI);
 +            showArrow();
 +            if(message != null)
-+                WorldLabel.drawAt(message, x, y, Layer.overlayUI, WorldLabel.flagOutline, 1);
++                FuncX.drawText(this, message);
 +        }
 +
 +        private void showArrow(){
@@ -297,7 +307,7 @@ index 0000000000000000000000000000000000000000..c3850e910d6e9d579316734190e891d7
 +            Drawf.arrow(player.x, player.y, x, y, 5f * tilesize, 4f, color);
 +
 +            var p = Tmp.v1.set(this).sub(player).limit(4.5f * tilesize).add(player);
-+            DrawUtilities.drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
++            FuncX.drawText(p, (int)(dst(player) / 8) + "", Scl.scl(1.25f), color);
 +        }
 +    }
 +}

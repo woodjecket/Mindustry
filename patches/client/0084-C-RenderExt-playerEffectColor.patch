@@ -9,7 +9,7 @@ Subject: [PATCH] C(RenderExt) playerEffectColor
  2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
-index ad69511c62759552d9611ed901d0ef8bc4accbc8..17009f955dd1f407bdfa3c9731daba67df6388d2 100644
+index 47ea958a84d4e7f33241ad98da20db3d061eab78..c2e398bcb71566cc3f3aaa4a081174c19df9596a 100644
 --- a/core/src/mindustryX/features/ArcOld.java
 +++ b/core/src/mindustryX/features/ArcOld.java
 @@ -127,7 +127,17 @@ public class ArcOld{

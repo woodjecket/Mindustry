@@ -28,7 +28,7 @@ way-zer <himc.wicp@gmail.com> on 2024/8/4
  3 files changed, 233 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/arc/graphics/g2d/MySpriteBatch.java b/core/src/arc/graphics/g2d/MySpriteBatch.java
-index e2bdb30e190a210f25130c423c853892798e4c28..891989a306ef9d6b9cef36417df0f1eb31cc6e4c 100644
+index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f3ced8bb6 100644
 --- a/core/src/arc/graphics/g2d/MySpriteBatch.java
 +++ b/core/src/arc/graphics/g2d/MySpriteBatch.java
 @@ -1,10 +1,29 @@
@@ -53,8 +53,8 @@ index e2bdb30e190a210f25130c423c853892798e4c28..891989a306ef9d6b9cef36417df0f1eb
 +
 +    @Override
 +    protected void z(float z){
-+        if(this.z == z) return;
 +        orderZ = 0;
++        if(this.z == z) return;
 +        super.z(z);
 +    }
 +

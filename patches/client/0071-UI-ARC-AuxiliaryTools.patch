@@ -20,21 +20,27 @@ way-zer <himc.wicp@gmail.com> on 2024/6/10
 
 从ARC中完全分离
 way-zer <himc.wicp@gmail.com> on 2024/6/27
+
+* 调整部分按钮位置
+* 合并PC/Mobile的脱离视角功能
+* 优化辅助器波次显示UI
+* clean
+way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- .../mindustry/ui/fragments/HudFragment.java   |  26 +++
- .../features/ui/AuxiliaryTools.java           |  99 +++++++++
- .../features/ui/auxiliary/AITools.java        | 122 ++++++++++
- .../features/ui/auxiliary/MapInfoTable.java   | 149 +++++++++++++
- .../features/ui/auxiliary/MarkTable.java      |  55 +++++
- .../ui/auxiliary/MobileScriptButtons.java     |  52 +++++
+ .../mindustry/ui/fragments/HudFragment.java   |  13 ++
+ .../features/ui/AuxiliaryTools.java           |  73 ++++++
+ .../features/ui/auxiliary/AITools.java        | 115 ++++++++++
+ .../features/ui/auxiliary/MapInfoTable.java   | 143 ++++++++++++
+ .../features/ui/auxiliary/MarkTable.java      |  53 +++++
+ .../ui/auxiliary/MobileScriptButtons.java     |  46 ++++
  .../features/ui/auxiliary/RStyles.java        |  71 ++++++
- .../features/ui/auxiliary/ScriptButtons.java  |  74 ++++++
- .../features/ui/auxiliary/WaveInfoTable.java  | 139 ++++++++++++
+ .../features/ui/auxiliary/ScriptButtons.java  |  61 +++++
+ .../features/ui/auxiliary/WaveInfoTable.java  | 132 +++++++++++
  .../features/ui/auxiliary/ai/ATRIAI.java      | 210 ++++++++++++++++++
  .../ui/auxiliary/ai/ArcBuilderAI.java         | 182 +++++++++++++++
- .../features/ui/auxiliary/ai/ArcMinerAI.java  | 130 +++++++++++
+ .../features/ui/auxiliary/ai/ArcMinerAI.java  | 122 ++++++++++
  .../features/ui/auxiliary/ai/ArcRepairAI.java |  75 +++++++
- 13 files changed, 1384 insertions(+)
+ 13 files changed, 1296 insertions(+)
  create mode 100644 core/src/mindustryX/features/ui/AuxiliaryTools.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/AITools.java
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
@@ -49,65 +55,45 @@ way-zer <himc.wicp@gmail.com> on 2024/6/27
  create mode 100644 core/src/mindustryX/features/ui/auxiliary/ai/ArcRepairAI.java
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 37a57b425a423ddff029268c938423f6711340c8..98fa34b4f9a8b77d483508a3eb8c24dac76ed339 100644
+index 37a57b425a423ddff029268c938423f6711340c8..6a9359568e73967b34be82618ec7a95583e5cf6e 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -43,6 +43,7 @@ public class HudFragment{
  
      private ImageButton flip;
      public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
-+    private AuxiliaryTools auxiliaryTools;
++    private final AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
  
      private String hudText = "";
      private boolean showHudText;
-@@ -52,6 +53,7 @@ public class HudFragment{
-     private long lastToast;
- 
-     public void build(Group parent){
-+        auxiliaryTools = new AuxiliaryTools();
- 
-         //warn about guardian/boss waves
-         Events.on(WaveEvent.class, e -> {
-@@ -121,6 +123,13 @@ public class HudFragment{
+@@ -121,6 +122,9 @@ public class HudFragment{
              .touchable(Touchable.disabled)
              .style(Styles.outlineLabel)
              .name("position");
 +            if(Core.settings.getInt("AuxiliaryTable") == 3){
-+                t.row();
-+                t.table(infoWave -> {
-+                    infoWave.left().top();
-+                    infoWave.add(auxiliaryTools);
-+                }).left().top();
++                t.row().add(auxiliaryTools);
 +            }
              t.top().right();
          });
  
-@@ -240,6 +249,14 @@ public class HudFragment{
+@@ -240,6 +244,10 @@ public class HudFragment{
  
              wavesMain.row();
  
 +            if(Core.settings.getInt("AuxiliaryTable") == 2){
-+                wavesMain.table(t->{
-+                    t.name = "AuxiliaryTable";
-+                    t.left().top().add(auxiliaryTools);
-+                }).left();
-+                wavesMain.row();
++                wavesMain.add(auxiliaryTools).left().top().row();
 +            }
 +
              addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
  
              editorMain.name = "editor";
-@@ -266,6 +283,15 @@ public class HudFragment{
+@@ -266,6 +274,11 @@ public class HudFragment{
              }).width(dsize * 5 + 4f);
              editorMain.visible(() -> shown && state.isEditor());
  
 +            //map info/nextwave display
 +            if(Core.settings.getInt("AuxiliaryTable") == 1){
-+                cont.table(infoWave -> {
-+                    infoWave.name = "map/wave";
-+                    infoWave.left().top();
-+                    infoWave.add(auxiliaryTools);
-+                }).left().top();
++                cont.add(auxiliaryTools).left().top();
 +            }
 +
              //fps display
@@ -115,10 +101,10 @@ index 37a57b425a423ddff029268c938423f6711340c8..98fa34b4f9a8b77d483508a3eb8c24da
                  info.name = "fps/ping";
 diff --git a/core/src/mindustryX/features/ui/AuxiliaryTools.java b/core/src/mindustryX/features/ui/AuxiliaryTools.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49da7c6a9e0
+index 0000000000000000000000000000000000000000..dc3b163caf2f8adddb1aa4528cd162a07a9b91d7
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AuxiliaryTools.java
-@@ -0,0 +1,99 @@
+@@ -0,0 +1,73 @@
 +package mindustryX.features.ui;
 +
 +import arc.*;
@@ -131,6 +117,10 @@ index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49d
 +import mindustryX.features.ui.auxiliary.*;
 +
 +public class AuxiliaryTools extends Table{
++    static{
++        RStyles.load();
++    }
++
 +    private boolean shown = true;
 +    private final Seq<Table> toolsTables = Seq.with(
 +    new MapInfoTable(),
@@ -141,22 +131,11 @@ index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49d
 +    new MarkTable()
 +    );
 +
-+    static{
-+        RStyles.load();
-+    }
-+
 +    public AuxiliaryTools(){
-+        setup();
-+
-+        rebuild();
++        name = "AuxiliaryTable";
 +        Events.on(WorldLoadEvent.class, e -> rebuild());
 +        Events.on(ResetEvent.class, e -> clearChildren());
-+    }
-+
-+    public void setup(){
-+        for(Table table : toolsTables){
-+            table.setup();
-+        }
++        rebuild();
 +    }
 +
 +    public void toggle(){
@@ -167,31 +146,27 @@ index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49d
 +    private void rebuild(){
 +        clearChildren();
 +
-+        table(Styles.black3, buttons -> {
++        table(Styles.black5, buttons -> {
 +            buttons.button("[acid]辅助器", RStyles.clearLineNoneTogglet, this::toggle).size(80f, 40f).tooltip((shown ? "关闭" : "开启") + "辅助器");
 +
-+            if(shown){
-+                for(Table table : toolsTables){
-+                    table.addButton(buttons);
-+                }
++            if(!shown) return;
++            for(Table table : toolsTables){
++                buttons.button(table.icon, RStyles.clearAccentNoneTogglei, 30, () -> table.shown ^= true)
++                .size(40).checked(b -> table.shown);
 +            }
-+        }).fillX();
-+
-+        row();
-+
-+        if(shown){
-+            table(RStyles.black1, body -> {
-+                body.defaults().expandX().left();
-+                for(Table table : toolsTables){
-+                    table.margin(4);
-+                    body.collapser(table, table::shown).row();
-+                }
-+            }).fillX().left();
-+        }
++        }).fillX().row();
++        if(!shown) return;
++        table(Styles.black3, body -> {
++            body.defaults().expandX().left();
++            for(Table table : toolsTables){
++                table.margin(4);
++                body.collapser(table, () -> table.shown).growX().row();
++            }
++        }).fillX().left();
 +    }
 +
 +    public abstract static class Table extends arc.scene.ui.layout.Table{
-+        private boolean shown;
++        public boolean shown;
 +        protected Drawable icon;
 +
 +        public Table(TextureRegion region){
@@ -201,29 +176,14 @@ index 0000000000000000000000000000000000000000..ce38e6817961786fc9b51aff49a6d49d
 +        public Table(Drawable icon){
 +            this.icon = icon;
 +        }
-+
-+        public void addButton(arc.scene.ui.layout.Table buttons){
-+            buttons.button(icon, RStyles.clearAccentNoneTogglei, 30, this::toggle)
-+            .size(40).checked(b -> shown);
-+        }
-+
-+        protected abstract void setup();
-+
-+        public boolean shown(){
-+            return shown;
-+        }
-+
-+        public boolean toggle(){
-+            return shown = !shown;
-+        }
 +    }
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/AITools.java b/core/src/mindustryX/features/ui/auxiliary/AITools.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799bd2c4022a
+index 0000000000000000000000000000000000000000..ce38210184665e23528e97e1e8115ed7d6428555
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/AITools.java
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,115 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
@@ -233,16 +193,16 @@ index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799b
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
 +import mindustry.ai.types.*;
-+import mindustry.ui.*;
-+import mindustryX.features.ui.*;
-+import mindustryX.features.ui.auxiliary.ai.*;
 +import mindustry.content.*;
 +import mindustry.entities.units.*;
 +import mindustry.game.*;
 +import mindustry.gen.*;
 +import mindustry.graphics.*;
++import mindustry.ui.*;
 +import mindustry.ui.dialogs.*;
 +import mindustry.world.*;
++import mindustryX.features.ui.*;
++import mindustryX.features.ui.auxiliary.ai.*;
 +
 +import static mindustry.Vars.*;
 +
@@ -258,10 +218,7 @@ index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799b
 +                selectAI.updateUnit();
 +            }
 +        });
-+    }
 +
-+    @Override
-+    public void setup(){
 +        button(Icon.settingsSmall, RStyles.clearLineNoneTogglei, 30, this::showSettingDialog);
 +
 +        if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
@@ -272,12 +229,10 @@ index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799b
 +    }
 +
 +    private void aiButton(AIController ai, TextureRegion textureRegion, String describe){
-+        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> selectAI(ai))
-+        .checked(b -> selectAI == ai).size(40).tooltip(describe);
-+    }
-+
-+    private void selectAI(AIController ai){
-+        selectAI = selectAI == ai ? null : ai;
++        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> {
++            if(selectAI != null) selectAI = null;
++            else selectAI = ai;
++        }).checked(b -> selectAI == ai).size(40).tooltip(describe);
 +    }
 +
 +    private void showSettingDialog(){
@@ -320,9 +275,7 @@ index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799b
 +                }).row();
 +
 +            }).growX();
-+        }).growX();
-+
-+        dialog.cont.row();
++        }).growX().row();
 +
 +        dialog.cont.table(t -> {
 +            t.add("builderAI").color(Pal.accent).pad(cols / 2f).center().row();
@@ -348,10 +301,10 @@ index 0000000000000000000000000000000000000000..80fc2d4e0ea19e77c478acbbfcdf799b
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e51d5ced9
+index 0000000000000000000000000000000000000000..2e6e313c2bc7434072b079c88f48db5f7411c796
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MapInfoTable.java
-@@ -0,0 +1,149 @@
+@@ -0,0 +1,143 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +
@@ -374,32 +327,25 @@ index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e
 +import static mindustry.Vars.*;
 +
 +public class MapInfoTable extends AuxiliaryTools.Table{
-+    private final MapInfoDialog mapInfoDialog = new MapInfoDialog();
-+    private int uiRowIndex = 0;
-+
 +    public MapInfoTable(){
 +        super(Icon.map);
-+    }
-+
-+    @Override
-+    protected void setup(){
 +        defaults().size(40);
 +
++        MapInfoDialog mapInfoDialog = new MapInfoDialog();
 +        button(Icon.map, RStyles.clearAccentNonei, mapInfoDialog::show).tooltip("地图信息");
 +        button(Items.copper.emoji(), RStyles.clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
 +        button(Icon.chatSmall, RStyles.clearAccentNonei, () -> UIExt.arcMessageDialog.show()).tooltip("中央监控室");
 +        button(Icon.playersSmall, RStyles.clearAccentNonei, () -> {
-+            if(ui.listfrag.players.size > 1){
-+                if(control.input instanceof DesktopInput){
-+                    ((DesktopInput)control.input).panning = true;
-+                }
-+                if(InputHandler.follow == null) InputHandler.follow = ui.listfrag.players.get(0);
-+                InputHandler.followIndex = (InputHandler.followIndex + 1) >= ui.listfrag.players.size ? 0 : InputHandler.followIndex + 1;
-+                InputHandler.follow = ui.listfrag.players.get(InputHandler.followIndex);
-+                UIExt.announce("视角追踪：" + InputHandler.follow.name);
++            var players = Groups.player.copy();
++            if(players.isEmpty()) return;
++            if(control.input instanceof DesktopInput){
++                ((DesktopInput)control.input).panning = true;
 +            }
++            InputHandler.follow = players.get((players.indexOf(InputHandler.follow, true) + 1) % players.size);
++            UIExt.announce("视角追踪：" + InputHandler.follow.name);
 +        }).tooltip("切换跟踪玩家");
 +        if(!mobile) button(Icon.editSmall, RStyles.clearAccentNonei, this::uiTable).tooltip("ui大全");
++        button(Icon.pencilSmall, RStyles.clearAccentNonei, () -> EffectsDialog.withAllEffects().show()).tooltip("特效大全");
 +    }
 +
 +    private void floorStatisticDialog(){
@@ -447,7 +393,6 @@ index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e
 +
 +    private void uiTable(){
 +        BaseDialog dialog = new BaseDialog("ARC-ui大全");
-+        uiRowIndex = 0;
 +        TextField sField = dialog.cont.field("", text -> {
 +        }).fillX().get();
 +        dialog.cont.row();
@@ -456,42 +401,44 @@ index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e
 +            c.add("颜色").color(Pal.accent).center().fillX().row();
 +            c.image().color(Pal.accent).fillX().row();
 +            c.table(ct -> {
++                int i = 0;
 +                for(var colorEntry : Colors.getColors()){
 +                    Color value = colorEntry.value;
 +                    String key = colorEntry.key;
 +                    ct.button("[#" + value + "]" + key, Styles.cleart, () -> {
 +                        Core.app.setClipboardText("[#" + value + "]");
-+                        sField.setText(sField.getText() + "[#" + value + "]");
++                        sField.appendText("[#" + value + "]");
 +                    }).size(50f).tooltip(key);
-+                    uiRowIndex += 1;
-+                    if(uiRowIndex % 15 == 0) ct.row();
++                    i += 1;
++                    if(i % 15 == 0) ct.row();
 +                }
 +            }).row();
 +            c.add("物品").color(Pal.accent).center().fillX().row();
 +            c.image().color(Pal.accent).fillX().row();
 +            c.table(ct -> {
-+                uiRowIndex = 0;
-+                Fonts.stringIcons.copy().each((name, iconc) -> {
-+                    ct.button(iconc, Styles.cleart, () -> {
-+                        Core.app.setClipboardText(iconc);
-+                        sField.setText(sField.getText() + iconc);
-+                    }).size(50f).tooltip(name);
-+                    uiRowIndex += 1;
-+                    if(uiRowIndex % 15 == 0) ct.row();
-+                });
++                int i = 0;
++                for(var it : Fonts.stringIcons){
++                    final String icon = it.value;
++                    ct.button(icon, Styles.cleart, () -> {
++                        Core.app.setClipboardText(icon);
++                        sField.appendText(icon);
++                    }).size(50f).tooltip(it.key);
++                    i += 1;
++                    if(i % 15 == 0) ct.row();
++                }
 +            }).row();
 +            c.add("图标").color(Pal.accent).center().fillX().row();
 +            c.image().color(Pal.accent).fillX().row();
 +            c.table(ct -> {
-+                uiRowIndex = 0;
-+                for(var i : Iconc.codes){
-+                    String icon = String.valueOf((char)i.value), internal = i.key;
++                int i = 0;
++                for(var it : Iconc.codes){
++                    String icon = String.valueOf((char)it.value), internal = it.key;
 +                    ct.button(icon, Styles.cleart, () -> {
 +                        Core.app.setClipboardText(icon);
-+                        sField.setText(sField.getText() + icon);
++                        sField.appendText(icon);
 +                    }).size(50f).tooltip(internal);
-+                    uiRowIndex += 1;
-+                    if(uiRowIndex % 15 == 0) ct.row();
++                    i += 1;
++                    if(i % 15 == 0) ct.row();
 +                }
 +            }).row();
 +        }).row();
@@ -503,20 +450,21 @@ index 0000000000000000000000000000000000000000..f0ac04dfb87f841f5c4662e6bfe3a77e
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MarkTable.java b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e556083972
+index 0000000000000000000000000000000000000000..a6ab2e3fa2b59fdb859e7fa4062dc8b656bec8a5
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MarkTable.java
-@@ -0,0 +1,55 @@
+@@ -0,0 +1,53 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
 +import arc.input.*;
 +import arc.scene.*;
 +import arc.scene.event.*;
-+import mindustryX.features.ui.AuxiliaryTools.*;
++import mindustry.content.*;
 +import mindustry.gen.*;
 +import mindustry.ui.fragments.*;
 +import mindustryX.features.*;
++import mindustryX.features.ui.AuxiliaryTools.*;
 +
 +import static mindustry.Vars.*;
 +
@@ -526,6 +474,7 @@ index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e5
 +    public MarkTable(){
 +        super(Icon.effect);
 +
++        mobileHitter.fillParent = true;
 +        mobileHitter.addListener(new ElementGestureListener(20, 0.4f, MarkerType.heatTime / 60f, 0.15f){
 +            @Override
 +            public boolean longPress(Element actor, float x, float y){
@@ -541,11 +490,6 @@ index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e5
 +            }
 +        });
 +
-+        mobileHitter.fillParent = true;
-+    }
-+
-+    @Override
-+    protected void setup(){
 +        if(mobile){
 +            button("♐ >", RStyles.clearLineNonet, () -> {
 +                ui.hudGroup.addChild(mobileHitter);
@@ -560,49 +504,42 @@ index 0000000000000000000000000000000000000000..6e7587a83732cdff55310587b55f61e5
 +
 +        button("T", RStyles.clearLineNoneTogglet, () -> ui.chatfrag.nextMode())
 +        .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(40).tooltip("前缀添加/t");
++        button("" + Iconc.zoom, RStyles.clearLineNonet, MarkerType::lockOnLastMark).size(40).tooltip("锁定上个标记点");
 +    }
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..81024f118a01c6dbc77058c35bc350891acec635
+index 0000000000000000000000000000000000000000..62f739019f8aa3dc7fb6965eebe107a6a6bd81f1
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/MobileScriptButtons.java
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,46 @@
 +package mindustryX.features.ui.auxiliary;
 +
-+import arc.*;
++import arc.graphics.g2d.*;
 +import arc.scene.style.*;
++import arc.scene.ui.*;
++import arc.scene.ui.layout.*;
 +import mindustry.content.*;
 +import mindustry.gen.*;
 +import mindustryX.features.*;
++import mindustryX.features.ui.*;
 +
 +import static mindustry.Vars.*;
 +
 +/**
 + * 专为手机制备的脚本按钮
 + */
-+public class MobileScriptButtons extends ScriptButtons{
++public class MobileScriptButtons extends AuxiliaryTools.Table{
 +
 +    public MobileScriptButtons(){
-+        icon = new TextureRegionDrawable(UnitTypes.emanate.uiIcon);
-+
-+        if(mobile){
-+            toggle();
-+        }
-+    }
-+
-+    @Override
-+    protected void setup(){
++        super(UnitTypes.emanate.uiIcon);
 +        defaults().size(40);
++        if(mobile) shown = true;
 +
 +        scriptButton(Icon.unitsSmall, "指挥模式", () -> control.input.commandMode = !control.input.commandMode).checked(b -> control.input.commandMode);
-+
 +        scriptButton(Icon.pause, "暂停建造", () -> control.input.isBuilding = !control.input.isBuilding).checked(b -> control.input.isBuilding);
-+
 +        scriptButton(Icon.up, "捡起载荷", () -> control.input.tryPickupPayload());
-+
 +        scriptButton(Icon.down, "丢下载荷", () -> control.input.tryDropPayload());
-+
 +        scriptButton(Blocks.payloadConveyor.uiIcon, "进入传送带", () -> {
 +            Building build = player.buildOn();
 +
@@ -611,14 +548,16 @@ index 0000000000000000000000000000000000000000..81024f118a01c6dbc77058c35bc35089
 +            Unit unit = player.unit();
 +            Call.unitBuildingControlSelect(unit, build);
 +        });
-+
 +        scriptButton(Blocks.radar.uiIcon, "雷达扫描", () -> ArcRadar.mobileRadar = !ArcRadar.mobileRadar);
-+        if(mobile)
-+            addSettingButton(StatusEffects.unmoving.uiIcon, "viewMode", "原地静止", s -> {
-+                if(!s) Core.camera.position.set(player);
-+            });
 +    }
 +
++    protected void scriptButton(TextureRegion region, String description, Runnable runnable){
++        scriptButton(new TextureRegionDrawable(region), description, runnable);
++    }
++
++    protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
++        return button(icon, RStyles.clearLineNonei, iconMed, runnable).tooltip(description, true);
++    }
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/RStyles.java b/core/src/mindustryX/features/ui/auxiliary/RStyles.java
 new file mode 100644
@@ -699,10 +638,10 @@ index 0000000000000000000000000000000000000000..49ed101b4a24b034fc313468441a213b
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..307d3fad544d61f31d097eb8fd6b995865629585
+index 0000000000000000000000000000000000000000..bd363d9dc2812d3bd5971cf37aa2e4503a6753eb
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/ScriptButtons.java
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,61 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
@@ -721,36 +660,23 @@ index 0000000000000000000000000000000000000000..307d3fad544d61f31d097eb8fd6b9958
 +import static mindustry.Vars.*;
 +
 +public class ScriptButtons extends AuxiliaryTools.Table{
-+
 +    public ScriptButtons(){
 +        super(UnitTypes.gamma.uiIcon);
-+    }
-+
-+    @Override
-+    protected void setup(){
 +        defaults().size(40);
 +
 +        scriptButton(Blocks.buildTower.uiIcon, "在建造列表加入被摧毁建筑", () -> player.buildDestroyedBlocks());
-+
-+        scriptButton(Blocks.message.uiIcon, "锁定上个标记点", MarkerType::lockOnLastMark);
-+
 +        scriptButton(Items.copper.uiIcon, "一键放置", () -> player.dropItems());
-+
-+        scriptButton(Icon.pencilSmall, "特效显示", () -> EffectsDialog.withAllEffects().show());
-+
-+        addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", s -> {
-+        });
-+
-+        addSettingButton(UnitTypes.vela.uiIcon, "forceBoost", "强制助推", s -> {
-+        });
-+
-+        if(!mobile){
-+            addSettingButton(Icon.eyeSmall, "removePan", "视角脱离玩家", s -> {
++        addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", null);
++        addSettingButton(UnitTypes.vela.uiIcon, "forceBoost", "强制助推", null);
++        addSettingButton(Icon.eyeSmall, "viewMode", "视角脱离玩家", s -> {
++            if(s){
 +                if(control.input instanceof DesktopInput desktopInput){
 +                    desktopInput.panning = true;
 +                }
-+            });
-+        }
++            }else{
++                Core.camera.position.set(player);
++            }
++        });
 +    }
 +
 +    protected void addSettingButton(TextureRegion region, String settingName, String description, Boolc onClick){
@@ -764,29 +690,28 @@ index 0000000000000000000000000000000000000000..307d3fad544d61f31d097eb8fd6b9958
 +            Core.settings.put(settingName, !setting);
 +            UIExt.announce("已" + (setting ? "取消" : "开启") + description);
 +
-+            onClick.get(!setting);
++            if(onClick != null) onClick.get(!setting);
 +        }).checked(b -> Core.settings.getBool(settingName));
 +    }
 +
-+    protected Cell<ImageButton> scriptButton(TextureRegion region, String description, Runnable runnable){
-+        return scriptButton(new TextureRegionDrawable(region), description, runnable);
++    protected void scriptButton(TextureRegion region, String description, Runnable runnable){
++        scriptButton(new TextureRegionDrawable(region), description, runnable);
 +    }
 +
 +    protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
-+        return button(icon, RStyles.clearLineNonei, 30, runnable).tooltip(description);//TODO allowMobile
++        return button(icon, RStyles.clearLineNonei, iconMed, runnable).tooltip(description, true);
 +    }
 +
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60ed72d385
+index 0000000000000000000000000000000000000000..cdf8bdf4a92a88b121592555f8d6153bc11541e0
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/WaveInfoTable.java
-@@ -0,0 +1,139 @@
+@@ -0,0 +1,132 @@
 +package mindustryX.features.ui.auxiliary;
 +
 +import arc.*;
-+import arc.scene.*;
 +import arc.scene.ui.*;
 +import arc.scene.ui.layout.*;
 +import arc.util.*;
@@ -801,16 +726,12 @@ index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60
 +import mindustryX.features.*;
 +import mindustryX.features.ui.*;
 +
-+import static mindustry.Vars.state;
++import static mindustry.Vars.*;
 +
 +public class WaveInfoTable extends AuxiliaryTools.Table{
 +    public static final float fontScl = 0.8f;
-+
 +    private int waveOffset = 0;
-+
 +    private final Table waveInfo;
-+
-+    private final ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
 +
 +    public WaveInfoTable(){
 +        super(Icon.waves);
@@ -822,14 +743,9 @@ index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60
 +
 +        Events.on(WaveEvent.class, e -> rebuildWaveInfo());
 +
-+        waveInfo = new Table(Tex.pane);
-+    }
-+
-+    @Override
-+    protected void setup(){
 +        left().top();
-+        waveInfo.left().top();
 +
++        ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
 +        button(Icon.waves, RStyles.clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
 +
 +        table(buttons -> {
@@ -852,11 +768,8 @@ index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60
 +        }).left().row();
 +
 +        table(setWave -> {
-+            setWave.label(() -> "" + getDisplayWaves()).get().setFontScale(fontScl);
-+
-+            setWave.row();
-+
-+            setWave.button(Icon.settingsSmall, RStyles.clearAccentNonei, 30, () -> {
++            setWave.label(() -> "" + getDisplayWaves()).fontScale(fontScl).row();
++            setWave.button(Icon.settingsSmall, RStyles.clearAccentNonei, iconMed, () -> {
 +                Dialog lsSet = new BaseDialog("波次设定");
 +                lsSet.cont.add("设定查询波次").padRight(5f).left();
 +                TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
@@ -869,16 +782,24 @@ index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60
 +                lsSet.show();
 +            });
 +        });
-+
-+        pane(Styles.noBarPane, waveInfo).scrollY(false).pad(8f).maxWidth(180f).left().update(pane -> {
-+            // 自动失焦
-+            if(pane.hasScroll()){
-+                Element result = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
-+                if(result == null || !result.isDescendantOf(pane)){
-+                    Core.scene.setScrollFocus(null);
-+                }
++        waveInfo = new Table(Tex.pane).left().top();
++        add(new ScrollPane(waveInfo, Styles.noBarPane){
++            {
++                setScrollingDisabledY(true);
++                setForceScroll(true, false);
++                // 自动失焦
++                update(() -> {
++                    if(hasScroll() && !hasMouse()){
++                        Core.scene.setScrollFocus(null);
++                    }
++                });
 +            }
-+        });
++
++            @Override
++            public float getPrefWidth(){
++                return 0f;
++            }
++        }).growX();
 +    }
 +
 +    private void rebuildWaveInfo(){
@@ -894,16 +815,14 @@ index 0000000000000000000000000000000000000000..542f33f45aab60fc6e38378eeef02f60
 +            StatusEffect effect = group.effect;
 +
 +            waveInfo.table(groupT -> {
-+                groupT.image(group.type.uiIcon).scaling(Scaling.fit).size(20).row();
-+
++                groupT.image(group.type.uiIcon).scaling(Scaling.fit).size(iconSmall).row();
 +                groupT.add("" + amount, fontScl).row();
-+
 +                groupT.add((shield > 0 ? UI.formatAmount((long)shield) : ""), fontScl).row();
 +
 +                if(effect != null && effect != StatusEffects.none){
-+                    groupT.image(effect.uiIcon).size(20);
++                    groupT.image(effect.uiIcon).size(iconSmall);
 +                }
-+            }).pad(8).left().top();
++            }).pad(4).left().top();
 +        }
 +    }
 +
@@ -1328,10 +1247,10 @@ index 0000000000000000000000000000000000000000..b336ba6618476c5dbee6b416582aee03
 +}
 diff --git a/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java b/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7122bbd621de71142efcec60bdf8f240dcc5f9a5
+index 0000000000000000000000000000000000000000..d7f717c09df1731e614b1673ae0eecbc6fc23ec2
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/auxiliary/ai/ArcMinerAI.java
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,122 @@
 +package mindustryX.features.ui.auxiliary.ai;
 +
 +import arc.struct.*;
@@ -1444,16 +1363,8 @@ index 0000000000000000000000000000000000000000..7122bbd621de71142efcec60bdf8f240
 +
 +            moveTo(targetCore, core.hitSize());
 +            if(unit.within(targetCore, itemTransferRange) && targetCore.acceptItem(null, targetItem)){
-+                if(control.input instanceof DesktopInput di){
-+                    di.autoAim = true;
-+                }
-+                unit.aimX = core.x;
-+                unit.aimY = core.y;
 +                Call.transferInventory(player, core);
 +                targetItem = updateTargetItem(core2 != null);
-+                if(control.input instanceof DesktopInput di){
-+                    Time.run(30f, () -> di.autoAim = false);
-+                }
 +            }
 +        }
 +    }

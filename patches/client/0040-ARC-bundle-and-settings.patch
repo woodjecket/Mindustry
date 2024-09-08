@@ -11,13 +11,13 @@ way-zer <himc.wicp@gmail.com> on 2024/4/20 at 21:59
 ---
  core/assets/bundles/bundle-mdtx.properties    | 237 ++++++++++++++++++
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +--
- core/src/mindustryX/features/ArcOld.java      | 221 ++++++++++++++++
+ core/src/mindustryX/features/ArcOld.java      | 219 ++++++++++++++++
  core/src/mindustryX/features/Settings.java    |   1 +
- 4 files changed, 472 insertions(+), 15 deletions(-)
+ 4 files changed, 470 insertions(+), 15 deletions(-)
  create mode 100644 core/src/mindustryX/features/ArcOld.java
 
 diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 623d778207282303a60e9efc99981131a99eb253..70ed79fdf385216999a98244f5128f6c47e29d78 100644
+index 623d778207282303a60e9efc99981131a99eb253..9d9cbc07ea828ebbcc4557994b36328cf9764e45 100644
 --- a/core/assets/bundles/bundle-mdtx.properties
 +++ b/core/assets/bundles/bundle-mdtx.properties
 @@ -77,3 +77,240 @@ category.developerMode.name = 特殊设置
@@ -156,7 +156,7 @@ index 623d778207282303a60e9efc99981131a99eb253..70ed79fdf385216999a98244f5128f6c
 +schematic.preview = 预览
 +setting.AuxiliaryTable.name = [acid]辅助器     [orange][重启生效]
 +setting.ShowInfoPopup.name = [acid]服务器信息版
-+setting.allBlocksReveal.name = [cyan]显示并允许建造所有物品
++setting.allUnlocked.name = [cyan]显示所有内容(含隐藏)
 +setting.alwaysShowPlayerUnit.name = [cyan]强制显示[white]:玩家本体及带领的单位
 +setting.alwaysShowUnitRTSAi.name = [acid]单位[white]：执行的RTS命令
 +setting.alwaysshowdropzone.name = [cyan]刷怪点
@@ -243,7 +243,7 @@ index 623d778207282303a60e9efc99981131a99eb253..70ed79fdf385216999a98244f5128f6c
 +setting.unitWeaponTargetLine.name = [acid]单位武器目标
 +setting.unitbuildplan.name = [acid]单位[white]：建造序列显示
 +setting.unithitbox.name = [acid]单位碰撞箱
-+setting.worldCreator.name = [cyan]创世神   [gray]可放置与删除地形
++setting.worldCreator.name = [cyan]创世神   [gray]无视限制，可编辑地形
 +settings.arc = [cyan]学术端！
 +settings.cheating = [red]作弊功能
 +settings.forcehide = [orange]帧率重调装置
@@ -330,10 +330,10 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..b71452eca5b3527f0c2ee15edd8d6ef0
  
 diff --git a/core/src/mindustryX/features/ArcOld.java b/core/src/mindustryX/features/ArcOld.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ad69511c62759552d9611ed901d0ef8bc4accbc8
+index 0000000000000000000000000000000000000000..47ea958a84d4e7f33241ad98da20db3d061eab78
 --- /dev/null
 +++ b/core/src/mindustryX/features/ArcOld.java
-@@ -0,0 +1,221 @@
+@@ -0,0 +1,219 @@
 +package mindustryX.features;
 +
 +import arc.func.*;
@@ -498,10 +498,8 @@ index 0000000000000000000000000000000000000000..ad69511c62759552d9611ed901d0ef8b
 +            c.addCategory("arcWeakCheat");
 +            c.checkPref("save_more_map", false);
 +            c.checkPref("forceIgnoreAttack", false);
-+            c.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
-+            AdvanceToolTable.allBlocksReveal = settings.getBool("allBlocksReveal");
-+            c.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
-+            AdvanceToolTable.worldCreator = settings.getBool("worldCreator");
++            c.checkPref("allUnlocked", false);
++            c.checkPref("worldCreator", false);
 +            c.checkPref("overrideSkipWave", false);
 +            c.checkPref("forceConfigInventory", false);
 +            c.addCategory("arcStrongCheat");

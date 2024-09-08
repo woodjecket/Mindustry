@@ -2,7 +2,12 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Tue, 9 Apr 2024 18:21:14 +0800
 Subject: [PATCH] CS: Version
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+不再发送ARC标识
+way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  .gitignore                             |  1 +
  android/build.gradle                   |  4 ++--
@@ -10,11 +15,11 @@ Subject: [PATCH] CS: Version
  build.gradle                           |  2 +-
  core/build.gradle.kts                  |  2 +-
  core/src/mindustry/Vars.java           |  2 +-
- core/src/mindustry/core/NetClient.java |  2 ++
+ core/src/mindustry/core/NetClient.java |  1 +
  core/src/mindustry/core/Version.java   | 16 +++++++++++++++-
  core/src/mindustry/net/NetworkIO.java  |  2 +-
  gradle.properties                      |  2 ++
- 10 files changed, 27 insertions(+), 8 deletions(-)
+ 10 files changed, 26 insertions(+), 8 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
@@ -100,14 +105,13 @@ index bc4c6a494aec88af73f001906598ba91a50ac6a3..d08d04a6f0e8107cec995876b2072c46
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index d0e444a4a7a9ced372a2c93102860991ac922112..72db086039f01b7358023c494a3355db24433117 100644
+index d0e444a4a7a9ced372a2c93102860991ac922112..0948c4a880fe17643171857951722cd798248892 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -135,6 +135,8 @@ public class NetClient implements ApplicationListener{
+@@ -135,6 +135,7 @@ public class NetClient implements ApplicationListener{
              Log.info("Received world data: @ bytes.", data.stream.available());
              NetworkIO.loadWorld(new InflaterInputStream(data.stream));
  
-+            Call.serverPacketReliable("ARC", Version.mdtXBuild);
 +            Call.serverPacketReliable("MDTX", Version.mdtXBuild);
              finishConnecting();
          });

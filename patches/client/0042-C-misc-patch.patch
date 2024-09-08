@@ -4,6 +4,7 @@ Date: Sun, 18 Feb 2024 15:58:00 +0800
 Subject: [PATCH] C: misc patch
 
 ---
+ core/src/mindustry/ClientLauncher.java        |  2 +-
  core/src/mindustry/core/Control.java          |  3 ++-
  core/src/mindustry/core/NetClient.java        |  4 ++++
  core/src/mindustry/core/Renderer.java         |  6 +++---
@@ -13,9 +14,24 @@ Subject: [PATCH] C: misc patch
  core/src/mindustry/net/ArcNetProvider.java    |  2 +-
  .../mindustry/ui/dialogs/KeybindDialog.java   |  9 ++++++---
  .../ui/fragments/BlockInventoryFragment.java  |  2 +-
+ .../mindustry/world/blocks/defense/Radar.java |  9 +++++++++
  .../world/blocks/distribution/Router.java     |  3 ++-
- 10 files changed, 29 insertions(+), 33 deletions(-)
+ .../world/blocks/production/BeamDrill.java    | 12 ++++-------
+ 13 files changed, 43 insertions(+), 42 deletions(-)
 
+diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
+index dffbb9df1312c2c7842c533bb2801b4810328747..1eaf2eb3ccbc433068d421d48963441c359c566b 100644
+--- a/core/src/mindustry/ClientLauncher.java
++++ b/core/src/mindustry/ClientLauncher.java
+@@ -252,7 +252,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+             if(nextFrame > current){
+                 long toSleep = nextFrame - current;
+                 Threads.sleep(toSleep / 1000000, (int)(toSleep % 1000000));
+-            }
++            }else nextFrame = current;
+         }
+     }
+ 
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
 index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb340566af 100644
 --- a/core/src/mindustry/core/Control.java
@@ -31,7 +47,7 @@ index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index cd9ef6e4832961bef095ed8deec2b69d88b14d28..5bef0c490bf785c3ca1cb41d5206a0df4cb53053 100644
+index 096f637032d6ad33967d62732ba2732a054b5e22..6fd5f42c966fcb10c68fd54c0e2a6498556e87fb 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -62,6 +62,10 @@ public class NetClient implements ApplicationListener{
@@ -224,6 +240,39 @@ index 84f5bc221c2f1846d831acf4abf902b15bfc1c59..4a8ef62fb82970df299159e53687f4c8
          int row = 0;
  
          table.margin(4f);
+diff --git a/core/src/mindustry/world/blocks/defense/Radar.java b/core/src/mindustry/world/blocks/defense/Radar.java
+index e24a3368d190f64fdaf002130a76f4799834c9a5..0811c4520865cff648084cbc743a141367a103c5 100644
+--- a/core/src/mindustry/world/blocks/defense/Radar.java
++++ b/core/src/mindustry/world/blocks/defense/Radar.java
+@@ -3,12 +3,14 @@ package mindustry.world.blocks.defense;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
++import arc.math.geom.*;
+ import arc.struct.*;
+ import arc.util.io.*;
+ import mindustry.*;
+ import mindustry.annotations.Annotations.*;
+ import mindustry.gen.*;
+ import mindustry.graphics.*;
++import mindustry.input.*;
+ import mindustry.world.*;
+ import mindustry.world.meta.*;
+ 
+@@ -45,6 +47,13 @@ public class Radar extends Block{
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, fogRadius * tilesize, Pal.accent);
+     }
+ 
++    //MDTX: 自动控制放置距离
++    @Override
++    public void changePlacementPath(Seq<Point2> points, int rotation){
++        var placeRadius2 = Mathf.pow(fogRadius, 2f) * 3;//*2/sqrt(3)/2
++        Placement.calculateNodes(points, this, rotation, (point, other) -> point.dst2(other) <= placeRadius2);
++    }
++
+     public class RadarBuild extends Building{
+         public float progress;
+         public float lastRadius = 0f;
 diff --git a/core/src/mindustry/world/blocks/distribution/Router.java b/core/src/mindustry/world/blocks/distribution/Router.java
 index 1e4a9399aac99d771d201d6ac01055295da686d4..fd1ef350517446c74427f85d27372bdd1a63cf22 100644
 --- a/core/src/mindustry/world/blocks/distribution/Router.java
@@ -238,3 +287,26 @@ index 1e4a9399aac99d771d201d6ac01055295da686d4..fd1ef350517446c74427f85d27372bdd
          }
  
          @Override
+diff --git a/core/src/mindustry/world/blocks/production/BeamDrill.java b/core/src/mindustry/world/blocks/production/BeamDrill.java
+index 163019c9c2562301984912c212e5d5558a028e36..85ec19d8a4d07d7c02245226b5ce39589edf01b4 100644
+--- a/core/src/mindustry/world/blocks/production/BeamDrill.java
++++ b/core/src/mindustry/world/blocks/production/BeamDrill.java
+@@ -171,14 +171,10 @@ public class BeamDrill extends Block{
+         }
+ 
+         if(item != null){
+-            float width = drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", 60f / getDrillTime(item) * count, 2), x, y, valid);
+-            if(!multiple){
+-                float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
+-                Draw.mixcol(Color.darkGray, 1f);
+-                Draw.rect(item.fullIcon, dx, dy - 1, s, s);
+-                Draw.reset();
+-                Draw.rect(item.fullIcon, dx, dy, s, s);
+-            }
++            //MDTX 增加加液速度显示
++            float speed = 60f / getDrillTime(item) * count;
++            String msg = Strings.format("@ [white]@@[] @[white]([cyan]@[])", Iconc.production, item.emoji(), item.localizedName, Strings.autoFixed(speed, 2), Strings.autoFixed(speed * optionalBoostIntensity, 2));
++            drawPlaceText(msg, x, y, valid);
+         }else if(invalidItem != null){
+             drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, false);
+         }

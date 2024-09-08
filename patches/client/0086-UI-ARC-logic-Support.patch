@@ -14,14 +14,17 @@ way-zer <himc.wicp@gmail.com> on 2024/7/13
 
 重制内存元显示 和 处理器快捷显示
 way-zer <himc.wicp@gmail.com> on 2024/7/14
+
+防止多人模式下编辑世处，并给出提示
+way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/logic/LCanvas.java         |  54 +++-
  core/src/mindustry/logic/LExecutor.java       |  19 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  55 +++-
+ .../world/blocks/logic/LogicBlock.java        |  59 ++++-
  .../world/blocks/logic/MemoryBlock.java       |  52 ++++
- 6 files changed, 374 insertions(+), 55 deletions(-)
+ 6 files changed, 376 insertions(+), 57 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index 04871c02fbee810619980a87a36a5f60a9a5d43a..6f155e70c3a59c60517878d48372fe94da087dcc 100644
@@ -523,7 +526,7 @@ index d36a66ee6b5f32938f8f8e6e4cec2e3bf3103a37..0428aae26c9151b78ad3d4b2257300a6
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc5641f029d3a 100644
+index 261b6374360c2cbae88f44aa441f55706c181936..8db4fd016e391344fe022ebfac5d64fd0b794fb5 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -534,7 +537,25 @@ index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc564
  
  import java.io.*;
  import java.util.zip.*;
-@@ -260,6 +261,8 @@ public class LogicBlock extends Block{
+@@ -110,11 +111,15 @@ public class LogicBlock extends Block{
+ 
+     @Override
+     public boolean checkForceDark(Tile tile){
+-        return !accessible();
++        return !accessibleRead();
+     }
+ 
+     public boolean accessible(){
+-        return !privileged || state.rules.editor || state.playtestingMap != null;
++        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo && !net.client();
++    }
++
++    private boolean accessibleRead(){
++        return accessible() || RenderExt.showOtherInfo;
+     }
+ 
+     @Override
+@@ -260,6 +265,8 @@ public class LogicBlock extends Block{
          public @Nullable String tag;
          public char iconTag;
  
@@ -543,25 +564,25 @@ index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc564
          /** Block of code to run after load. */
          public @Nullable Runnable loadBlock;
  
-@@ -424,7 +427,7 @@ public class LogicBlock extends Block{
+@@ -424,7 +431,7 @@ public class LogicBlock extends Block{
  
          @Override
          public boolean displayable(){
 -            return accessible();
-+            return accessible() || RenderExt.showOtherInfo;
++            return accessibleRead();
          }
  
          @Override
-@@ -447,7 +450,7 @@ public class LogicBlock extends Block{
+@@ -447,7 +454,7 @@ public class LogicBlock extends Block{
  
          @Override
          public Cursor getCursor(){
 -            return !accessible() ? SystemCursor.arrow : super.getCursor();
-+            return !accessible() && !RenderExt.showOtherInfo ? SystemCursor.arrow : super.getCursor();
++            return !accessibleRead() ? SystemCursor.arrow : super.getCursor();
          }
  
          //logic blocks cause write problems when picked up
-@@ -583,17 +586,19 @@ public class LogicBlock extends Block{
+@@ -583,17 +590,19 @@ public class LogicBlock extends Block{
              }
  
              //draw top text on separate layer
@@ -579,16 +600,16 @@ index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc564
          @Override
          public void drawSelect(){
 -            if(!accessible()) return;
-+            if(!accessible() && !RenderExt.showOtherInfo) return;
++            if(!accessibleRead()) return;
  
              Groups.unit.each(u -> u.controller() instanceof LogicAI ai && ai.controller == this, unit -> {
                  Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);
-@@ -640,12 +645,50 @@ public class LogicBlock extends Block{
+@@ -640,12 +649,46 @@ public class LogicBlock extends Block{
  
          @Override
          public boolean shouldShowConfigure(Player player){
 -            return accessible();
-+            return accessible() || RenderExt.showOtherInfo;
++            return accessibleRead();
          }
  
          @Override
@@ -597,14 +618,10 @@ index 261b6374360c2cbae88f44aa441f55706c181936..2ba5ec93717c2b50861da88513bbc564
 +            table.setBackground(Styles.black3);
 +            Table vars = new Table();
 +            table.table(t -> {
-+                t.button(Icon.pencil, Styles.cleari, () -> showEditDialog(RenderExt.showOtherInfo)).size(40);
-+                t.button(Icon.copy, Styles.cleari, () -> {
-+                    Core.app.setClipboardText(code);
-+                    UIExt.announce("已复制逻辑");
-+                }).size(40);
-+                t.button(Icon.download, Styles.cleari, () -> {
-+                    updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
-+                    UIExt.announce("已导入逻辑(仅单机生效)");
++                t.button(Icon.pencil, Styles.cleari, ()->{
++                    if(!accessible())
++                        UIExt.announce("[yellow]当前无权编辑，仅供查阅");
++                    showEditDialog();
 +                }).size(40);
 +                t.button(Icon.info, Styles.cleari, () -> {
 +                    showVars = !showVars;

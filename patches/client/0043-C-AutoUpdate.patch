@@ -7,8 +7,8 @@ Subject: [PATCH] C: AutoUpdate
  core/src/mindustry/net/BeControl.java         |  10 +-
  .../mindustry/ui/fragments/MenuFragment.java  |  21 +--
  core/src/mindustryX/Hooks.java                |   2 +
- core/src/mindustryX/features/AutoUpdate.kt    | 163 ++++++++++++++++++
- 4 files changed, 175 insertions(+), 21 deletions(-)
+ core/src/mindustryX/features/AutoUpdate.kt    | 170 ++++++++++++++++++
+ 4 files changed, 182 insertions(+), 21 deletions(-)
  create mode 100644 core/src/mindustryX/features/AutoUpdate.kt
 
 diff --git a/core/src/mindustry/net/BeControl.java b/core/src/mindustry/net/BeControl.java
@@ -99,10 +99,10 @@ index a1f9e743989ef91d28eb1dc17dc607e1656aa1b0..390913c56aa6088fa3092826cdc77207
              TimeControl.init();
 diff --git a/core/src/mindustryX/features/AutoUpdate.kt b/core/src/mindustryX/features/AutoUpdate.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..0331762febcf94c7a4a9164609b22aade0a0a29b
+index 0000000000000000000000000000000000000000..fffc9f5b78420be48f50e636c89c82b9c1a52470
 --- /dev/null
 +++ b/core/src/mindustryX/features/AutoUpdate.kt
-@@ -0,0 +1,163 @@
+@@ -0,0 +1,170 @@
 +package mindustryX.features
 +
 +import arc.Core
@@ -124,11 +124,14 @@ index 0000000000000000000000000000000000000000..0331762febcf94c7a4a9164609b22aad
 +import mindustry.ui.dialogs.BaseDialog
 +import mindustryX.VarsX
 +import mindustryX.features.ui.Format
-+import kotlin.system.exitProcess
 +
 +object AutoUpdate {
 +    data class Release(val tag: String, val version: String, val json: Jval) {
 +        data class Asset(val name: String, val url: String)
++
++        fun matchCurrent(): Boolean {
++            return tag == "$currentBranch-build" || json.getString("body", "").contains("REPLACE $currentBranch")
++        }
 +
 +        fun findAsset(): Asset? {
 +            val assets = json.get("assets").asArray().asIterable()
@@ -149,7 +152,8 @@ index 0000000000000000000000000000000000000000..0331762febcf94c7a4a9164609b22aad
 +    val repo = "TinyLake/MindustryX-work"
 +    var versions = emptyList<Release>()
 +    val currentBranch get() = Version.mdtXBuild.split('-', limit = 2).getOrNull(1)
-+    var newVersion: Release? = null
++    var latest: Release? = null
++    val newVersion: Release? get() = latest?.takeIf { it.version > Version.mdtXBuild }
 +
 +    fun checkUpdate() {
 +        if (versions.isNotEmpty()) return
@@ -166,10 +170,10 @@ index 0000000000000000000000000000000000000000..0331762febcf94c7a4a9164609b22aad
 +    }
 +
 +    private fun fetchSuccess() {
-+        val new = versions.find { it.tag == "$currentBranch-build" && it.version > Version.mdtXBuild } ?: return
-+        newVersion = new
-+        if (Core.settings.getBool("showUpdateDialog", true)) {
-+            if (Vars.clientLoaded) return showDialog()
++        val available = versions.filter { it.matchCurrent() }
++        latest = available.maxByOrNull { it.version } ?: return
++        newVersion?.takeIf { Core.settings.getBool("showUpdateDialog", true) }?.let {
++            if (Vars.clientLoaded) return showDialog(newVersion)
 +            Events.on(EventType.ClientLoadEvent::class.java) {
 +                Vars.ui.showConfirm("检测到新版MindustryX!\n打开更新列表?", ::showDialog)
 +            }
@@ -177,11 +181,14 @@ index 0000000000000000000000000000000000000000..0331762febcf94c7a4a9164609b22aad
 +    }
 +
 +    @JvmOverloads
-+    fun showDialog(version: Release? = newVersion) {
++    fun showDialog(version: Release? = latest) {
 +        checkUpdate()
 +        val dialog = BaseDialog("自动更新")
 +        dialog.cont.apply {
 +            add("当前版本号: ${Version.mdtXBuild}").labelAlign(Align.center).width(500f).row()
++            newVersion?.let {
++                add("新版本: ${it.version}").labelAlign(Align.center).width(500f).row()
++            }
 +            if (versions.isEmpty()) {
 +                add("检查更新失败，请稍后再试").row()
 +                return@apply

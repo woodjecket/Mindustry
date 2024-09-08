@@ -1,18 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Wed, 24 Jan 2024 21:40:17 +0800
-Subject: [PATCH] =?UTF-8?q?C:=20=E5=8A=A8=E6=80=81=E6=B8=B8=E6=88=8F?=
- =?UTF-8?q?=E6=A0=87=E9=A2=98?=
+Subject: [PATCH] =?UTF-8?q?C:=20dynamic=20Window=20title=20/=20=E5=8A=A8?=
+ =?UTF-8?q?=E6=80=81=E6=B8=B8=E6=88=8F=E6=A0=87=E9=A2=98?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/src/mindustry/ClientLauncher.java | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ core/src/mindustry/ClientLauncher.java | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index e3bf01fb63b179f4669e99c43891b842bcae66a6..b4c83b0e03a421e9f4d738944dca1873f6a27c82 100644
+index e3bf01fb63b179f4669e99c43891b842bcae66a6..dffbb9df1312c2c7842c533bb2801b4810328747 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -238,6 +238,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
@@ -24,16 +24,17 @@ index e3bf01fb63b179f4669e99c43891b842bcae66a6..b4c83b0e03a421e9f4d738944dca1873
              asyncCore.begin();
  
              super.update();
-@@ -254,6 +256,18 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -254,6 +256,19 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          }
      }
  
 +    private String lastTitle = "";
 +    private void updateTitle(){
++        if(graphics == null) return;
 +        var mod = mods.orderedMods();
 +        var title = "MindustryX | 版本号 " + Version.mdtXBuild +
 +        " | mod启用" + mod.count(Mods.LoadedMod::enabled) + "/" + mod.size +
-+        " | " + (Core.graphics != null ? Core.graphics.getWidth() + "x" + Core.graphics.getHeight() : "");
++        " | " + graphics.getWidth() + "x" + graphics.getHeight();
 +        if(!title.equals(lastTitle)){
 +            lastTitle = title;
 +            graphics.setTitle(title);

@@ -8,13 +8,13 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/src/mindustry/game/Schematics.java       | 31 +++++++++++++++++--
+ core/src/mindustry/game/Schematics.java       | 39 ++++++++++++++++---
  .../world/blocks/environment/Floor.java       |  1 +
- core/src/mindustryX/features/LogicExt.java    |  2 ++
- 3 files changed, 32 insertions(+), 2 deletions(-)
+ core/src/mindustryX/features/LogicExt.java    |  2 +
+ 3 files changed, 36 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e040a3e3cd985212b03898e4816f8d315f4d07c3 100644
+index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa0892e7bc 100644
 --- a/core/src/mindustry/game/Schematics.java
 +++ b/core/src/mindustry/game/Schematics.java
 @@ -34,6 +34,8 @@ import mindustry.world.blocks.sandbox.*;
@@ -31,10 +31,25 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e040a3e3cd985212b03898e4816f8d31
      public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
          return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
 -            .removeAll(s -> (!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow()).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
-+            .removeAll(s -> !LogicExt.terrainSchematic && !AdvanceToolTable.forcePlacement && ((!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow())).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
++            .removeAll(s -> !LogicExt.terrainSchematic && ((!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow())).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
      }
  
      /** @return all the valid loadouts for a specific core type. */
+@@ -369,10 +371,10 @@ public class Schematics implements Loadable{
+     public Schematic create(int x, int y, int x2, int y2){
+         Team team = headless ? null : Vars.player.team();
+         NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, maxSchematicSize);
+-        x = result.x;
+-        y = result.y;
+-        x2 = result.x2;
+-        y2 = result.y2;
++        x = Mathf.clamp(result.x, 0, world.width() - 1);
++        y = Mathf.clamp(result.y, 0, world.height() - 1);
++        x2 = Mathf.clamp(result.x2, 0, world.width() - 1);
++        y2 = Mathf.clamp(result.y2, 0, world.height() - 1);
+ 
+         int ox = x, oy = y, ox2 = x2, oy2 = y2;
+ 
 @@ -399,7 +401,7 @@ public class Schematics implements Loadable{
              }
          }
