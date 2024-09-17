@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Thu, 4 Apr 2024 14:56:59 +0800
+Subject: [PATCH] FC(RenderExt) unitHide
+
+---
+ core/src/mindustry/input/InputHandler.java | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
+index 5079c0afc523f36b870527b580c6b4f2bfe565c2..9be58ec46ccab9a86d84f75e05e200c04ae405a2 100644
+--- a/core/src/mindustry/input/InputHandler.java
++++ b/core/src/mindustry/input/InputHandler.java
+@@ -40,6 +40,7 @@ import mindustry.world.blocks.payloads.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import java.util.*;
+ 
+@@ -1736,7 +1737,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+ 
+     public @Nullable Unit selectedUnit(){
+         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
+-        if(unit != null){
++        if(!RenderExt.unitHide && unit != null){
+             unit.hitbox(Tmp.r1);
+             Tmp.r1.grow(6f);
+             if(Tmp.r1.contains(Core.input.mouseWorld())){

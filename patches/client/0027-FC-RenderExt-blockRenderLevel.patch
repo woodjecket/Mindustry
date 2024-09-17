@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 25 May 2024 20:34:18 +0800
+Subject: [PATCH] FC(RenderExt) blockRenderLevel
+
+---
+ core/src/mindustry/core/Renderer.java                       | 6 ++++--
+ core/src/mindustry/graphics/BlockRenderer.java              | 2 +-
+ core/src/mindustry/world/blocks/production/Drill.java       | 4 ++--
+ .../mindustry/world/blocks/production/GenericCrafter.java   | 5 ++++-
+ 4 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
+index e987766b74de1fbb8d3d9e0a8f1863b0821a49db..18612bbf72c9879f0ffb6142f00b268d809491e2 100644
+--- a/core/src/mindustry/core/Renderer.java
++++ b/core/src/mindustry/core/Renderer.java
+@@ -308,7 +308,8 @@ public class Renderer implements ApplicationListener{
+ 
+         Draw.draw(Layer.background, this::drawBackground);
+         Draw.draw(Layer.floor, blocks.floor::drawFloor);
+-        Draw.draw(Layer.block - 1, blocks::drawShadows);
++        if(RenderExt.blockRenderLevel > 0)
++            Draw.draw(Layer.block - 1, blocks::drawShadows);
+         Draw.draw(Layer.block - 0.09f, () -> {
+             blocks.floor.beginDraw();
+             blocks.floor.drawLayer(CacheLayer.walls);
+@@ -387,7 +388,8 @@ public class Renderer implements ApplicationListener{
+         });
+ 
+         Events.fire(Trigger.drawOver);
+-        blocks.drawBlocks();
++        if(RenderExt.blockRenderLevel > 0)
++            blocks.drawBlocks();
+ 
+         Groups.draw.draw(RenderExt::onGroupDraw);
+ 
+diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
+index 5c57b1309660e500c38099d362b46a62846ac24c..ea5060298da5e478b234e8d0575ab2ceedb5b6e6 100644
+--- a/core/src/mindustry/graphics/BlockRenderer.java
++++ b/core/src/mindustry/graphics/BlockRenderer.java
+@@ -341,7 +341,7 @@ public class BlockRenderer{
+         }
+ 
+ 
+-        if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
++        if(RenderExt.blockRenderLevel <= 0 || avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
+             return;
+         }
+ 
+diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
+index 1c3ce617f2498facc3fe1a34c94dacbe71f8373c..a923b427a598215747366b4748c28c9ce0a59115 100644
+--- a/core/src/mindustry/world/blocks/production/Drill.java
++++ b/core/src/mindustry/world/blocks/production/Drill.java
+@@ -305,7 +305,7 @@ public class Drill extends Block{
+                 warmup = Mathf.approachDelta(warmup, speed, warmupSpeed);
+                 progress += delta() * dominantItems * speed * warmup;
+ 
+-                if(Mathf.chanceDelta(updateEffectChance * warmup))
++                if(RenderExt.blockRenderLevel > 1 && Mathf.chanceDelta(updateEffectChance * warmup))
+                     updateEffect.at(x + Mathf.range(size * 2f), y + Mathf.range(size * 2f));
+             }else{
+                 lastDrillSpeed = 0f;
+@@ -318,7 +318,7 @@ public class Drill extends Block{
+ 
+                 progress %= delay;
+ 
+-                if(wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
++                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
+             }
+         }
+ 
+diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+index 03a7b867bc5af050d217fc8fb7ea9f31f9279b86..a55bc18a055c74d4e7de3332bd1315beb3c42a63 100644
+--- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
++++ b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+@@ -16,6 +16,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.liquid.Conduit.*;
+ import mindustry.world.draw.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -232,7 +233,7 @@ public class GenericCrafter extends Block{
+                     }
+                 }
+ 
+-                if(wasVisible && Mathf.chanceDelta(updateEffectChance)){
++                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance)){
+                     updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));
+                 }
+             }else{
+@@ -298,6 +299,8 @@ public class GenericCrafter extends Block{
+             if(wasVisible){
+                 craftEffect.at(x, y);
+             }
++
++            if (RenderExt.blockRenderLevel > 1) craftEffect.at(x, y);
+             progress %= 1f;
+         }
+ 

@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MinRi2 <2275045670@qq.com>
+Date: Sat, 20 Apr 2024 20:34:21 +0800
+Subject: [PATCH] =?UTF-8?q?H(UI):=20NewCoreItemsDisplay(=E6=96=B0=E5=88=B6?=
+ =?UTF-8?q?=E6=A0=B8=E5=BF=83=E8=B5=84=E6=BA=90=E6=98=BE=E7=A4=BA)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/ui/fragments/HudFragment.java | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index dd11a57d1cfa3ffbe4dc7175334f590c8810a17c..6a9359568e73967b34be82618ec7a95583e5cf6e 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -30,6 +30,7 @@ import mindustry.ui.*;
+ import mindustry.world.blocks.storage.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ import static mindustry.gen.Tex.*;
+@@ -41,7 +42,7 @@ public class HudFragment{
+     public boolean shown = true;
+ 
+     private ImageButton flip;
+-    private CoreItemsDisplay coreItems = new CoreItemsDisplay();
++    public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
+     private final AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
+ 
+     private String hudText = "";
+@@ -90,11 +91,6 @@ public class HudFragment{
+             showToast(Icon.warning, Core.bundle.format("sector.attacked", e.sector.name()));
+         });
+ 
+-        Events.on(ResetEvent.class, e -> {
+-            coreItems.resetUsed();
+-            coreItems.clear();
+-        });
+-
+         //paused table
+         parent.fill(t -> {
+             t.name = "paused";
+@@ -331,8 +327,9 @@ public class HudFragment{
+             t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
+ 
+             t.table(c -> {
++                c.touchable = Touchable.disabled;
+                 //core items
+-                c.top().collapser(coreItems, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
++                c.top().add(coreItems).fillX().row();
+ 
+                 float notifDuration = 240f;
+                 float[] coreAttackTime = {0};

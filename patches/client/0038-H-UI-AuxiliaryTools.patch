@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 4 May 2024 15:43:58 +0800
+Subject: [PATCH] H(UI): AuxiliaryTools
+
+---
+ core/src/mindustry/ui/fragments/HudFragment.java | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index 6f8bb852edfe397c4abbbe9268f8b5648c19add3..dd11a57d1cfa3ffbe4dc7175334f590c8810a17c 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -42,6 +42,7 @@ public class HudFragment{
+ 
+     private ImageButton flip;
+     private CoreItemsDisplay coreItems = new CoreItemsDisplay();
++    private final AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
+ 
+     private String hudText = "";
+     private boolean showHudText;
+@@ -125,6 +126,9 @@ public class HudFragment{
+             .touchable(Touchable.disabled)
+             .style(Styles.outlineLabel)
+             .name("position");
++            if(Core.settings.getInt("AuxiliaryTable") == 3){
++                t.row().add(auxiliaryTools);
++            }
+             t.top().right();
+         });
+ 
+@@ -244,6 +248,10 @@ public class HudFragment{
+ 
+             wavesMain.row();
+ 
++            if(Core.settings.getInt("AuxiliaryTable") == 2){
++                wavesMain.add(auxiliaryTools).left().top().row();
++            }
++
+             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
+ 
+             editorMain.name = "editor";
+@@ -270,6 +278,11 @@ public class HudFragment{
+             }).width(dsize * 5 + 4f);
+             editorMain.visible(() -> shown && state.isEditor());
+ 
++            //map info/nextwave display
++            if(Core.settings.getInt("AuxiliaryTable") == 1){
++                cont.add(auxiliaryTools).left().top();
++            }
++
+             //fps display
+             cont.table(info -> {
+                 info.name = "fps/ping";

@@ -1,0 +1,263 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 8 Sep 2024 15:43:00 +0800
+Subject: [PATCH] =?UTF-8?q?FC(LogicExt)=20worldCreator=20(=E5=88=9B?=
+ =?UTF-8?q?=E4=B8=96=E7=A5=9E)=20allUnlocked=20(=E8=A7=A3=E7=A6=81)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .../mindustry/ctype/UnlockableContent.java    |  3 +-
+ .../mindustry/ui/dialogs/DatabaseDialog.java  |  5 ++-
+ .../ui/fragments/PlacementFragment.java       | 32 ++++++++++++-
+ core/src/mindustry/world/Block.java           |  4 +-
+ core/src/mindustry/world/Build.java           | 45 +++++++++++++++++++
+ .../mindustry/world/blocks/ItemSelection.java |  3 +-
+ 6 files changed, 86 insertions(+), 6 deletions(-)
+
+diff --git a/core/src/mindustry/ctype/UnlockableContent.java b/core/src/mindustry/ctype/UnlockableContent.java
+index e86da73fea326457ac06c5b36ed06c11735a24cf..63ba88bd02ed596c2799d809e71a84cfc63869ae 100644
+--- a/core/src/mindustry/ctype/UnlockableContent.java
++++ b/core/src/mindustry/ctype/UnlockableContent.java
+@@ -17,6 +17,7 @@ import mindustry.graphics.MultiPacker.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -245,7 +246,7 @@ public abstract class UnlockableContent extends MappableContent{
+ 
+     /** @return whether this content is unlocked, or the player is in a custom (non-campaign) game. */
+     public boolean unlockedNow(){
+-        return unlocked() || !state.isCampaign();
++        return LogicExt.allUnlocked || unlocked() || !state.isCampaign();
+     }
+ 
+     public boolean locked(){
+diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
+index e8ffe187781f3bc5624e48a42c53aae2adc71713..efc8530fbdb5837cb14d4a0e80de8e8ffbdac588 100644
+--- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
++++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
+@@ -18,6 +18,7 @@ import mindustry.graphics.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
++import mindustryX.features.*;
+ 
+ import static arc.Core.*;
+ import static mindustry.Vars.*;
+@@ -101,7 +102,9 @@ public class DatabaseDialog extends BaseDialog{
+             ContentType type = ContentType.all[j];
+ 
+             Seq<UnlockableContent> array = allContent[j]
+-                .select(c -> c instanceof UnlockableContent u && !u.isHidden() && (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
++                .select(c -> c instanceof UnlockableContent u &&
++                    (LogicExt.allUnlocked || !u.isHidden()) &&
++                    (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
+                     (text.isEmpty() || u.localizedName.toLowerCase().contains(text))).as();
+ 
+             if(array.size == 0) continue;
+diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
+index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f5373ff112f1 100644
+--- a/core/src/mindustry/ui/fragments/PlacementFragment.java
++++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
+@@ -24,12 +24,15 @@ import mindustry.input.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
++import mindustry.world.blocks.*;
+ import mindustry.world.blocks.ConstructBlock.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+ public class PlacementFragment{
+     final int rowWidth = 4;
++    private boolean lastAllUnlocked = LogicExt.allUnlocked;
+ 
+     public Category currentCategory = Category.distribution;
+ 
+@@ -106,6 +109,10 @@ public class PlacementFragment{
+                 if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
+                 if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
+             }
++
++            if(lastAllUnlocked != LogicExt.allUnlocked){
++                rebuild();
++            }
+         });
+     }
+ 
+@@ -128,6 +135,27 @@ public class PlacementFragment{
+         if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
+             var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+ 
++            if (build == null && LogicExt.worldCreator) {
++                var tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
++                if (tile != null) {
++                    Block target;
++                    if (tile.block() != Blocks.air) {
++                        target = tile.block();
++                    }
++                    else if (tile.overlay() != Blocks.air) {
++                        target = tile.overlay();
++                    }
++                    else {
++                        target = tile.floor();
++                    }
++                    if (target != Blocks.air && target.isVisible()) {
++                        input.block = target;
++                        currentCategory = input.block.category;
++                        return true;
++                    }
++
++                }
++            }
+             //can't middle click buildings in fog
+             if(build != null && build.inFogTo(player.team())){
+                 build = null;
+@@ -242,6 +270,7 @@ public class PlacementFragment{
+     }
+ 
+     public void build(Group parent){
++        lastAllUnlocked = LogicExt.allUnlocked;
+         parent.fill(full -> {
+             toggler = full;
+             full.bottom().right().visible(() -> ui.hudfrag.shown);
+@@ -260,6 +289,7 @@ public class PlacementFragment{
+ 
+                     for(Block block : getUnlockedByCategory(currentCategory)){
+                         if(!unlocked(block)) continue;
++                        if (block == Blocks.air || block instanceof ConstructBlock) continue;
+                         if(index++ % rowWidth == 0){
+                             blockTable.row();
+                         }
+@@ -700,7 +730,7 @@ public class PlacementFragment{
+     }
+ 
+     boolean unlocked(Block block){
+-        return block.unlockedNow() && block.placeablePlayer && block.environmentBuildable() &&
++        return LogicExt.allUnlocked || block.unlockedNow() && block.placeablePlayer && block.environmentBuildable() &&
+             block.supportsEnv(state.rules.env); //TODO this hides env unsupported blocks, not always a good thing
+     }
+ 
+diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
+index 529e78fee44bd40ae281f46ea7302755d1f67e3f..6517a6bd0fbe18040117962683bc3ea79bd408fc 100644
+--- a/core/src/mindustry/world/Block.java
++++ b/core/src/mindustry/world/Block.java
+@@ -907,11 +907,11 @@ public class Block extends UnlockableContent implements Senseable{
+     }
+ 
+     public boolean isVisible(){
+-        return !isHidden() && (state.rules.editor || (!state.rules.hideBannedBlocks || !state.rules.isBanned(this)));
++        return LogicExt.allUnlocked || !isHidden() && (state.rules.editor || (!state.rules.hideBannedBlocks || !state.rules.isBanned(this)));
+     }
+ 
+     public boolean isPlaceable(){
+-        return isVisible() && (!state.rules.isBanned(this) || state.rules.editor) && supportsEnv(state.rules.env);
++        return LogicExt.worldCreator || isVisible() && (!state.rules.isBanned(this) || state.rules.editor) && supportsEnv(state.rules.env);
+     }
+ 
+     /** @return whether this block supports a specific environment. */
+diff --git a/core/src/mindustry/world/Build.java b/core/src/mindustry/world/Build.java
+index a47363df2f463338875a2937dfeffdd0411d492a..f35744f818dc796a75ad04a7d2853bc5f673ea29 100644
+--- a/core/src/mindustry/world/Build.java
++++ b/core/src/mindustry/world/Build.java
+@@ -14,7 +14,10 @@ import mindustry.game.Teams.*;
+ import mindustry.gen.*;
+ import mindustry.world.blocks.*;
+ import mindustry.world.blocks.ConstructBlock.*;
++import mindustry.world.blocks.environment.Floor;
++import mindustry.world.blocks.environment.OverlayFloor;
+ import mindustry.world.blocks.storage.CoreBlock.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -73,6 +76,36 @@ public class Build{
+             return;
+         }
+ 
++        if(LogicExt.worldCreator){
++            Tile tile = world.tile(x, y);
++            if(tile == null) return;
++            if(result == Blocks.cliff) {
++                int rotationb = 0;
++                for(int i = 0; i < 8; i++){
++                    Tile other = world.tiles.get(tile.x + Geometry.d8[i].x, tile.y + Geometry.d8[i].y);
++                    if(other != null && !other.floor().hasSurface()){
++                        rotationb |= (1 << i);
++                    }
++                }
++
++                if(rotationb != 0){
++                    tile.setBlock(Blocks.cliff);
++                }
++
++                tile.data = (byte)rotationb;
++                return;
++            };
++            if(result instanceof OverlayFloor){
++                tile.setOverlay(result);
++                return;
++            }
++            if(result instanceof Floor floor){
++                tile.setFloor(floor);
++                pathfinder.updateTile(tile);
++                return;
++            }
++        }
++
+         Tile tile = world.tile(x, y);
+ 
+         //just in case
+@@ -164,6 +197,17 @@ public class Build{
+ 
+     /** Returns whether a tile can be placed at this location by this team. */
+     public static boolean validPlace(Block type, Team team, int x, int y, int rotation, boolean checkVisible){
++        if (LogicExt.worldCreator) {
++            Tile tile = world.tile(x, y);
++            if (tile == null) return false;
++            if (type instanceof OverlayFloor of) {
++                return !(tile.overlay == of);
++            }
++            if (type instanceof Floor f) {
++                return !(tile.floor == f);
++            }
++            return true;
++        }
+         //the wave team can build whatever they want as long as it's visible - banned blocks are not applicable
+         if(type == null || (checkVisible && (!type.environmentBuildable() || (!type.isPlaceable() && !(state.rules.waves && team == state.rules.waveTeam && type.isVisible()))))){
+             return false;
+@@ -294,6 +338,7 @@ public class Build{
+     /** @return whether the tile at this position is breakable by this team */
+     public static boolean validBreak(Team team, int x, int y){
+         Tile tile = world.tile(x, y);
++        if(LogicExt.worldCreator && tile.block() != Blocks.air) return true;
+         return tile != null && tile.block() != Blocks.air && (tile.block().canBreak(tile) && (tile.breakable() || state.rules.allowEnvironmentDeconstruct)) && tile.interactable(team);
+     }
+ }
+diff --git a/core/src/mindustry/world/blocks/ItemSelection.java b/core/src/mindustry/world/blocks/ItemSelection.java
+index 24e49706de56896a8fbbda3bcf83503457965798..b0beb00affe5107e12a9a64626c6ead214ab215e 100644
+--- a/core/src/mindustry/world/blocks/ItemSelection.java
++++ b/core/src/mindustry/world/blocks/ItemSelection.java
+@@ -11,6 +11,7 @@ import mindustry.ctype.*;
+ import mindustry.gen.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -64,7 +65,7 @@ public class ItemSelection{
+ 
+             Seq<T> list = items.select(u -> (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase())));
+             for(T item : list){
+-                if(!item.unlockedNow() || !item.isOnPlanet(state.getPlanet()) || item.isHidden()) continue;
++                if(!LogicExt.allUnlocked && (!item.unlockedNow() || !item.isOnPlanet(state.getPlanet()) || item.isHidden())) continue;
+ 
+                 ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
+                     if(closeSelect) control.input.config.hideConfig();

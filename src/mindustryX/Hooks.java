@@ -4,8 +4,10 @@ import arc.*;
 import arc.files.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.input.*;
+import mindustry.mod.*;
 import mindustryX.features.Settings;
 import mindustryX.features.*;
 import mindustryX.features.func.*;
@@ -73,6 +75,7 @@ public class Hooks implements ApplicationListener{
 
     @Override
     public void update(){
+        updateTitle();
         pollKeys();
     }
 
@@ -119,6 +122,20 @@ public class Hooks implements ApplicationListener{
             Reflect.set(rootBundle, "parent", originBundle);
         }catch(Throwable e){
             Log.err(e);
+        }
+    }
+
+    private static String lastTitle;
+
+    private void updateTitle(){
+        if(Core.graphics == null) return;
+        var mod = Vars.mods.orderedMods();
+        var title = "MindustryX | 版本号 " + Version.mdtXBuild +
+        " | mod启用" + mod.count(Mods.LoadedMod::enabled) + "/" + mod.size +
+        " | " + Core.graphics.getWidth() + "x" + Core.graphics.getHeight();
+        if(!title.equals(lastTitle)){
+            lastTitle = title;
+            Core.graphics.setTitle(title);
         }
     }
 }
