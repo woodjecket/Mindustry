@@ -27,15 +27,18 @@ jobs:
           build-scan-terms-of-use-agree: "yes"
       - name: Set env
         run: |
+          git config --global user.email "ci@noreply.example.com"
+          git config --global user.name "github_actions"
           echo "RELEASE_TAG=${GITHUB_REF_NAME}-build" >> $GITHUB_ENV
           echo "RELEASE_TAG=${GITHUB_REF_NAME}-build"
           echo "RELEASE_VERSION=$(date +'%Y.%m.%d').X${GITHUB_RUN_NUMBER}-${GITHUB_REF_NAME}" >> $GITHUB_ENV
           
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | openssl enc -d -base64 -in - -out ../bekeystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | openssl enc -d -base64 -in - -out bekeystore.jks
       - name: Build
         run: |
+          git submodule update --init --depth=10
           cd work
-          ../scripts/applyPatches
+          ../scripts/applyPatches.sh
           gradle desktop:dist server:dist -Pbuildversion=${RELEASE_VERSION}
           
           cd ..
@@ -74,6 +77,6 @@ jobs:
       - name: clearOldAssets
         run: bun run .github/actions/clearOldAssets.ts
         env:
-          GITHUB_TOKEN: ${{secrets.PUBLISH_TOKEN}}
-          GITHUB_REPOSITORY: TinyLake/MindustryX-work
+          TOKEN: ${{secrets.PUBLISH_TOKEN}}
+          REPOSITORY: TinyLake/MindustryX-work
           TAG: ${{ env.RELEASE_TAG }}
