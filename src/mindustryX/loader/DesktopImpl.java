@@ -108,9 +108,8 @@ public class DesktopImpl implements LoaderPlatform{
 
             @Override
             public URL getResource(String name){
-                if(name.equals("MindustryX.hjson"))
-                    return findResource("mod.hjson");
-                if(name.equals("mod.hjson") || name.equals("icon.png")) return null;
+                if(name.equals("version.properties"))
+                    return parent.getResource(name);
                 //self first
                 URL url = findResource(name);
                 if(url == null)

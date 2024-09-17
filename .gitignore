@@ -2,3 +2,6 @@
 *.iml
 /work
 /patches/work/
+
+.gradle/
+build/

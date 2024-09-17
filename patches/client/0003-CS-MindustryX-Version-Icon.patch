@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Tue, 9 Apr 2024 18:21:14 +0800
-Subject: [PATCH] CS: Version
+Subject: [PATCH] CS: MindustryX Version&Icon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -9,17 +9,18 @@ Content-Transfer-Encoding: 8bit
 不再发送ARC标识
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- .gitignore                             |  1 +
- android/build.gradle                   |  4 ++--
- android/res/values/strings.xml         |  2 +-
- build.gradle                           |  2 +-
- core/build.gradle.kts                  |  2 +-
- core/src/mindustry/Vars.java           |  2 +-
- core/src/mindustry/core/NetClient.java |  1 +
- core/src/mindustry/core/Version.java   | 16 +++++++++++++++-
- core/src/mindustry/net/NetworkIO.java  |  2 +-
- gradle.properties                      |  2 ++
- 10 files changed, 26 insertions(+), 8 deletions(-)
+ .gitignore                                       |  1 +
+ android/build.gradle                             |  4 ++--
+ android/res/values/strings.xml                   |  2 +-
+ build.gradle                                     |  2 +-
+ core/build.gradle.kts                            |  2 +-
+ core/src/mindustry/Vars.java                     |  2 +-
+ core/src/mindustry/core/NetClient.java           |  1 +
+ core/src/mindustry/core/Version.java             | 16 +++++++++++++++-
+ core/src/mindustry/net/NetworkIO.java            |  2 +-
+ .../src/mindustry/desktop/DesktopLauncher.java   |  2 +-
+ gradle.properties                                |  3 +++
+ 11 files changed, 28 insertions(+), 9 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
@@ -34,7 +35,7 @@ index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa231425414
  /out/
  ios/libs/
 diff --git a/android/build.gradle b/android/build.gradle
-index 093c328edc2719aa86bb212e1abb1f500044b08a..fc719ba8aaa918185c1bba016ba83d7ad975e402 100644
+index 11f5fcf77dfc2e54ad1c18b183ad1957ff3dfe9a..23eb0e5b84894538ee19ee7fa437950622c56a2a 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -18,7 +18,7 @@ configurations{ natives }
@@ -66,7 +67,7 @@ index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e
 +    <string name="app_name">MindustryX</string>
  </resources>
 diff --git a/build.gradle b/build.gradle
-index 3ac0012a751b893f2bed04484034e4fb004cd8ac..d64047c2ff2f1f6b4ead7354f4edee748c2347b1 100644
+index 222ce1ed9b95d82b8244aaacc08247aa39ea9e22..e13f9df614deb5d24668053bf6e6ef0a417341bc 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -21,7 +21,7 @@ allprojects{
@@ -79,10 +80,10 @@ index 3ac0012a751b893f2bed04484034e4fb004cd8ac..d64047c2ff2f1f6b4ead7354f4edee74
      ext{
          versionNumber = '7'
 diff --git a/core/build.gradle.kts b/core/build.gradle.kts
-index f1a2bfd729db5c05cb4bc9b0e5af6dd003bb7d96..f5129a036a3655bd41da6e51ed657caddf29dab5 100644
+index 6dfb14b6bb9401ec083a0f6994ed9bab8b303c97..a68dd5cd58f7f012e3dd27750ae970b97c5bae6c 100644
 --- a/core/build.gradle.kts
 +++ b/core/build.gradle.kts
-@@ -46,7 +46,7 @@ tasks{
+@@ -47,7 +47,7 @@ tasks{
          property("type", findProperty("versionType") ?: "official")
          property("modifier", findProperty("versionModifier") ?: "release")
          property("number", '7')
@@ -117,7 +118,7 @@ index d0e444a4a7a9ced372a2c93102860991ac922112..0948c4a880fe17643171857951722cd7
          });
      }
 diff --git a/core/src/mindustry/core/Version.java b/core/src/mindustry/core/Version.java
-index 73bbd59416cc8e1b64bcb5538fdd73886a455451..8698103654e40dd4e85451e1020563ca562ed2d2 100644
+index 73bbd59416cc8e1b64bcb5538fdd73886a455451..93da9d60feda92b04c60e649b0db0b2a6e33f3f9 100644
 --- a/core/src/mindustry/core/Version.java
 +++ b/core/src/mindustry/core/Version.java
 @@ -6,6 +6,8 @@ import arc.files.*;
@@ -145,7 +146,7 @@ index 73bbd59416cc8e1b64bcb5538fdd73886a455451..8698103654e40dd4e85451e1020563ca
 +        //MDTX: mdtXBuild
 +        if(Core.files == null) return;
 +        try{
-+            Jval meta = Jval.read(Core.files.internal("MindustryX.hjson").readString());
++            Jval meta = Jval.read(Core.files.internal("mod.hjson").readString());
 +            mdtXBuild = meta.getString("version");
 +        }catch(Throwable e){
 +            e.printStackTrace();
@@ -176,14 +177,28 @@ index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129
  
          buffer.put((byte)state.rules.mode().ordinal());
          buffer.putInt(netServer.admins.getPlayerLimit());
+diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
+index 44f3b5b03f275b2d2151b9ef658879ddd5c06375..cc0fc736535acdcf5a786b551a7a40a4c62cf431 100644
+--- a/desktop/src/mindustry/desktop/DesktopLauncher.java
++++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
+@@ -62,7 +62,7 @@ public class DesktopLauncher extends ClientLauncher{
+                         }
+                     }
+                 }
+-                setWindowIcon(FileType.internal, "icons/icon_64.png");
++                setWindowIcon(FileType.internal, "icon.png");
+             }});
+         }catch(Throwable e){
+             handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 0c6c42e01d70bb59166e3e21e91a41801e7c113f..5fcc2f6a7455a09fc17437e4f73e6e6f4d818f86 100644
+index 1a4d7fb5df48ec81198c57cd5d706c4c48dbd4d7..611a7bf7dd576c14e2192a8e4192f7f59a50f981 100644
 --- a/gradle.properties
 +++ b/gradle.properties
-@@ -27,3 +27,5 @@ org.gradle.internal.http.socketTimeout=100000
+@@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
  archash=29c4199b83
 +
-+upstreamBuild=25162
++upstreamBuild=25256
++versionType=bleeding-edge
 \ No newline at end of file

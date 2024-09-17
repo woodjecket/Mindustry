@@ -9,9 +9,8 @@ Content-Transfer-Encoding: 8bit
 
 ---
  .../sprites/statuses/status-invincible.png        | Bin 0 -> 201 bytes
- core/assets/bundles/bundle-mdtx.properties        |   7 +++++++
  core/src/mindustry/content/StatusEffects.java     |   1 +
- 3 files changed, 8 insertions(+)
+ 2 files changed, 1 insertion(+)
  create mode 100644 core/assets-raw/sprites/statuses/status-invincible.png
 
 diff --git a/core/assets-raw/sprites/statuses/status-invincible.png b/core/assets-raw/sprites/statuses/status-invincible.png
@@ -28,18 +27,6 @@ BQEmVL
 literal 0
 HcmV?d00001
 
-diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..87ca026cadc01f80b5e927ed210bc78f7c7fc13b 100644
---- a/core/assets/bundles/bundle-mdtx.properties
-+++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -0,0 +1,7 @@
-+status.slow.name = 缓慢
-+status.shielded.name = 保护
-+status.corroded.name = 腐蚀
-+status.disarmed.name = 缴械
-+status.invincible.name = 无敌
-+status.fast.name = 迅捷
-+
 diff --git a/core/src/mindustry/content/StatusEffects.java b/core/src/mindustry/content/StatusEffects.java
 index 1ccaabc80faeabf0acaf38ae371fcc1f98bd9750..c58b4ec28d39f53104fc4555646e4284917364cb 100644
 --- a/core/src/mindustry/content/StatusEffects.java

@@ -8,63 +8,9 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/assets/bundles/bundle-mdtx.properties    |  19 ++
- core/assets/recommendMods.json                |  17 ++
  core/src/mindustry/ui/dialogs/ModsDialog.java | 264 +++++++++++-------
- 3 files changed, 197 insertions(+), 103 deletions(-)
- create mode 100644 core/assets/recommendMods.json
+ 1 file changed, 161 insertions(+), 103 deletions(-)
 
-diff --git a/core/assets/bundles/bundle-mdtx.properties b/core/assets/bundles/bundle-mdtx.properties
-index 9d9cbc07ea828ebbcc4557994b36328cf9764e45..d4b9a4bbc5a9c0c5c298a1744a3c99a6385224a7 100644
---- a/core/assets/bundles/bundle-mdtx.properties
-+++ b/core/assets/bundles/bundle-mdtx.properties
-@@ -1,3 +1,22 @@
-+#UI
-+mods.group.mod = 模组
-+mods.group.internal = 内置模组
-+mods.disabled = 禁用Mod
-+
-+mods.recommend = [accent]MdtX[]推荐辅助模组列表
-+mods.recommend.lastUpdated = 推荐列表更新时间：{0}
-+mods.recommend.info = 经过精选的辅助模组
-+mods.recommend.mod.description = 经过精选的推荐模组
-+mods.recommend.mod.name = 模组：{0}
-+mods.recommend.mod.author = 作者: {0}
-+mods.recommend.mod.minGameVersion = 最低支持游戏版本：{0}
-+mods.recommend.mod.lastUpdated = 上次更新时间：{0}
-+mods.recommend.mod.stars = Github收藏数：{0}
-+
-+alphaLoading = {jump}[gray]加载中...
-+alphaLoadFailed = {sick}[gray]加载失败...
-+#end UI
-+
- status.slow.name = 缓慢
- status.shielded.name = 保护
- status.corroded.name = 腐蚀
-diff --git a/core/assets/recommendMods.json b/core/assets/recommendMods.json
-new file mode 100644
-index 0000000000000000000000000000000000000000..b76b9baf860869ae75a8f3387e9827a55defab90
---- /dev/null
-+++ b/core/assets/recommendMods.json
-@@ -0,0 +1,17 @@
-+{
-+  "lastUpdated": "2024/4/12 21:00",
-+  "modRecommend": [
-+    {
-+      "repo": "eb-wilson/toomanyitems",
-+      "reason": "Too Many Items(TMI)类似Minecraft的JEL物品管理器\n提供了检索物品、单位、方块、电力、热量的用途以及获取途径"
-+    },
-+    {
-+      "repo": "mnemotechnician/new-console",
-+      "reason": "NewConsole提供了新的控制台，方便调试者执行js代码\n1.保存js代码的执行记录\n2.读写简单js文件"
-+    },
-+    {
-+      "repo": "way-zer/contentstweaker",
-+      "reason": "ContentsTweaker(CT)允许地图调整内容、添加UI等"
-+    }
-+  ]
-+}
-\ No newline at end of file
 diff --git a/core/src/mindustry/ui/dialogs/ModsDialog.java b/core/src/mindustry/ui/dialogs/ModsDialog.java
 index cfc64166ab474960ad13e1784605e9078c33d16e..5a4e034deba4bb29890ffd5edcd1ecdbd685e519 100644
 --- a/core/src/mindustry/ui/dialogs/ModsDialog.java

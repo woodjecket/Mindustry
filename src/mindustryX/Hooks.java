@@ -35,6 +35,7 @@ public class Hooks implements ApplicationListener{
             TimeControl.init();
             UIExt.init();
             ReplayController.init();
+            ArcOld.colorizeContent();
         }
     }
 

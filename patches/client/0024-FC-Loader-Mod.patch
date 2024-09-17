@@ -12,18 +12,19 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
 更好的Desktop适配
 way-zer <himc.wicp@gmail.com> on 2024/8/3
 ---
- .../src/mindustryX/loader/AndroidImpl.java    | 273 ++++++++++++++
+ .../src/mindustryX/loader/AndroidImpl.java    | 272 ++++++++++++++
+ core/src/mindustry/mod/ModClassLoader.java    |   7 +
  .../src/arc/backend/sdl/SdlApplication.java   | 355 ++++++++++++++++++
- 2 files changed, 628 insertions(+)
+ 3 files changed, 634 insertions(+)
  create mode 100644 android/src/mindustryX/loader/AndroidImpl.java
  create mode 100644 desktop/src/arc/backend/sdl/SdlApplication.java
 
 diff --git a/android/src/mindustryX/loader/AndroidImpl.java b/android/src/mindustryX/loader/AndroidImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b940ea6d550cc1d7e47c3c82573d8945bfc24836
+index 0000000000000000000000000000000000000000..3c52e6dad6fb333a0fb75cfa8b5399247a046cd5
 --- /dev/null
 +++ b/android/src/mindustryX/loader/AndroidImpl.java
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,272 @@
 +package mindustryX.loader;
 +
 +import android.app.*;
@@ -115,9 +116,8 @@ index 0000000000000000000000000000000000000000..b940ea6d550cc1d7e47c3c82573d8945
 +
 +            @Override
 +            public URL getResource(String name){
-+                if(name.equals("MindustryX.hjson"))
-+                    return findResource("mod.hjson");
-+                if(name.equals("mod.hjson") || name.equals("icon.png")) return null;
++                if(name.equals("version.properties"))
++                    return parent.getResource(name);
 +                //self first
 +                URL url = findResource(name);
 +                if(url == null)
@@ -297,6 +297,29 @@ index 0000000000000000000000000000000000000000..b940ea6d550cc1d7e47c3c82573d8945
 +        }
 +    }
 +}
+diff --git a/core/src/mindustry/mod/ModClassLoader.java b/core/src/mindustry/mod/ModClassLoader.java
+index d9c05036f9715933ef293511a2069d65312d01fc..8d3a22272e38698dac6d9f0c74ffd4932e3a4fc2 100644
+--- a/core/src/mindustry/mod/ModClassLoader.java
++++ b/core/src/mindustry/mod/ModClassLoader.java
+@@ -1,6 +1,7 @@
+ package mindustry.mod;
+ 
+ import arc.struct.*;
++import java.net.*;
+ 
+ public class ModClassLoader extends ClassLoader{
+     private Seq<ClassLoader> children = new Seq<>();
+@@ -46,4 +47,10 @@ public class ModClassLoader extends ClassLoader{
+ 
+         throw (last == null ? new ClassNotFoundException(name) : last);
+     }
++
++    @Override
++    public URL getResource(String name){
++        if(name.equals("mod.hjson") || name.equals("icon.png")) return null;
++        return super.getResource(name);
++    }
+ }
 diff --git a/desktop/src/arc/backend/sdl/SdlApplication.java b/desktop/src/arc/backend/sdl/SdlApplication.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..bb63fa602677dfaa7b838e43d5c7f183968fab22

@@ -115,13 +115,14 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/ui/Fonts.java              |   2 +-
  .../ui/dialogs/ContentInfoDialog.java         |  27 +-
  .../ui/dialogs/CustomRulesDialog.java         | 118 +++++-
- .../mindustry/ui/dialogs/DatabaseDialog.java  |   5 +-
+ .../mindustry/ui/dialogs/DatabaseDialog.java  |   3 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |  12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  70 +++-
  .../ui/dialogs/SchematicsDialog.java          | 361 +++++++++++++++++-
+ .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |  25 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 229 ++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 227 ++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 ++-
  .../ui/fragments/PlacementFragment.java       | 166 ++++++--
  .../ui/fragments/PlayerListFragment.java      |  93 +++--
@@ -135,7 +136,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  29 ++
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 42 files changed, 2072 insertions(+), 228 deletions(-)
+ 43 files changed, 2082 insertions(+), 242 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2300,28 +2301,18 @@ index 247625c2486445bf2c9c57e9710e3d7bdf65b594..a4e5ab1c90870e2f926822385c472595
          current.row();
      }
 diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-index efc8530fbdb5837cb14d4a0e80de8e8ffbdac588..07567778b10e34f9f3a4b6705444746118bc437c 100644
+index efc8530fbdb5837cb14d4a0e80de8e8ffbdac588..0e6ba1ca32309930953884a6c7b69770bb88e725 100644
 --- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 +++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-@@ -20,8 +20,8 @@ import mindustry.ui.*;
+@@ -20,7 +20,6 @@ import mindustry.ui.*;
  import mindustry.world.*;
  import mindustryX.features.*;
  
 -import static arc.Core.*;
  import static mindustry.Vars.*;
-+import static mindustryX.features.ArcOld.colorizeContent;
  
  public class DatabaseDialog extends BaseDialog{
-     private TextField search;
-@@ -58,6 +58,7 @@ public class DatabaseDialog extends BaseDialog{
-         }).fillX().padBottom(4).row();
- 
-         cont.pane(all).scrollX(false);
-+        colorizeContent();
-     }
- 
-     void checkTabList(){
-@@ -150,7 +151,7 @@ public class DatabaseDialog extends BaseDialog{
+@@ -150,7 +149,7 @@ public class DatabaseDialog extends BaseDialog{
                                  ui.content.show(unlock);
                              }
                          });
@@ -3018,6 +3009,73 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
              show();
          }
      }
+diff --git a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
+index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..b71452eca5b3527f0c2ee15edd8d6ef01ab4365d 100644
+--- a/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
++++ b/core/src/mindustry/ui/dialogs/SettingsMenuDialog.java
+@@ -303,8 +303,8 @@ public class SettingsMenuDialog extends BaseDialog{
+ 
+         game.sliderPref("saveinterval", 60, 10, 5 * 120, 10, i -> Core.bundle.format("setting.seconds", i));
+ 
++        game.checkPref("autotarget", true);
+         if(mobile){
+-            game.checkPref("autotarget", true);
+             if(!ios){
+                 game.checkPref("keyboard", false, val -> {
+                     control.setInput(val ? new DesktopInput() : new MobileInput());
+@@ -338,11 +338,9 @@ public class SettingsMenuDialog extends BaseDialog{
+         game.checkPref("hints", true);
+         game.checkPref("logichints", true);
+ 
+-        if(!mobile){
+-            game.checkPref("backgroundpause", true);
+-            game.checkPref("buildautopause", false);
+-            game.checkPref("distinctcontrolgroups", true);
+-        }
++        game.checkPref("backgroundpause", true);
++        game.checkPref("buildautopause", false);
++        game.checkPref("distinctcontrolgroups", true);
+ 
+         game.checkPref("doubletapmine", false);
+         game.checkPref("commandmodehold", true);
+@@ -364,9 +362,9 @@ public class SettingsMenuDialog extends BaseDialog{
+             }
+         }
+ 
+-        if(!mobile){
+-            game.checkPref("console", false);
+-        }
++        game.checkPref("console", false);
++
++        graphics.addCategory("arcCOverview");
+ 
+         int[] lastUiScale = {settings.getInt("uiscale", 100)};
+ 
+@@ -445,18 +443,18 @@ public class SettingsMenuDialog extends BaseDialog{
+         graphics.checkPref("destroyedblocks", true);
+         graphics.checkPref("blockstatus", false);
+         graphics.checkPref("playerchat", true);
+-        if(!mobile){
+-            graphics.checkPref("coreitems", true);
+-        }
++
++        graphics.addCategory("arcCgamewindow");
++        graphics.checkPref("coreitems", true);
+         graphics.checkPref("minimap", !mobile);
+         graphics.checkPref("smoothcamera", true);
+         graphics.checkPref("position", false);
+-        if(!mobile){
+-            graphics.checkPref("mouseposition", false);
+-        }
++        graphics.checkPref("mouseposition", false);
+         graphics.checkPref("fps", false);
+         graphics.checkPref("playerindicators", true);
+         graphics.checkPref("indicators", true);
++
++        graphics.addCategory("arcCGraphicsOther");
+         graphics.checkPref("showweather", true);
+         graphics.checkPref("animatedwater", true);
+ 
 diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
 index 89b9a23ce2bb850df5c7ae99a5f964753a807662..03bbbbfca69229893fc097479f4078843ea0c56d 100644
 --- a/core/src/mindustry/ui/fragments/ChatFragment.java
@@ -3100,7 +3158,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 6a9359568e73967b34be82618ec7a95583e5cf6e..729c0540440f9e5f632a5173b90740eb6163ae85 100644
+index 6a9359568e73967b34be82618ec7a95583e5cf6e..f6439cf1961be9380ff63fd2db8417759a209a5b 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
@@ -3250,15 +3308,6 @@ index 6a9359568e73967b34be82618ec7a95583e5cf6e..729c0540440f9e5f632a5173b90740eb
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -377,7 +410,7 @@ public class HudFragment{
-                 }
-                 return max == 0f ? 0f : val / max;
-             }).blink(Color.white).outline(new Color(0, 0, 0, 0.6f), 7f)).grow())
--            .fillX().width(320f).height(60f).name("boss").visible(() -> state.rules.waves && state.boss() != null && !(mobile && Core.graphics.isPortrait())).padTop(7).row();
-+            .fillX().width(320f).height(60f).name("boss").visible(() -> Core.settings.getBool("override_boss_shown") && state.rules.waves && state.boss() != null && !(mobile && Core.graphics.isPortrait())).padTop(7).row();
- 
-             t.table(Styles.black3, p -> p.margin(4).label(() -> hudText).style(Styles.outlineLabel)).touchable(Touchable.disabled).with(p -> p.visible(() -> {
-                 p.color.a = Mathf.lerpDelta(p.color.a, Mathf.num(showHudText), 0.2f);
 @@ -908,6 +941,142 @@ public class HudFragment{
          return table;
      }

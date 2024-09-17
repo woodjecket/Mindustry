@@ -7,14 +7,14 @@ clear and replce jabel(Support record)
 way-zer <himc.wicp@gmail.com> on 2024/6/9
 ---
  .gitignore                                    |   2 +-
- android/build.gradle                          |  78 +++--
+ android/build.gradle                          |  80 +++--
  android/proguard-rules.pro                    |   4 +
  .../com/github/bsideup/jabel/Desugar.java     |  13 +
  .../javax.annotation.processing.Processor     |   6 +
  build.gradle                                  | 241 ++-------------
  core/build.gradle                             |   2 -
- core/build.gradle.kts                         |  64 ++++
- desktop/build.gradle                          | 164 +---------
+ core/build.gradle.kts                         |  65 ++++
+ desktop/build.gradle                          | 166 +----------
  gradle/wrapper/gradle-wrapper.jar             | Bin 59203 -> 43462 bytes
  gradlew                                       | 282 +++++++++++-------
  gradlew.bat                                   |  35 ++-
@@ -23,7 +23,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 17 files changed, 382 insertions(+), 611 deletions(-)
+ 17 files changed, 385 insertions(+), 613 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -50,7 +50,7 @@ index dd3f2a0f065d3f774ea84fbc932e337160e4b307..7d91d3191096c431b739d2d5ecd951a7
  /core/assets/locales
  /core/assets/cache/
 diff --git a/android/build.gradle b/android/build.gradle
-index f1dc45aa74b149babea9cce2535ed7dca8d49a1f..093c328edc2719aa86bb212e1abb1f500044b08a 100644
+index f1dc45aa74b149babea9cce2535ed7dca8d49a1f..11f5fcf77dfc2e54ad1c18b183ad1957ff3dfe9a 100644
 --- a/android/build.gradle
 +++ b/android/build.gradle
 @@ -1,18 +1,19 @@
@@ -102,6 +102,15 @@ index f1dc45aa74b149babea9cce2535ed7dca8d49a1f..093c328edc2719aa86bb212e1abb1f50
      buildToolsVersion = '34.0.0'
      compileSdk = 34
      sourceSets{
+@@ -39,7 +32,7 @@ android{
+             aidl.srcDirs = ['src']
+             renderscript.srcDirs = ['src']
+             res.srcDirs = ['res']
+-            assets.srcDirs = ['assets', 'src/main/assets', '../core/assets/']
++            assets.srcDirs = ['assets', 'src/main/assets', '../core/assets/', '../../assets/']
+             jniLibs.srcDirs = ['libs']
+         }
+ 
 @@ -51,8 +44,6 @@ android{
      }
  
@@ -587,10 +596,10 @@ index f7f291ef1ab71577313759a7e9fdfd3c1e0833dc..00000000000000000000000000000000
 \ No newline at end of file
 diff --git a/core/build.gradle.kts b/core/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd003bb7d96
+index 0000000000000000000000000000000000000000..52d6972f5111e55502e3187e3c600e1843f2ec3f
 --- /dev/null
 +++ b/core/build.gradle.kts
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,65 @@
 +import org.gradle.jvm.tasks.Jar
 +import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 +
@@ -599,8 +608,8 @@ index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd0
 +    kotlin("jvm")
 +}
 +sourceSets.main {
-+    java.setSrcDirs(listOf("src/", layout.buildDirectory.dir("/generated/sources/annotationProcessor/java/main")))
-+    kotlin.setSrcDirs(listOf("src/"))
++    java.setSrcDirs(listOf("src/", "../../src/", layout.buildDirectory.dir("/generated/sources/annotationProcessor/java/main")))
++    kotlin.setSrcDirs(listOf("src/", "../../src/"))
 +}
 +
 +tasks{
@@ -648,6 +657,7 @@ index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd0
 +    val allAssets by registering {
 +        dependsOn(processResources, ":tools:pack")
 +        outputs.dir("assets")
++        outputs.dir("../../assets")
 +    }
 +    val assetsJar by registering(Jar::class) {
 +        from(allAssets) {
@@ -657,10 +667,10 @@ index 0000000000000000000000000000000000000000..f1a2bfd729db5c05cb4bc9b0e5af6dd0
 +}
 \ No newline at end of file
 diff --git a/desktop/build.gradle b/desktop/build.gradle
-index b4d9955e70e7cfbf4792d5196bbe17e06c3762bd..b63f4a3ca7964f41f02a3fa12a068f859b51f96c 100644
+index b4d9955e70e7cfbf4792d5196bbe17e06c3762bd..0b9db141c3842afa73b8b1e14f31c5d244970ddb 100644
 --- a/desktop/build.gradle
 +++ b/desktop/build.gradle
-@@ -3,12 +3,7 @@ sourceSets.main.java.srcDirs = ["src/"]
+@@ -3,14 +3,9 @@ sourceSets.main.java.srcDirs = ["src/"]
  project.ext.mainClassName = "mindustry.desktop.DesktopLauncher"
  project.ext.assetsDir = new File("../core/assets")
  
@@ -672,8 +682,11 @@ index b4d9955e70e7cfbf4792d5196bbe17e06c3762bd..b63f4a3ca7964f41f02a3fa12a068f85
 -task run(dependsOn: classes, type: JavaExec){
 +task run(dependsOn: [classes, ":core:allAssets"], type: JavaExec){
      mainClass = project.mainClassName
-     classpath = sourceSets.main.runtimeClasspath
+-    classpath = sourceSets.main.runtimeClasspath
++    classpath = files(sourceSets.main.runtimeClasspath, tasks.getByPath(":core:allAssets"))
      standardInput = System.in
+     workingDir = project.assetsDir
+     ignoreExitValue = true
 @@ -44,7 +39,7 @@ task dist(type: Jar, dependsOn: configurations.runtimeClasspath){
      from files(sourceSets.main.output.classesDirs)
      from files(sourceSets.main.output.resourcesDir)

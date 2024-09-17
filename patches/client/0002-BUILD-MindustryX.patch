@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 2 Mar 2024 20:04:19 +0800
+Subject: [PATCH] BUILD MindustryX
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+buildPlugins & Kotlin 1.9.20
+
+patchArc改写成transform
+way-zer <himc.wicp@gmail.com> on 2024/4/27 at 18:57
+---
+ build.gradle          | 11 ++---------
+ core/build.gradle.kts |  1 +
+ gradle.properties     |  2 +-
+ settings.gradle       |  2 ++
+ 4 files changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/build.gradle b/build.gradle
+index 3ac0012a751b893f2bed04484034e4fb004cd8ac..222ce1ed9b95d82b8244aaacc08247aa39ea9e22 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -13,8 +13,8 @@ buildscript{
+ }
+ 
+ plugins{
+-    id "org.jetbrains.kotlin.jvm" version "1.6.0"
+-    id "org.jetbrains.kotlin.kapt" version "1.6.0"
++    id "org.jetbrains.kotlin.jvm" version "1.9.20"
++    id "org.jetbrains.kotlin.kapt" version "1.9.20"
+ }
+ 
+ allprojects{
+@@ -180,13 +180,6 @@ project(":core"){
+         }
+     }
+ 
+-    gradle.taskGraph.whenReady{
+-        //these are completely unnecessary
+-        tasks.kaptGenerateStubsKotlin.onlyIf{ false }
+-        tasks.compileKotlin.onlyIf{ false }
+-        tasks.inspectClassesForKotlinIC.onlyIf{ false }
+-    }
+-
+     //comp** classes are only used for code generation
+     jar{
+         exclude("mindustry/entities/comp/**")
+diff --git a/core/build.gradle.kts b/core/build.gradle.kts
+index 52d6972f5111e55502e3187e3c600e1843f2ec3f..6dfb14b6bb9401ec083a0f6994ed9bab8b303c97 100644
+--- a/core/build.gradle.kts
++++ b/core/build.gradle.kts
+@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+ plugins {
+     java
+     kotlin("jvm")
++    id("mindustryX.buildExt")
+ }
+ sourceSets.main {
+     java.setSrcDirs(listOf("src/", "../../src/", layout.buildDirectory.dir("/generated/sources/annotationProcessor/java/main")))
+diff --git a/gradle.properties b/gradle.properties
+index 0c6c42e01d70bb59166e3e21e91a41801e7c113f..1a4d7fb5df48ec81198c57cd5d706c4c48dbd4d7 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -18,7 +18,7 @@ kapt.use.worker.api=true
+ # Compilation avoidance (see https://kotlinlang.org/docs/kapt.html#compile-avoidance-for-kapt-since-1-3-20)
+ kapt.include.compile.classpath=false
+ # I don't need to use the kotlin stdlib, so remove it to prevent extra bloat & method count issues
+-kotlin.stdlib.default.dependency=false
++#kotlin.stdlib.default.dependency=false
+ #needed for android compilation
+ android.useAndroidX=true
+ org.gradle.caching=true
+diff --git a/settings.gradle b/settings.gradle
+index 304e893b1657dd6d23f87a0c6c2939ac7c1d5c84..116bd48602f25dbaa4f6438934e42698abd4a0a4 100644
+--- a/settings.gradle
++++ b/settings.gradle
+@@ -9,6 +9,8 @@ if(JavaVersion.current().ordinal() < JavaVersion.VERSION_17.ordinal()){
+     throw new Exception("!!! YOU MUST USE JAVA 17 OR ABOVE TO COMPILE AND RUN MINDUSTRY !!! Read the README. Your version: ${System.properties["java.version"]}")
+ }
+ 
++includeBuild("../buildPlugins")
++
+ include 'core', 'server', 'annotations', 'tools', 'tests'
+ include 'desktop', 'ios'
+ 
