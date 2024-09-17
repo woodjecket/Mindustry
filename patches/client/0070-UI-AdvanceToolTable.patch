@@ -24,9 +24,9 @@ way-zer <himc.wicp@gmail.com> on 2024/6/10
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustryX/features/UIExt.java       |   8 +-
- .../features/ui/AdvanceToolTable.kt           | 111 +++++
+ .../features/ui/AdvanceToolTable.kt           | 113 +++++
  .../features/ui/ArcUnitFactoryDialog.java     | 440 ++++++++++++++++++
- 3 files changed, 556 insertions(+), 3 deletions(-)
+ 3 files changed, 558 insertions(+), 3 deletions(-)
  create mode 100644 core/src/mindustryX/features/ui/AdvanceToolTable.kt
  create mode 100644 core/src/mindustryX/features/ui/ArcUnitFactoryDialog.java
 
@@ -58,10 +58,10 @@ index 1a33e4f6c9509d0b34422eb360687ffc6c35f3ab..c09b83d494c64733e6ec9389fa8dfb2b
      }
 diff --git a/core/src/mindustryX/features/ui/AdvanceToolTable.kt b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
 new file mode 100644
-index 0000000000000000000000000000000000000000..c8b246040bb04c2581ebeb042dbc791552ba2998
+index 0000000000000000000000000000000000000000..330d295490434d0d8e038125abc4849767b26db9
 --- /dev/null
 +++ b/core/src/mindustryX/features/ui/AdvanceToolTable.kt
-@@ -0,0 +1,111 @@
+@@ -0,0 +1,113 @@
 +package mindustryX.features.ui
 +
 +import arc.graphics.Color
@@ -101,10 +101,12 @@ index 0000000000000000000000000000000000000000..c8b246040bb04c2581ebeb042dbc7915
 +            row().add("单位：")
 +            with(table().get()) {
 +                button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
-+                    for (item in Vars.content.items()) Vars.player.core().items[item] = Vars.player.core().storageCapacity
++                    val core = Vars.player.core() ?: return@button
++                    for (item in Vars.content.items()) core.items[item] = core.storageCapacity
 +                }.width(40f).tooltip("[acid]填满核心的所有资源")
 +                button(Items.copper.emoji() + "[red]-", Styles.cleart) {
-+                    for (item in Vars.content.items()) Vars.player.core().items[item] = 0
++                    val core = Vars.player.core() ?: return@button
++                    core.items.clear()
 +                }.width(40f).tooltip("[acid]清空核心的所有资源")
 +                button(UnitTypes.gamma.emoji() + "[acid]+", Styles.cleart) {
 +                    val cloneUnit = cloneExactUnit(Vars.player.unit())

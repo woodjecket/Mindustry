@@ -4,11 +4,11 @@ Date: Fri, 14 Jun 2024 21:22:41 +0800
 Subject: [PATCH] API(UIExt) announce and sendChatMessage
 
 ---
- core/src/mindustryX/features/UIExt.java | 35 +++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ core/src/mindustryX/features/UIExt.java | 36 +++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
 diff --git a/core/src/mindustryX/features/UIExt.java b/core/src/mindustryX/features/UIExt.java
-index c09b83d494c64733e6ec9389fa8dfb2b7bcee49d..651e6408d6132a194f63fba2613abac62b60aaf1 100644
+index c09b83d494c64733e6ec9389fa8dfb2b7bcee49d..a10d05d96ff5b6d579229d4f1c66e6effc9079b7 100644
 --- a/core/src/mindustryX/features/UIExt.java
 +++ b/core/src/mindustryX/features/UIExt.java
 @@ -1,13 +1,17 @@
@@ -29,7 +29,7 @@ index c09b83d494c64733e6ec9389fa8dfb2b7bcee49d..651e6408d6132a194f63fba2613abac6
  import mindustryX.features.ui.*;
  
  import static mindustry.Vars.*;
-@@ -69,7 +73,38 @@ public class UIExt{
+@@ -69,7 +73,39 @@ public class UIExt{
          }));
      }
  
@@ -64,6 +64,7 @@ index c09b83d494c64733e6ec9389fa8dfb2b7bcee49d..651e6408d6132a194f63fba2613abac6
 +                i += add;
 +            }
 +            sendChatMessage(message.substring(i));
++            return;
 +        }
          Call.sendChatMessage(ui.chatfrag.mode.normalizedPrefix() + message);
      }

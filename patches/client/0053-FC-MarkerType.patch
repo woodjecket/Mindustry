@@ -82,7 +82,7 @@ index af7d31b4674b0efb198643fdfa7dc8b65e17d38a..3d1491a497b4f3a7dad96620cdc66383
      private static void registerBundle(){
 diff --git a/core/src/mindustryX/features/MarkerType.java b/core/src/mindustryX/features/MarkerType.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..58a3232027734be1786229aa86b626c4eb18d7e7
+index 0000000000000000000000000000000000000000..321061b5d69f3458584d9f44dea939b888242d6a
 --- /dev/null
 +++ b/core/src/mindustryX/features/MarkerType.java
 @@ -0,0 +1,225 @@
@@ -228,8 +228,8 @@ index 0000000000000000000000000000000000000000..58a3232027734be1786229aa86b626c4
 +    public static boolean resolveMessage(String text){
 +        var matcher = posPattern.matcher(Strings.stripColors(text));
 +        if(!matcher.find()) return false;
-+        var typeName = matcher.group("type");
-+        Vec2 pos = Tmp.v1.set(Strings.parseInt(matcher.group("x")), Strings.parseInt(matcher.group("y")));
++        var typeName = matcher.group(1);//use index to support old Android
++        Vec2 pos = Tmp.v1.set(Strings.parseInt(matcher.group(2)), Strings.parseInt(matcher.group(3)));
 +
 +        MarkerType type = mark;
 +        if(typeName != null){
