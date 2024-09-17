@@ -5,10 +5,9 @@ Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
  arcTurretPlaceCheck
 
 ---
- core/src/mindustry/type/UnitType.java                 |  3 ++-
- .../world/blocks/defense/turrets/BaseTurret.java      |  6 ++++++
- core/src/mindustryX/features/RenderExt.java           | 11 +++++++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ core/src/mindustry/type/UnitType.java                       | 3 ++-
+ .../mindustry/world/blocks/defense/turrets/BaseTurret.java  | 6 ++++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
 index af3cd1b562c8eaa7750ba7d1c665bf5b052ebdfa..8db65f2bdfe17ec8e9250b7cd599616092812a6c 100644
@@ -54,44 +53,3 @@ index dbe779461193af3f8b882a2db305eedfd457bd82..eced3dc7581a4916970634e600d0f5cd
          if(fogRadiusMultiplier < 0.99f && state.rules.fog){
              Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
          }
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 835b5d7b801f03683cbb7502ea98025ff2c24d40..c0fe214232b848835a30a51ac3c0904366858bd3 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -1,14 +1,22 @@
- package mindustryX.features;
- 
- import arc.*;
-+import arc.graphics.g2d.*;
- import arc.util.*;
- import mindustry.game.EventType.*;
- import mindustry.gen.*;
-+import mindustry.graphics.*;
- import mindustry.world.*;
-+import mindustry.world.blocks.logic.MessageBlock.*;
- 
- public class RenderExt{
-+    public static boolean bulletShow, showMineBeam, displayAllMessage;
-+
-     public static void init(){
-         Events.run(Trigger.preDraw, () -> {
-+            bulletShow = Core.settings.getBool("bulletShow");
-+            showMineBeam = Core.settings.getBool("showminebeam");
-+            displayAllMessage = Core.settings.getBool("displayallmessage");
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-     }
-@@ -18,10 +26,13 @@ public class RenderExt{
-     }
- 
-     public static void onGroupDraw(Drawc t){
-+        if(!bulletShow && t instanceof Bulletc) return;
-         t.draw();
-     }
- 
-     public static void onBlockDraw(Tile tile, Block block, @Nullable Building build){
-         block.drawBase(tile);
-+        if(displayAllMessage && build instanceof MessageBuild)
-+            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
-     }
- }

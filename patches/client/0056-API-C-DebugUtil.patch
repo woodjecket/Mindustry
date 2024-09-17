@@ -13,11 +13,8 @@ way-zer <himc.wicp@gmail.com> on 2024/7/21
  core/src/mindustry/ClientLauncher.java        |  2 +-
  core/src/mindustry/core/Logic.java            |  3 +++
  .../mindustry/ui/fragments/HudFragment.java   |  7 +++++
- core/src/mindustryX/Hooks.java                |  1 +
- core/src/mindustryX/features/DebugUtil.java   | 21 +++++++++++++++
- 6 files changed, 59 insertions(+), 1 deletion(-)
+ 4 files changed, 37 insertions(+), 1 deletion(-)
  create mode 100644 core/src/arc/graphics/g2d/MySpriteBatch.java
- create mode 100644 core/src/mindustryX/features/DebugUtil.java
 
 diff --git a/core/src/arc/graphics/g2d/MySpriteBatch.java b/core/src/arc/graphics/g2d/MySpriteBatch.java
 new file mode 100644
@@ -117,42 +114,3 @@ index 23d4ad03c71131265f82478a0285110cdf71059d..6f8bb852edfe397c4abbbe9268f8b564
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 3d1491a497b4f3a7dad96620cdc6638376938b4d..9981f2963b730173d8c03e29440e2e9ee404d4d3 100644
---- a/core/src/mindustryX/Hooks.java
-+++ b/core/src/mindustryX/Hooks.java
-@@ -18,6 +18,7 @@ public class Hooks implements ApplicationListener{
-         Log.infoTag("MindustryX", "Hooks.beforeInit");
-         registerBundle();
-         Settings.addSettings();
-+        DebugUtil.init();//this is safe, and better at beforeInit,
-     }
- 
-     /** invoke after loading, just before `Mod::init` */
-diff --git a/core/src/mindustryX/features/DebugUtil.java b/core/src/mindustryX/features/DebugUtil.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..1af11ccb664b52555d5ade24343c26ff3d6d1181
---- /dev/null
-+++ b/core/src/mindustryX/features/DebugUtil.java
-@@ -0,0 +1,21 @@
-+package mindustryX.features;
-+
-+import arc.*;
-+import arc.util.*;
-+import mindustry.game.EventType.*;
-+
-+public class DebugUtil{
-+    public static int lastDrawRequests, lastVertices, lastFlushCount, lastSwitchTexture;
-+    public static long logicTime, rendererTime, uiTime;//nanos
-+    private static long rendererStart, uiStart;//nanos
-+
-+    public static void init(){
-+        Events.run(Trigger.preDraw, () -> {
-+            lastDrawRequests = lastVertices = lastFlushCount = lastSwitchTexture = 0;
-+            rendererStart = Time.nanos();
-+        });
-+        Events.run(Trigger.postDraw, () -> rendererTime = Time.timeSinceNanos(rendererStart));
-+        Events.run(Trigger.uiDrawBegin, () -> uiStart = Time.nanos());
-+        Events.run(Trigger.uiDrawEnd, () -> uiTime = Time.timeSinceNanos(uiStart));
-+    }
-+}

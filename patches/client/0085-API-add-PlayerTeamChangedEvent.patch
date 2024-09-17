@@ -4,10 +4,8 @@ Date: Sun, 3 Dec 2023 15:55:56 +0800
 Subject: [PATCH] API: add PlayerTeamChangedEvent
 
 ---
- .../src/mindustry/entities/comp/PlayerComp.java |  4 ++++
- .../events/PlayerTeamChangedEvent.java          | 17 +++++++++++++++++
- 2 files changed, 21 insertions(+)
- create mode 100644 core/src/mindustryX/events/PlayerTeamChangedEvent.java
+ core/src/mindustry/entities/comp/PlayerComp.java | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
 index fee7e8c71fc07f8cbea36997afc8a4fda8c8c3f1..6646df00e2c060899ec80ea5bde1e1fa444654a9 100644
@@ -35,26 +33,3 @@ index fee7e8c71fc07f8cbea36997afc8a4fda8c8c3f1..6646df00e2c060899ec80ea5bde1e1fa
      }
  
      public void clearUnit(){
-diff --git a/core/src/mindustryX/events/PlayerTeamChangedEvent.java b/core/src/mindustryX/events/PlayerTeamChangedEvent.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..4011f009f9e6adf14887e42d5b76c42ced94e4cb
---- /dev/null
-+++ b/core/src/mindustryX/events/PlayerTeamChangedEvent.java
-@@ -0,0 +1,17 @@
-+package mindustryX.events;
-+
-+import mindustry.game.*;
-+import mindustry.gen.*;
-+import mindustryX.*;
-+
-+/** Called after the team of a player changed. */
-+@MindustryXApi
-+public class PlayerTeamChangedEvent{
-+    public final Team previous;
-+    public final Player player;
-+    public PlayerTeamChangedEvent(Team previous, Player player) {
-+        this.previous = previous;
-+        this.player = player;
-+    }
-+}
-+

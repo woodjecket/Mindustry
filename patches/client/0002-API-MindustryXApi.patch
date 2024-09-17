@@ -3,29 +3,3 @@ From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 17 Sep 2023 11:51:44 +0800
 Subject: [PATCH] API: @MindustryXApi
 
----
- core/src/mindustryX/MindustryXApi.java | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
- create mode 100644 core/src/mindustryX/MindustryXApi.java
-
-diff --git a/core/src/mindustryX/MindustryXApi.java b/core/src/mindustryX/MindustryXApi.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..04318b009a90b632bf7947910ca24055c3f7e7bb
---- /dev/null
-+++ b/core/src/mindustryX/MindustryXApi.java
-@@ -0,0 +1,15 @@
-+package mindustryX;
-+
-+import java.lang.annotation.*;
-+
-+@Documented
-+@Retention(RetentionPolicy.SOURCE)
-+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD})
-+public @interface MindustryXApi{
-+    /** Need Keep for compatibility with vanilla */
-+    @Documented
-+    @Retention(RetentionPolicy.SOURCE)
-+    @Target({ElementType.TYPE, ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD})
-+    public @interface Keep{
-+    }
-+}

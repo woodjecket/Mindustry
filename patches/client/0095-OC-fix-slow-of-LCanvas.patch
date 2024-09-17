@@ -4,9 +4,8 @@ Date: Tue, 6 Aug 2024 01:30:38 +0800
 Subject: [PATCH] OC: fix slow of LCanvas
 
 ---
- core/src/mindustry/logic/LCanvas.java       | 113 ++++++++++----------
- core/src/mindustryX/features/RenderExt.java |  25 +++++
- 2 files changed, 84 insertions(+), 54 deletions(-)
+ core/src/mindustry/logic/LCanvas.java | 113 ++++++++++++++------------
+ 1 file changed, 59 insertions(+), 54 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index e40b426a3c3ec656f9364c25ac762ed3b0121390..f92c4152ebaa794e33f1f4df864a4ea66bd8e7c5 100644
@@ -272,46 +271,3 @@ index e40b426a3c3ec656f9364c25ac762ed3b0121390..f92c4152ebaa794e33f1f4df864a4ea6
          }
  
          public void drawCurve(float x, float y, float x2, float y2){
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index bd74e46042b9d40a5bd3e7eb6f4ae3ca60cc8840..76adae3a529d20bf1c58dc42bd8aa4d439402df9 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -3,6 +3,7 @@ package mindustryX.features;
- import arc.*;
- import arc.graphics.*;
- import arc.graphics.g2d.*;
-+import arc.graphics.g2d.TextureAtlas.*;
- import arc.math.*;
- import arc.math.geom.*;
- import arc.util.*;
-@@ -86,6 +87,30 @@ public class RenderExt{
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
-+
-+        //Optimize white() for ui
-+        AtlasRegion white = Core.atlas.white(),
-+        whiteUI = Core.atlas.find("whiteui"),
-+        whiteSet = new AtlasRegion(white){
-+            @Override
-+            public void set(TextureRegion region0){
-+                super.set(region0);
-+                if(region0 instanceof AtlasRegion region){
-+                    name = region.name;
-+                    offsetX = region.offsetX;
-+                    offsetY = region.offsetY;
-+                    packedWidth = region.packedWidth;
-+                    packedHeight = region.packedHeight;
-+                    originalWidth = region.originalWidth;
-+                    originalHeight = region.originalHeight;
-+                    rotate = region.rotate;
-+                    splits = region.splits;
-+                }
-+            }
-+        };
-+        Reflect.set(TextureAtlas.class, Core.atlas, "white", whiteSet);
-+        Events.run(Trigger.uiDrawBegin, () -> whiteSet.set(whiteUI));
-+        Events.run(Trigger.uiDrawEnd, () -> whiteSet.set(white));
-     }
- 
-     private static void draw(){

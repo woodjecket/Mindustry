@@ -14,8 +14,7 @@ Content-Transfer-Encoding: 8bit
  core/src/mindustry/world/Block.java           |  4 +-
  core/src/mindustry/world/Build.java           | 45 +++++++++++++++++++
  .../mindustry/world/blocks/ItemSelection.java |  3 +-
- core/src/mindustryX/features/LogicExt.java    |  4 ++
- 7 files changed, 90 insertions(+), 6 deletions(-)
+ 6 files changed, 86 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/ctype/UnlockableContent.java b/core/src/mindustry/ctype/UnlockableContent.java
 index e86da73fea326457ac06c5b36ed06c11735a24cf..63ba88bd02ed596c2799d809e71a84cfc63869ae 100644
@@ -262,25 +261,3 @@ index 24e49706de56896a8fbbda3bcf83503457965798..b0beb00affe5107e12a9a64626c6ead2
  
                  ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
                      if(closeSelect) control.input.config.hideConfig();
-diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
-index bdc81ee89e34a125a22f05096231a72fec2e3172..d148408a6bac91abe640a07fd06e81d4f8e35c64 100644
---- a/core/src/mindustryX/features/LogicExt.java
-+++ b/core/src/mindustryX/features/LogicExt.java
-@@ -7,6 +7,8 @@ import mindustry.game.EventType.*;
- public class LogicExt{
-     public static boolean limitUpdate = false;
-     public static int limitDst = 0, limitTimer = 10;
-+    public static boolean worldCreator = false;
-+    public static boolean allUnlocked = false;
-     public static boolean terrainSchematic = false;
- 
-     public static void init(){
-@@ -17,6 +19,8 @@ public class LogicExt{
-                 limitUpdate = false;
-                 limitTimer = 10;
-             }
-+            worldCreator = Core.settings.getBool("worldCreator");
-+            allUnlocked = Core.settings.getBool("allUnlocked");
-             terrainSchematic = Core.settings.getBool("terrainSchematic");
-         });
-     }

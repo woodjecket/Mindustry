@@ -10,8 +10,7 @@ Content-Transfer-Encoding: 8bit
 ---
  core/src/mindustry/game/Objectives.java           | 4 +++-
  core/src/mindustry/ui/dialogs/ResearchDialog.java | 9 +++++----
- core/src/mindustryX/features/RenderExt.java       | 2 ++
- 3 files changed, 10 insertions(+), 5 deletions(-)
+ 2 files changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/core/src/mindustry/game/Objectives.java b/core/src/mindustry/game/Objectives.java
 index f50c8c0ca180f07cc2ce13068540910c915189d5..fbb783f85810db49bd6a321d729f5214fd0d22b3 100644
@@ -88,23 +87,3 @@ index e601e02b5df2ea34d97a338b992ca30554a7e3fa..416587393a5e27822e95196cc964a902
                      desc.row();
                      if(locked(node) || debugShowRequirements){
  
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 9f2735a5acc756c9b0b3d6aa5a6bbc8ea6861a0f..d08e081e7ae0bdaa67d903d97116d0c714e015bc 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -12,6 +12,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
- public class RenderExt{
-     public static boolean bulletShow, showMineBeam, displayAllMessage;
-     public static boolean arcChoiceUiIcon;
-+    public static boolean researchViewer;
- 
-     public static void init(){
-         Events.run(Trigger.preDraw, () -> {
-@@ -19,6 +20,7 @@ public class RenderExt{
-             showMineBeam = Core.settings.getBool("showminebeam");
-             displayAllMessage = Core.settings.getBool("displayallmessage");
-             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-+            researchViewer = Core.settings.getBool("researchViewer");
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-     }

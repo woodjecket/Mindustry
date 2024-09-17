@@ -15,8 +15,7 @@ Content-Transfer-Encoding: 8bit
  core/src/mindustry/world/blocks/sandbox/ItemSource.java     | 2 ++
  core/src/mindustry/world/blocks/storage/Unloader.java       | 6 ++++++
  .../mindustry/world/blocks/units/UnitCargoUnloadPoint.java  | 2 ++
- core/src/mindustryX/features/RenderExt.java                 | 2 ++
- 7 files changed, 18 insertions(+)
+ 6 files changed, 16 insertions(+)
 
 diff --git a/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java b/core/src/mindustry/world/blocks/distribution/DirectionalUnloader.java
 index 92ccae0e1122e1501ab2d96facb3c0cef5ce8842..010404a6f75731b1f9ac504c1d4c55259f082827 100644
@@ -142,22 +141,3 @@ index d7a2e02c0d81c1935482c3bbb4edb7b555788a43..3b3e49cca2b424aeddd693d261b5e242
              }
          }
  
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index c0fe214232b848835a30a51ac3c0904366858bd3..9f2735a5acc756c9b0b3d6aa5a6bbc8ea6861a0f 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -11,12 +11,14 @@ import mindustry.world.blocks.logic.MessageBlock.*;
- 
- public class RenderExt{
-     public static boolean bulletShow, showMineBeam, displayAllMessage;
-+    public static boolean arcChoiceUiIcon;
- 
-     public static void init(){
-         Events.run(Trigger.preDraw, () -> {
-             bulletShow = Core.settings.getBool("bulletShow");
-             showMineBeam = Core.settings.getBool("showminebeam");
-             displayAllMessage = Core.settings.getBool("displayallmessage");
-+            arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-     }

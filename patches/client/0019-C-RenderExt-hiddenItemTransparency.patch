@@ -13,8 +13,7 @@ Content-Transfer-Encoding: 8bit
  .../distribution/BufferedItemBridge.java      | 47 +++++++++++++++++++
  .../world/blocks/distribution/ItemBridge.java | 15 ++++++
  .../world/blocks/distribution/Junction.java   | 30 ++++++++++++
- core/src/mindustryX/features/RenderExt.java   |  2 +
- 6 files changed, 114 insertions(+)
+ 5 files changed, 112 insertions(+)
 
 diff --git a/core/src/mindustry/world/DirectionalItemBuffer.java b/core/src/mindustry/world/DirectionalItemBuffer.java
 index 48cbdc84c09863a52f82282a70b3882e36fbed00..a55e582e7f670494adce17090e209caa7db3972f 100644
@@ -212,23 +211,3 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..a34377db8cec36032d8a27014ea9d1e7
          @Override
          public void write(Writes write){
              super.write(write);
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index d08e081e7ae0bdaa67d903d97116d0c714e015bc..62100afee7c0df3fd36781244ccd02cb318316c3 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -13,6 +13,7 @@ public class RenderExt{
-     public static boolean bulletShow, showMineBeam, displayAllMessage;
-     public static boolean arcChoiceUiIcon;
-     public static boolean researchViewer;
-+    public static int hiddenItemTransparency;
- 
-     public static void init(){
-         Events.run(Trigger.preDraw, () -> {
-@@ -21,6 +22,7 @@ public class RenderExt{
-             displayAllMessage = Core.settings.getBool("displayallmessage");
-             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-             researchViewer = Core.settings.getBool("researchViewer");
-+            hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-     }

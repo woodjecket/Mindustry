@@ -4,10 +4,9 @@ Date: Sat, 2 Mar 2024 20:04:19 +0800
 Subject: [PATCH] BUILD Kotlin 1.9.20
 
 ---
- build.gradle                                   | 11 ++---------
- core/src/mindustryX/features/InternalMods.java |  1 +
- gradle.properties                              |  2 +-
- 3 files changed, 4 insertions(+), 10 deletions(-)
+ build.gradle      | 11 ++---------
+ gradle.properties |  2 +-
+ 2 files changed, 3 insertions(+), 10 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
 index d64047c2ff2f1f6b4ead7354f4edee748c2347b1..e13f9df614deb5d24668053bf6e6ef0a417341bc 100644
@@ -38,18 +37,6 @@ index d64047c2ff2f1f6b4ead7354f4edee748c2347b1..e13f9df614deb5d24668053bf6e6ef0a
      //comp** classes are only used for code generation
      jar{
          exclude("mindustry/entities/comp/**")
-diff --git a/core/src/mindustryX/features/InternalMods.java b/core/src/mindustryX/features/InternalMods.java
-index 63f413ea5fe200cd88c48bb5efeca4ffe342f438..c2e653f692f743e6ef33a647002f68b5761b8175 100644
---- a/core/src/mindustryX/features/InternalMods.java
-+++ b/core/src/mindustryX/features/InternalMods.java
-@@ -15,6 +15,7 @@ public class InternalMods{
-     public static Seq<LoadedMod> load(){
-         Seq<LoadedMod> mods = new Seq<>();
-         mods.add(internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()));
-+        mods.add(internalMod(meta("Kotlin", "Kotlin语言标准库", "1.9.20", "Jetbrains")));
-         if(!VarsX.isLoader)
-             mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
-         return mods;
 diff --git a/gradle.properties b/gradle.properties
 index 5fcc2f6a7455a09fc17437e4f73e6e6f4d818f86..fad521726aa1c9205be065f31e31c75e845aeadd 100644
 --- a/gradle.properties

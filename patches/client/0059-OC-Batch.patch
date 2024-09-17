@@ -24,8 +24,7 @@ way-zer <himc.wicp@gmail.com> on 2024/8/4
 ---
  core/src/arc/graphics/g2d/MySpriteBatch.java | 230 +++++++++++++++++++
  core/src/mindustry/graphics/MultiPacker.java |   2 +-
- core/src/mindustryX/features/RenderExt.java  |   2 +
- 3 files changed, 233 insertions(+), 1 deletion(-)
+ 2 files changed, 231 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/arc/graphics/g2d/MySpriteBatch.java b/core/src/arc/graphics/g2d/MySpriteBatch.java
 index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f3ced8bb6 100644
@@ -290,23 +289,3 @@ index e5f473a7651495f7f61856e6df711fba12dfb1be..f1a3f1cbbac0fbda6dfabe689f25c210
  
          //TODO stuff like this throws OOM on some devices
          environment(4096, 2048),
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 7b5d21f77cd8d15d0541cd70a051aad660c21e1d..4386f5f364e847324b147c44f8c8748fd5c16537 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -30,6 +30,7 @@ public class RenderExt{
-     public static float overdriveZoneTransparency, mendZoneTransparency;
-     public static boolean logicDisplayNoBorder, arcDrillMode;
-     public static int blockRenderLevel;
-+    public static boolean renderSort;
- 
-     public static boolean unitHide = false;
-     private static Effect placementEffect;
-@@ -60,6 +61,7 @@ public class RenderExt{
-             logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
-             arcDrillMode = Core.settings.getBool("arcdrillmode");
-             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
-+            renderSort = Core.settings.getBool("renderSort");
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);

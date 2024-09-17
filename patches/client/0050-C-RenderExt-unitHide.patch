@@ -4,11 +4,9 @@ Date: Thu, 4 Apr 2024 14:56:59 +0800
 Subject: [PATCH] C(RenderExt) unitHide
 
 ---
- core/src/mindustry/input/Binding.java       | 2 +-
- core/src/mindustry/input/InputHandler.java  | 3 ++-
- core/src/mindustryX/Hooks.java              | 4 ++++
- core/src/mindustryX/features/RenderExt.java | 4 +++-
- 4 files changed, 10 insertions(+), 3 deletions(-)
+ core/src/mindustry/input/Binding.java      | 2 +-
+ core/src/mindustry/input/InputHandler.java | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
 index 8376e3f5a5f4aef6c5397567aaba13780eda86ab..e06b393ff7e9de55181a2c069e8a16b37c021bbb 100644
@@ -44,47 +42,3 @@ index 5079c0afc523f36b870527b580c6b4f2bfe565c2..9be58ec46ccab9a86d84f75e05e200c0
              unit.hitbox(Tmp.r1);
              Tmp.r1.grow(6f);
              if(Tmp.r1.contains(Core.input.mouseWorld())){
-diff --git a/core/src/mindustryX/Hooks.java b/core/src/mindustryX/Hooks.java
-index 66c54877a8c14ea43294c2db818583fcd7191351..af7d31b4674b0efb198643fdfa7dc8b65e17d38a 100644
---- a/core/src/mindustryX/Hooks.java
-+++ b/core/src/mindustryX/Hooks.java
-@@ -5,6 +5,7 @@ import arc.files.*;
- import arc.util.*;
- import mindustry.*;
- import mindustry.gen.*;
-+import mindustry.input.*;
- import mindustryX.features.*;
- import mindustryX.features.Settings;
- 
-@@ -61,6 +62,9 @@ public class Hooks implements ApplicationListener{
- 
-     public static void pollKeys(){
-         if(Vars.headless || Core.scene.hasField()) return;
-+        if(Core.input.keyTap(Binding.toggle_unit)){
-+            RenderExt.unitHide = !RenderExt.unitHide;
-+        }
-     }
- 
-     private static void registerBundle(){
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 6cd82be98b657e3aa36b29c46d6d172f5f4d9dd6..d09842fd55f775dc9c6a238ba98e04638540b8fd 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -25,6 +25,8 @@ public class RenderExt{
-     public static int hiddenItemTransparency;
-     public static int blockBarMinHealth;
-     public static float overdriveZoneTransparency, mendZoneTransparency;
-+
-+    public static boolean unitHide = false;
-     private static Effect placementEffect;
- 
-     public static void init(){
-@@ -41,7 +43,7 @@ public class RenderExt{
- 
-         Events.run(Trigger.preDraw, () -> {
-             bulletShow = Core.settings.getBool("bulletShow");
--            showMineBeam = Core.settings.getBool("showminebeam");
-+            showMineBeam = !unitHide && Core.settings.getBool("showminebeam");
-             displayAllMessage = Core.settings.getBool("displayallmessage");
-             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-             researchViewer = Core.settings.getBool("researchViewer");

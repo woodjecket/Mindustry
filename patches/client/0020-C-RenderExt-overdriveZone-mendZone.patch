@@ -8,8 +8,7 @@ Subject: [PATCH] C(RenderExt) overdriveZone mendZone
  core/src/mindustry/graphics/Layer.java        |  3 +++
  .../world/blocks/defense/MendProjector.java   |  8 ++++++++
  .../blocks/defense/OverdriveProjector.java    | 19 +++++++++++++++++++
- core/src/mindustryX/features/RenderExt.java   |  3 +++
- 5 files changed, 38 insertions(+)
+ 4 files changed, 35 insertions(+)
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
 index 01b2872b6ab744ad12f44049feb6146ce8ad84d5..e987766b74de1fbb8d3d9e0a8f1863b0821a49db 100644
@@ -104,24 +103,3 @@ index 423462318a31075f047a39d07caee50e031c1390..89b28401796d1d560330328e4bea54f2
              float f = 1f - (Time.time / 100f) % 1f;
  
              Draw.color(baseColor, phaseColor, phaseHeat);
-diff --git a/core/src/mindustryX/features/RenderExt.java b/core/src/mindustryX/features/RenderExt.java
-index 62100afee7c0df3fd36781244ccd02cb318316c3..32fa3691159506083aa110c90a182665aeb49844 100644
---- a/core/src/mindustryX/features/RenderExt.java
-+++ b/core/src/mindustryX/features/RenderExt.java
-@@ -14,6 +14,7 @@ public class RenderExt{
-     public static boolean arcChoiceUiIcon;
-     public static boolean researchViewer;
-     public static int hiddenItemTransparency;
-+    public static float overdriveZoneTransparency, mendZoneTransparency;
- 
-     public static void init(){
-         Events.run(Trigger.preDraw, () -> {
-@@ -23,6 +24,8 @@ public class RenderExt{
-             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
-             researchViewer = Core.settings.getBool("researchViewer");
-             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
-+            overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
-+            mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
-         });
-         Events.run(Trigger.draw, RenderExt::draw);
-     }

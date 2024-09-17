@@ -10,8 +10,7 @@ Content-Transfer-Encoding: 8bit
 ---
  core/src/mindustry/game/Schematics.java       | 39 ++++++++++++++++---
  .../world/blocks/environment/Floor.java       |  1 +
- core/src/mindustryX/features/LogicExt.java    |  2 +
- 3 files changed, 36 insertions(+), 6 deletions(-)
+ 2 files changed, 34 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
 index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa0892e7bc 100644
@@ -110,24 +109,3 @@ index dfd29de65b8b4b0b07a5610cbe366f13f21a0373..d5482461eebb80f0dac8ce45a9b7a860
      }
  
      @Override
-diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
-index 3d0141b5c308df84fea6c061d5b9e810e31b83fd..bdc81ee89e34a125a22f05096231a72fec2e3172 100644
---- a/core/src/mindustryX/features/LogicExt.java
-+++ b/core/src/mindustryX/features/LogicExt.java
-@@ -7,6 +7,7 @@ import mindustry.game.EventType.*;
- public class LogicExt{
-     public static boolean limitUpdate = false;
-     public static int limitDst = 0, limitTimer = 10;
-+    public static boolean terrainSchematic = false;
- 
-     public static void init(){
-         Events.run(Trigger.update, () -> {
-@@ -16,6 +17,7 @@ public class LogicExt{
-                 limitUpdate = false;
-                 limitTimer = 10;
-             }
-+            terrainSchematic = Core.settings.getBool("terrainSchematic");
-         });
-     }
- }
-\ No newline at end of file

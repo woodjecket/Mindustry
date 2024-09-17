@@ -4,10 +4,8 @@ Date: Sun, 15 Sep 2024 15:53:45 +0800
 Subject: [PATCH] FC: reliableSync
 
 ---
- core/src/mindustry/net/Net.java            | 1 +
- core/src/mindustryX/features/LogicExt.java | 2 ++
- core/src/mindustryX/features/Settings.java | 1 +
- 3 files changed, 4 insertions(+)
+ core/src/mindustry/net/Net.java | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
 index 638b11dc980ce4001faaaab28ec70c2b7f95a5ab..5a2d439bbcab56edbb5b1bb21871c26ed950b3a9 100644
@@ -21,36 +19,3 @@ index 638b11dc980ce4001faaaab28ec70c2b7f95a5ab..5a2d439bbcab56edbb5b1bb21871c26e
              provider.sendClient(object, reliable);
          }
      }
-diff --git a/core/src/mindustryX/features/LogicExt.java b/core/src/mindustryX/features/LogicExt.java
-index 00ef53c2c05761e9fd10861b825575f754762639..ef090595e70e94bd0e639a8092cca8923972af43 100644
---- a/core/src/mindustryX/features/LogicExt.java
-+++ b/core/src/mindustryX/features/LogicExt.java
-@@ -11,6 +11,7 @@ public class LogicExt{
-     public static boolean allUnlocked = false;
-     public static boolean terrainSchematic = false;
-     public static boolean invertMapClick = false;
-+    public static boolean reliableSync = false;
- 
-     public static void init(){
-         Events.run(Trigger.update, () -> {
-@@ -24,6 +25,7 @@ public class LogicExt{
-             allUnlocked = Core.settings.getBool("allUnlocked");
-             terrainSchematic = Core.settings.getBool("terrainSchematic");
-             invertMapClick = Core.settings.getBool("invertMapClick");
-+            reliableSync = Core.settings.getBool("reliableSync");
-         });
-     }
- }
-\ No newline at end of file
-diff --git a/core/src/mindustryX/features/Settings.java b/core/src/mindustryX/features/Settings.java
-index e39fe4572259cc157de0351765ff7b6f75ad1696..62d10f76d6d4fc685a54523e7a21218d892b0977 100644
---- a/core/src/mindustryX/features/Settings.java
-+++ b/core/src/mindustryX/features/Settings.java
-@@ -73,6 +73,7 @@ public class Settings{
-             c.addCategory("developerMode");
-             c.checkPref("renderMerge", true);
-             c.checkPref("renderSort", false);
-+            c.checkPref("reliableSync", false);
-         }));
-         ArcOld.init(categories);
-         Events.on(ClientLoadEvent.class, e -> {
