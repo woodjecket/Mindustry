@@ -126,7 +126,12 @@ public class AdvanceBuildTool extends ToolTableBase{
                     rebuild();
                 }).tooltip("地图世处信息").width(60f).height(30f);
                 tt.button("P", Styles.flatBordert, () -> buildTiles.buildBlock(target, tile -> {
-                    if(target instanceof ThermalGenerator) return target.sumAttribute(((ThermalGenerator)target).attribute, tile);
+                    if(target instanceof ThermalGenerator g){
+                        if(g.attribute == null || target.floating) return 0;
+                        float[] res = {0f};
+                        tile.getLinkedTilesAs(target, other -> res[0] += other.floor().isDeep() ? 0f : other.floor().attributes.get(g.attribute));
+                        return res[0];
+                    }
                     if(target instanceof Drill) return ((Drill)target).countOreArc(tile);
                     return 1f;
                 })).tooltip("自动放置").size(30f);

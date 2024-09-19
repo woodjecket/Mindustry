@@ -4,6 +4,7 @@ import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.*;
 import arc.util.*;
 import mindustry.ai.types.*;
 import mindustry.entities.units.*;
@@ -119,13 +120,13 @@ public class ArcUnits{
                     Drawf.target(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
                     break;
                 case 3:
-                    Drawf.target2(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
-                    break;
                 case 4:
-                    Drawf.targetc(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
-                    break;
                 case 5:
-                    Drawf.targetd(unit.aimX, unit.aimY, 6f, 0.7f, effectColor);
+                    Draw.color(effectColor, 0.7f);
+                    if(unitTargetType == 3) Lines.poly(unit.aimX, unit.aimY, 4, 6f, Time.time * 1.5f);
+                    if(unitTargetType == 4) Lines.circle(unit.aimX, unit.aimY, 6f);
+                    Lines.spikes(unit.aimX, unit.aimY, 3f / 7f * 6f, 6f / 7f * 6f, 4, Time.time * 1.5f);
+                    Draw.color();
                     break;
             }
         }
@@ -165,11 +166,11 @@ public class ArcUnits{
             if(ai.attackTarget != null){
                 Draw.color(unit.team.color);
                 if(ai.targetPos != null)
-                    Drawf.limitLineColor(unit, ai.attackTarget, unit.hitSize / 2f, 3.5f, unit.team.color);
+                    drawLimitLineColor(unit, ai.attackTarget, unit.hitSize / 2f, 3.5f, unit.team.color);
                 Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, unit.team.color);
             }else if(ai.targetPos != null){
                 Draw.color(unit.team.color);
-                Drawf.limitLineColor(unit, ai.targetPos, unit.hitSize / 2f, 3.5f, unit.team.color);
+                drawLimitLineColor(unit, ai.targetPos, unit.hitSize / 2f, 3.5f, unit.team.color);
                 Draw.color(unit.team.color);
                 Drawf.square(ai.targetPos.getX(), ai.targetPos.getY(), 3.5f, unit.team.color);
             }
@@ -215,7 +216,7 @@ public class ArcUnits{
         Draw.reset();
 
         float oldZ = Draw.z();
-        Draw.z(oldZ+0.1f);//MDTX: There no replace for effect.uiIcon, so we offset the layer.
+        Draw.z(oldZ + 0.1f);//MDTX: There no replace for effect.uiIcon, so we offset the layer.
         float index = 0f;
         float iconSize = 4f;
         int iconColumns = Math.max((int)(unit.hitSize() / (iconSize + 1f)), 4);
@@ -345,5 +346,12 @@ public class ArcUnits{
             Draw.rect(region, x + range * Mathf.cos((float)Math.toRadians(rot - frac)), y + range * Mathf.sin((float)Math.toRadians(rot - frac)), 12f, 12f);
         }
         Draw.reset();
+    }
+
+    private static void drawLimitLineColor(Position start, Position dest, float len1, float len2, Color color){
+        Tmp.v1.set(dest).sub(start).setLength(len1);
+        Tmp.v2.set(Tmp.v1).scl(-1f).setLength(len2);
+
+        Drawf.line(color, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);
     }
 }

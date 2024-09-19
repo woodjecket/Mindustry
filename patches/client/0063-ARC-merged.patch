@@ -94,7 +94,6 @@ way-zer <himc.wicp@gmail.com> on 2024/7/28
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/ai/BlockIndexer.java       | 116 ++++++
- core/src/mindustry/core/Renderer.java         |   1 +
  core/src/mindustry/core/UI.java               |   3 +
  core/src/mindustry/editor/MapInfoDialog.java  | 139 ++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
@@ -104,8 +103,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/game/Schematic.java        | 158 ++++++++
  core/src/mindustry/game/Universe.java         |   2 +-
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
- core/src/mindustry/graphics/Drawf.java        |  54 +++
- .../mindustry/graphics/OverlayRenderer.java   |  84 +++-
+ .../mindustry/graphics/OverlayRenderer.java   |  84 ++++-
  core/src/mindustry/input/Binding.java         |   6 +
  core/src/mindustry/input/DesktopInput.java    |  85 ++++-
  core/src/mindustry/input/InputHandler.java    |  55 ++-
@@ -118,25 +116,25 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   3 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |  12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  70 +++-
- .../ui/dialogs/SchematicsDialog.java          | 361 +++++++++++++++++-
+ .../ui/dialogs/SchematicsDialog.java          | 350 +++++++++++++++++-
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |  25 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 227 ++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 227 +++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 ++-
- .../ui/fragments/PlacementFragment.java       | 166 ++++++--
+ .../ui/fragments/PlacementFragment.java       | 166 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  93 +++--
- core/src/mindustry/world/Block.java           |  16 +-
- .../world/blocks/ConstructBlock.java          |  42 +-
+ core/src/mindustry/world/Block.java           |  11 +-
+ .../world/blocks/ConstructBlock.java          |  42 ++-
  .../world/blocks/defense/ForceProjector.java  |   2 +
  .../world/blocks/defense/MendProjector.java   |   5 +-
  .../blocks/defense/OverdriveProjector.java    |   6 +-
  .../blocks/defense/turrets/BaseTurret.java    |   5 +-
  .../world/blocks/defense/turrets/Turret.java  |  12 +
  .../world/blocks/production/Drill.java        |  23 +-
- .../blocks/production/GenericCrafter.java     |  29 ++
+ .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 43 files changed, 2082 insertions(+), 242 deletions(-)
+ 41 files changed, 1998 insertions(+), 242 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -303,18 +301,6 @@ index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987
      private void process(Tile tile){
          var team = tile.team();
          //only process entity changes with centered tiles
-diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index d21aa28efe895c7d76dfd903a9942a03f5a012b9..14a4b72a0881327ce3a9bb65d0cc24b8cd0b804d 100644
---- a/core/src/mindustry/core/Renderer.java
-+++ b/core/src/mindustry/core/Renderer.java
-@@ -28,6 +28,7 @@ import static arc.Core.*;
- import static mindustry.Vars.*;
- 
- public class Renderer implements ApplicationListener{
-+    public boolean fogEnabled = true;
-     /** These are global variables, for headless access. Cached. */
-     public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
- 
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
 index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..1de9f9267961db96ceb6f405f12508f44e9106cb 100644
 --- a/core/src/mindustry/core/UI.java
@@ -938,85 +924,6 @@ index ea5060298da5e478b234e8d0575ab2ceedb5b6e6..e59bff905f7398b0eb3c780c0cda5a30
                      }
                  }
                  Draw.reset();
-diff --git a/core/src/mindustry/graphics/Drawf.java b/core/src/mindustry/graphics/Drawf.java
-index db7db61dd56a71310f66aabbd9dc4a6d1a23dfd4..47fbc966aa01b76b3bd58d9eeb25a06f1c0e081f 100644
---- a/core/src/mindustry/graphics/Drawf.java
-+++ b/core/src/mindustry/graphics/Drawf.java
-@@ -148,6 +148,13 @@ public class Drawf{
-         Drawf.line(Pal.accent, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);
-     }
- 
-+    public static void limitLineColor(Position start, Position dest, float len1, float len2,Color color){
-+        Tmp.v1.set(dest).sub(start).setLength(len1);
-+        Tmp.v2.set(Tmp.v1).scl(-1f).setLength(len2);
-+
-+        Drawf.line(color, start.getX() + Tmp.v1.x, start.getY() + Tmp.v1.y, dest.getX() + Tmp.v2.x, dest.getY() + Tmp.v2.y);
-+    }
-+
-     public static void dashLineDst(Color color, float x, float y, float x2, float y2){
-         dashLine(color, x, y, x2, y2, (int)(Mathf.dst(x, y, x2, y2) / tilesize * 1.6f));
-     }
-@@ -220,6 +227,32 @@ public class Drawf{
-         Draw.reset();
-     }
- 
-+    public static void target2(float x, float y, float rad, float alpha, Color color){
-+        // target but no border
-+        Lines.stroke(1f);
-+        Draw.color(color, alpha);
-+        Lines.poly(x, y, 4, rad, Time.time * 1.5f);
-+        Lines.spikes(x, y, 3f/7f * rad, 6f/7f * rad, 4, Time.time * 1.5f);
-+        Draw.reset();
-+    }
-+
-+    public static void targetc(float x, float y, float rad, float alpha, Color color){
-+        // target but no border
-+        Lines.stroke(1f);
-+        Draw.color(color, alpha);
-+        Lines.circle(x, y, rad);
-+        Lines.spikes(x, y, 3f/7f * rad, 6f/7f * rad, 4, Time.time * 1.5f);
-+        Draw.reset();
-+    }
-+
-+    public static void targetd(float x, float y, float rad, float alpha, Color color){
-+        // target but no border
-+        Lines.stroke(1f);
-+        Draw.color(color, alpha);
-+        Lines.spikes(x, y, 3f/7f * rad, 6f/7f * rad, 4, Time.time * 1.5f);
-+        Draw.reset();
-+    }
-+
-     /** Sets Draw.z to the text layer, and returns the previous layer. */
-     public static float text(){
-         float z = Draw.z();
-@@ -390,6 +423,27 @@ public class Drawf{
-         Draw.color();
-     }
- 
-+    public static void simpleArrow(float x, float y, float x2, float y2, float length, float radius){
-+        float angle = Angles.angle(x, y, x2, y2);
-+        Tmp.v1.set(x2, y2).sub(x, y).limit(length);
-+        float vx = Tmp.v1.x + x, vy = Tmp.v1.y + y;
-+        Fill.poly(vx, vy, 3, radius, angle);
-+    }
-+
-+    public static void simpleArrow(float x, float y, float x2, float y2, float length, float radius, Color color){
-+        simpleArrow(x, y, x2, y2, length, radius, color,1f);
-+    }
-+
-+    public static void simpleArrow(float x, float y, float x2, float y2, float length, float radius, Color color,float alpha){
-+        float angle = Angles.angle(x, y, x2, y2);
-+        Tmp.v1.set(x2, y2).sub(x, y).limit(length);
-+        float vx = Tmp.v1.x + x, vy = Tmp.v1.y + y;
-+
-+        Draw.color(color,alpha);
-+        Fill.poly(vx, vy, 3, radius, angle);
-+        Draw.color();
-+    }
-+
-     public static void laser(TextureRegion line, TextureRegion edge, float x, float y, float x2, float y2){
-         laser(line, edge, edge, x, y, x2, y2, 1f);
-     }
 diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
 index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..5a245c5b2e1a960ba79122ac7f84c15274086112 100644
 --- a/core/src/mindustry/graphics/OverlayRenderer.java
@@ -2544,10 +2451,10 @@ index 6ef9bb6397a1f91c554e658aea179e312678649b..4d73111b10a23a711154365ee44a56c4
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38e46a2f89 100644
+index 5095be6c1d92f1049829b96a34efabb9854f0e55..0c3e0d9f9d8c2be7568f6f379101dbac648440f5 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-@@ -15,6 +15,12 @@ import arc.scene.ui.layout.*;
+@@ -15,6 +15,11 @@ import arc.scene.ui.layout.*;
  import arc.scene.utils.*;
  import arc.struct.*;
  import arc.util.*;
@@ -2555,12 +2462,11 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
 +import mindustry.core.*;
 +import mindustryX.features.ui.ArcMessageDialog;
 +import mindustry.content.Blocks;
-+import mindustry.content.Planets;
 +import mindustry.content.UnitTypes;
  import mindustry.ctype.*;
  import mindustry.game.*;
  import mindustry.gen.*;
-@@ -22,10 +28,15 @@ import mindustry.graphics.*;
+@@ -22,10 +27,15 @@ import mindustry.graphics.*;
  import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
@@ -2576,11 +2482,11 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
  
  public class SchematicsDialog extends BaseDialog{
      private static final float tagh = 42f;
-@@ -37,9 +48,26 @@ public class SchematicsDialog extends BaseDialog{
+@@ -37,6 +47,13 @@ public class SchematicsDialog extends BaseDialog{
      private Pattern ignoreSymbols = Pattern.compile("[`~!@#$%^&*()\\-_=+{}|;:'\",<.>/?]");
      private Seq<String> tags, selectedTags = new Seq<>();
      private boolean checkedTags;
-+    private String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
++    private final String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
 +
 +    private String surpuloTags = UnitTypes.gamma.emoji(), erekirTags = UnitTypes.emanate.emoji();
 +    private  Seq<String> planetTags = new Seq<String>().add(surpuloTags,erekirTags);
@@ -2590,20 +2496,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
  
      public SchematicsDialog(){
          super("@schematics");
-+        Events.on(EventType.WorldLoadEvent.class, event -> {
-+            selectedTags.remove(erekirTags);
-+            selectedTags.remove(surpuloTags);
-+            if(state.rules.planet == Planets.serpulo){
-+                selectedTags.add(surpuloTags);
-+            }else if(state.rules.planet == Planets.erekir){
-+                selectedTags.add(erekirTags);
-+            }
-+        });
-+
-         Core.assets.load("sprites/schematic-background.png", Texture.class).loaded = t -> t.setWrap(TextureWrap.repeat);
- 
-         tags = Core.settings.getJson("schematic-tags", Seq.class, String.class, Seq::new);
-@@ -47,6 +75,14 @@ public class SchematicsDialog extends BaseDialog{
+@@ -47,6 +64,14 @@ public class SchematicsDialog extends BaseDialog{
          shouldPause = true;
          addCloseButton();
          buttons.button("@schematic.import", Icon.download, this::showImport);
@@ -2618,7 +2511,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
          makeButtonOverlay();
          shown(this::setup);
          onResize(this::setup);
-@@ -103,6 +139,34 @@ public class SchematicsDialog extends BaseDialog{
+@@ -103,6 +128,34 @@ public class SchematicsDialog extends BaseDialog{
              in.button(Icon.pencilSmall, this::showAllTags).size(tagh).pad(2).tooltip("@schematic.edittags");
          }).height(tagh).fillX();
  
@@ -2653,7 +2546,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
          cont.row();
  
          cont.pane(t -> {
-@@ -133,6 +197,9 @@ public class SchematicsDialog extends BaseDialog{
+@@ -133,6 +186,9 @@ public class SchematicsDialog extends BaseDialog{
                      if(selectedTags.any() && !s.labels.containsAll(selectedTags)) continue;
                      //make sure search fits
                      if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
@@ -2663,7 +2556,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
                      if(firstSchematic == null) firstSchematic = s;
  
                      Button[] sel = {null};
-@@ -205,6 +272,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -205,6 +261,11 @@ public class SchematicsDialog extends BaseDialog{
  
              rebuildPane.run();
          }).grow().scrollX(false);
@@ -2675,7 +2568,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
      }
  
      public void showInfo(Schematic schematic){
-@@ -275,15 +347,48 @@ public class SchematicsDialog extends BaseDialog{
+@@ -275,15 +336,48 @@ public class SchematicsDialog extends BaseDialog{
                      t.row();
                      dialog.hide();
                  }
@@ -2729,7 +2622,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
                  }).marginLeft(12f);
              });
          });
-@@ -292,6 +397,85 @@ public class SchematicsDialog extends BaseDialog{
+@@ -292,6 +386,85 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -2815,7 +2708,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
      public void showEdit(Schematic s){
          new BaseDialog("@schematic.edit"){{
              setFillParent(true);
-@@ -572,6 +756,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -572,6 +745,11 @@ public class SchematicsDialog extends BaseDialog{
                      t.button("@schematic.texttag", Icon.add, () -> showNewTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                      t.button("@schematic.icontag", Icon.add, () -> showNewIconTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                  });
@@ -2827,7 +2720,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
  
              };
  
-@@ -580,6 +769,135 @@ public class SchematicsDialog extends BaseDialog{
+@@ -580,6 +758,135 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -2963,7 +2856,7 @@ index 5095be6c1d92f1049829b96a34efabb9854f0e55..a2b042e22e9e31d0882ffb4949393d38
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -793,13 +1111,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -793,13 +1100,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
@@ -4118,7 +4011,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 6517a6bd0fbe18040117962683bc3ea79bd408fc..0b8e579e86669b5cb85b16cc995b1f13b2c84ea1 100644
+index 6517a6bd0fbe18040117962683bc3ea79bd408fc..8d485ec6a1357af30552a5f7f2a22816cbaf2de9 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -368,7 +368,7 @@ public class Block extends UnlockableContent implements Senseable{
@@ -4130,19 +4023,7 @@ index 6517a6bd0fbe18040117962683bc3ea79bd408fc..0b8e579e86669b5cb85b16cc995b1f13
  
      protected TextureRegion[] generatedIcons;
      protected TextureRegion[] editorVariantRegions;
-@@ -498,6 +498,11 @@ public class Block extends UnlockableContent implements Senseable{
-             .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
-     }
- 
-+    public float sumAttribute(@Nullable Attribute attr, Tile tile){
-+        if(attr == null) return 0;
-+        return tile.getLinkedTilesAs(this, tempTiles)
-+                .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
-+    }
-     public TextureRegion getDisplayIcon(Tile tile){
-         return tile.build == null ? uiIcon : tile.build.getDisplayIcon();
-     }
-@@ -554,7 +559,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -554,7 +554,7 @@ public class Block extends UnlockableContent implements Senseable{
              }
          }
  
@@ -4151,7 +4032,7 @@ index 6517a6bd0fbe18040117962683bc3ea79bd408fc..0b8e579e86669b5cb85b16cc995b1f13
              stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
              stats.add(Stat.buildCost, StatValues.items(false, requirements));
          }
-@@ -728,7 +733,12 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -728,7 +728,12 @@ public class Block extends UnlockableContent implements Senseable{
  
      public void drawPlan(BuildPlan plan, Eachable<BuildPlan> list, boolean valid, float alpha){
          Draw.reset();
@@ -4436,7 +4317,7 @@ index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601
          returnItem = null;
          returnCount = 0;
 diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
-index a55bc18a055c74d4e7de3332bd1315beb3c42a63..16ab256b1c5d8ac6c722a9c406dd2b53a480e49a 100644
+index a55bc18a055c74d4e7de3332bd1315beb3c42a63..88dd66b5a79d2b5c65c50724e220fa3c8a6e0f49 100644
 --- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
 +++ b/core/src/mindustry/world/blocks/production/GenericCrafter.java
 @@ -1,5 +1,8 @@
@@ -4448,7 +4329,7 @@ index a55bc18a055c74d4e7de3332bd1315beb3c42a63..16ab256b1c5d8ac6c722a9c406dd2b53
  import arc.graphics.g2d.*;
  import arc.math.*;
  import arc.math.geom.*;
-@@ -12,6 +15,8 @@ import mindustry.entities.units.*;
+@@ -12,11 +15,14 @@ import mindustry.entities.units.*;
  import mindustry.gen.*;
  import mindustry.logic.*;
  import mindustry.type.*;
@@ -4457,7 +4338,13 @@ index a55bc18a055c74d4e7de3332bd1315beb3c42a63..16ab256b1c5d8ac6c722a9c406dd2b53
  import mindustry.world.*;
  import mindustry.world.blocks.liquid.Conduit.*;
  import mindustry.world.draw.*;
-@@ -358,5 +363,29 @@ public class GenericCrafter extends Block{
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -358,5 +364,15 @@ public class GenericCrafter extends Block{
              warmup = read.f();
              if(legacyReadWarmup) read.f();
          }
@@ -4466,25 +4353,11 @@ index a55bc18a055c74d4e7de3332bd1315beb3c42a63..16ab256b1c5d8ac6c722a9c406dd2b53
 +        public void displayBars(Table bars){
 +            super.displayBars(bars);
 +            //bar for shoot cd
-+            bars.add(new Bar(() -> Iconc.crafting + " " + Strings.fixed(progress * 100f, 0)  + " %" + Calwavetimeremain(progress,getProgressIncrease(craftTime)*timeScale*60 / Time.delta),
-+                    () -> Pal.ammo, () -> progress));
++            bars.add(new Bar(() -> Iconc.crafting + " " + Strings.fixed(progress * 100f, 0) + " %"
++            + (getProgressIncrease(craftTime) == 0 ? "" : FormatDefault.duration((1 - progress) / (getProgressIncrease(craftTime) / Time.delta * 60f))),
++            () -> Pal.ammo, () -> progress));
 +            bars.row();
 +        }
-+    }
-+    private String Calwavetimeremain(float progress,float ProgressIncrease){
-+        if(ProgressIncrease == 0f || 1 / ProgressIncrease < 240f){
-+            return "";
-+        }
-+        float time = (1-progress)/ProgressIncrease;
-+
-+        String wavetimeremain = " [orange]~";
-+        int m = ((int)time) / 60;
-+        if (m==0){
-+            return "";
-+        }
-+        wavetimeremain += String.valueOf(m) ;
-+        wavetimeremain += "min";
-+        return wavetimeremain;
      }
  }
 diff --git a/core/src/mindustry/world/blocks/storage/CoreBlock.java b/core/src/mindustry/world/blocks/storage/CoreBlock.java
