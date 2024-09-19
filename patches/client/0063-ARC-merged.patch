@@ -120,7 +120,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |  25 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 227 +++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 228 +++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 ++-
  .../ui/fragments/PlacementFragment.java       | 166 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  93 +++--
@@ -134,7 +134,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 41 files changed, 1998 insertions(+), 242 deletions(-)
+ 41 files changed, 1999 insertions(+), 242 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -1821,7 +1821,7 @@ index e6c38c601c937c3810d3ef44db97ed9547baf176..a29f972b13258b6640464cfa5a387c1c
              unit.x + ex - Angles.trnsx(rot + rotation, 1f),
              unit.y + ey - Angles.trnsy(rot + rotation, 1f),
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index f9ec8feac6e944e76b5e2309da9b78e9d1269348..54aecfe829705b2f0f39743f476fbc8dcf408d93 100644
+index bf50d03c33d9251ce0c7d600beba56ca1a7c578a..0ef9a31c6a59f1e0112027c787f638b3571a828f 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
 @@ -24,6 +24,7 @@ import mindustry.graphics.*;
@@ -3051,7 +3051,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index c84b479b57324153c9f5de05d6d656d2d5e48271..0843d4d9a7d5bd8cbcfcd2c941dc12ede0b10948 100644
+index d8579557ba0378190e5f9ffb3ca0747c9857492c..d323bea5fe786b72efb00827d6aaa86ecc9e6560 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
@@ -3190,18 +3190,19 @@ index c84b479b57324153c9f5de05d6d656d2d5e48271..0843d4d9a7d5bd8cbcfcd2c941dc12ed
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -300,6 +329,10 @@ public class HudFragment{
-                     DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw");
-                     info.row();
-                 }
+@@ -299,6 +328,11 @@ public class HudFragment{
+                 DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw"), ()->DebugUtil.renderDebug);
+                 info.row();
+ 
 +                if (!android){
 +                    info.label(() -> "缩放: " + String.format("%.2f", renderer.getScale())).left().style(Styles.outlineLabel);
 +                    info.row();
 +                }
- 
++
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -910,6 +943,142 @@ public class HudFragment{
+                 }else{
+@@ -908,6 +942,142 @@ public class HudFragment{
          return table;
      }
  
@@ -3344,7 +3345,7 @@ index c84b479b57324153c9f5de05d6d656d2d5e48271..0843d4d9a7d5bd8cbcfcd2c941dc12ed
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -954,7 +1123,45 @@ public class HudFragment{
+@@ -952,7 +1122,45 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){

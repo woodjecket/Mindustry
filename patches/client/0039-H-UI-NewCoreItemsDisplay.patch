@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 4 insertions(+), 7 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 2c674865d350123c3eba5f402dc528b0b94ef210..c84b479b57324153c9f5de05d6d656d2d5e48271 100644
+index 0b3d391dbea4bdd88e1a9635ff8510d476477328..d8579557ba0378190e5f9ffb3ca0747c9857492c 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -30,6 +30,7 @@ import mindustry.ui.*;
@@ -44,7 +44,7 @@ index 2c674865d350123c3eba5f402dc528b0b94ef210..c84b479b57324153c9f5de05d6d656d2
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -333,8 +329,9 @@ public class HudFragment{
+@@ -331,8 +327,9 @@ public class HudFragment{
              t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
  
              t.table(c -> {
