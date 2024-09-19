@@ -22,16 +22,16 @@ way-zer <himc.wicp@gmail.com> on 2024/7/23
 顶点合并等优化已合并到arc上游
 way-zer <himc.wicp@gmail.com> on 2024/8/4
 ---
- core/src/arc/graphics/g2d/MySpriteBatch.java  | 230 ++++++++++++++++++
+ core/src/arc/graphics/g2d/MySpriteBatch.java  | 224 ++++++++++++++++++
  core/src/mindustry/graphics/MultiPacker.java  |   2 +-
- .../world/blocks/logic/LogicDisplay.java      | 174 +++++++------
- 3 files changed, 315 insertions(+), 91 deletions(-)
+ .../world/blocks/logic/LogicDisplay.java      | 174 +++++++-------
+ 3 files changed, 309 insertions(+), 91 deletions(-)
 
 diff --git a/core/src/arc/graphics/g2d/MySpriteBatch.java b/core/src/arc/graphics/g2d/MySpriteBatch.java
-index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f3ced8bb6 100644
+index e2bdb30e190a210f25130c423c853892798e4c28..f0c580f01f0a0014870d1f37b37cbf4eeb4748d6 100644
 --- a/core/src/arc/graphics/g2d/MySpriteBatch.java
 +++ b/core/src/arc/graphics/g2d/MySpriteBatch.java
-@@ -1,10 +1,29 @@
+@@ -1,10 +1,27 @@
  package arc.graphics.g2d;
  
  import arc.graphics.*;
@@ -43,8 +43,6 @@ index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f
  //MDTX: add some DebugUtil count.
 +//MDTX(WayZer): renderSort
  public class MySpriteBatch extends SpriteBatch{
-+    private static final boolean DEBUG = false;
-+    private static final int PRIME1 = 0xbe1f14b1;
 +    private static final int PRIME2 = 0xb4b82e39;
 +    int[] extraZ = new int[10000];
 +    //增加小的delta，来保持原来的前后顺序
@@ -61,7 +59,7 @@ index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f
      @Override
      protected void flush(){
          DebugUtil.lastFlushCount++;
-@@ -23,4 +42,215 @@ public class MySpriteBatch extends SpriteBatch{
+@@ -23,4 +40,211 @@ public class MySpriteBatch extends SpriteBatch{
          DebugUtil.lastSwitchTexture++;
          super.switchTexture(texture);
      }
@@ -76,11 +74,7 @@ index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f
 +    protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
 +        super.draw(texture, spriteVertices, offset, count);
 +        if(sort && !flushing && RenderExt.renderSort){
-+            int h = texture.hashCode();
-+            if(DEBUG){
-+                h = (h + hashZ) * PRIME1;
-+                h = h ^ (h >>> 16);
-+            }
++            int h = texture.hashCode() + hashZ;
 +            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
 +        }
 +    }
@@ -89,7 +83,7 @@ index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f
 +    protected void draw(Runnable request){
 +        super.draw(request);
 +        if(sort && !flushing && RenderExt.renderSort){
-+            int h = DEBUG ? hashZ : 0;
++            int h = hashZ;
 +            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
 +        }
 +    }
@@ -100,7 +94,7 @@ index e2bdb30e190a210f25130c423c853892798e4c28..97228b7fadd15f0491a50849bfb19f4f
 +            super.sortRequests();
 +            return;
 +        }
-+        hashZ = DEBUG ? Float.floatToIntBits((float)Math.random()) : 0;
++        hashZ = DebugUtil.renderDebug ? Float.floatToIntBits((float)Math.random()) : 0;
 +
 +        int numRequests = this.numRequests;
 +        int[] arr = this.requestZ, extraZ = this.extraZ;

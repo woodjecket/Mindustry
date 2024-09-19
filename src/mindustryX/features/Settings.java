@@ -101,6 +101,7 @@ public class Settings{
             c.checkPref("renderMerge", true);
             c.checkPref("renderSort", false);
             c.checkPref("reliableSync", false);
+            c.checkPref("renderDebug", false);
             c.checkPref("limitupdate", false, v -> {
                 if(!v) return;
                 settings.put("limitupdate", false);

@@ -3051,7 +3051,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 6a9359568e73967b34be82618ec7a95583e5cf6e..f6439cf1961be9380ff63fd2db8417759a209a5b 100644
+index c84b479b57324153c9f5de05d6d656d2d5e48271..0843d4d9a7d5bd8cbcfcd2c941dc12ede0b10948 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;
@@ -3190,10 +3190,10 @@ index 6a9359568e73967b34be82618ec7a95583e5cf6e..f6439cf1961be9380ff63fd2db841775
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -298,6 +327,10 @@ public class HudFragment{
-                 info.label(() -> Strings.format("D/V/T/F @/@/@/@",
-                 DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw");
-                 info.row();
+@@ -300,6 +329,10 @@ public class HudFragment{
+                     DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw");
+                     info.row();
+                 }
 +                if (!android){
 +                    info.label(() -> "缩放: " + String.format("%.2f", renderer.getScale())).left().style(Styles.outlineLabel);
 +                    info.row();
@@ -3201,7 +3201,7 @@ index 6a9359568e73967b34be82618ec7a95583e5cf6e..f6439cf1961be9380ff63fd2db841775
  
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
-@@ -908,6 +941,142 @@ public class HudFragment{
+@@ -910,6 +943,142 @@ public class HudFragment{
          return table;
      }
  
@@ -3344,7 +3344,7 @@ index 6a9359568e73967b34be82618ec7a95583e5cf6e..f6439cf1961be9380ff63fd2db841775
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -952,7 +1121,45 @@ public class HudFragment{
+@@ -954,7 +1123,45 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){
