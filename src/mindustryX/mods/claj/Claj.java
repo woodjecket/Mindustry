@@ -21,11 +21,8 @@ public class Claj extends Plugin{
         buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show);
 
         var pausedDialog = Vars.ui.paused;
-        pausedDialog.shown(() -> {
-            if(!Vars.net.server()) return;
-            pausedDialog.cont.row()
-            .button("管理claj房间", Icon.planet, () -> manageRooms.show()).name("ClajInfo")
-            .size(0, 60).colspan(pausedDialog.cont.getColumns()).fill();
-        });
+        pausedDialog.shown(() -> pausedDialog.cont.row()
+        .collapser((t) -> t.button("管理claj房间", Icon.planet, () -> manageRooms.show()).growX().fillY(), () -> Vars.net.server())
+        .name("ClajInfo").size(0, 60).colspan(pausedDialog.cont.getColumns()).fill().row());
     }
 }

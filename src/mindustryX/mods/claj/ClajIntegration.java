@@ -1,34 +1,30 @@
 package mindustryX.mods.claj;
 
-import arc.Events;
-import arc.func.Cons;
-import arc.net.Client;
-import arc.net.Connection;
-import arc.net.DcReason;
-import arc.net.NetListener;
-import arc.struct.Seq;
-import arc.util.Reflect;
-import arc.util.Threads;
-import mindustry.Vars;
-import mindustry.game.EventType;
-import mindustry.game.EventType.ClientPreConnectEvent;
-import mindustry.gen.Call;
-import mindustry.io.TypeIO;
-import mindustry.net.ArcNetProvider.PacketSerializer;
+import arc.*;
+import arc.func.*;
+import arc.net.*;
+import arc.struct.*;
+import arc.util.*;
+import mindustry.*;
+import mindustry.game.*;
+import mindustry.game.EventType.*;
+import mindustry.gen.*;
+import mindustry.io.*;
+import mindustry.net.ArcNetProvider.*;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.*;
+import java.nio.*;
 
-public class ClajIntegration {
+public class ClajIntegration{
     private static final Seq<Client> clients = new Seq<>();
     private static NetListener serverListener = null;
 
-    public static void load() {
+    public static void load(){
         Events.run(EventType.HostEvent.class, ClajIntegration::clear);
         Events.run(ClientPreConnectEvent.class, ClajIntegration::clear);
 
         var provider = Reflect.get(Vars.net, "provider");
-        if (Vars.steam) provider = Reflect.get(provider, "provider"); // thanks
+        if(Vars.steam) provider = Reflect.get(provider, "provider"); // thanks
 
 
         var server = Reflect.get(provider, "server");
@@ -37,36 +33,36 @@ public class ClajIntegration {
 
 // region room management
 
-    public static Client createRoom(String ip, int port, Cons<String> link, Runnable disconnected) throws IOException {
+    public static Client createRoom(String ip, int port, Cons<String> link, Runnable disconnected) throws IOException{
         var client = new Client(8192, 8192, new Serializer());
         Threads.daemon("CLaJ Room", client);
 
-        client.addListener(new NetListener() {
+        client.addListener(new NetListener(){
             /** Used when creating redirectors.  */
             String key = null;
 
             @Override
-            public void connected(Connection connection) {
+            public void connected(Connection connection){
                 client.sendTCP("new");
             }
 
             @Override
-            public void disconnected(Connection connection, DcReason reason) {
-                disconnected.run();
+            public void disconnected(Connection connection, DcReason reason){
+                Core.app.post(disconnected);
             }
 
             @Override
-            public void received(Connection connection, Object object) {
-                if (object instanceof String s) {
-                    if (s.startsWith("CLaJ")) {
+            public void received(Connection connection, Object object){
+                if(object instanceof String s){
+                    if(s.startsWith("CLaJ")){
                         key = s;
                         link.get(key + '#' + ip + ':' + port);
-                    } else if (s.equals("new")) {
-                        try {
+                    }else if(s.equals("new")){
+                        try{
                             createRedirector(ip, port, key);
-                        } catch (Exception ignored) {
+                        }catch(Exception ignored){
                         }
-                    } else Call.sendMessage(s);
+                    }else Call.sendMessage(s);
                 }
             }
         });
@@ -77,14 +73,14 @@ public class ClajIntegration {
         return client;
     }
 
-    public static void createRedirector(String ip, int port, String key) throws IOException {
+    public static void createRedirector(String ip, int port, String key) throws IOException{
         var client = new Client(8192, 8192, new Serializer());
         Threads.daemon("CLaJ Redirector", client);
 
         client.addListener(serverListener);
-        client.addListener(new NetListener() {
+        client.addListener(new NetListener(){
             @Override
-            public void connected(Connection connection) {
+            public void connected(Connection connection){
                 client.sendTCP("host" + key);
             }
         });
@@ -93,13 +89,13 @@ public class ClajIntegration {
         clients.add(client);
     }
 
-    public static void joinRoom(String ip, int port, String key, Runnable success) {
+    public static void joinRoom(String ip, int port, String key, Runnable success){
         Vars.logic.reset();
         Vars.net.reset();
 
         Vars.netClient.beginConnecting();
         Vars.net.connect(ip, port, () -> {
-            if (!Vars.net.client()) return;
+            if(!Vars.net.client()) return;
             success.run();
 
             var buffer = ByteBuffer.allocate(8192);
@@ -111,7 +107,7 @@ public class ClajIntegration {
         });
     }
 
-    private static void clear() {
+    private static void clear(){
         clients.each(Client::close);
         clients.clear();
     }
@@ -119,18 +115,18 @@ public class ClajIntegration {
 // endregion
 
 
-    static class Serializer extends PacketSerializer {
+    static class Serializer extends PacketSerializer{
         public static final byte linkID = -3;
 
-        public void write(ByteBuffer buffer, Object object) {
-            if (object instanceof String s) {
+        public void write(ByteBuffer buffer, Object object){
+            if(object instanceof String s){
                 buffer.put(linkID);
                 TypeIO.writeString(buffer, s);
-            } else super.write(buffer, object);
+            }else super.write(buffer, object);
         }
 
-        public Object read(ByteBuffer buffer) {
-            if (buffer.get() == linkID) return TypeIO.readString(buffer);
+        public Object read(ByteBuffer buffer){
+            if(buffer.get() == linkID) return TypeIO.readString(buffer);
 
             buffer.position(buffer.position() - 1);
             return super.read(buffer);
