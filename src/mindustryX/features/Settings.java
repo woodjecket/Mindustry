@@ -41,6 +41,7 @@ public class Settings{
             c.checkPref("arcSpecificTable", true);
             c.checkPref("logicSupport", true);
             c.checkPref("powerStatistic", true);
+            c.checkPref("showOtherTeamResource", false);
             c.checkPref("showQuickToolTable", true);
             c.sliderPref("AuxiliaryTable", 0, 0, 3, 1, s -> switch(s){
                 case 0 -> "关闭";

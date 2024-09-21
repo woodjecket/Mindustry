@@ -168,7 +168,6 @@ public class ArcOld{
             c.checkPref("overrideSkipWave", false);
             c.checkPref("forceConfigInventory", false);
             c.addCategory("arcStrongCheat");
-            c.checkPref("showOtherTeamResource", false);
             c.checkPref("showOtherTeamState", false);
             c.checkPref("playerNeedShooting", false);
         }));

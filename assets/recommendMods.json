@@ -3,7 +3,7 @@
   "modRecommend": [
     {
       "repo": "eb-wilson/toomanyitems",
-      "reason": "Too Many Items(TMI)类似Minecraft的JEL物品管理器\n提供了检索物品、单位、方块、电力、热量的用途以及获取途径"
+      "reason": "Too Many Items(TMI)类似Minecraft的JEI物品管理器\n提供了检索物品、单位、方块、电力、热量的用途以及获取途径"
     },
     {
       "repo": "mnemotechnician/new-console",
