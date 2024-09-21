@@ -14,10 +14,10 @@ Content-Transfer-Encoding: 8bit
  3 files changed, 165 insertions(+), 85 deletions(-)
 
 diff --git a/core/src/mindustry/entities/Units.java b/core/src/mindustry/entities/Units.java
-index c0f02cb196e4988e442df1520daec9c4e477ed72..b9e287341dc613073a72bd8ced6a78e4d07d9748 100644
+index d3346510927f3b567c93f9998ec2ab18b3d6b344..219b36a19a6930cd82d78f5193121b9d62b90a1e 100644
 --- a/core/src/mindustry/entities/Units.java
 +++ b/core/src/mindustry/entities/Units.java
-@@ -270,6 +270,10 @@ public class Units{
+@@ -274,6 +274,10 @@ public class Units{
          }
      }
  
@@ -28,7 +28,7 @@ index c0f02cb196e4988e442df1520daec9c4e477ed72..b9e287341dc613073a72bd8ced6a78e4
      /** Returns the closest enemy of this team. Filter by predicate. */
      public static Unit closestEnemy(Team team, float x, float y, float range, Boolf<Unit> predicate){
          if(team == Team.derelict) return null;
-@@ -278,11 +282,16 @@ public class Units{
+@@ -282,11 +286,16 @@ public class Units{
          cdist = 0f;
          cpriority = -99999f;
  
@@ -48,7 +48,7 @@ index c0f02cb196e4988e442df1520daec9c4e477ed72..b9e287341dc613073a72bd8ced6a78e4
                  result = e;
                  cdist = dst2;
                  cpriority = e.type.targetPriority;
-@@ -300,10 +309,16 @@ public class Units{
+@@ -304,10 +313,16 @@ public class Units{
          cdist = 0f;
          cpriority = -99999f;
  

@@ -403,10 +403,10 @@ index 834d4c239aa261afd9828f0b4d17a97fb8809621..fee7e8c71fc07f8cbea36997afc8a4fd
  
      String ip(){
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2bfe565c2 100644
+index 66fe7933a28522da38a23efd1bada185d2beebc3..ad7b9c31861e920549e5bf4f0106a7e5882cf93a 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
-@@ -116,9 +116,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -117,9 +117,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      private WidgetGroup group = new WidgetGroup();
  
      private final Eachable<BuildPlan> allPlans = cons -> {
@@ -417,7 +417,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
          selectPlans.each(cons);
          linePlans.each(cons);
      };
-@@ -238,6 +236,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -239,6 +237,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      public static void commandUnits(Player player, int[] unitIds, @Nullable Building buildTarget, @Nullable Unit unitTarget, @Nullable Vec2 posTarget, boolean queueCommand, boolean finalBatch){
          if(player == null || unitIds == null) return;
  
@@ -427,7 +427,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
          if(net.server() && !netServer.admins.allowAction(player, ActionType.commandUnits, event -> {
              event.unitIDs = unitIds;
          })){
-@@ -259,7 +260,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -260,7 +261,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  }
  
                  if(teamTarget != null && teamTarget.team() != player.team() &&
@@ -436,7 +436,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
  
                      anyCommandedTarget = true;
                      if(queueCommand){
-@@ -281,7 +282,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -282,7 +283,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  if(ai.commandQueue.size <= 0){
                      ai.group = null;
                  }
@@ -445,7 +445,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
                  //remove when other player command
                  if(!headless && player != Vars.player){
                      control.input.selectedUnits.remove(unit);
-@@ -488,6 +489,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -489,6 +490,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      @Remote(targets = Loc.server, called = Loc.server)
      public static void pickedUnitPayload(Unit unit, Unit target){
@@ -454,7 +454,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
          if(target != null && unit instanceof Payloadc pay){
              pay.pickup(target);
          }else if(target != null){
-@@ -596,7 +599,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -597,7 +600,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build == null) return;
  
          if(net.server() && (!Units.canInteract(player, build) ||
@@ -463,7 +463,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
              throw new ValidateException(player, "Player cannot rotate a block.");
          }
  
-@@ -615,7 +618,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -616,7 +619,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          if(build == null) return;
  
          if(net.server() && (!Units.canInteract(player, build) ||
@@ -472,7 +472,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
  
              if(player.con != null){
                  var packet = new TileConfigCallPacket(); //undo the config on the client
-@@ -694,7 +697,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -695,7 +698,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              player.unit(unit);
  
@@ -481,7 +481,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
                  if(before.spawnedByCore){
                      unit.dockedType = before.type;
                  }else if(before.dockedType != null && before.dockedType.coreUnitDock){
-@@ -809,9 +812,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -810,9 +813,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          }
  
          playerPlanTree.clear();
@@ -492,7 +492,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
  
          player.typing = ui.chatfrag.shown();
  
-@@ -823,7 +824,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -824,7 +825,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              player.unit().updateBuilding(isBuilding);
          }
  
@@ -501,7 +501,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
              player.unit().type.weapons.first().noAmmoSound.at(player.unit());
          }
  
-@@ -1672,9 +1673,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1715,9 +1716,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      boolean canMine(Tile tile){
          return !Core.scene.hasMouse()
@@ -514,7 +514,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
      }
  
      /** Returns the tile at the specified MOUSE coordinates. */
-@@ -1840,7 +1841,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1883,7 +1884,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public boolean canShoot(){
          return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
@@ -523,7 +523,7 @@ index 6853502541a9fd04822a06659f39ffccc22cfd97..5079c0afc523f36b870527b580c6b4f2
      }
  
      public boolean onConfigurable(){
-@@ -1866,7 +1867,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1909,7 +1910,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          ItemStack stack = player.unit().stack;
  
          if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
@@ -622,7 +622,7 @@ index ce16f8d91596a937835b7ab55977be5ea490df76..2d0fc1bec1fb644a44e4b38e2cdab671
                      }
  
 diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
-index c02ceb4ae69d9f7e5bea93df94c546d7a06cd1e2..70d1543c366b4eeef80c67f4eaeb05643c93451e 100644
+index 5be1d5440363bc604373ea79bf46d9fa05712645..8380ca2a2c9f66feaa646fbc5682a07f30b0df80 100644
 --- a/core/src/mindustry/io/TypeIO.java
 +++ b/core/src/mindustry/io/TypeIO.java
 @@ -279,7 +279,7 @@ public class TypeIO{
@@ -705,7 +705,7 @@ index 77d333511979770e66f834a16267bc45674fb9fb..75528b9923e9128933494bf383e34093
          generator(() -> control.input.block == Blocks.combustionGenerator, () -> ui.hints.placedBlocks.contains(Blocks.combustionGenerator)),
          rebuildSelect(() -> state.rules.defaultTeam.data().plans.size >= 10, () -> control.input.isRebuildSelecting()),
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 70a1d1527966d34cef0fbc2b2f5dd8a4e9f67817..23d4ad03c71131265f82478a0285110cdf71059d 100644
+index cf7a2866b5daad272d599f067b62b26c10062550..54d2d828c1979d30a7f4dd711392734de61208db 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -767,7 +767,7 @@ public class HudFragment{

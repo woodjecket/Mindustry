@@ -8,7 +8,7 @@ Subject: [PATCH] OC: SDL_SetHint SDL_WINDOWS_DPI_SCALING
  1 file changed, 1 insertion(+)
 
 diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
-index cc0fc736535acdcf5a786b551a7a40a4c62cf431..a09150e573d939ee1420bf34acb23098cf4db56e 100644
+index eba453ade66d5e72f44726f64a28a0577ef6ef87..373583866be52c4cd80e096d8124972947a914b8 100644
 --- a/desktop/src/mindustry/desktop/DesktopLauncher.java
 +++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
 @@ -70,6 +70,7 @@ public class DesktopLauncher extends ClientLauncher{

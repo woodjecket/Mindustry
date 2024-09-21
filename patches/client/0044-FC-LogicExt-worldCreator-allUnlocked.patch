@@ -61,15 +61,16 @@ index e8ffe187781f3bc5624e48a42c53aae2adc71713..efc8530fbdb5837cb14d4a0e80de8e8f
  
              if(array.size == 0) continue;
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f5373ff112f1 100644
+index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87c76ad399 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
-@@ -24,12 +24,15 @@ import mindustry.input.*;
+@@ -24,13 +24,16 @@ import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.world.*;
 +import mindustry.world.blocks.*;
  import mindustry.world.blocks.ConstructBlock.*;
+ import mindustry.world.meta.*;
 +import mindustryX.features.*;
  
  import static mindustry.Vars.*;
@@ -80,7 +81,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
  
      public Category currentCategory = Category.distribution;
  
-@@ -106,6 +109,10 @@ public class PlacementFragment{
+@@ -107,6 +110,10 @@ public class PlacementFragment{
                  if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
                  if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
              }
@@ -91,7 +92,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
          });
      }
  
-@@ -128,6 +135,27 @@ public class PlacementFragment{
+@@ -129,6 +136,27 @@ public class PlacementFragment{
          if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
              var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
  
@@ -119,7 +120,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
              //can't middle click buildings in fog
              if(build != null && build.inFogTo(player.team())){
                  build = null;
-@@ -242,6 +270,7 @@ public class PlacementFragment{
+@@ -243,6 +271,7 @@ public class PlacementFragment{
      }
  
      public void build(Group parent){
@@ -127,7 +128,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
          parent.fill(full -> {
              toggler = full;
              full.bottom().right().visible(() -> ui.hudfrag.shown);
-@@ -260,6 +289,7 @@ public class PlacementFragment{
+@@ -261,6 +290,7 @@ public class PlacementFragment{
  
                      for(Block block : getUnlockedByCategory(currentCategory)){
                          if(!unlocked(block)) continue;
@@ -135,7 +136,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
                          if(index++ % rowWidth == 0){
                              blockTable.row();
                          }
-@@ -700,7 +730,7 @@ public class PlacementFragment{
+@@ -705,7 +735,7 @@ public class PlacementFragment{
      }
  
      boolean unlocked(Block block){
@@ -145,7 +146,7 @@ index 8bbc475022a8a73191f3f64ab6605088eaf4a9fe..f3e80f7394b03c141052c9f8f8b4f537
      }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 529e78fee44bd40ae281f46ea7302755d1f67e3f..6517a6bd0fbe18040117962683bc3ea79bd408fc 100644
+index 836b62b8125945c08f3e7944199a86c67712c7d8..94403ec80794d32a13371c421a03a86f5fc1ea3b 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -907,11 +907,11 @@ public class Block extends UnlockableContent implements Senseable{

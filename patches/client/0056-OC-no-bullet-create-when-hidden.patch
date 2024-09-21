@@ -29,10 +29,10 @@ index 160a45d8d245cdf0fe60baaa1c92ca135bf53a5c..aabfd4f3750978651e912a2dac5ad651
          if(ignoreSpawnAngle) angle = 0;
          if(spawnUnit != null){
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index f9ec8feac6e944e76b5e2309da9b78e9d1269348..bf50d03c33d9251ce0c7d600beba56ca1a7c578a 100644
+index b30c84d1a15087dc088d418bba5322abcca40ca0..4a48c94e5c7e64ad6088763b49ee46ce89c350cf 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
-@@ -525,7 +525,7 @@ public class Weapon implements Cloneable{
+@@ -523,7 +523,7 @@ public class Weapon implements Cloneable{
  
      //override to do special things to a bullet after spawning
      protected void handleBullet(Unit unit, WeaponMount mount, Bullet bullet){

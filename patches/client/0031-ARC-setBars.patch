@@ -30,7 +30,7 @@ Subject: [PATCH] ARC setBars
  23 files changed, 120 insertions(+), 41 deletions(-)
 
 diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
-index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4733b1bb3 100644
+index 0af8f3377c35ae3c105e18ffcfa15cb27de84a55..96b532f848fd85f5471f29a8f37d25542333f972 100644
 --- a/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 +++ b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 @@ -13,6 +13,7 @@ import mindustry.gen.*;
@@ -50,7 +50,7 @@ index 820255f6028e91d1a11ec7dbbee4a796e4d917a8..7c938a53c6fb4c60e7954fa24ec709f4
      }
  }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index cd7c4b23817475b8b60dc8e877efc420077ac8a8..529e78fee44bd40ae281f46ea7302755d1f67e3f 100644
+index f1bf018edaf87adc9472dc3fb303f0766f9ff662..836b62b8125945c08f3e7944199a86c67712c7d8 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
@@ -109,10 +109,10 @@ index cd7c4b23817475b8b60dc8e877efc420077ac8a8..529e78fee44bd40ae281f46ea7302755
                  () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
              );
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index a562d29a519aadaadfcbd3de00e9c20340bd40f1..46956f7db1e3dd6b8e51e46432a0f052910bab2c 100644
+index 9209741524bde5648c7c9c454f5c54387b0fd410..ca12743b5a353709be7519875ff83db23daa0462 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-@@ -22,6 +22,7 @@ import mindustry.world.*;
+@@ -23,6 +23,7 @@ import mindustry.world.blocks.*;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
  import mindustryX.features.*;
@@ -120,7 +120,7 @@ index a562d29a519aadaadfcbd3de00e9c20340bd40f1..46956f7db1e3dd6b8e51e46432a0f052
  
  import static mindustry.Vars.*;
  
-@@ -84,7 +85,11 @@ public class ForceProjector extends Block{
+@@ -87,7 +88,11 @@ public class ForceProjector extends Block{
      @Override
      public void setBars(){
          super.setBars();
@@ -264,7 +264,7 @@ index 92038694598090f098af6ac10f41c286e195e0d7..6b692dea2d5098c18a6632efb4b2fec0
      }
  }
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index cf350df9ea21f3654672c99a70c5c9f2ea439413..f51c1cb0e700f473d7eef816fcc08b5a6f623767 100644
+index e9f5331bbef3b2110eeeed5934ec10b5f5fc9e12..4939b1dd78bf5c402d2a59acbe0f254dcc848beb 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -7,6 +7,7 @@ import arc.graphics.*;
@@ -275,7 +275,7 @@ index cf350df9ea21f3654672c99a70c5c9f2ea439413..f51c1cb0e700f473d7eef816fcc08b5a
  import arc.struct.*;
  import arc.util.*;
  import arc.util.io.*;
-@@ -678,6 +679,14 @@ public class Turret extends ReloadTurret{
+@@ -676,6 +677,14 @@ public class Turret extends ReloadTurret{
              rotation = oldRot;
              reloadCounter = oldReload;
          }
@@ -341,7 +341,7 @@ index b2bcd8ab2dccb95fef69b2b643442a25e8ab8141..f04e9b3f2ebdebf0857e7e7ed715755c
  
      public class HeatProducerBuild extends GenericCrafterBuild implements HeatBlock{
 diff --git a/core/src/mindustry/world/blocks/payloads/BlockProducer.java b/core/src/mindustry/world/blocks/payloads/BlockProducer.java
-index e5eccb570f089aabf8776016a354ce687b511e11..7cdacba72edbd71ba8e40bd93730ad3422f00edf 100644
+index 2bc66e0e1ffa38bf9854c7c32ad52f86ad197a4c..b3e70bb1ccae8a98b5d02e229097aabca3682ef6 100644
 --- a/core/src/mindustry/world/blocks/payloads/BlockProducer.java
 +++ b/core/src/mindustry/world/blocks/payloads/BlockProducer.java
 @@ -67,7 +67,10 @@ public abstract class BlockProducer extends PayloadBlock{
@@ -354,7 +354,7 @@ index e5eccb570f089aabf8776016a354ce687b511e11..7cdacba72edbd71ba8e40bd93730ad34
 +                        () -> Pal.ammo, () -> entity.recipe() == null ? 0f : (entity.progress / entity.recipe().buildCost))
 +            );
      }
-     
+ 
      public abstract class BlockProducerBuild extends PayloadBlockBuild<BuildPayload>{
 diff --git a/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java b/core/src/mindustry/world/blocks/payloads/PayloadDeconstructor.java
 index d2586a4e2223241601e187bce1da9a8edb2e9f21..6b271a019e53d91dc84c24c657143285edd026d4 100644
@@ -499,7 +499,7 @@ index f51b9cda1ffeefdb689ffc64144669b737a03b3d..575d0d5f08ef4e9b7bb5fa277e5dd5c0
      public void drawPlanConfig(BuildPlan plan, Eachable<BuildPlan> list){
          drawPlanConfigCenter(plan, plan.config, "center", true);
 diff --git a/core/src/mindustry/world/blocks/units/Reconstructor.java b/core/src/mindustry/world/blocks/units/Reconstructor.java
-index 25b6e72226dcd7403326f503aa210ec3766a3831..81f9c6c99e79fef6f42dcaf7314309d500edfa7e 100644
+index f0448063a416b8e94051762f0cd345397983fcac..6ac2aa76340dc546b7859b2a847f5c132d6c7060 100644
 --- a/core/src/mindustry/world/blocks/units/Reconstructor.java
 +++ b/core/src/mindustry/world/blocks/units/Reconstructor.java
 @@ -62,7 +62,11 @@ public class Reconstructor extends UnitBlock{
@@ -516,7 +516,7 @@ index 25b6e72226dcd7403326f503aa210ec3766a3831..81f9c6c99e79fef6f42dcaf7314309d5
          new Bar(
              () -> e.unit() == null ? "[lightgray]" + Iconc.cancel :
 diff --git a/core/src/mindustry/world/blocks/units/UnitAssembler.java b/core/src/mindustry/world/blocks/units/UnitAssembler.java
-index 2d2a40115e383eca8ab3c33226054c9c7772f64a..3dfd6208c237a8b89de69ce862c47ac78f7c857f 100644
+index aab15b2b17c6b82af48ead9b31a0a0956f3bb0f1..f0aae8beef7f2e67daed50ebbc21dc235e9419c8 100644
 --- a/core/src/mindustry/world/blocks/units/UnitAssembler.java
 +++ b/core/src/mindustry/world/blocks/units/UnitAssembler.java
 @@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;
@@ -540,7 +540,7 @@ index 2d2a40115e383eca8ab3c33226054c9c7772f64a..3dfd6208c237a8b89de69ce862c47ac7
          addBar("units", (UnitAssemblerBuild e) ->
              new Bar(() ->
 diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
-index b89d945c65fc20339d0433a0a2125b8544ceaca1..fab08595bf27b4d57c23fb6137a425379b001a11 100644
+index 7b908922c86a390f36c5623bf259d821678e95af..95480fadc53b127f0c62fb69485af60f306b510c 100644
 --- a/core/src/mindustry/world/blocks/units/UnitFactory.java
 +++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
 @@ -84,7 +84,9 @@ public class UnitFactory extends UnitBlock{

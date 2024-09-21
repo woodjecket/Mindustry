@@ -8,7 +8,7 @@ Subject: [PATCH] H: InternalMods
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
-index 9fa83c39eed59a3b4b7a8f973ec45f8376f2adf6..7268b78aa02b0571246593310df60cc6e3f5be9e 100644
+index bfd27e60916791de824be0768c299493125f0834..e22e10f6f31d2b777d29b04c42c09ff49f68b3c8 100644
 --- a/core/src/mindustry/mod/Mods.java
 +++ b/core/src/mindustry/mod/Mods.java
 @@ -449,7 +449,7 @@ public class Mods implements Loadable{

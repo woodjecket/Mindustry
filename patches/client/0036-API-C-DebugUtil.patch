@@ -62,7 +62,7 @@ index 4f88b9fd412f09073bdb1e9aff277650a4bbde09..f44dceb09dfef63bd11d3b54a75d0183
          assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
  
 diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
-index d1c7c5ca602c6c765cc62c9e2f0b384c3ad0a254..b640803511bcae93b5c8d8c71ffdc23b4292e8c6 100644
+index bbf4d7f3edd86db0c42e821ee638453fe7c04bd4..c2473771010f62dabb6bd10d1da1b9381a7243c5 100644
 --- a/core/src/mindustry/core/Logic.java
 +++ b/core/src/mindustry/core/Logic.java
 @@ -16,6 +16,7 @@ import mindustry.type.*;
@@ -90,7 +90,7 @@ index d1c7c5ca602c6c765cc62c9e2f0b384c3ad0a254..b640803511bcae93b5c8d8c71ffdc23b
  
      /** @return whether the wave timer is paused due to enemies */
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 23d4ad03c71131265f82478a0285110cdf71059d..d13458daa505cb321dfb02b173cfd4ad6b3f4eb5 100644
+index 54d2d828c1979d30a7f4dd711392734de61208db..e7b350ba963f3765ca1a19d6077e7650bd19b282 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -29,6 +29,7 @@ import mindustry.type.*;

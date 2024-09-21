@@ -5,14 +5,14 @@ Subject: [PATCH] F: compatibility for old mixed tech
 
 ---
  core/src/mindustry/game/Rules.java     | 5 +++++
- core/src/mindustry/io/SaveVersion.java | 6 ++++++
- 2 files changed, 11 insertions(+)
+ core/src/mindustry/io/SaveVersion.java | 7 +++++++
+ 2 files changed, 12 insertions(+)
 
 diff --git a/core/src/mindustry/game/Rules.java b/core/src/mindustry/game/Rules.java
-index 7bee6a6e681b1eeeca40453726cc02ce599ea257..d7de57d7d1c126833c10fe363138b46c00cf1c6b 100644
+index 37632948b02ad5e3b13b784d7d35b2c128652074..adeffb027c3a3675676837afbf93b87528db4ba7 100644
 --- a/core/src/mindustry/game/Rules.java
 +++ b/core/src/mindustry/game/Rules.java
-@@ -155,6 +155,11 @@ public class Rules{
+@@ -161,6 +161,11 @@ public class Rules{
      public ObjectSet<Block> revealedBlocks = new ObjectSet<>();
      /** Unlocked content names. Only used in multiplayer when the campaign is enabled. */
      public ObjectSet<String> researched = new ObjectSet<>();
@@ -25,10 +25,18 @@ index 7bee6a6e681b1eeeca40453726cc02ce599ea257..d7de57d7d1c126833c10fe363138b46c
      public MapObjectives objectives = new MapObjectives();
      /** Flags set by objectives. Used in world processors. */
 diff --git a/core/src/mindustry/io/SaveVersion.java b/core/src/mindustry/io/SaveVersion.java
-index ca7a5f4c9ee1997adff2efe5253331b25e1e7ea0..7a3cb81e0ac1932262f9d5d9e18295b7ff7a4323 100644
+index ca7a5f4c9ee1997adff2efe5253331b25e1e7ea0..a97fedc2d9f1f019cdeb94955b617631a7007a52 100644
 --- a/core/src/mindustry/io/SaveVersion.java
 +++ b/core/src/mindustry/io/SaveVersion.java
-@@ -171,6 +171,12 @@ public abstract class SaveVersion extends SaveFileReader{
+@@ -152,6 +152,7 @@ public abstract class SaveVersion extends SaveFileReader{
+         )));
+     }
+ 
++    @SuppressWarnings("deprecation")
+     public void readMeta(DataInput stream, WorldContext context) throws IOException{
+         StringMap map = readStringMap(stream);
+ 
+@@ -171,6 +172,12 @@ public abstract class SaveVersion extends SaveFileReader{
              }
          }
  

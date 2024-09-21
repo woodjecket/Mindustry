@@ -58,7 +58,7 @@ index 079379178548b8c3fc9257668f85c3bf9935c9cc..d57060fff7ec12b93198dca4b447ca68
      duplicatesStrategy = 'exclude'
  
 diff --git a/server/src/mindustry/server/ServerLauncher.java b/server/src/mindustry/server/ServerLauncher.java
-index 1799c999b2affdc0de392841212edc1f544e4751..81683e05cc3f38d943ae94f00621da01e09a1f31 100644
+index 0f23c39ad937d6ead6e3657eb57a0c725ec84b56..c4a926ed2a8f6dacfc8f8787f75130247ef507dc 100644
 --- a/server/src/mindustry/server/ServerLauncher.java
 +++ b/server/src/mindustry/server/ServerLauncher.java
 @@ -41,7 +41,7 @@ public class ServerLauncher implements ApplicationListener{

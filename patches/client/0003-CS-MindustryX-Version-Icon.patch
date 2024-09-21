@@ -93,7 +93,7 @@ index 6dfb14b6bb9401ec083a0f6994ed9bab8b303c97..a68dd5cd58f7f012e3dd27750ae970b9
      processResources.configure {
          dependsOn(generateLocales, generateBasePartNames, writeVersion)
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index e7bca60cd616dbf699329909fc67c37d92e335df..d7756c3df025ba0e76882f656501d7d560c87114 100644
+index 7531b849b35dacbfcc188112614317ac5b54412f..55ffbe61ebc80920fa5be3af22d3f981e2022d9f 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -77,7 +77,7 @@ public class Vars implements Loadable{
@@ -178,7 +178,7 @@ index 48599c6b96474117057e7ca2b87b545873a0ea31..4366eeef830845fb13132a0ae3534129
          buffer.put((byte)state.rules.mode().ordinal());
          buffer.putInt(netServer.admins.getPlayerLimit());
 diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
-index 44f3b5b03f275b2d2151b9ef658879ddd5c06375..cc0fc736535acdcf5a786b551a7a40a4c62cf431 100644
+index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a0577ef6ef87 100644
 --- a/desktop/src/mindustry/desktop/DesktopLauncher.java
 +++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
 @@ -62,7 +62,7 @@ public class DesktopLauncher extends ClientLauncher{
@@ -191,14 +191,14 @@ index 44f3b5b03f275b2d2151b9ef658879ddd5c06375..cc0fc736535acdcf5a786b551a7a40a4
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 1a4d7fb5df48ec81198c57cd5d706c4c48dbd4d7..611a7bf7dd576c14e2192a8e4192f7f59a50f981 100644
+index 555cef4a0b5882c7e10d0a8102ae1cf329aabfd2..de5f63833275548e5e7455ef21a8f54e1c872819 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=29c4199b83
+ archash=f2ffd0e34f
 +
-+upstreamBuild=25256
++upstreamBuild=25298
 +versionType=bleeding-edge
 \ No newline at end of file

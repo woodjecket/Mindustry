@@ -8,7 +8,7 @@ Subject: [PATCH] H(UI): AuxiliaryTools
  1 file changed, 13 insertions(+)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index d13458daa505cb321dfb02b173cfd4ad6b3f4eb5..0b3d391dbea4bdd88e1a9635ff8510d476477328 100644
+index e7b350ba963f3765ca1a19d6077e7650bd19b282..42913d6d404537a7af5f2f91e2ee17d96f852166 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -42,6 +42,7 @@ public class HudFragment{

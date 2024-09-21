@@ -8,10 +8,10 @@ Subject: [PATCH] H: Key Binding
  1 file changed, 7 insertions(+)
 
 diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
-index 039829ebd447f97c72917b91fd52f3fef6aeccfa..fcbcc2483e5d7dbc71ce769840cdbbd61c3e8095 100644
+index d5c52930d313a372f0acc62d424ed2265bcafab3..164e92df620a43f5977f2714d1867d9835c2177a 100644
 --- a/core/src/mindustry/input/Binding.java
 +++ b/core/src/mindustry/input/Binding.java
-@@ -98,6 +98,13 @@ public enum Binding implements KeyBind{
+@@ -100,6 +100,13 @@ public enum Binding implements KeyBind{
      chat_scroll(new Axis(KeyCode.scroll)),
      chat_mode(KeyCode.tab),
      console(KeyCode.f8),

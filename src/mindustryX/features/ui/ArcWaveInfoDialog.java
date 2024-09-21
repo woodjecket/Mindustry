@@ -2,6 +2,7 @@ package mindustryX.features.ui;
 
 import arc.*;
 import arc.func.*;
+import arc.input.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.event.*;
@@ -25,8 +26,6 @@ import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustryX.features.*;
 
-import java.util.*;
-
 import static mindustry.Vars.*;
 import static mindustryX.features.ArcWaveSpawner.calWinWave;
 import static mindustry.game.SpawnGroup.never;
@@ -34,12 +33,13 @@ import static mindustry.ui.Styles.*;
 
 //move from mindustry.arcModule.ui.ArcWaveInfoDialog
 public class ArcWaveInfoDialog extends BaseDialog{
+    private final static WaveInfoDialog origin = new WaveInfoDialog();
     private int start = 0;
     private int displayed = 20;
     private int graphSpeed = 1;
     private final int maxGraphSpeed = 16;
     Seq<SpawnGroup> groups = new Seq<>();
-    private SpawnGroup expandedGroup;
+    private @Nullable SpawnGroup expandedGroup;
 
     private Table table, nTable, oTable, iTable, eTable, uTable;
     private int search = -1;
@@ -85,44 +85,42 @@ public class ArcWaveInfoDialog extends BaseDialog{
         });
         hidden(() -> state.rules.spawns = groups);
 
-        addCloseListener();
-
         onResize(this::setup);
-
         addCloseButton();
 
-        buttons.button("@waves.edit", Icon.pencil, () -> {
+        buttons.button("@waves.edit", Icon.edit, () -> {
             BaseDialog dialog = new BaseDialog("@waves.edit");
             dialog.addCloseButton();
             dialog.setFillParent(false);
             dialog.cont.table(Tex.button, t -> {
-                var style = Styles.flatt;
-                t.defaults().size(210f, 58f);
+                var style = Styles.cleart;
+                t.defaults().size(280f, 64f).pad(2f);
 
                 t.button("@waves.copy", Icon.copy, style, () -> {
                     ui.showInfoFade("@waves.copied");
                     Core.app.setClipboardText(maps.writeWaves(groups));
                     dialog.hide();
-                }).disabled(b -> groups == null).marginLeft(12f).row();
+                }).disabled(b -> groups == null || groups.isEmpty()).marginLeft(12f).row();
 
                 t.button("@waves.load", Icon.download, style, () -> {
                     try{
                         groups = maps.readWaves(Core.app.getClipboardText());
                         buildGroups();
                     }catch(Exception e){
-                        ui.showException("@waves.invalid", e);
+                        Log.err(e);
+                        ui.showErrorMessage("@waves.invalid");
                     }
                     dialog.hide();
-                }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null || Core.app.getClipboardText().isEmpty()).row();
+                }).disabled(Core.app.getClipboardText() == null || !Core.app.getClipboardText().startsWith("[")).marginLeft(12f).row();
 
-                t.button("@settings.reset", Icon.upload, style, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
-                    groups = JsonIO.copy(waves.get());
+                t.button("@clear", Icon.none, style, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
+                    groups.clear();
                     buildGroups();
                     dialog.hide();
                 })).marginLeft(12f).row();
 
-                t.button("@clear", Icon.cancel, style, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
-                    groups.clear();
+                t.button("@settings.reset", Icon.refresh, style, () -> ui.showConfirm("@confirm", "@settings.clear.confirm", () -> {
+                    groups = JsonIO.copy(waves.get());
                     buildGroups();
                     dialog.hide();
                 })).marginLeft(12f);
@@ -131,16 +129,19 @@ public class ArcWaveInfoDialog extends BaseDialog{
             dialog.show();
         }).size(250f, 64f);
 
-        buttons.defaults().width(60f);
-
         buttons.button("切换显示模式", () -> {
             waveInfo = !waveInfo;
             waveMulti = 1;
             setup();
-        }).size(250f, 64f);
+        }).size(200f, 64f);
+
+        buttons.button("切换原版UI", () -> {
+            hide();
+            origin.show();
+        }).size(200f, 64f);
 
         if(true){
-            buttons.button("随机", Icon.refresh, this::arcSpawner).width(200f);
+            buttons.button(Core.bundle.get("waves.random"), Icon.refresh, this::arcSpawner).width(200f);
         }
     }
 
@@ -166,6 +167,7 @@ public class ArcWaveInfoDialog extends BaseDialog{
 
     void setup(){
         groups = JsonIO.copy(state.rules.spawns.isEmpty() ? waves.get() : state.rules.spawns);
+        if(groups == null) groups = new Seq<>();
 
         cont.clear();
         cont.stack(new Table(Tex.clear, main -> {
@@ -178,10 +180,11 @@ public class ArcWaveInfoDialog extends BaseDialog{
                 }).growX().maxTextLength(8).get().setMessageText("@waves.search");
                 s.button(Icon.filter, Styles.emptyi, this::showFilter).size(46f).tooltip("@waves.filter");
             }).fillX().pad(6f).row();
-            main.pane(t -> table = t).growX().growY().padRight(8f).scrollX(false);
-            main.row();
-            main.table(f -> {
-                f.button("@add", () -> {
+
+            main.pane(t -> table = t).grow().padRight(8f).scrollX(false).row();
+
+            main.table(t -> {
+                t.button("@add", () -> {
                     if(groups == null) groups = new Seq<>();
                     SpawnGroup newGroup = new SpawnGroup(lastType);
                     groups.add(newGroup);
@@ -190,12 +193,13 @@ public class ArcWaveInfoDialog extends BaseDialog{
                     buildGroups();
                     clearFilter();
                 }).growX().height(70f);
-                f.button(Icon.filter, () -> {
+
+                t.button(Icon.filter, () -> {
                     BaseDialog dialog = new BaseDialog("@waves.sort");
                     dialog.setFillParent(false);
-                    dialog.cont.table(Tex.button, t -> {
+                    dialog.cont.table(Tex.button, f -> {
                         for(Sort s : Sort.all){
-                            t.button("@waves.sort." + s, Styles.cleart, () -> {
+                            f.button("@waves.sort." + s, Styles.cleart, () -> {
                                 sort = s;
                                 dialog.hide();
                                 buildGroups();
@@ -373,7 +377,7 @@ public class ArcWaveInfoDialog extends BaseDialog{
         table.margin(10f);
 
         if(groups != null){
-            groups.sort(sort.sort);
+            groups.sort(Structs.comps(Structs.comparingFloat(sort.sort), Structs.comparingFloat(sort.secondary)));
             if(reverseSort) groups.reverse();
 
             for(SpawnGroup group : groups){
@@ -412,12 +416,16 @@ public class ArcWaveInfoDialog extends BaseDialog{
                         b.button(Icon.settingsSmall, Styles.emptyi, () -> unitSettingDialog(group)).pad(-6).size(46f);
                         b.button(Icon.unitsSmall, Styles.emptyi, () -> showUpdate(group, false)).pad(-6).size(46f);
                         b.button(Icon.cancel, Styles.emptyi, () -> {
-                            if(expandedGroup == group) expandedGroup = null;
                             groups.remove(group);
+                            if(expandedGroup == group) expandedGroup = null;
                             table.getCell(t).pad(0f);
                             t.remove();
                             buildGroups();
-                        }).pad(-6).size(46f).padRight(-12f);
+                        }).pad(-6).size(46f).padRight(-12f).tooltip("@waves.remove");
+                        b.clicked(KeyCode.mouseMiddle, () -> {
+                            groups.insert(groups.indexOf(group) + 1, expandedGroup = group.copy());
+                            buildGroups();
+                        });
                     }, () -> {
                         expandedGroup = expandedGroup == group ? null : group;
                         buildGroups();
@@ -996,23 +1004,26 @@ public class ArcWaveInfoDialog extends BaseDialog{
     }
 
     enum Sort{
-        begin(Structs.comps(Structs.comparingFloat(g -> g.begin), Structs.comparingFloat(g -> g.type.id))),
-        health(Structs.comps(Structs.comparingFloat(g -> g.type.health), Structs.comparingFloat(g -> g.begin))),
-        type(Structs.comps(Structs.comparingFloat(g -> g.type.id), Structs.comparingFloat(g -> g.begin)));
+        begin(g -> g.begin, g -> g.type.id),
+        health(g -> g.type.health),
+        type(g -> g.type.id);
 
         static final Sort[] all = values();
 
-        final Comparator<SpawnGroup> sort;
+        final Floatf<SpawnGroup> sort, secondary;
 
-        Sort(Comparator<SpawnGroup> sort){
+        Sort(Floatf<SpawnGroup> sort){
+            this(sort, g -> g.begin);
+        }
+
+        Sort(Floatf<SpawnGroup> sort, Floatf<SpawnGroup> secondary){
             this.sort = sort;
+            this.secondary = secondary;
         }
     }
 
     void updateWaves(){
         graph.groups = groups;
-        graph.from = start;
-        graph.to = start + displayed;
         graph.rebuild();
     }
 

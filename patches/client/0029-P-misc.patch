@@ -51,10 +51,10 @@ index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650
          }
      }
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index d6b74b8a99a5ae12248f4dead618a374ea77ec12..10fab25dd2425e9b901d132407547fed9a0dab4d 100644
+index 36e8ec703d4dd9e8d5aff3a28303f3fb5c0fde43..df2286fa43880b6c8ac8474e093b5c09de867d19 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -388,6 +388,11 @@ public class Vars implements Loadable{
+@@ -390,6 +390,11 @@ public class Vars implements Loadable{
                  if(!headless && (ui == null || ui.consolefrag == null)){
                      logBuffer.add(result);
                  }else if(!headless){
@@ -67,10 +67,10 @@ index d6b74b8a99a5ae12248f4dead618a374ea77ec12..10fab25dd2425e9b901d132407547fed
                          for(String code : ColorCodes.values){
                              result = result.replace(code, "");
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index bc730c44c41cbda85f46acc6990824f6985bc369..0af94a29e5013a51a98cdfe6a5f62bdb340566af 100644
+index 045b96d9a2f94c543d4cfdba463c4bd8b7e9865d..5daa92c0a9ffe67b5f236a72b390fa0dcd09fdc6 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
-@@ -569,7 +569,8 @@ public class Control implements ApplicationListener, Loadable{
+@@ -570,7 +570,8 @@ public class Control implements ApplicationListener, Loadable{
                  BaseDialog dialog = new BaseDialog("@confirm");
                  dialog.setFillParent(true);
  
