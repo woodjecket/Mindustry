@@ -16,13 +16,14 @@ Content-Transfer-Encoding: 8bit
  core/src/mindustry/core/UI.java               | 20 ++-----------------
  core/src/mindustry/game/Schematics.java       |  8 +++++---
  .../mindustry/graphics/MinimapRenderer.java   |  6 ++++--
+ core/src/mindustry/ui/dialogs/JoinDialog.java | 19 ++++++++++--------
  .../mindustry/ui/dialogs/KeybindDialog.java   |  9 ++++++---
  .../ui/fragments/BlockInventoryFragment.java  |  2 +-
  .../mindustry/ui/fragments/ChatFragment.java  |  3 +++
  .../mindustry/world/blocks/defense/Radar.java |  9 +++++++++
  .../world/blocks/distribution/Router.java     |  3 ++-
  .../world/blocks/production/BeamDrill.java    | 12 ++++-------
- 14 files changed, 57 insertions(+), 40 deletions(-)
+ 15 files changed, 68 insertions(+), 48 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
 index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650a4bbde09 100644
@@ -220,6 +221,43 @@ index e5f42b2c9ac63558d517625ba32d454577a1ba5c..900a84cff8870a64f11e9ed0dbdf3958
          float dx = (Core.camera.position.x / tilesize);
          float dy = (Core.camera.position.y / tilesize);
          dx = Mathf.clamp(dx, sz, world.width() - sz);
+diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
+index e4c8bee7163b4fb05b8649381583358727106c01..e4dc95f3a8284289793ed5ded095368b4b33af45 100644
+--- a/core/src/mindustry/ui/dialogs/JoinDialog.java
++++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
+@@ -60,11 +60,9 @@ public class JoinDialog extends BaseDialog{
+ 
+         loadServers();
+ 
+-        //mobile players don't get information >:(
+-        boolean infoButton = !steam && !mobile;
+-
+-        if(infoButton) buttons.add().width(60f);
+-        buttons.add().growX().width(-1);
++        //MDTX: keep for compatibility to CLaj Mod
++        buttons.add().width(Float.MIN_NORMAL).pad(0);
++        buttons.add().width(Float.MIN_NORMAL).pad(0);
+ 
+         addCloseButton(mobile ? 190f : 210f);
+ 
+@@ -72,9 +70,14 @@ public class JoinDialog extends BaseDialog{
+             renaming = null;
+             add.show();
+         });
+-
+-        buttons.add().growX().width(-1);
+-        if(infoButton) buttons.button("?", () -> ui.showInfo("@join.info")).size(60f, 64f);
++        //MDTX: keep for compatibility to CLaj Mod
++        buttons.add().width(Float.MIN_NORMAL).pad(0);
++        buttons.add().width(Float.MIN_NORMAL).pad(0);
++        //MDTX: better fixed info button
++        buttons.addChild(new Table(t -> {
++            t.setFillParent(true);
++            t.right().bottom().button("?", () -> ui.showInfo("@join.info")).size(60f, 64f);
++        }));
+ 
+         add = new BaseDialog("@joingame.title");
+         add.cont.add("@joingame.ip").padRight(5f).left();
 diff --git a/core/src/mindustry/ui/dialogs/KeybindDialog.java b/core/src/mindustry/ui/dialogs/KeybindDialog.java
 index 58c186ff3151d8bba395b1bc1a51a821b81c40e1..b3e0318791e123b784e9953b9fb39ea273888ee0 100644
 --- a/core/src/mindustry/ui/dialogs/KeybindDialog.java

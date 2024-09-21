@@ -44,10 +44,10 @@ index c8b2ccfe4eaca33e06cce6d107a4f1da19ccacc8..2b1e1f96159da194b1ac521faee8103c
              TypeIO.writeString(buffer, name);
              TypeIO.writeString(buffer, locale);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index e4c8bee7163b4fb05b8649381583358727106c01..79c7981c56b98dc8d8858b81920e2f1364a82d3d 100644
+index e4dc95f3a8284289793ed5ded095368b4b33af45..c17f615961ed4e536964c14c0a6d905fbf9c96cc 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
-@@ -599,7 +599,7 @@ public class JoinDialog extends BaseDialog{
+@@ -602,7 +602,7 @@ public class JoinDialog extends BaseDialog{
                  connect(lastIp, lastPort);
              }, exception -> {});
          }, 1, 1);
@@ -56,7 +56,7 @@ index e4c8bee7163b4fb05b8649381583358727106c01..79c7981c56b98dc8d8858b81920e2f13
          ui.loadfrag.setButton(() -> {
              ui.loadfrag.hide();
              if(ping == null) return;
-@@ -609,9 +609,22 @@ public class JoinDialog extends BaseDialog{
+@@ -612,9 +612,22 @@ public class JoinDialog extends BaseDialog{
      }
  
      void safeConnect(String ip, int port, int version){
