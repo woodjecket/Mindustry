@@ -61,10 +61,10 @@ index e8ffe187781f3bc5624e48a42c53aae2adc71713..efc8530fbdb5837cb14d4a0e80de8e8f
  
              if(array.size == 0) continue;
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87c76ad399 100644
+index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a2096815e 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
-@@ -24,13 +24,16 @@ import mindustry.input.*;
+@@ -25,13 +25,16 @@ import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.world.*;
@@ -81,7 +81,7 @@ index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87
  
      public Category currentCategory = Category.distribution;
  
-@@ -107,6 +110,10 @@ public class PlacementFragment{
+@@ -108,6 +111,10 @@ public class PlacementFragment{
                  if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
                  if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
              }
@@ -92,7 +92,7 @@ index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87
          });
      }
  
-@@ -129,6 +136,27 @@ public class PlacementFragment{
+@@ -130,6 +137,27 @@ public class PlacementFragment{
          if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
              var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
  
@@ -120,7 +120,7 @@ index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87
              //can't middle click buildings in fog
              if(build != null && build.inFogTo(player.team())){
                  build = null;
-@@ -243,6 +271,7 @@ public class PlacementFragment{
+@@ -244,6 +272,7 @@ public class PlacementFragment{
      }
  
      public void build(Group parent){
@@ -128,7 +128,7 @@ index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87
          parent.fill(full -> {
              toggler = full;
              full.bottom().right().visible(() -> ui.hudfrag.shown);
-@@ -261,6 +290,7 @@ public class PlacementFragment{
+@@ -262,6 +291,7 @@ public class PlacementFragment{
  
                      for(Block block : getUnlockedByCategory(currentCategory)){
                          if(!unlocked(block)) continue;
@@ -136,7 +136,7 @@ index 0228575700f49350a3ae659fb89c5279e1924484..1be94dcc99e8916c6b5a25b37fef6b87
                          if(index++ % rowWidth == 0){
                              blockTable.row();
                          }
-@@ -705,7 +735,7 @@ public class PlacementFragment{
+@@ -709,7 +739,7 @@ public class PlacementFragment{
      }
  
      boolean unlocked(Block block){

@@ -3527,7 +3527,7 @@ index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba9
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e862f7f2d2b 100644
+index ac388623831326c292d5a99b1864576a2096815e..a4240f59c0f82f2be8b1b9a52df4140d98b6064b 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -3538,7 +3538,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
  import arc.graphics.*;
  import arc.input.*;
  import arc.math.geom.*;
-@@ -12,6 +13,7 @@ import arc.scene.ui.layout.*;
+@@ -13,6 +14,7 @@ import arc.scene.ui.layout.*;
  import arc.struct.*;
  import arc.util.*;
  import mindustry.ai.*;
@@ -3546,7 +3546,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
  import mindustry.content.*;
  import mindustry.core.*;
  import mindustry.entities.*;
-@@ -24,7 +26,7 @@ import mindustry.input.*;
+@@ -25,7 +27,7 @@ import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.world.*;
@@ -3555,7 +3555,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
  import mindustry.world.blocks.ConstructBlock.*;
  import mindustry.world.meta.*;
  import mindustryX.features.*;
-@@ -32,7 +34,7 @@ import mindustryX.features.*;
+@@ -33,7 +35,7 @@ import mindustryX.features.*;
  import static mindustry.Vars.*;
  
  public class PlacementFragment{
@@ -3564,7 +3564,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
      private boolean lastAllUnlocked = LogicExt.allUnlocked;
  
      public Category currentCategory = Category.distribution;
-@@ -40,10 +42,12 @@ public class PlacementFragment{
+@@ -41,10 +43,12 @@ public class PlacementFragment{
      Seq<Block> returnArray = new Seq<>(), returnArray2 = new Seq<>();
      Seq<Category> returnCatArray = new Seq<>();
      boolean[] categoryEmpty = new boolean[Category.all.length];
@@ -3579,7 +3579,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
      @Nullable Building lastFlowBuild, nextFlowBuild;
      @Nullable Object lastDisplayState;
      @Nullable Team lastTeam;
-@@ -111,7 +115,7 @@ public class PlacementFragment{
+@@ -112,7 +116,7 @@ public class PlacementFragment{
                  if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
              }
  
@@ -3588,7 +3588,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                  rebuild();
              }
          });
-@@ -272,6 +276,8 @@ public class PlacementFragment{
+@@ -273,6 +277,8 @@ public class PlacementFragment{
  
      public void build(Group parent){
          lastAllUnlocked = LogicExt.allUnlocked;
@@ -3597,7 +3597,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
          parent.fill(full -> {
              toggler = full;
              full.bottom().right().visible(() -> ui.hudfrag.shown);
-@@ -348,19 +354,22 @@ public class PlacementFragment{
+@@ -349,19 +355,22 @@ public class PlacementFragment{
  
                          //find current hovered thing
                          Displayable hovered = hover;
@@ -3621,7 +3621,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                          lastTeam = player.team();
  
                          //show details of selected block, with costs
-@@ -429,6 +438,30 @@ public class PlacementFragment{
+@@ -430,6 +439,30 @@ public class PlacementFragment{
                          }else if(hovered != null){
                              //show hovered item, whatever that may be
                              hovered.display(topTable);
@@ -3652,7 +3652,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                          }
                      });
                  }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
-@@ -480,6 +513,8 @@ public class PlacementFragment{
+@@ -481,6 +514,8 @@ public class PlacementFragment{
  
                          rebuildCommand = () -> {
                              u.clearChildren();
@@ -3661,7 +3661,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                              var units = control.input.selectedUnits;
                              if(units.size > 0){
                                  int[] counts = new int[content.units().size];
-@@ -550,7 +585,7 @@ public class PlacementFragment{
+@@ -554,7 +589,7 @@ public class PlacementFragment{
                                                  Call.setUnitCommand(player, units.mapInt(un -> un.id).toArray(), command);
                                              }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized(), true);
  
@@ -3670,7 +3670,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                                          }
  
                                      }).fillX().padTop(4f).left();
-@@ -573,13 +608,66 @@ public class PlacementFragment{
+@@ -577,13 +612,66 @@ public class PlacementFragment{
                                                  Call.setUnitStance(player, units.mapInt(un -> un.id).toArray(), stance);
                                              }).checked(i -> currentStance[0] == stance).size(50f).tooltip(stance.localized(), true);
  
@@ -3738,7 +3738,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                          };
  
                          u.update(() -> {
-@@ -648,7 +736,7 @@ public class PlacementFragment{
+@@ -652,7 +740,7 @@ public class PlacementFragment{
                  {
                      blockCatTable.table(Tex.pane2, blocksSelect -> {
                          blocksSelect.margin(4).marginTop(0);
@@ -3747,7 +3747,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                              if(pane.hasScroll()){
                                  Element result = Core.scene.getHoverElement();
                                  if(result == null || !result.isDescendantOf(pane)){
-@@ -682,6 +770,17 @@ public class PlacementFragment{
+@@ -686,6 +774,17 @@ public class PlacementFragment{
                          boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
  
                          int f = 0;
@@ -3765,7 +3765,7 @@ index 1be94dcc99e8916c6b5a25b37fef6b87c76ad399..afcd3698106cc3234b27940d611d4e86
                          for(Category cat : getCategories()){
                              if(f++ % 2 == 0) categories.row();
  
-@@ -741,36 +840,47 @@ public class PlacementFragment{
+@@ -745,36 +844,47 @@ public class PlacementFragment{
  
      boolean hasInfoBox(){
          hover = hovered();
