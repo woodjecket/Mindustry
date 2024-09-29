@@ -166,9 +166,7 @@ public class ArcOld{
             c.checkPref("allUnlocked", false);
             c.checkPref("worldCreator", false);
             c.checkPref("overrideSkipWave", false);
-            c.checkPref("forceConfigInventory", false);
             c.addCategory("arcStrongCheat");
-            c.checkPref("showOtherTeamState", false);
             c.checkPref("playerNeedShooting", false);
         }));
     }

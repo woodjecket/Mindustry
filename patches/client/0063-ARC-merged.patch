@@ -106,7 +106,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/graphics/OverlayRenderer.java   |  84 ++++-
  core/src/mindustry/input/Binding.java         |   6 +
  core/src/mindustry/input/DesktopInput.java    |  85 ++++-
- core/src/mindustry/input/InputHandler.java    |  55 ++-
+ core/src/mindustry/input/InputHandler.java    |  51 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/type/UnitType.java         | 162 ++++++--
  core/src/mindustry/type/Weapon.java           |  26 +-
@@ -134,7 +134,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 41 files changed, 1999 insertions(+), 241 deletions(-)
+ 41 files changed, 1997 insertions(+), 239 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -524,7 +524,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e
      }
  }
 diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
-index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..9b999e9cf6a02711e6b25e55764b18a04fefacbb 100644
+index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd323685f545e3b 100644
 --- a/core/src/mindustry/entities/comp/BuildingComp.java
 +++ b/core/src/mindustry/entities/comp/BuildingComp.java
 @@ -41,6 +41,7 @@ import mindustry.world.blocks.power.*;
@@ -543,6 +543,15 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..9b999e9cf6a02711e6b25e55764b18a0
  
      @Nullable PowerModule power;
      @Nullable ItemModule items;
+@@ -557,7 +559,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+     }
+ 
+     public boolean interactable(Team team){
+-        return state.teams.canInteract(team, team());
++        return state.teams.canInteract(team, team()) || RenderExt.editOtherBlock;
+     }
+ 
+     public float timeScale(){
 @@ -1425,7 +1427,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          //derelict team icon currently doesn't display
          return team == Team.derelict ?
@@ -578,15 +587,6 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..9b999e9cf6a02711e6b25e55764b18a0
      }
  
       /** Called when this block is tapped to build a UI on the table.
-@@ -1565,7 +1577,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
- 
-     /** Returns whether a hand cursor should be shown over this block. */
-     public Cursor getCursor(){
--        return block.configurable && interactable(player.team()) ? SystemCursor.hand : SystemCursor.arrow;
-+        return block.configurable && (RenderExt.showOtherInfo || interactable(player.team())) ? SystemCursor.hand : SystemCursor.arrow;
-     }
- 
-     /**
 diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
 index 6646df00e2c060899ec80ea5bde1e1fa444654a9..19c6566a3b96ef3c286a8ef78eb35f73abfb32dc 100644
 --- a/core/src/mindustry/entities/comp/PlayerComp.java
@@ -1252,7 +1252,7 @@ index 49bd8eb068d979f412fc1332a99b02357a8e9a15..1238e8626612ef089e527f1563788253
          player.mouseY = unit.aimY();
  
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 62fc260727b1b722d55cd8dcc0eb52a123481585..c6295d32008d52ce01e7409f3845b7bbbda1f4c1 100644
+index 62fc260727b1b722d55cd8dcc0eb52a123481585..d23b360ed188139865e872aeb04ecda2f9aba1ae 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -36,11 +36,13 @@ import mindustry.world.*;
@@ -1390,24 +1390,6 @@ index 62fc260727b1b722d55cd8dcc0eb52a123481585..c6295d32008d52ce01e7409f3845b7bb
      }
  
      protected void flushSelectPlans(Seq<BuildPlan> plans){
-@@ -1617,7 +1657,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-         if(build.block.commandable && commandMode){
-             //TODO handled in tap.
-             consumed = true;
--        }else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
-+        }else if(build.block.configurable && (build.interactable(player.team()) || RenderExt.showOtherInfo)){ //check if tapped block is configurable
-             consumed = true;
-             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
-             //alternatively, the current selected block can 'agree' to switch config tiles
-@@ -1646,7 +1686,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-         //consume tap event if necessary
-         if(build.interactable(player.team()) && build.block.consumesTap){
-             consumed = true;
--        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
-+        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory || settings.getBool("forceConfigInventory"))){
-             if(build.block.hasItems && build.items.total() > 0){
-                 inv.showFor(build);
-                 consumed = true;
 @@ -1798,7 +1838,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){

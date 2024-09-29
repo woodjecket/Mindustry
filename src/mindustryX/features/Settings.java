@@ -90,6 +90,8 @@ public class Settings{
                 case 1 -> "只显示建筑状态";
                 default -> "全部显示";
             });
+            c.checkPref("showOtherTeamState", false);
+            c.checkPref("editOtherBlock", false);
 
             c.addCategory("entitySettings");
             c.checkPref("bulletShow", true);

@@ -23,8 +23,8 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
  .../world/blocks/logic/LogicBlock.java        |  59 ++++-
- .../world/blocks/logic/MemoryBlock.java       |  52 ++++
- 6 files changed, 376 insertions(+), 57 deletions(-)
+ .../world/blocks/logic/MemoryBlock.java       |  61 +++++
+ 6 files changed, 385 insertions(+), 57 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -530,7 +530,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..ff42e7496df421614e9c4c2ad2437e3ad2481ee9 100644
+index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..d58054c7f837894f40f8403e184975d5094531c7 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -551,7 +551,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..ff42e7496df421614e9c4c2ad2437e3a
  
      public boolean accessible(){
 -        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors;
-+        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || RenderExt.showOtherInfo && !net.client();
++        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || RenderExt.editOtherBlock;
 +    }
 +
 +    private boolean accessibleRead(){
@@ -658,7 +658,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..ff42e7496df421614e9c4c2ad2437e3a
  
          public void showEditDialog(){
 diff --git a/core/src/mindustry/world/blocks/logic/MemoryBlock.java b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..4a57729cfdb0193fc0421cb5940ae85cc0582ffb 100644
+index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..ba37ff6bc76170156117e114317c321aa8dc327c 100644
 --- a/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 @@ -1,9 +1,16 @@
@@ -695,10 +695,19 @@ index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..4a57729cfdb0193fc0421cb5940ae85c
  
          //massive byte size means picking up causes sync issues
          @Override
-@@ -71,6 +81,48 @@ public class MemoryBlock extends Block{
+@@ -71,6 +81,57 @@ public class MemoryBlock extends Block{
              }
          }
  
++        @Override
++        public boolean onConfigureBuildTapped(Building other){
++            if(this == other || !accessible()){
++                deselect();
++                return false;
++            }
++            return super.onConfigureBuildTapped(other);
++        }
++
 +        @Override
 +        public void buildConfiguration(Table table){
 +            if(!RenderExt.showOtherInfo && !accessible()){
