@@ -8,7 +8,7 @@ Subject: [PATCH] OC: SDL_SetHint SDL_WINDOWS_DPI_SCALING
  1 file changed, 1 insertion(+)
 
 diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
-index eba453ade66d5e72f44726f64a28a0577ef6ef87..373583866be52c4cd80e096d8124972947a914b8 100644
+index 1477f988be3a30add5b1a226d324936fef285865..c98e5c529846e923cf9bed61f105bf205b143d2e 100644
 --- a/desktop/src/mindustry/desktop/DesktopLauncher.java
 +++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
 @@ -70,6 +70,7 @@ public class DesktopLauncher extends ClientLauncher{
@@ -17,5 +17,5 @@ index eba453ade66d5e72f44726f64a28a0577ef6ef87..373583866be52c4cd80e096d81249729
      public DesktopLauncher(String[] args){
 +        arc.backend.sdl.jni.SDL.SDL_SetHint("SDL_WINDOWS_DPI_SCALING", "1");
          Version.init();
-         boolean useSteam = Version.modifier.contains("steam");
-         testMobile = Seq.with(args).contains("-testMobile");
+         //MDTX, auto discover steam
+         String steamJar = "addon_steam.jar";

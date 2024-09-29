@@ -23,7 +23,8 @@ Content-Transfer-Encoding: 8bit
  .../mindustry/world/blocks/defense/Radar.java |  9 +++++++++
  .../world/blocks/distribution/Router.java     |  3 ++-
  .../world/blocks/production/BeamDrill.java    | 12 ++++-------
- 15 files changed, 68 insertions(+), 48 deletions(-)
+ .../mindustry/desktop/DesktopLauncher.java    | 11 +++++++++-
+ 16 files changed, 78 insertions(+), 49 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
 index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650a4bbde09 100644
@@ -390,3 +391,32 @@ index 163019c9c2562301984912c212e5d5558a028e36..85ec19d8a4d07d7c02245226b5ce3958
          }else if(invalidItem != null){
              drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, false);
          }
+diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
+index eba453ade66d5e72f44726f64a28a0577ef6ef87..1477f988be3a30add5b1a226d324936fef285865 100644
+--- a/desktop/src/mindustry/desktop/DesktopLauncher.java
++++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
+@@ -71,6 +71,12 @@ public class DesktopLauncher extends ClientLauncher{
+ 
+     public DesktopLauncher(String[] args){
+         Version.init();
++        //MDTX, auto discover steam
++        String steamJar = "addon_steam.jar";
++        if(!OS.isAndroid || !OS.isIos && (new Fi(steamJar).exists() || new Fi("steamworks4j.dll", FileType.classpath).exists())){
++            Version.modifier = "steam";
++            if(!new Fi(steamJar).exists()) steamJar = null;
++        }
+         boolean useSteam = Version.modifier.contains("steam");
+         testMobile = Seq.with(args).contains("-testMobile");
+ 
+@@ -99,7 +105,10 @@ public class DesktopLauncher extends ClientLauncher{
+             });
+ 
+             try{
+-                SteamAPI.loadLibraries();
++                //MDTX use arc.SharedLibraryLoader
++                new SharedLibraryLoader(steamJar).load("steam_api");
++                new SharedLibraryLoader(steamJar).load("steamworks4j");
++                SteamAPI.skipLoadLibraries();
+ 
+                 if(!SteamAPI.init()){
+                     loadError = true;
