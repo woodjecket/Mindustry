@@ -35,7 +35,7 @@ public class WaveInfoDisplay extends Table{
             buttons.button(Icon.waves, Styles.clearNonei, iconMed, UIExt.waveInfoDialog::show).tooltip("波次信息");
 
             buttons.button("<", Styles.cleart, () -> shiftWaveOffset(-1));
-            var i = buttons.button("", this::setWaveOffsetDialog).get();
+            var i = buttons.button("", Styles.cleart, this::setWaveOffsetDialog).get();
             i.getLabel().setAlignment(Align.center);
             i.getLabel().setText(() -> "" + (state.wave + waveOffset));
             buttons.button(">", Styles.cleart, () -> shiftWaveOffset(1));
@@ -82,7 +82,7 @@ public class WaveInfoDisplay extends Table{
         lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
             waveOffset = (int)res - state.wave;
             field.setText((int)res + "");
-        }).fillX();
+        }).fillX().colspan(2);
         lsSet.addCloseButton();
         lsSet.show();
     }
