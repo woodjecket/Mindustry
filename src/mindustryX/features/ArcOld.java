@@ -146,7 +146,6 @@ public class ArcOld{
             c.checkPref("ShowInfoPopup", true);
             c.checkPref("arcShareWaveInfo", false);
             c.checkPref("arcAlwaysTeamColor", false);
-            c.checkPref("arcSelfName", false);
 
             c.addCategory("arcRadar");
             c.sliderPref("radarMode", 0, 0, 30, 1, s -> switch(s){

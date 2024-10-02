@@ -97,9 +97,8 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/core/UI.java               |   3 +
  core/src/mindustry/editor/MapInfoDialog.java  | 139 ++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
- .../mindustry/entities/comp/PlayerComp.java   |  22 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
- .../mindustry/entities/comp/StatusComp.java   |  12 +
+ .../mindustry/entities/comp/StatusComp.java   |   3 +
  core/src/mindustry/game/Schematic.java        | 158 ++++++++
  core/src/mindustry/game/Universe.java         |   2 +-
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
@@ -134,7 +133,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 41 files changed, 1997 insertions(+), 239 deletions(-)
+ 40 files changed, 1967 insertions(+), 238 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -587,53 +586,6 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd32368
      }
  
       /** Called when this block is tapped to build a UI on the table.
-diff --git a/core/src/mindustry/entities/comp/PlayerComp.java b/core/src/mindustry/entities/comp/PlayerComp.java
-index ebce7f4db27f21927e615477e442e2e8461c1fbb..aadbdae03f90e6a42ddb3581b7da9706ff2fd0e1 100644
---- a/core/src/mindustry/entities/comp/PlayerComp.java
-+++ b/core/src/mindustry/entities/comp/PlayerComp.java
-@@ -21,6 +21,8 @@ import mindustry.net.Administration.*;
- import mindustry.net.*;
- import mindustry.net.Packets.*;
- import mindustry.ui.*;
-+import mindustry.world.blocks.defense.turrets.BaseTurret;
-+import mindustry.world.blocks.production.GenericCrafter;
- import mindustry.world.blocks.storage.*;
- import mindustry.world.blocks.storage.CoreBlock.*;
- import mindustryX.events.*;
-@@ -300,7 +302,7 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
-         font.getData().setScale(0.25f / Scl.scl(1f));
-         layout.setText(font, name);
- 
--        if(!isLocal()){
-+        if(!isLocal() || Core.settings.getBool("arcSelfName")){
-             Draw.color(0f, 0f, 0f, 0.3f);
-             Fill.rect(unit.x, unit.y + nameHeight - layout.height / 2, layout.width + 2, layout.height + 3);
-             Draw.color();
-@@ -365,6 +367,24 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
-         }
-     }
- 
-+    public void buildDestroyedBlocks(){
-+        if(!unit.canBuild()) return;
-+        int count = 0;
-+        for(Teams.BlockPlan plan : player.team().data().plans){
-+            if(within(plan.x * tilesize, plan.y * tilesize, buildingRange)){
-+                unit.addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));
-+                if(++count >= 255) break;
-+            }
-+        }
-+    }
-+
-+    public void dropItems(){
-+        if(state.rules.mode() == Gamemode.pvp || player.unit() == null || player.unit().stack.amount <= 0) return;
-+        indexer.eachBlock(player.team(), player.x, player.y, itemTransferRange,
-+        build -> build.acceptStack(player.unit().item(), player.unit().stack.amount, player.unit()) > 0 && (
-+        build.block instanceof BaseTurret || build.block instanceof GenericCrafter),
-+        build -> Call.transferInventory(player, build));
-+    }
-     void sendUnformatted(String unformatted){
-         sendUnformatted(null, unformatted);
-     }
 diff --git a/core/src/mindustry/entities/comp/ShieldComp.java b/core/src/mindustry/entities/comp/ShieldComp.java
 index c290fa6251edaaa4d2854fc6f06be8cdb6050dda..132785b228124519812c049ef93fd2e5adaeb641 100644
 --- a/core/src/mindustry/entities/comp/ShieldComp.java
@@ -664,22 +616,13 @@ index c290fa6251edaaa4d2854fc6f06be8cdb6050dda..132785b228124519812c049ef93fd2e5
      }
  }
 diff --git a/core/src/mindustry/entities/comp/StatusComp.java b/core/src/mindustry/entities/comp/StatusComp.java
-index 4d3dd11dd07972d4c6dcada51ece6382586fb986..6ca8767b9e4c96cc3223f398360a3d85d955c132 100644
+index 4d3dd11dd07972d4c6dcada51ece6382586fb986..edd79bbd195b7f108534e333375487534462559c 100644
 --- a/core/src/mindustry/entities/comp/StatusComp.java
 +++ b/core/src/mindustry/entities/comp/StatusComp.java
-@@ -240,4 +240,16 @@ abstract class StatusComp implements Posc, Flyingc{
+@@ -240,4 +240,7 @@ abstract class StatusComp implements Posc, Flyingc{
      boolean hasEffect(StatusEffect effect){
          return applied.get(effect.id);
      }
-+    void addEntry(StatusEffect effect, float duration) {
-+        if (effect.reactive) apply(effect);
-+        else {
-+            StatusEntry entry = Pools.obtain(StatusEntry.class, StatusEntry::new);
-+            entry.set(effect, duration);
-+            statuses.add(entry);
-+            effect.applied(self(), duration, false);
-+        }
-+    }
 +    Seq<StatusEntry> statuses(){
 +        return statuses;
 +    }
