@@ -392,7 +392,7 @@ index 163019c9c2562301984912c212e5d5558a028e36..85ec19d8a4d07d7c02245226b5ce3958
              drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, false);
          }
 diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
-index eba453ade66d5e72f44726f64a28a0577ef6ef87..1477f988be3a30add5b1a226d324936fef285865 100644
+index eba453ade66d5e72f44726f64a28a0577ef6ef87..f5d4209262f7022e55aaf0a56eb86751a2cf4950 100644
 --- a/desktop/src/mindustry/desktop/DesktopLauncher.java
 +++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
 @@ -71,6 +71,12 @@ public class DesktopLauncher extends ClientLauncher{
@@ -401,7 +401,7 @@ index eba453ade66d5e72f44726f64a28a0577ef6ef87..1477f988be3a30add5b1a226d324936f
          Version.init();
 +        //MDTX, auto discover steam
 +        String steamJar = "addon_steam.jar";
-+        if(!OS.isAndroid || !OS.isIos && (new Fi(steamJar).exists() || new Fi("steamworks4j.dll", FileType.classpath).exists())){
++        if(!OS.isAndroid && !OS.isIos && (new Fi(steamJar).exists() || new Fi("steamworks4j.dll", FileType.classpath).exists())){
 +            Version.modifier = "steam";
 +            if(!new Fi(steamJar).exists()) steamJar = null;
 +        }
