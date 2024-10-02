@@ -42,7 +42,6 @@ public class ArcRadar{
     /** 实际扫描范围，不是参数 */
     private static float curScanRange = 0;
     private static float expandRate = 1f;
-    private static float time = 0;
 
     static{
         t.touchable = Touchable.disabled;
@@ -63,34 +62,19 @@ public class ArcRadar{
         float extendSpd = Core.settings.getInt("radarMode") * 0.2f;
         Draw.reset();
 
-        if(mobile){
-            if(extendSpd >= 6){
-                t.visible = mobileRadar;
+        if(extendSpd >= 6){
+            if(Core.input.keyTap(Binding.arcDetail) || mobileRadar){
+                t.visible = !t.visible;
                 scanRate = t.visible ? 1f : 0f;
-            }else{
-                if(mobileRadar){
-                    t.visible = true;
-                    if(scanRate < 1f) scanRate = Math.min(scanRate + 1 / 60f / scanTime * extendSpd, 1f);
-                }else{
-                    t.visible = false;
-                    if(scanRate > 0f) scanRate = Math.max(scanRate - 3 / 60f / scanTime * extendSpd, 0f);
-                }
+                mobileRadar = false;
             }
         }else{
-            if(extendSpd >= 6){
-                if(Core.input.keyDown(Binding.arcDetail) && Time.time - time > 60f){
-                    time = Time.time;
-                    t.visible = !t.visible;
-                    scanRate = t.visible ? 1f : 0f;
-                }
+            if(Core.input.keyDown(Binding.arcDetail) || mobileRadar){
+                t.visible = true;
+                scanRate = Mathf.approachDelta(scanRate, 1, 1 * extendSpd / (60f * scanTime));
             }else{
-                if(Core.input.keyDown(Binding.arcDetail)){
-                    t.visible = true;
-                    if(scanRate < 1f) scanRate = Math.min(scanRate + 1 / 60f / scanTime * extendSpd, 1f);
-                }else{
-                    t.visible = false;
-                    if(scanRate > 0f) scanRate = Math.max(scanRate - 3 / 60f / scanTime * extendSpd, 0f);
-                }
+                t.visible = false;
+                scanRate = Mathf.approachDelta(scanRate, 0, 3 * extendSpd / (60f * scanTime));
             }
         }
 
