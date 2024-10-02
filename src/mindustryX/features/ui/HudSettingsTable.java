@@ -74,9 +74,7 @@ public class HudSettingsTable extends ToolTableBase{
                 control.input.logicCutscene = false;
                 ui.announce("已移除逻辑视角锁定");
             }).checked(a -> Core.settings.getBool("removeLogicLock")).size(30, 30).tooltip("逻辑锁定");
-            t.button("[cyan]雾", Styles.flatTogglet, () -> {
-                state.rules.fog ^= true;
-            }).checked(a -> state.rules.fog).size(30, 30).tooltip("战争迷雾").disabled((_t) -> state.rules.pvp && player.team().id != 255);
+            t.button("[cyan]雾", Styles.flatTogglet, () -> state.rules.fog ^= true).checked(a -> state.rules.fog).size(30, 30).tooltip("战争迷雾").disabled((_t) -> state.rules.pvp && player.team().id != 255);
         }).left().row();
         cont.table(t -> {
             t.button("[red]灯", Styles.flatTogglet, () -> Settings.toggle("drawlight"))
@@ -123,6 +121,7 @@ public class HudSettingsTable extends ToolTableBase{
         checkPref("blockWeaponTargetLine");
         checkPref("unitbuildplan");
         sliderPref("minimapSize", 40, 400, 10, i -> i + "");
+        sliderPref("quickToolOffset", -250, 250, 10, i -> i + "");
 
         ScrollPane pane = pane(cont).maxSize(800f, 300f).get();
         pane.update(() -> {

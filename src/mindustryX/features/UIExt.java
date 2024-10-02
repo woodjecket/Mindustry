@@ -37,6 +37,7 @@ public class UIExt{
 
         ui.hudGroup.fill(t -> {
             t.right().name = "quickTool";
+            t.update(() -> t.y = Core.settings.getInt("quickToolOffset"));
             t.add(hudSettingsTable).growX().row();
             t.add(advanceToolTable).growX().row();
             t.add(advanceBuildTool).growX().row();
