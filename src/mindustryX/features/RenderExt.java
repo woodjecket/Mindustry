@@ -78,7 +78,7 @@ public class RenderExt{
             blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
             mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
-            logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
+            logicDisplayNoBorder = Core.settings.getBool("logicDisplayNoBorder");
             arcDrillMode = Core.settings.getBool("arcdrillmode");
             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
             renderSort = Core.settings.getBool("renderSort");

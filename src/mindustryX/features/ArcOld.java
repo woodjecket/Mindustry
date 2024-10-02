@@ -43,7 +43,6 @@ public class ArcOld{
             c.checkPref("arcdrillmode", false);
             c.checkPref("arcDrillProgress", false);
             c.checkPref("arcchoiceuiIcon", false);
-            c.checkPref("arclogicbordershow", true);
             c.checkPref("arcPlacementEffect", false);
 
             c.checkPref("mass_driver_line", true);

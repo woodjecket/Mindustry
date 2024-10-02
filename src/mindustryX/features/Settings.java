@@ -92,6 +92,7 @@ public class Settings{
             });
             c.checkPref("showOtherTeamState", false);
             c.checkPref("editOtherBlock", false);
+            c.checkPref("logicDisplayNoBorder", false);
 
             c.addCategory("entitySettings");
             c.checkPref("bulletShow", true);
