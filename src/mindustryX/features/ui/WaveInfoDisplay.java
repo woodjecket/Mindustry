@@ -1,55 +1,51 @@
-package mindustryX.features.ui.auxiliary;
+package mindustryX.features.ui;
 
 import arc.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.content.*;
-import mindustry.core.*;
+import mindustry.editor.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustryX.features.*;
-import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
 
-public class WaveInfoTable extends AuxiliaryTools.Table{
+public class WaveInfoDisplay extends Table{
     public static final float fontScl = 0.8f;
     private int waveOffset = 0;
     private final Table waveInfo;
 
-    public WaveInfoTable(){
-        super(Icon.waves);
-
+    public WaveInfoDisplay(){
+        super(Tex.pane);
         Events.on(WorldLoadEvent.class, e -> {
             waveOffset = 0;
             rebuildWaveInfo();
         });
-
         Events.on(WaveEvent.class, e -> rebuildWaveInfo());
 
-        left().top();
-
+        margin(0, 4, 0, 4);
         table(buttons -> {
-            buttons.defaults().size(40);
+            buttons.defaults().size(32);
 
-            buttons.button(Icon.waves, RStyles.clearAccentNonei, UIExt.waveInfoDialog::show).size(40).tooltip("波次信息");
-            buttons.button("<", RStyles.clearLineNonet, () -> shiftWaveOffset(-1));
-            buttons.label(() -> "" + (state.wave + waveOffset)).labelAlign(Align.center);
-            buttons.button(">", RStyles.clearLineNonet, () -> shiftWaveOffset(1));
+            buttons.button(Icon.waves, Styles.clearNonei, iconMed, UIExt.waveInfoDialog::show).tooltip("波次信息");
 
-            buttons.button("R", RStyles.clearLineNonet, () -> setWaveOffset(0));
-            buttons.button(Icon.settingsSmall, RStyles.clearAccentNonei, iconMed, this::setWaveOffsetDialog);
-            buttons.button("♐", RStyles.clearLineNonet, () -> ArcMessageDialog.shareWaveInfo(state.wave + waveOffset))
+            buttons.button("<", Styles.cleart, () -> shiftWaveOffset(-1));
+            var i = buttons.button("", this::setWaveOffsetDialog).get();
+            i.getLabel().setAlignment(Align.center);
+            i.getLabel().setText(() -> "" + (state.wave + waveOffset));
+            buttons.button(">", Styles.cleart, () -> shiftWaveOffset(1));
+
+            buttons.button("R", Styles.cleart, () -> setWaveOffset(0));
+            buttons.button("♐", Styles.cleart, () -> ArcMessageDialog.shareWaveInfo(state.wave + waveOffset))
             .disabled((b) -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
+        }).center().row();
 
-        }).left().row();
-
-        waveInfo = new Table(Tex.pane).left().top();
+        waveInfo = new Table().left().top();
         add(new ScrollPane(waveInfo, Styles.noBarPane){
             {
                 setScrollingDisabledY(true);
@@ -69,6 +65,15 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         }).growX();
     }
 
+    public Collapser wrapped(){
+        var ret = new Collapser(t -> {
+            t.add().height(4).row();
+            t.add(this).growX();
+        }, true);
+        ret.setCollapsed(false, () -> !state.rules.waves || !Core.settings.getBool("newWaveInfoDisplay"));
+        return ret;
+    }
+
     private void setWaveOffsetDialog(){
         Dialog lsSet = new BaseDialog("波次设定");
         lsSet.cont.add("设定查询波次").padRight(5f).left();
@@ -77,7 +82,7 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
             waveOffset = (int)res - state.wave;
             field.setText((int)res + "");
-        });
+        }).fillX();
         lsSet.addCloseButton();
         lsSet.show();
     }
@@ -86,21 +91,21 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         waveInfo.clearChildren();
 
         int curInfoWave = state.wave + waveOffset - 1;
+        StringBuilder builder = new StringBuilder();
         for(SpawnGroup group : state.rules.spawns){
             int amount = group.getSpawned(curInfoWave);
             if(amount == 0) continue;
 
-            float shield = group.getShield(curInfoWave);
-            StatusEffect effect = group.effect;
-
             waveInfo.table(groupT -> {
-                groupT.image(group.type.uiIcon).scaling(Scaling.fit).size(iconSmall).row();
-                groupT.add("" + amount, fontScl).row();
-                groupT.add((shield > 0 ? UI.formatAmount((long)shield) : ""), fontScl).row();
+                groupT.center().image(group.type.uiIcon).scaling(Scaling.fit).size(iconSmall);
+                if(amount > 1) groupT.add("x" + amount, fontScl);
+                groupT.row();
 
-                if(effect != null && effect != StatusEffects.none){
-                    groupT.image(effect.uiIcon).size(iconSmall);
-                }
+                builder.setLength(0);
+                if(group.effect != null && group.effect != StatusEffects.none) builder.append(group.effect.emoji());
+                float shield = group.getShield(curInfoWave);
+                if(shield > 0) builder.append(FormatDefault.format(shield));
+                groupT.add(builder.toString()).colspan(groupT.getColumns());
             }).pad(0, 4, 0, 4).left().top();
         }
     }

@@ -133,7 +133,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 40 files changed, 1967 insertions(+), 238 deletions(-)
+ 40 files changed, 1966 insertions(+), 239 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -329,31 +329,23 @@ index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..1de9f9267961db96ceb6f405f12508f4
          table.setFillParent(true);
          table.touchable = Touchable.disabled;
 diff --git a/core/src/mindustry/editor/MapInfoDialog.java b/core/src/mindustry/editor/MapInfoDialog.java
-index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e9c8f743b 100644
+index ebc1f0b300d295e45333f1db38ea299c9658ec20..bdcbc0ff11ed66b39cdbdd6653b1d0674a9b566d 100644
 --- a/core/src/mindustry/editor/MapInfoDialog.java
 +++ b/core/src/mindustry/editor/MapInfoDialog.java
-@@ -1,5 +1,6 @@
- package mindustry.editor;
- 
-+import arc.Core;
- import arc.scene.ui.*;
- import arc.struct.*;
- import mindustry.*;
-@@ -10,11 +11,12 @@ import mindustry.maps.filters.*;
+@@ -10,11 +10,11 @@ import mindustry.maps.filters.*;
  import mindustry.type.*;
  import mindustry.ui.*;
  import mindustry.ui.dialogs.*;
-+import mindustryX.features.ui.*;
++import mindustryX.features.*;
  
  import static mindustry.Vars.*;
  
  public class MapInfoDialog extends BaseDialog{
 -    private WaveInfoDialog waveInfo  = new WaveInfoDialog();
-+    private ArcWaveInfoDialog waveInfo  = new ArcWaveInfoDialog();
      private MapGenerateDialog generate = new MapGenerateDialog(false);
      private CustomRulesDialog ruleInfo = new CustomRulesDialog();
      private MapObjectivesDialog objectives = new MapObjectivesDialog();
-@@ -33,12 +35,12 @@ public class MapInfoDialog extends BaseDialog{
+@@ -33,12 +33,12 @@ public class MapInfoDialog extends BaseDialog{
          cont.clear();
  
          ObjectMap<String, String> tags = editor.tags;
@@ -368,7 +360,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e
                  tags.put("name", text);
              }).size(400, 55f).maxTextLength(50).get();
              name.setMessageText("@unknown");
-@@ -46,14 +48,76 @@ public class MapInfoDialog extends BaseDialog{
+@@ -46,14 +46,76 @@ public class MapInfoDialog extends BaseDialog{
              t.row();
              t.add("@editor.description").padRight(8).left();
  
@@ -447,7 +439,16 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..03e44e99a11362a2c3df1b05a63f2d1e
                  tags.put("author", text);
              }).size(400, 55f).maxTextLength(50).get();
              author.setMessageText("@unknown");
-@@ -117,9 +181,74 @@ public class MapInfoDialog extends BaseDialog{
+@@ -71,7 +133,7 @@ public class MapInfoDialog extends BaseDialog{
+                 }).marginLeft(10f);
+ 
+                 r.button("@editor.waves", Icon.units, style, () -> {
+-                    waveInfo.show();
++                    UIExt.waveInfoDialog.show();
+                     hide();
+                 }).marginLeft(10f);
+ 
+@@ -117,9 +179,74 @@ public class MapInfoDialog extends BaseDialog{
  
              name.change();
              description.change();
@@ -2975,7 +2976,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 2d0f3fa7e296d22e230d45f7e7f8d16ce072398b..02326feb5bd747a022196739aba77e9597395a66 100644
+index 510f469c0bbf66447c27ea179f6eee83377079e7..54e1427dbe9c3515f413ce1e0e0f3751ebeeec80 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -14,6 +14,7 @@ import arc.scene.ui.ImageButton.*;

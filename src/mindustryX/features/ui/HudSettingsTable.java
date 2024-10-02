@@ -122,6 +122,8 @@ public class HudSettingsTable extends ToolTableBase{
         checkPref("unitbuildplan");
         sliderPref("minimapSize", 40, 400, 10, i -> i + "");
         sliderPref("quickToolOffset", -250, 250, 10, i -> i + "");
+        checkPref("newWaveInfoDisplay");
+        settings.defaults("newWaveInfoDisplay", true);
 
         ScrollPane pane = pane(cont).maxSize(800f, 300f).get();
         pane.update(() -> {

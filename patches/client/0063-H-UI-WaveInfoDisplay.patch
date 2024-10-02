@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Wed, 2 Oct 2024 20:53:43 +0800
+Subject: [PATCH] =?UTF-8?q?H(UI):=20WaveInfoDisplay(=E6=B3=A2=E6=AC=A1?=
+ =?UTF-8?q?=E4=BF=A1=E6=81=AF=E6=98=BE=E7=A4=BA)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/ui/fragments/HudFragment.java | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index 2d0f3fa7e296d22e230d45f7e7f8d16ce072398b..510f469c0bbf66447c27ea179f6eee83377079e7 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -327,9 +327,10 @@ public class HudFragment{
+             t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
+ 
+             t.table(c -> {
+-                c.touchable = Touchable.disabled;
+                 //core items
+-                c.top().add(coreItems).fillX().row();
++                c.top().add(coreItems).touchable(Touchable.disabled).fillX().row();
++
++                c.add(UIExt.waveInfoDisplay.wrapped()).fillX().row();
+ 
+                 float notifDuration = 240f;
+                 float[] coreAttackTime = {0};

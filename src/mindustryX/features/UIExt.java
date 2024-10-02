@@ -24,6 +24,8 @@ public class UIExt{
     public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
     public static AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
+    public static ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
+    public static WaveInfoDisplay waveInfoDisplay = new WaveInfoDisplay();
 
     public static void init(){
         teamSelect = new TeamSelectDialog();
