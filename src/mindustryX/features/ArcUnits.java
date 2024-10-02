@@ -182,7 +182,7 @@ public class ArcUnits{
         if(!unitHealthBar) return;
         Draw.z(Layer.shields + 6f);
         float y_corr = 0f;
-        if(unit.hitSize < 30f && unit.hitSize > 20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
+        if(!player.dead() && unit.hitSize < 30f && unit.hitSize > 20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
         if(unit.health < unit.maxHealth){
             Draw.reset();
             Lines.stroke(4f);
@@ -318,7 +318,7 @@ public class ArcUnits{
     }
 
     private static void detailBuildMode(){
-        if(!arcBuildInfo) return;
+        if(!arcBuildInfo || player.dead()) return;
         if(control.input.droppingItem){
             Color color = player.within(Core.input.mouseWorld(control.input.getMouseX(), control.input.getMouseY()), itemTransferRange) ? Color.gold : Color.red;
             drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.fullIcon, false);

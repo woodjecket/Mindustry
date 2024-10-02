@@ -188,6 +188,7 @@ public class AdvanceBuildTool extends ToolTableBase{
     }
 
     void replaceBlock(Block ori, Block re){
+        if(player.dead()) return;
         player.team().data().buildings.each(building -> building.block() == ori && contain(building.tile),
         building -> player.unit().addBuild(new BuildPlan(building.tile.x, building.tile.y, building.rotation, re, building.config())));
     }
@@ -228,6 +229,7 @@ public class AdvanceBuildTool extends ToolTableBase{
     }
 
     void instantBuild(){
+        if(player.dead()) return;
         player.unit().plans.each(buildPlan -> {
             if(!contain(buildPlan.tile())) return;
             forceBuildBlock(buildPlan.block, buildPlan.tile(), player.team(), buildPlan.rotation, buildPlan.config);
@@ -341,7 +343,7 @@ public class AdvanceBuildTool extends ToolTableBase{
         }
 
         void buildEff(float e){
-            if(e == 0) return;
+            if(e == 0 || player.dead()) return;
             validTile.each(tile -> {
                 if(buildEff.get(tile, 0f) != e) return;
                 if(!block.canPlaceOn(tile, player.team(), 0)) return;

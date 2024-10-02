@@ -17,7 +17,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  2 files changed, 5 insertions(+)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 432847184412982c0cebac53fcc071c6e0a317d9..3a1042f45759d300812b846981e8abcc997a0313 100644
+index e6b2f149d83cf4dcb449413b901b6a782ed6b2cb..0cf00afbd09a9bf38e6f2e947ada32b0792f9e3b 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -25,6 +25,7 @@ import mindustry.net.Packets.*;

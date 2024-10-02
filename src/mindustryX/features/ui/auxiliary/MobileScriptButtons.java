@@ -27,11 +27,8 @@ public class MobileScriptButtons extends AuxiliaryTools.Table{
         scriptButton(Icon.down, "丢下载荷", () -> control.input.tryDropPayload());
         scriptButton(Blocks.payloadConveyor.uiIcon, "进入传送带", () -> {
             Building build = player.buildOn();
-
-            if(build == null) return;
-
-            Unit unit = player.unit();
-            Call.unitBuildingControlSelect(unit, build);
+            if(build == null || player.dead()) return;
+            Call.unitBuildingControlSelect(player.unit(), build);
         });
         scriptButton(Blocks.radar.uiIcon, "雷达扫描", () -> ArcRadar.mobileRadar = !ArcRadar.mobileRadar);
     }

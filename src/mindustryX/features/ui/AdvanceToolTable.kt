@@ -45,6 +45,7 @@ class AdvanceToolTable : ToolTableBase() {
                     core.items.clear()
                 }.width(40f).tooltip("[acid]清空核心的所有资源")
                 button(UnitTypes.gamma.emoji() + "[acid]+", Styles.cleart) {
+                    if (Vars.player.dead()) return@button
                     val cloneUnit = cloneExactUnit(Vars.player.unit())
                     cloneUnit[Vars.player.x + Mathf.range(8f)] = Vars.player.y + Mathf.range(8f)
                     cloneUnit.add()

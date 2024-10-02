@@ -35,7 +35,7 @@ index 55ffbe61ebc80920fa5be3af22d3f981e2022d9f..36e8ec703d4dd9e8d5aff3a28303f3fb
  
          if(loadLocales){
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 79ca6eaa6492b5aedcb4fe1669c05259a5d0278d..432847184412982c0cebac53fcc071c6e0a317d9 100644
+index a85c88738b520ed904f0f51bfc1417c57ae9fab4..e6b2f149d83cf4dcb449413b901b6a782ed6b2cb 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -198,6 +198,8 @@ public class NetClient implements ApplicationListener{

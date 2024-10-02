@@ -27,7 +27,7 @@ public class AITools extends AuxiliaryTools.Table{
         super(Icon.android);
 
         Events.run(EventType.Trigger.update, () -> {
-            if(selectAI != null){
+            if(selectAI != null && !player.dead()){
                 selectAI.unit(player.unit());
                 selectAI.updateUnit();
             }

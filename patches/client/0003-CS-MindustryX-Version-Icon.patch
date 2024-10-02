@@ -106,7 +106,7 @@ index 7531b849b35dacbfcc188112614317ac5b54412f..55ffbe61ebc80920fa5be3af22d3f981
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index d0e444a4a7a9ced372a2c93102860991ac922112..79ca6eaa6492b5aedcb4fe1669c05259a5d0278d 100644
+index 8d3ac0bd19be8caca3aa95ab48adda63c3c317a1..a85c88738b520ed904f0f51bfc1417c57ae9fab4 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -24,6 +24,7 @@ import mindustry.net.*;

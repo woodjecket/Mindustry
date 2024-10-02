@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 4 insertions(+), 7 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 42913d6d404537a7af5f2f91e2ee17d96f852166..ca50e541687795a71e7ed2947b32a1debd7701d2 100644
+index 4b051bdab7c21d85bb5c426dba954dedb1b51a4c..2d0f3fa7e296d22e230d45f7e7f8d16ce072398b 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -30,6 +30,7 @@ import mindustry.ui.*;
