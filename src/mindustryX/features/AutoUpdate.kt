@@ -42,13 +42,13 @@ object AutoUpdate {
         }
     }
 
-    val active get() = !Version.mdtXBuild.endsWith("-dev")
+    val active get() = !VarsX.devVersion
 
     val repo = "TinyLake/MindustryX-work"
     var versions = emptyList<Release>()
-    val currentBranch get() = Version.mdtXBuild.split('-', limit = 2).getOrNull(1)
+    val currentBranch get() = VarsX.version.split('-', limit = 2).getOrNull(1)
     var latest: Release? = null
-    val newVersion: Release? get() = latest?.takeIf { it.version > Version.mdtXBuild }
+    val newVersion: Release? get() = latest?.takeIf { it.version > VarsX.version }
 
     fun checkUpdate() {
         if (versions.isNotEmpty()) return
@@ -80,7 +80,7 @@ object AutoUpdate {
         checkUpdate()
         val dialog = BaseDialog("自动更新")
         dialog.cont.apply {
-            add("当前版本号: ${Version.mdtXBuild}").labelAlign(Align.center).width(500f).row()
+            add("当前版本号: ${VarsX.version}").labelAlign(Align.center).width(500f).row()
             newVersion?.let {
                 add("新版本: ${it.version}").labelAlign(Align.center).width(500f).row()
             }

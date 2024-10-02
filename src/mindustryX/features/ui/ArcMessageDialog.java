@@ -17,6 +17,7 @@ import mindustry.gen.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustry.world.blocks.storage.*;
+import mindustryX.*;
 import mindustryX.features.*;
 
 import java.text.*;
@@ -317,7 +318,7 @@ public class ArcMessageDialog extends BaseDialog{
 
     void exportMsg(){
         StringBuilder messageHis = new StringBuilder();
-        messageHis.append("下面是[MDTX-").append(Version.mdtXBuild).append("] 导出的游戏内聊天记录").append("\n");
+        messageHis.append("下面是[MDTX-").append(VarsX.version).append("] 导出的游戏内聊天记录").append("\n");
         messageHis.append("*** 当前地图名称: ").append(state.map.name()).append("（模式：").append(state.rules.modeName).append("）\n");
         messageHis.append("*** 当前波次: ").append(state.wave).append("\n");
         messageHis.append("成功选取共 ").append(msgList.size).append(" 条记录，如下：\n");

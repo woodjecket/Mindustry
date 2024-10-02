@@ -23,8 +23,8 @@ Content-Transfer-Encoding: 8bit
  .../mindustry/world/blocks/defense/Radar.java |  9 +++++++++
  .../world/blocks/distribution/Router.java     |  3 ++-
  .../world/blocks/production/BeamDrill.java    | 12 ++++-------
- .../mindustry/desktop/DesktopLauncher.java    | 11 +++++++++-
- 16 files changed, 78 insertions(+), 49 deletions(-)
+ .../mindustry/desktop/DesktopLauncher.java    | 12 ++++++++++-
+ 16 files changed, 79 insertions(+), 49 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
 index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650a4bbde09 100644
@@ -82,10 +82,10 @@ index 045b96d9a2f94c543d4cfdba463c4bd8b7e9865d..5daa92c0a9ffe67b5f236a72b390fa0d
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 096f637032d6ad33967d62732ba2732a054b5e22..6fd5f42c966fcb10c68fd54c0e2a6498556e87fb 100644
+index 3a1042f45759d300812b846981e8abcc997a0313..fc51e6b1ab7b4488312086d884dae4cb2b680bc2 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -62,6 +62,10 @@ public class NetClient implements ApplicationListener{
+@@ -63,6 +63,10 @@ public class NetClient implements ApplicationListener{
      public NetClient(){
  
          net.handleClient(Connect.class, packet -> {
@@ -392,23 +392,31 @@ index 163019c9c2562301984912c212e5d5558a028e36..85ec19d8a4d07d7c02245226b5ce3958
              drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, false);
          }
 diff --git a/desktop/src/mindustry/desktop/DesktopLauncher.java b/desktop/src/mindustry/desktop/DesktopLauncher.java
-index eba453ade66d5e72f44726f64a28a0577ef6ef87..f5d4209262f7022e55aaf0a56eb86751a2cf4950 100644
+index eba453ade66d5e72f44726f64a28a0577ef6ef87..c3d08e2db1c3e28bad6a34dbe41b49d850ad7cf5 100644
 --- a/desktop/src/mindustry/desktop/DesktopLauncher.java
 +++ b/desktop/src/mindustry/desktop/DesktopLauncher.java
-@@ -71,6 +71,12 @@ public class DesktopLauncher extends ClientLauncher{
+@@ -23,6 +23,7 @@ import mindustry.net.*;
+ import mindustry.net.Net.*;
+ import mindustry.service.*;
+ import mindustry.type.*;
++import mindustryX.*;
+ 
+ import java.io.*;
+ 
+@@ -71,6 +72,12 @@ public class DesktopLauncher extends ClientLauncher{
  
      public DesktopLauncher(String[] args){
          Version.init();
 +        //MDTX, auto discover steam
 +        String steamJar = "addon_steam.jar";
-+        if(!OS.isAndroid && !OS.isIos && (new Fi(steamJar).exists() || new Fi("steamworks4j.dll", FileType.classpath).exists())){
++        if(!OS.isAndroid && !OS.isIos && !VarsX.devVersion && (new Fi(steamJar).exists() || new Fi("steamworks4j.dll", FileType.classpath).exists())){
 +            Version.modifier = "steam";
 +            if(!new Fi(steamJar).exists()) steamJar = null;
 +        }
          boolean useSteam = Version.modifier.contains("steam");
          testMobile = Seq.with(args).contains("-testMobile");
  
-@@ -99,7 +105,10 @@ public class DesktopLauncher extends ClientLauncher{
+@@ -99,7 +106,10 @@ public class DesktopLauncher extends ClientLauncher{
              });
  
              try{

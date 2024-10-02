@@ -130,7 +130,7 @@ public class Hooks implements ApplicationListener{
     private void updateTitle(){
         if(Core.graphics == null) return;
         var mod = Vars.mods.orderedMods();
-        var title = "MindustryX | 版本号 " + Version.mdtXBuild +
+        var title = "MindustryX | 版本号 " + VarsX.version +
         " | mod启用" + mod.count(Mods.LoadedMod::enabled) + "/" + mod.size +
         " | " + Core.graphics.getWidth() + "x" + Core.graphics.getHeight();
         if(!title.equals(lastTitle)){

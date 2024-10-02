@@ -9,18 +9,18 @@ Content-Transfer-Encoding: 8bit
 不再发送ARC标识
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- .gitignore                                       |  1 +
- android/build.gradle                             |  4 ++--
- android/res/values/strings.xml                   |  2 +-
- build.gradle                                     |  2 +-
- core/build.gradle.kts                            |  2 +-
- core/src/mindustry/Vars.java                     |  2 +-
- core/src/mindustry/core/NetClient.java           |  1 +
- core/src/mindustry/core/Version.java             | 16 +++++++++++++++-
- core/src/mindustry/net/NetworkIO.java            |  2 +-
- .../src/mindustry/desktop/DesktopLauncher.java   |  2 +-
- gradle.properties                                |  3 +++
- 11 files changed, 28 insertions(+), 9 deletions(-)
+ .gitignore                                         | 1 +
+ android/build.gradle                               | 4 ++--
+ android/res/values/strings.xml                     | 2 +-
+ build.gradle                                       | 2 +-
+ core/build.gradle.kts                              | 2 +-
+ core/src/mindustry/Vars.java                       | 2 +-
+ core/src/mindustry/core/NetClient.java             | 2 ++
+ core/src/mindustry/core/Version.java               | 6 +++++-
+ core/src/mindustry/net/NetworkIO.java              | 2 +-
+ desktop/src/mindustry/desktop/DesktopLauncher.java | 2 +-
+ gradle.properties                                  | 3 +++
+ 11 files changed, 19 insertions(+), 9 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
 index 7d91d3191096c431b739d2d5ecd951a764feead3..ba271e6bd0dd06971fff6fa2314254149cc90087 100644
@@ -106,31 +106,38 @@ index 7531b849b35dacbfcc188112614317ac5b54412f..55ffbe61ebc80920fa5be3af22d3f981
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index d0e444a4a7a9ced372a2c93102860991ac922112..0948c4a880fe17643171857951722cd798248892 100644
+index d0e444a4a7a9ced372a2c93102860991ac922112..79ca6eaa6492b5aedcb4fe1669c05259a5d0278d 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -135,6 +135,7 @@ public class NetClient implements ApplicationListener{
+@@ -24,6 +24,7 @@ import mindustry.net.*;
+ import mindustry.net.Packets.*;
+ import mindustry.world.*;
+ import mindustry.world.modules.*;
++import mindustryX.*;
+ 
+ import java.io.*;
+ import java.util.*;
+@@ -135,6 +136,7 @@ public class NetClient implements ApplicationListener{
              Log.info("Received world data: @ bytes.", data.stream.available());
              NetworkIO.loadWorld(new InflaterInputStream(data.stream));
  
-+            Call.serverPacketReliable("MDTX", Version.mdtXBuild);
++            Call.serverPacketReliable("MDTX", VarsX.version);
              finishConnecting();
          });
      }
 diff --git a/core/src/mindustry/core/Version.java b/core/src/mindustry/core/Version.java
-index 73bbd59416cc8e1b64bcb5538fdd73886a455451..93da9d60feda92b04c60e649b0db0b2a6e33f3f9 100644
+index 73bbd59416cc8e1b64bcb5538fdd73886a455451..001e9281ca1b42b94fa1d51cd0f6444500da1da4 100644
 --- a/core/src/mindustry/core/Version.java
 +++ b/core/src/mindustry/core/Version.java
-@@ -6,6 +6,8 @@ import arc.files.*;
+@@ -6,6 +6,7 @@ import arc.files.*;
  import arc.struct.*;
  import arc.util.*;
  import arc.util.io.*;
-+import arc.util.serialization.*;
 +import mindustryX.*;
  
  public class Version{
      /** Build type. 'official' for official releases; 'custom' or 'bleeding edge' are also used. */
-@@ -20,6 +22,8 @@ public class Version{
+@@ -20,6 +21,8 @@ public class Version{
      public static int revision = 0;
      /** Whether version loading is enabled. */
      public static boolean enabled = true;
@@ -139,29 +146,13 @@ index 73bbd59416cc8e1b64bcb5538fdd73886a455451..93da9d60feda92b04c60e649b0db0b2a
  
      public static void init(){
          if(!enabled) return;
-@@ -44,6 +48,15 @@ public class Version{
-         }else{
-             build = Strings.canParseInt(map.get("build")) ? Integer.parseInt(map.get("build")) : -1;
-         }
-+        //MDTX: mdtXBuild
-+        if(Core.files == null) return;
-+        try{
-+            Jval meta = Jval.read(Core.files.internal("mod.hjson").readString());
-+            mdtXBuild = meta.getString("version");
-+        }catch(Throwable e){
-+            e.printStackTrace();
-+            mdtXBuild = "custom build";
-+        }
-     }
- 
-     /** @return whether the current game version is greater than the specified version string, e.g. "120.1"*/
-@@ -73,6 +86,7 @@ public class Version{
+@@ -73,6 +76,7 @@ public class Version{
          if(build == -1){
              return "custom build";
          }
 -        return (type.equals("official") ? modifier : type) + " build " + build + (revision == 0 ? "" : "." + revision);
 +        return (type.equals("official") ? modifier : type) + " build " + build + (revision == 0 ? "" : "." + revision) +
-+        "\nMindustryX " + mdtXBuild;
++        "\nMindustryX " + VarsX.version;
      }
  }
 diff --git a/core/src/mindustry/net/NetworkIO.java b/core/src/mindustry/net/NetworkIO.java
