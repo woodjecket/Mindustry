@@ -26,7 +26,6 @@ public class ArcRadar{
     private static final float markerSize = 15f * tilesize;
     /** 范围倍率 */
     private static final int basicRadarCir = 25;
-    private static final Table t = new Table(Styles.black3);
     public static boolean mobileRadar = false;
     /** 真实大小 */
     private static float rRatio;
@@ -42,18 +41,10 @@ public class ArcRadar{
     /** 实际扫描范围，不是参数 */
     private static float curScanRange = 0;
     private static float expandRate = 1f;
+    private static boolean working = false;
+    private static Table t;
 
     static{
-        t.touchable = Touchable.disabled;
-        t.margin(8f).add(">> 雷达扫描中 <<").color(Pal.accent).style(Styles.outlineLabel).labelAlign(Align.center);
-        t.visible = false;
-        t.update(() -> t.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.1f, Align.center));
-        t.pack();
-        t.act(0.1f);
-        t.update(() -> t.visible = t.visible && state.isPlaying());
-
-        Core.scene.add(t);
-
         Events.on(EventType.WorldLoadEvent.class, event -> scanTime = Math.max(Mathf.dst(world.width(), world.height()) / 20f, 7.5f));
     }
 
@@ -64,18 +55,27 @@ public class ArcRadar{
 
         if(extendSpd >= 6){
             if(Core.input.keyTap(Binding.arcDetail) || mobileRadar){
-                t.visible = !t.visible;
-                scanRate = t.visible ? 1f : 0f;
+                working = !working;
+                scanRate = working ? 1f : 0f;
                 mobileRadar = false;
             }
         }else{
             if(Core.input.keyDown(Binding.arcDetail) || mobileRadar){
-                t.visible = true;
+                working = true;
                 scanRate = Mathf.approachDelta(scanRate, 1, 1 * extendSpd / (60f * scanTime));
             }else{
-                t.visible = false;
+                working = false;
                 scanRate = Mathf.approachDelta(scanRate, 0, 3 * extendSpd / (60f * scanTime));
             }
+        }
+        if(working && t == null){
+            t = new Table(Styles.black3);
+            t.touchable = Touchable.disabled;
+            t.margin(8f).add(">> 雷达扫描中 <<").color(Pal.accent).style(Styles.outlineLabel);
+            t.pack();
+            t.visible(() -> working);
+            t.update(() -> t.setPosition(Core.graphics.getWidth() / 2f, Core.graphics.getHeight() * 0.1f, Align.center));
+            ui.hudGroup.addChild(t);
         }
 
         if(scanRate <= 0) return;

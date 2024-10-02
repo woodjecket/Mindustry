@@ -35,42 +35,22 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         left().top();
 
         ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
-        button(Icon.waves, RStyles.clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
 
         table(buttons -> {
             buttons.defaults().size(40);
 
+            buttons.button(Icon.waves, RStyles.clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
             buttons.button("<", RStyles.clearLineNonet, () -> shiftWaveOffset(-1));
-
-            buttons.button("O", RStyles.clearLineNonet, () -> setWaveOffset(0));
-
+            buttons.label(() -> "" + (state.wave + waveOffset)).labelAlign(Align.center);
             buttons.button(">", RStyles.clearLineNonet, () -> shiftWaveOffset(1));
 
-            buttons.button("Go", RStyles.clearLineNonet, () -> {
-                state.wave += waveOffset;
-                setWaveOffset(0);
-            });
-
+            buttons.button("R", RStyles.clearLineNonet, () -> setWaveOffset(0));
+            buttons.button(Icon.settingsSmall, RStyles.clearAccentNonei, iconMed, this::setWaveOffsetDialog);
             buttons.button("♐", RStyles.clearLineNonet, () -> ArcMessageDialog.shareWaveInfo(state.wave + waveOffset))
             .disabled((b) -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
 
         }).left().row();
 
-        table(setWave -> {
-            setWave.label(() -> "" + getDisplayWaves()).fontScale(fontScl).row();
-            setWave.button(Icon.settingsSmall, RStyles.clearAccentNonei, iconMed, () -> {
-                Dialog lsSet = new BaseDialog("波次设定");
-                lsSet.cont.add("设定查询波次").padRight(5f).left();
-                TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
-                lsSet.cont.row();
-                lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
-                    waveOffset = (int)res - state.wave;
-                    field.setText((int)res + "");
-                });
-                lsSet.addCloseButton();
-                lsSet.show();
-            });
-        });
         waveInfo = new Table(Tex.pane).left().top();
         add(new ScrollPane(waveInfo, Styles.noBarPane){
             {
@@ -91,13 +71,25 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         }).growX();
     }
 
+    private void setWaveOffsetDialog(){
+        Dialog lsSet = new BaseDialog("波次设定");
+        lsSet.cont.add("设定查询波次").padRight(5f).left();
+        TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
+        lsSet.cont.row();
+        lsSet.cont.slider(1, ArcWaveSpawner.calWinWave(), 1, res -> {
+            waveOffset = (int)res - state.wave;
+            field.setText((int)res + "");
+        });
+        lsSet.addCloseButton();
+        lsSet.show();
+    }
+
     private void rebuildWaveInfo(){
         waveInfo.clearChildren();
 
-        int curInfoWave = getDisplayWaves();
+        int curInfoWave = state.wave + waveOffset - 1;
         for(SpawnGroup group : state.rules.spawns){
             int amount = group.getSpawned(curInfoWave);
-
             if(amount == 0) continue;
 
             float shield = group.getShield(curInfoWave);
@@ -111,7 +103,7 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
                 if(effect != null && effect != StatusEffects.none){
                     groupT.image(effect.uiIcon).size(iconSmall);
                 }
-            }).pad(4).left().top();
+            }).pad(0, 4, 0, 4).left().top();
         }
     }
 
@@ -124,9 +116,4 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         this.waveOffset = waveOffset;
         rebuildWaveInfo();
     }
-
-    private int getDisplayWaves(){
-        return state.wave - 1 + waveOffset;
-    }
-
 }

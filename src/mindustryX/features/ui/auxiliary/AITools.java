@@ -33,20 +33,16 @@ public class AITools extends AuxiliaryTools.Table{
             }
         });
 
-        button(Icon.settingsSmall, RStyles.clearLineNoneTogglei, 30, this::showSettingDialog);
-
         if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
         aiButton(new ArcMinerAI(), UnitTypes.mono.region, "矿机AI");
         aiButton(new ArcBuilderAI(), UnitTypes.poly.region, "重建AI");
         aiButton(new ArcRepairAI(), UnitTypes.mega.region, "修复AI");
         aiButton(new DefenderAI(), UnitTypes.oct.region, "保护AI");
+        button(Icon.settingsSmall, RStyles.clearLineNonei, 30, this::showSettingDialog);
     }
 
     private void aiButton(AIController ai, TextureRegion textureRegion, String describe){
-        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> {
-            if(selectAI != null) selectAI = null;
-            else selectAI = ai;
-        }).checked(b -> selectAI == ai).size(40).tooltip(describe);
+        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> selectAI = selectAI == ai ? null : ai).checked(b -> selectAI == ai).size(40).tooltip(describe);
     }
 
     private void showSettingDialog(){
@@ -56,12 +52,9 @@ public class AITools extends AuxiliaryTools.Table{
 
         dialog.cont.table(t -> {
             t.add("minerAI-矿物筛选器").color(Pal.accent).pad(cols / 2f).center().row();
-
             t.image().color(Pal.accent).fillX().row();
-
             t.table(c -> {
                 c.add("地表矿").row();
-
                 c.table(list -> {
                     int i = 0;
                     for(Block block : ArcMinerAI.oreAllList){
@@ -75,7 +68,6 @@ public class AITools extends AuxiliaryTools.Table{
                 }).row();
 
                 c.add("墙矿").row();
-
                 c.table(list -> {
                     int i = 0;
                     for(Block block : ArcMinerAI.oreAllWallList){
@@ -87,20 +79,16 @@ public class AITools extends AuxiliaryTools.Table{
                         }).tooltip(block.localizedName).checked(k -> ArcMinerAI.oreWallList.contains(block)).width(100f).height(50f);
                     }
                 }).row();
-
             }).growX();
         }).growX().row();
 
         dialog.cont.table(t -> {
             t.add("builderAI").color(Pal.accent).pad(cols / 2f).center().row();
-
             t.image().color(Pal.accent).fillX().row();
 
             t.table(tt -> {
                 tt.add("重建冷却时间: ");
-
                 TextField sField = tt.field(ArcBuilderAI.rebuildTime + "", text -> ArcBuilderAI.rebuildTime = Math.max(5f, Float.parseFloat(text))).valid(Strings::canParsePositiveFloat).width(200f).get();
-
                 tt.slider(5, 200, 5, i -> {
                     ArcBuilderAI.rebuildTime = i;
                     sField.setText(ArcBuilderAI.rebuildTime + "");
