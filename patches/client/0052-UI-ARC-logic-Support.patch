@@ -22,9 +22,9 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/logic/LExecutor.java       |  19 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  59 ++++-
- .../world/blocks/logic/MemoryBlock.java       |  61 +++++
- 6 files changed, 385 insertions(+), 57 deletions(-)
+ .../world/blocks/logic/LogicBlock.java        |  66 ++++-
+ .../world/blocks/logic/MemoryBlock.java       |  72 +++++-
+ 6 files changed, 402 insertions(+), 58 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -530,7 +530,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..d58054c7f837894f40f8403e184975d5094531c7 100644
+index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c91f23e459 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -608,7 +608,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..d58054c7f837894f40f8403e184975d5
  
              Groups.unit.each(u -> u.controller() instanceof LogicAI ai && ai.controller == this, unit -> {
                  Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);
-@@ -640,12 +649,46 @@ public class LogicBlock extends Block{
+@@ -640,12 +649,53 @@ public class LogicBlock extends Block{
  
          @Override
          public boolean shouldShowConfigure(Player player){
@@ -631,10 +631,9 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..d58054c7f837894f40f8403e184975d5
 +                    showVars = !showVars;
 +                    vars.clear();
 +                    if(showVars) buildVarsTable(vars);
-+                    table.pack();
 +                }).size(40);
 +            });
-+            table.row().pane(vars).pad(4).maxHeight(400f);
++            table.row().pane(Styles.noBarPane, vars).pad(4).maxHeight(400f).get().setScrollingDisabledX(true);
 +            if(showVars) buildVarsTable(vars);
 +        }
 +
@@ -644,41 +643,53 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..d58054c7f837894f40f8403e184975d5
 +                if(vars != executor.vars){
 +                    table.clear();
 +                    buildVarsTable(table);
++                    return;
 +                }
++                table.getCells().each(cell -> {
++                    if(cell.prefWidth() > cell.maxWidth()){
++                        cell.width(cell.prefWidth());
++                        table.invalidateHierarchy();
++                    }
++                });
++                if(table.needsLayout()) table.parent.parent.pack();
 +            });
 +
 +            table.setColor(Color.lightGray);
 +            for(var s : vars){
 +                if(s.name.startsWith("___")) continue;
 +                table.add(s.name).color(LogicDialog.arcVarsColor(s)).align(Align.left);
-+                table.label(() -> LogicDialog.arcVarsText(s)).align(Align.right);
++                table.label(() -> LogicDialog.arcVarsText(s)).align(Align.right).labelAlign(Align.right);
 +                table.row();
 +            }
          }
  
          public void showEditDialog(){
 diff --git a/core/src/mindustry/world/blocks/logic/MemoryBlock.java b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..ba37ff6bc76170156117e114317c321aa8dc327c 100644
+index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..570924771231ca1c269a8931e9c8c774dee17f42 100644
 --- a/core/src/mindustry/world/blocks/logic/MemoryBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/MemoryBlock.java
-@@ -1,9 +1,16 @@
+@@ -1,11 +1,19 @@
  package mindustry.world.blocks.logic;
  
 +import arc.*;
-+import arc.graphics.Color;
++import arc.graphics.*;
 +import arc.scene.event.*;
-+import arc.scene.ui.layout.Table;
++import arc.scene.ui.layout.*;
++import arc.util.*;
  import arc.util.io.*;
  import mindustry.gen.*;
-+import mindustry.ui.Styles;
++import mindustry.ui.*;
  import mindustry.world.*;
  import mindustry.world.meta.*;
 +import mindustryX.features.*;
 +import mindustryX.features.ui.*;
  
- import static mindustry.Vars.*;
+-import static mindustry.Vars.*;
++import static mindustry.Vars.state;
  
-@@ -18,6 +25,7 @@ public class MemoryBlock extends Block{
+ public class MemoryBlock extends Block{
+     public int memoryCapacity = 32;
+@@ -18,6 +26,7 @@ public class MemoryBlock extends Block{
          drawDisabled = false;
          envEnabled = Env.any;
          canOverdrive = false;
@@ -686,7 +697,7 @@ index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..ba37ff6bc76170156117e114317c321a
      }
  
      @Override
-@@ -38,6 +46,8 @@ public class MemoryBlock extends Block{
+@@ -38,6 +47,8 @@ public class MemoryBlock extends Block{
  
      public class MemoryBuild extends Building{
          public double[] memory = new double[memoryCapacity];
@@ -695,7 +706,7 @@ index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..ba37ff6bc76170156117e114317c321a
  
          //massive byte size means picking up causes sync issues
          @Override
-@@ -71,6 +81,57 @@ public class MemoryBlock extends Block{
+@@ -71,6 +82,65 @@ public class MemoryBlock extends Block{
              }
          }
  
@@ -719,27 +730,35 @@ index 44af66623aa1ebe735c7b063f0fa6af51fad0c3f..ba37ff6bc76170156117e114317c321a
 +            Table vars = new Table();
 +            table.background(Styles.black3);
 +            table.table(t -> {
-+                t.add("每行 " + numPerRow).get();
++                t.label(() -> "每行 " + numPerRow);
 +                t.slider(2, 15, 1, numPerRow, res -> {
 +                    numPerRow = (int)res;
 +                    vars.clear();
 +                    buildVarsPane(vars);
-+                    table.pack();
 +                });
 +
-+                t.add("保留小数: ");
++                t.label(() -> "保留小数: " + format.getDecimal());
 +                t.slider(0, 8, 1, format.getDecimal(), res -> format.setDecimal((int)res));
 +            }).row();
-+            table.pane(vars).maxWidth(1000f).maxHeight(500f).pad(4);
-+
++            table.pane(Styles.noBarPane, vars).maxHeight(500f).pad(4).get().setScrollingDisabledX(true);
 +            buildVarsPane(vars);
++            vars.update(() -> {
++                vars.getCells().each(cell -> {
++                    if(cell.prefWidth() > cell.maxWidth()){
++                        cell.width(cell.prefWidth());
++                        vars.invalidate();
++                    }
++                });
++                if(vars.needsLayout()) table.pack();
++            });
 +        }
 +
 +        public void buildVarsPane(Table t){
 +            for(int i = 0; i < memory.length; i++){
 +                int finalI = i;
-+                t.add("" + i).color(Color.lightGray);
-+                t.label(() -> format.format((float)memory[finalI])).padLeft(8)
++                t.add("[" + i + "]").color(Color.lightGray).align(Align.left);
++                t.add().width(8);
++                t.label(() -> format.format((float)memory[finalI])).align(Align.right).labelAlign(Align.right)
 +                .touchable(Touchable.enabled).get().tapped(() -> {
 +                    Core.app.setClipboardText(memory[finalI] + "");
 +                    UIExt.announce("[cyan]复制内存[white]\n " + memory[finalI]);
