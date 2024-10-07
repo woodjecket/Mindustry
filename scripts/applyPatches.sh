@@ -11,7 +11,5 @@ git commit -m "#PATCH-BASE#" --allow-empty
 git am --no-gpg-sign -3 ../patches/picked/*
 git commit -m "#END-PICKED#" --allow-empty
 git am --no-gpg-sign -3 ../patches/client/*
-git commit -m "#Work-In-Progress#" --allow-empty
-git am --no-gpg-sign -3 ../patches/work/*
 
 echo "Now at $(git rev-parse HEAD)"
