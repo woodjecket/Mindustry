@@ -25,7 +25,7 @@ index 37632948b02ad5e3b13b784d7d35b2c128652074..adeffb027c3a3675676837afbf93b875
      public MapObjectives objectives = new MapObjectives();
      /** Flags set by objectives. Used in world processors. */
 diff --git a/core/src/mindustry/io/SaveVersion.java b/core/src/mindustry/io/SaveVersion.java
-index ca7a5f4c9ee1997adff2efe5253331b25e1e7ea0..a97fedc2d9f1f019cdeb94955b617631a7007a52 100644
+index 71b7f72d72828b5e31912b9f809fefa3b97f5cda..9c86da78781f03eaa879226e597dbe53dde2ed45 100644
 --- a/core/src/mindustry/io/SaveVersion.java
 +++ b/core/src/mindustry/io/SaveVersion.java
 @@ -152,6 +152,7 @@ public abstract class SaveVersion extends SaveFileReader{

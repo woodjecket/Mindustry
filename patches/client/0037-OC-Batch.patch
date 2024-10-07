@@ -271,7 +271,7 @@ index e2bdb30e190a210f25130c423c853892798e4c28..f0c580f01f0a0014870d1f37b37cbf4e
 +    }
  }
 diff --git a/core/src/mindustry/graphics/MultiPacker.java b/core/src/mindustry/graphics/MultiPacker.java
-index e5f473a7651495f7f61856e6df711fba12dfb1be..f1a3f1cbbac0fbda6dfabe689f25c2108ef58337 100644
+index 42bc8d00d7a66148b1c7ee63e5cb24c2d0d99ce3..bf50ab0e5db2dde9b3812bc80784c5c1eb4b8884 100644
 --- a/core/src/mindustry/graphics/MultiPacker.java
 +++ b/core/src/mindustry/graphics/MultiPacker.java
 @@ -114,7 +114,7 @@ public class MultiPacker implements Disposable{
@@ -281,5 +281,5 @@ index e5f473a7651495f7f61856e6df711fba12dfb1be..f1a3f1cbbac0fbda6dfabe689f25c210
 -        main(4096),
 +        main(16384, 4096), //MDTX 更大图集
  
-         //TODO stuff like this throws OOM on some devices
-         environment(4096, 2048),
+         environment(4096),
+         ui(4096),

@@ -11,7 +11,7 @@ Subject: [PATCH] API: more error log
  4 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index 5daa92c0a9ffe67b5f236a72b390fa0dcd09fdc6..43c33ac859e0cf2e4b358c0633c3d4146c5e3d7c 100644
+index af40b8c86579e6e798aaa411e3be3febea28e806..e6e0081f9a1252bd03f35d0a84891e064df6887c 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
 @@ -610,6 +610,7 @@ public class Control implements ApplicationListener, Loadable{

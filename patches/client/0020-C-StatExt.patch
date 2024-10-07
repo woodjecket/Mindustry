@@ -176,7 +176,7 @@ index c2917941210017a7fd0a03b792ee4ebe835dea68..100459d9da22fd433a5820ca1a91f046
          if(example instanceof WaterMovec){
              naval = true;
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index d67a1ca03202019648a65863d0114c96fb21cd78..b30c84d1a15087dc088d418bba5322abcca40ca0 100644
+index d097677d3ca8d8b34dca7e35bc0d82cabba807fe..36ddd96f325b49b989b910ca80d0c9ee08744098 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
 @@ -164,6 +164,18 @@ public class Weapon implements Cloneable{
@@ -199,7 +199,7 @@ index d67a1ca03202019648a65863d0114c96fb21cd78..b30c84d1a15087dc088d418bba5322ab
              t.row();
              t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " " + StatUnit.degrees.localized());
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 3bd6c3977ccf225dd91e06d220c8f8e470087c41..f1bf018edaf87adc9472dc3fb303f0766f9ff662 100644
+index eaafecee8c9dfb4fe6d2b27389927144063f9dab..5ffc734ae64ac7c7982386a06efb02400c6909e6 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -32,6 +32,7 @@ import mindustry.world.blocks.environment.*;
@@ -210,7 +210,7 @@ index 3bd6c3977ccf225dd91e06d220c8f8e470087c41..f1bf018edaf87adc9472dc3fb303f076
  
  import java.lang.reflect.*;
  import java.util.*;
-@@ -552,7 +553,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -554,7 +555,7 @@ public class Block extends UnlockableContent implements Senseable{
              }
          }
  
@@ -219,7 +219,7 @@ index 3bd6c3977ccf225dd91e06d220c8f8e470087c41..f1bf018edaf87adc9472dc3fb303f076
              stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
              stats.add(Stat.buildCost, StatValues.items(false, requirements));
          }
-@@ -564,6 +565,7 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -566,6 +567,7 @@ public class Block extends UnlockableContent implements Senseable{
          for(var c : consumers){
              c.display(stats);
          }
@@ -573,7 +573,7 @@ index 416df5a20af4767cdfdc2646bce19468ad11cd28..239311eea91980f2c3e0facd6613b237
      public final String name;
      public final int id;
 diff --git a/core/src/mindustry/world/meta/StatValues.java b/core/src/mindustry/world/meta/StatValues.java
-index ac422e90d7fca36db21862887b08d25fc2a143a1..7160abaea04c4eae23a121a348779ad430bcf9d3 100644
+index e05c129ea3de18c95f74e731b0f01fdfdb508040..dcaad1248422b9e3ab62d5ffb28bc76cea00a558 100644
 --- a/core/src/mindustry/world/meta/StatValues.java
 +++ b/core/src/mindustry/world/meta/StatValues.java
 @@ -16,7 +16,7 @@ import mindustry.*;

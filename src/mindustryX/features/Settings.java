@@ -60,7 +60,7 @@ public class Settings{
             c.sliderPref("itemSelectionHeight", 4, 4, 12, i -> i + "行");
             c.sliderPref("itemSelectionWidth", 4, 4, 12, i -> i + "列");
             c.sliderPref("blockInventoryWidth", 3, 3, 16, i -> i + "");
-            c.sliderPref("editorBrush", 4, 3, 12, i -> i + "");
+            c.sliderPref("editorBrush", 6, 3, 12, i -> i + "");
             c.checkPref("researchViewer", false);
             c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
             c.sliderPref("maxSchematicSize", 64, 64, 257, 1, v -> {

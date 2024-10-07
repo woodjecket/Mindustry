@@ -61,7 +61,7 @@ index e8ffe187781f3bc5624e48a42c53aae2adc71713..efc8530fbdb5837cb14d4a0e80de8e8f
  
              if(array.size == 0) continue;
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a2096815e 100644
+index a5a1063bd3e9351c39ac4290199f9cef226035ff..d127d3a0fdd2f656b562403ec1a39bc3707057e1 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -25,13 +25,16 @@ import mindustry.input.*;
@@ -92,7 +92,7 @@ index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a
          });
      }
  
-@@ -130,6 +137,27 @@ public class PlacementFragment{
+@@ -128,6 +135,27 @@ public class PlacementFragment{
          if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
              var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
  
@@ -120,15 +120,15 @@ index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a
              //can't middle click buildings in fog
              if(build != null && build.inFogTo(player.team())){
                  build = null;
-@@ -244,6 +272,7 @@ public class PlacementFragment{
+@@ -263,6 +291,7 @@ public class PlacementFragment{
      }
  
      public void build(Group parent){
 +        lastAllUnlocked = LogicExt.allUnlocked;
          parent.fill(full -> {
              toggler = full;
-             full.bottom().right().visible(() -> ui.hudfrag.shown);
-@@ -262,6 +291,7 @@ public class PlacementFragment{
+             full.bottom().right().visible(() -> {
+@@ -288,6 +317,7 @@ public class PlacementFragment{
  
                      for(Block block : getUnlockedByCategory(currentCategory)){
                          if(!unlocked(block)) continue;
@@ -136,7 +136,7 @@ index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a
                          if(index++ % rowWidth == 0){
                              blockTable.row();
                          }
-@@ -709,7 +739,7 @@ public class PlacementFragment{
+@@ -739,7 +769,7 @@ public class PlacementFragment{
      }
  
      boolean unlocked(Block block){
@@ -146,10 +146,10 @@ index 9d4dc589c464867e65a9e194e29c147717d9a22d..ac388623831326c292d5a99b1864576a
      }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 836b62b8125945c08f3e7944199a86c67712c7d8..94403ec80794d32a13371c421a03a86f5fc1ea3b 100644
+index 15ffd3bb28294dd47aaac20cd317f810e12d20a5..7ddd5a5bc5ac35e9c64ac446cf689c25745d6c78 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
-@@ -907,11 +907,11 @@ public class Block extends UnlockableContent implements Senseable{
+@@ -909,11 +909,11 @@ public class Block extends UnlockableContent implements Senseable{
      }
  
      public boolean isVisible(){
@@ -164,7 +164,7 @@ index 836b62b8125945c08f3e7944199a86c67712c7d8..94403ec80794d32a13371c421a03a86f
  
      /** @return whether this block supports a specific environment. */
 diff --git a/core/src/mindustry/world/Build.java b/core/src/mindustry/world/Build.java
-index a47363df2f463338875a2937dfeffdd0411d492a..f35744f818dc796a75ad04a7d2853bc5f673ea29 100644
+index 5388ea9789c9072a9c5d41a0cd63133537cd7fca..5e97f655191e64279e5d21a6ae297634a2740ffe 100644
 --- a/core/src/mindustry/world/Build.java
 +++ b/core/src/mindustry/world/Build.java
 @@ -14,7 +14,10 @@ import mindustry.game.Teams.*;
@@ -231,7 +231,7 @@ index a47363df2f463338875a2937dfeffdd0411d492a..f35744f818dc796a75ad04a7d2853bc5
 +            return true;
 +        }
          //the wave team can build whatever they want as long as it's visible - banned blocks are not applicable
-         if(type == null || (checkVisible && (!type.environmentBuildable() || (!type.isPlaceable() && !(state.rules.waves && team == state.rules.waveTeam && type.isVisible()))))){
+         if(type == null || (!state.rules.editor && (checkVisible && (!type.environmentBuildable() || (!type.isPlaceable() && !(state.rules.waves && team == state.rules.waveTeam && type.isVisible())))))){
              return false;
 @@ -294,6 +338,7 @@ public class Build{
      /** @return whether the tile at this position is breakable by this team */

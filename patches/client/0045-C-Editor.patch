@@ -68,7 +68,7 @@ index 38839e610819e60fe2d9780f730404979fb48976..1145b88cd87b1c860facda79cf8f05a1
  
                  if(wx < 0 || wy < 0 || wx >= width() || wy >= height()){
 diff --git a/core/src/mindustry/editor/MapEditorDialog.java b/core/src/mindustry/editor/MapEditorDialog.java
-index c1f3a6e888bac8657385cdf0cb5028ee8ad2c337..96f4613c7648da483167fc663cfe6c2f98d7ae4c 100644
+index ad35a4a45f633dd5aecd9d05fba9728ac80cdc41..f90a968fa4262828adc833c8bbc6b8fe1986529b 100644
 --- a/core/src/mindustry/editor/MapEditorDialog.java
 +++ b/core/src/mindustry/editor/MapEditorDialog.java
 @@ -30,6 +30,7 @@ import mindustry.world.*;
@@ -79,7 +79,7 @@ index c1f3a6e888bac8657385cdf0cb5028ee8ad2c337..96f4613c7648da483167fc663cfe6c2f
  
  import static mindustry.Vars.*;
  
-@@ -595,11 +596,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
+@@ -593,11 +594,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
                  .colspan(3).height(40).width(size * 3f + 3f).padBottom(3);
  
                  tools.row();
@@ -91,7 +91,7 @@ index c1f3a6e888bac8657385cdf0cb5028ee8ad2c337..96f4613c7648da483167fc663cfe6c2f
                  for(Team team : Team.baseTeams){
                      ImageButton button = new ImageButton(Tex.whiteui, Styles.clearNoneTogglei);
                      button.margin(4f);
-@@ -607,19 +604,34 @@ public class MapEditorDialog extends Dialog implements Disposable{
+@@ -605,19 +602,34 @@ public class MapEditorDialog extends Dialog implements Disposable{
                      button.getStyle().imageUpColor = team.color;
                      button.clicked(() -> editor.drawTeam = team);
                      button.update(() -> button.setChecked(editor.drawTeam == team));
@@ -128,11 +128,11 @@ index c1f3a6e888bac8657385cdf0cb5028ee8ad2c337..96f4613c7648da483167fc663cfe6c2f
                      for(int j = 0; j < MapEditor.brushSizes.length; j++){
                          if(MapEditor.brushSizes[j] == editor.brushSize){
                              slider.setValue(j);
-@@ -771,7 +783,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
+@@ -769,7 +781,7 @@ public class MapEditorDialog extends Dialog implements Disposable{
  
              if(i == 0) editor.drawBlock = block;
  
--            if(++i % 4 == 0){
+-            if(++i % 6 == 0){
 +            if(++i % Math.max(Core.settings.getInt("editorBrush"),3) == 0){
                  blockSelection.row();
              }

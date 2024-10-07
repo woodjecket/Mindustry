@@ -98,12 +98,12 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
          return new Schematic(tiles, new StringMap(), width, height);
      }
 diff --git a/core/src/mindustry/world/blocks/environment/Floor.java b/core/src/mindustry/world/blocks/environment/Floor.java
-index dfd29de65b8b4b0b07a5610cbe366f13f21a0373..d5482461eebb80f0dac8ce45a9b7a860274b4019 100644
+index 2ea499d015317d7d76b987274733b4557bfaffd0..7380b7c5f92bd971ca5af501c9b0b65b22bd0b21 100644
 --- a/core/src/mindustry/world/blocks/environment/Floor.java
 +++ b/core/src/mindustry/world/blocks/environment/Floor.java
-@@ -93,6 +93,7 @@ public class Floor extends Block{
-         allowRectanglePlacement = true;
+@@ -94,6 +94,7 @@ public class Floor extends Block{
          instantBuild = true;
+         ignoreBuildDarkness = true;
          placeEffect = Fx.rotateBlock;
 +        schematicPriority = 100;
      }

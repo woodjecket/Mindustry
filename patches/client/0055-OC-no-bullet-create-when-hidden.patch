@@ -9,7 +9,7 @@ Subject: [PATCH] OC: no bullet create when hidden
  2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/entities/bullet/BulletType.java b/core/src/mindustry/entities/bullet/BulletType.java
-index 160a45d8d245cdf0fe60baaa1c92ca135bf53a5c..aabfd4f3750978651e912a2dac5ad651b67a6a97 100644
+index 6e0d5482b416709d1ae52b2efff61ddbd6e7ba1b..0fa5a69dab8157df057937292b4dccf2fca2dae2 100644
 --- a/core/src/mindustry/entities/bullet/BulletType.java
 +++ b/core/src/mindustry/entities/bullet/BulletType.java
 @@ -22,6 +22,7 @@ import mindustry.graphics.*;
@@ -20,16 +20,16 @@ index 160a45d8d245cdf0fe60baaa1c92ca135bf53a5c..aabfd4f3750978651e912a2dac5ad651
  
  import static mindustry.Vars.*;
  
-@@ -775,6 +776,7 @@ public class BulletType extends Content implements Cloneable{
-     }
- 
-     public @Nullable Bullet create(@Nullable Entityc owner, @Nullable Entityc shooter, Team team, float x, float y, float angle, float damage, float velocityScl, float lifetimeScl, Object data, @Nullable Mover mover, float aimX, float aimY){
+@@ -782,6 +783,7 @@ public class BulletType extends Content implements Cloneable{
+         @Nullable Entityc owner, @Nullable Entityc shooter, Team team, float x, float y, float angle, float damage, float velocityScl,
+         float lifetimeScl, Object data, @Nullable Mover mover, float aimX, float aimY, @Nullable Teamc target
+     ){
 +        if(!RenderExt.bulletShow && net.client()) return null;
          if(!Mathf.chance(createChance)) return null;
          if(ignoreSpawnAngle) angle = 0;
          if(spawnUnit != null){
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index b30c84d1a15087dc088d418bba5322abcca40ca0..4a48c94e5c7e64ad6088763b49ee46ce89c350cf 100644
+index 36ddd96f325b49b989b910ca80d0c9ee08744098..87d4b92337dd7e43fade327f20077ab947983157 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
 @@ -523,7 +523,7 @@ public class Weapon implements Cloneable{

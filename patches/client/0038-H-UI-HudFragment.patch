@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 4 May 2024 15:43:58 +0800
+Subject: [PATCH] H(UI): HudFragment
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(波次信息显示)
+---
+ .../mindustry/ui/fragments/HudFragment.java   | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
+index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..a3391efca9e25ee57be7efcbb8a69f54d94adbe7 100644
+--- a/core/src/mindustry/ui/fragments/HudFragment.java
++++ b/core/src/mindustry/ui/fragments/HudFragment.java
+@@ -203,6 +203,9 @@ public class HudFragment{
+             .touchable(Touchable.disabled)
+             .style(Styles.outlineLabel)
+             .name("position");
++            if(Core.settings.getInt("AuxiliaryTable") == 3){
++                t.row().add(UIExt.auxiliaryTools);
++            }
+             t.top().right();
+         });
+ 
+@@ -322,6 +325,10 @@ public class HudFragment{
+ 
+             wavesMain.row();
+ 
++            if(Core.settings.getInt("AuxiliaryTable") == 2){
++                wavesMain.add(UIExt.auxiliaryTools).left().top().row();
++            }
++
+             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
+ 
+             editorMain.name = "editor";
+@@ -401,6 +408,11 @@ public class HudFragment{
+             }
+             editorMain.visible(() -> shown && state.isEditor());
+ 
++            //map info/nextwave display
++            if(Core.settings.getInt("AuxiliaryTable") == 1){
++                cont.add(UIExt.auxiliaryTools).left().top();
++            }
++
+             //fps display
+             cont.table(info -> {
+                 info.name = "fps/ping";
+@@ -450,7 +462,12 @@ public class HudFragment{
+ 
+             t.table(c -> {
+                 //core items
+-                c.top().collapser(coreItems, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
++                //MDTX: replace coreItems with UIExt.coreItems, keep but invisible for compatibility.
++                c.top().collapser(coreItems, () -> true).fillX().visible(false).row();
++                c.top().add(UIExt.coreItems).touchable(Touchable.disabled).fillX().row();
++
++                //MDTX: add waveInfoDisplay
++                c.add(UIExt.waveInfoDisplay.wrapped()).fillX().row();
+ 
+                 float notifDuration = 240f;
+                 float[] coreAttackTime = {0};

@@ -25,7 +25,9 @@ public class UIExt{
     public static AdvanceToolTable advanceToolTable = new AdvanceToolTable();
     public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
     public static ArcWaveInfoDialog waveInfoDialog = new ArcWaveInfoDialog();
+    public static AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
     public static WaveInfoDisplay waveInfoDisplay = new WaveInfoDisplay();
+    public static NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
 
     public static void init(){
         teamSelect = new TeamSelectDialog();

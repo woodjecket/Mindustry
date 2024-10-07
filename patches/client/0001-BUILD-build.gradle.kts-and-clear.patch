@@ -240,7 +240,7 @@ index 0000000000000000000000000000000000000000..181b87c1d5f3755f16a01c0528d0a89f
 +mindustry.annotations.misc.LogicStatementProcessor
 +mindustry.annotations.remote.RemoteProcess
 diff --git a/build.gradle b/build.gradle
-index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb004cd8ac 100644
+index a7d9988b58bc416642d5814e767754d90a0e3a8c..4599d8a8554059a9f7764d6b7f17daf85d1e0318 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -7,22 +7,9 @@ buildscript{
@@ -477,7 +477,7 @@ index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb
          implementation "com.github.Anuken:steamworks4j:$steamworksVersion"
  
          implementation arcModule("backends:backend-sdl")
-@@ -258,16 +111,6 @@ project(":core"){
+@@ -259,16 +112,6 @@ project(":core"){
          }
      }
  
@@ -494,7 +494,7 @@ index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb
      task copyChangelog{
          doLast{
              def props = loadVersionProps()
-@@ -292,18 +135,6 @@ project(":core"){
+@@ -293,18 +136,6 @@ project(":core"){
          }
      }
  
@@ -513,7 +513,7 @@ index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb
      task musicJar(type: Jar){
          archiveClassifier = 'music'
          from files("assets"){
-@@ -312,8 +143,6 @@ project(":core"){
+@@ -313,8 +144,6 @@ project(":core"){
      }
  
      dependencies{
@@ -522,7 +522,7 @@ index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb
          api "org.lz4:lz4-java:1.8.0"
          api arcModule("arc-core")
          api arcModule("extensions:flabel")
-@@ -323,20 +152,18 @@ project(":core"){
+@@ -324,20 +153,18 @@ project(":core"){
          api arcModule("extensions:arcnet")
          implementation arcModule("extensions:filedialogs")
          api "com.github.Anuken:rhino:$rhinoVersion"
@@ -547,7 +547,7 @@ index 0a2a28b66ca6914943b0d0501a3c47933f017fb3..3ac0012a751b893f2bed04484034e4fb
  
              source rootProject.subprojects.collect{ project ->
                  if(!blacklist.contains(project) && project.hasProperty("sourceSets")){
-@@ -430,37 +257,11 @@ configure([":core", ":server"].collect{project(it)}){
+@@ -435,37 +262,11 @@ configure([":core", ":server"].collect{project(it)}){
          publications{
              maven(MavenPublication){
                  from components.java

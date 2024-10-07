@@ -67,7 +67,7 @@ index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e
 +    <string name="app_name">MindustryX</string>
  </resources>
 diff --git a/build.gradle b/build.gradle
-index 222ce1ed9b95d82b8244aaacc08247aa39ea9e22..e13f9df614deb5d24668053bf6e6ef0a417341bc 100644
+index 2b81d7a3fbe4d4fecffdf9ce97773fb558f71c23..1a6cf5eb26635a2112d98ce2012cc666f3452a3f 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -21,7 +21,7 @@ allprojects{
@@ -93,12 +93,12 @@ index 6dfb14b6bb9401ec083a0f6994ed9bab8b303c97..a68dd5cd58f7f012e3dd27750ae970b9
      processResources.configure {
          dependsOn(generateLocales, generateBasePartNames, writeVersion)
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index 7531b849b35dacbfcc188112614317ac5b54412f..55ffbe61ebc80920fa5be3af22d3f981e2022d9f 100644
+index 2eb0e16ca5613ba96b0d8ac3cdf00f7ea1a9e1fb..ccc9c764d4a1fd163b01d000dc54de1ddd28050c 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -77,7 +77,7 @@ public class Vars implements Loadable{
-     //TODO merge with v6 list upon release
-     public static final String serverJsonURL = "https://raw.githubusercontent.com/Anuken/Mindustry/master/servers_v7.json";
+@@ -76,7 +76,7 @@ public class Vars implements Loadable{
+     /** URL to the JSON file containing all the stable servers.  */
+     public static final String serverJsonURL = "https://raw.githubusercontent.com/Anuken/MindustryServerList/master/servers_v8.json";
      /** URL of the github issue report template.*/
 -    public static final String reportIssueURL = "https://github.com/Anuken/Mindustry/issues/new?labels=bug&template=bug_report.md";
 +    public static final String reportIssueURL = "https://github.com/TinyLake/MindustryX/issues/new?labels=bug&template=bug_report.md";
@@ -182,14 +182,14 @@ index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a057
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 555cef4a0b5882c7e10d0a8102ae1cf329aabfd2..de5f63833275548e5e7455ef21a8f54e1c872819 100644
+index 2c3108d722c7936e167f9c0d6afc192f47252b07..6231b38f0a5bac9f02cd6589769700dc1c0c890d 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=f2ffd0e34f
+ archash=89c7f1aee6
 +
-+upstreamBuild=25298
++upstreamBuild=25368
 +versionType=bleeding-edge
 \ No newline at end of file

@@ -10,8 +10,8 @@ Content-Transfer-Encoding: 8bit
 
 ---
  core/src/mindustry/net/Packets.java           |  5 ++++-
- core/src/mindustry/ui/dialogs/JoinDialog.java | 19 ++++++++++++++++---
- 2 files changed, 20 insertions(+), 4 deletions(-)
+ core/src/mindustry/ui/dialogs/JoinDialog.java | 17 +++++++++++++++--
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/core/src/mindustry/net/Packets.java b/core/src/mindustry/net/Packets.java
 index c8b2ccfe4eaca33e06cce6d107a4f1da19ccacc8..2b1e1f96159da194b1ac521faee8103c6e30019a 100644
@@ -44,18 +44,9 @@ index c8b2ccfe4eaca33e06cce6d107a4f1da19ccacc8..2b1e1f96159da194b1ac521faee8103c
              TypeIO.writeString(buffer, name);
              TypeIO.writeString(buffer, locale);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index e4dc95f3a8284289793ed5ded095368b4b33af45..c17f615961ed4e536964c14c0a6d905fbf9c96cc 100644
+index b8a6e5f68f8bc42498a02c345d7cd0c8b27de6a0..b78ecec268901b14f53808d7765df20c9726b107 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
-@@ -602,7 +602,7 @@ public class JoinDialog extends BaseDialog{
-                 connect(lastIp, lastPort);
-             }, exception -> {});
-         }, 1, 1);
--        
-+
-         ui.loadfrag.setButton(() -> {
-             ui.loadfrag.hide();
-             if(ping == null) return;
 @@ -612,9 +612,22 @@ public class JoinDialog extends BaseDialog{
      }
  

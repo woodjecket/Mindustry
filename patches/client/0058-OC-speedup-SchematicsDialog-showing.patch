@@ -9,10 +9,10 @@ Subject: [PATCH] OC: speedup SchematicsDialog showing.
  2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/build.gradle b/build.gradle
-index e13f9df614deb5d24668053bf6e6ef0a417341bc..37dcf86e7339516cfcb2c47722374b25fc85c786 100644
+index 1a6cf5eb26635a2112d98ce2012cc666f3452a3f..273566d64e870371bb8d80d4569bce069316ce63 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -146,7 +146,7 @@ project(":core"){
+@@ -147,7 +147,7 @@ project(":core"){
          api "org.lz4:lz4-java:1.8.0"
          api arcModule("arc-core")
          api arcModule("extensions:flabel")
@@ -22,10 +22,10 @@ index e13f9df614deb5d24668053bf6e6ef0a417341bc..37dcf86e7339516cfcb2c47722374b25
          api arcModule("extensions:fx")
          api arcModule("extensions:arcnet")
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index 3907f10dbee3695599e0f70bdfde13c34c53b50d..5095be6c1d92f1049829b96a34efabb9854f0e55 100644
+index f64cf14ca2f0f06d90147364c9bfeded363ff95b..1819d3cabac2aeadbb57bf74cf6962f829c7dded 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-@@ -676,6 +676,7 @@ public class SchematicsDialog extends BaseDialog{
+@@ -683,6 +683,7 @@ public class SchematicsDialog extends BaseDialog{
      }
  
      public static class SchematicImage extends Image{
@@ -33,7 +33,7 @@ index 3907f10dbee3695599e0f70bdfde13c34c53b50d..5095be6c1d92f1049829b96a34efabb9
          public float scaling = 16f;
          public float thickness = 4f;
          public Color borderColor = Pal.gray;
-@@ -701,7 +702,8 @@ public class SchematicsDialog extends BaseDialog{
+@@ -708,7 +709,8 @@ public class SchematicsDialog extends BaseDialog{
                  && ((Button)parent.parent).isOver();
  
              boolean wasSet = set;
@@ -43,7 +43,7 @@ index 3907f10dbee3695599e0f70bdfde13c34c53b50d..5095be6c1d92f1049829b96a34efabb9
                  Core.app.post(this::setPreview);
                  set = true;
              }else if(lastTexture != null && lastTexture.isDisposed()){
-@@ -732,6 +734,7 @@ public class SchematicsDialog extends BaseDialog{
+@@ -739,6 +741,7 @@ public class SchematicsDialog extends BaseDialog{
          }
  
          private void setPreview(){

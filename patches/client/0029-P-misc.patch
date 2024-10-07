@@ -52,10 +52,10 @@ index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650
          }
      }
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index 36e8ec703d4dd9e8d5aff3a28303f3fb5c0fde43..df2286fa43880b6c8ac8474e093b5c09de867d19 100644
+index c7b05105ef282cb30e0ef62a702bb17f6cf85f8c..7f76f34f05765380cc23c39d977d65471d475829 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -390,6 +390,11 @@ public class Vars implements Loadable{
+@@ -389,6 +389,11 @@ public class Vars implements Loadable{
                  if(!headless && (ui == null || ui.consolefrag == null)){
                      logBuffer.add(result);
                  }else if(!headless){
@@ -68,7 +68,7 @@ index 36e8ec703d4dd9e8d5aff3a28303f3fb5c0fde43..df2286fa43880b6c8ac8474e093b5c09
                          for(String code : ColorCodes.values){
                              result = result.replace(code, "");
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index 045b96d9a2f94c543d4cfdba463c4bd8b7e9865d..5daa92c0a9ffe67b5f236a72b390fa0dcd09fdc6 100644
+index db1ccc68c38b2feda940cc2d022c13c84eeb5b4b..af40b8c86579e6e798aaa411e3be3febea28e806 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
 @@ -570,7 +570,8 @@ public class Control implements ApplicationListener, Loadable{
@@ -223,7 +223,7 @@ index e5f42b2c9ac63558d517625ba32d454577a1ba5c..900a84cff8870a64f11e9ed0dbdf3958
          float dy = (Core.camera.position.y / tilesize);
          dx = Mathf.clamp(dx, sz, world.width() - sz);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index e4c8bee7163b4fb05b8649381583358727106c01..e4dc95f3a8284289793ed5ded095368b4b33af45 100644
+index b0912c7b9ca65209f53f8b5817b15f44990c3d5b..b8a6e5f68f8bc42498a02c345d7cd0c8b27de6a0 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
 @@ -60,11 +60,9 @@ public class JoinDialog extends BaseDialog{
