@@ -5,7 +5,7 @@ function getRef() {
 }
 
 base=$(cd .. && getRef HEAD work || exit 1)
-git reset --hard "$base"
+git reset --hard "$base" || (git fetch origin $base && git reset --hard "$base")
 
 git commit -m "#PATCH-BASE#" --allow-empty
 git am --no-gpg-sign -3 ../patches/picked/*
