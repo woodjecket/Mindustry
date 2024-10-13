@@ -4,8 +4,11 @@ import arc.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
+import arc.input.*;
 import arc.math.*;
 import arc.math.geom.*;
+import arc.scene.*;
+import arc.scene.event.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
@@ -32,8 +35,8 @@ public class MarkerType{
     public static final float retainTime = 1800f;
     public static MarkerType mark, gatherMark, attackMark, defenseMark, quesMark;
     public static Seq<MarkerType> allTypes;
-    public static MarkerType selected = mark;
     private static MarkElement last;
+    private static final Vec2 panCenter = new Vec2();
 
     public static void init(){
         mark = new MarkerType("Mark", new Effect(1800, e -> {
@@ -101,8 +104,72 @@ public class MarkerType{
 
     static{
         init();
-        selected = mark;
         Events.run(WorldLoadEvent.class, () -> last = null);
+        ui.hudGroup.addChildAt(0, new Element(){
+            private final Circle outer = new Circle(0, 0, 120);
+            private final Circle inner = new Circle(0, 0, 60);
+
+            {
+                name = "markPanUI";
+                addListener(new InputListener(){
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, KeyCode button){
+                        if(inner.contains(x, y)){
+                            mark.markWithMessage(panCenter);
+                        }else if(outer.contains(x, y)){
+                            int i = Mathf.round(Mathf.angle(x, y) / 360f * (allTypes.size - 1)) % (allTypes.size - 1);
+                            allTypes.get(1 + i).markWithMessage(panCenter);
+                        }
+                        panCenter.setZero();
+                        event.stop();
+                        return true;
+                    }
+                });
+            }
+
+            @Override
+            public void updateVisibility(){
+                visible = !panCenter.isZero();
+            }
+
+            @Override
+            public void act(float delta){
+                super.act(delta);
+                var pos = Core.camera.project(Tmp.v1.set(panCenter));
+                setPosition(pos.x, pos.y);
+            }
+
+            @Override
+            public void draw(){
+                float oR = outer.radius, iR = inner.radius;
+                Draw.color(Color.black, 0.6f);
+                Fill.circle(x, y, oR);
+                Draw.color(Pal.accent);
+                Lines.circle(x, y, oR);
+                Lines.circle(x, y, iR);
+                int sp = allTypes.size - 1;
+                for(int i = 0; i < sp; i++){//first in center,so skip
+                    Lines.lineAngle(x, y, 360f * (i - 0.5f) / sp, oR - iR, iR);
+                }
+
+                FuncX.drawText(Tmp.v1.set(x, y), mark.localizedName + "\n[white]" + FormatDefault.formatTile(panCenter), Scl.scl(4f), mark.color);
+                for(int i = 0; i < sp; i++){
+                    var mark = allTypes.get(1 + i);
+                    Vec2 tCenter = Tmp.v1.trns(360f * i / sp, (oR + iR) / 2).add(x, y);
+                    FuncX.drawText(tCenter, mark.localizedName, Scl.scl(4f), mark.color);
+                }
+                Draw.reset();
+            }
+
+            @Override
+            public Element hit(float x, float y, boolean touchable){
+                return this;
+            }
+        });
+    }
+
+    public static void showPanUI(){
+        panCenter.set(Core.input.mouseWorld());
     }
 
 

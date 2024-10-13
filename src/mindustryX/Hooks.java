@@ -4,7 +4,6 @@ import arc.*;
 import arc.files.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustry.mod.*;
@@ -39,6 +38,7 @@ public class Hooks implements ApplicationListener{
             ReplayController.init();
             ArcOld.colorizeContent();
         }
+        Vars.mods.getScripts().runConsole("X=Packages.mindustryX.features");
     }
 
     @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
@@ -88,7 +88,7 @@ public class Hooks implements ApplicationListener{
             MarkerType.lockOnLastMark();
         }
         if(Core.input.keyTap(Binding.point)){
-            MarkerType.selected.markWithMessage(Core.input.mouseWorld());
+            MarkerType.showPanUI();
         }
         if(Core.input.keyTap(Binding.toggle_block_render)){
             Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
