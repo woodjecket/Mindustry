@@ -10,7 +10,6 @@ import arc.util.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.input.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.*;
@@ -54,13 +53,13 @@ public class ArcRadar{
         Draw.reset();
 
         if(extendSpd >= 6){
-            if(Core.input.keyTap(Binding.arcDetail) || mobileRadar){
+            if(BindingExt.arcDetail.keyTap() || mobileRadar){
                 working = !working;
                 scanRate = working ? 1f : 0f;
                 mobileRadar = false;
             }
         }else{
-            if(Core.input.keyDown(Binding.arcDetail) || mobileRadar){
+            if(BindingExt.arcDetail.keyDown() || mobileRadar){
                 working = true;
                 scanRate = Mathf.approachDelta(scanRate, 1, 1 * extendSpd / (60f * scanTime));
             }else{

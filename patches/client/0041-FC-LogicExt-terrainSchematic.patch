@@ -8,24 +8,23 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/src/mindustry/game/Schematics.java       | 39 ++++++++++++++++---
+ core/src/mindustry/game/Schematics.java       | 38 ++++++++++++++++---
  .../world/blocks/environment/Floor.java       |  1 +
- 2 files changed, 34 insertions(+), 6 deletions(-)
+ 2 files changed, 33 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa0892e7bc 100644
+index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..35843db3e559cc691d987aab8bd345c52dc04538 100644
 --- a/core/src/mindustry/game/Schematics.java
 +++ b/core/src/mindustry/game/Schematics.java
-@@ -34,6 +34,8 @@ import mindustry.world.blocks.sandbox.*;
+@@ -34,6 +34,7 @@ import mindustry.world.blocks.sandbox.*;
  import mindustry.world.blocks.storage.*;
  import mindustry.world.blocks.storage.CoreBlock.*;
  import mindustry.world.meta.*;
 +import mindustryX.features.*;
-+import mindustryX.features.ui.*;
  
  import java.io.*;
  import java.util.zip.*;
-@@ -278,7 +280,7 @@ public class Schematics implements Loadable{
+@@ -278,7 +279,7 @@ public class Schematics implements Loadable{
      /** Creates an array of build plans from a schematic's data, centered on the provided x+y coordinates. */
      public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
          return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
@@ -34,7 +33,7 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
      }
  
      /** @return all the valid loadouts for a specific core type. */
-@@ -369,10 +371,10 @@ public class Schematics implements Loadable{
+@@ -369,10 +370,10 @@ public class Schematics implements Loadable{
      public Schematic create(int x, int y, int x2, int y2){
          Team team = headless ? null : Vars.player.team();
          NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, maxSchematicSize);
@@ -49,7 +48,7 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
  
          int ox = x, oy = y, ox2 = x2, oy2 = y2;
  
-@@ -399,7 +401,7 @@ public class Schematics implements Loadable{
+@@ -399,7 +400,7 @@ public class Schematics implements Loadable{
              }
          }
  
@@ -58,7 +57,7 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
              x = minx;
              y = miny;
              x2 = maxx;
-@@ -408,6 +410,22 @@ public class Schematics implements Loadable{
+@@ -408,6 +409,22 @@ public class Schematics implements Loadable{
              return new Schematic(new Seq<>(), new StringMap(), 1, 1);
          }
  
@@ -70,18 +69,18 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
 +            for(int cx = ox; cx <= ox2; cx++){
 +                for(int cy = oy; cy <= oy2; cy++){
 +                    Tile tile = world.tile(cx, cy);
-+                    tiles.add(new Stile(tile.floor(), tile.x - x, tile.y - y));
++                    tiles.add(new Stile(tile.floor(), tile.x - x, tile.y - y, null, (byte)0));
 +                    if(!tile.overlay().isAir())
-+                        tiles.add(new Stile(tile.overlay(), tile.x - x, tile.y - y));
++                        tiles.add(new Stile(tile.overlay(), tile.x - x, tile.y - y, null, (byte)0));
 +                    if(!tile.block().isAir() && tile.build == null)
-+                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y));
++                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y, null, (byte)0));
 +                }
 +            }
 +        }
          int width = x2 - x + 1, height = y2 - y + 1;
          int offsetX = -x, offsetY = -y;
          IntSet counted = new IntSet();
-@@ -426,6 +444,15 @@ public class Schematics implements Loadable{
+@@ -426,6 +443,15 @@ public class Schematics implements Loadable{
                  }
              }
          }
@@ -90,7 +89,7 @@ index 0a7394838bbb36aa985383eae069f7bf6a1fb15d..e207fcc9bbebd1cbcd09800c8cd969aa
 +                for(int cy = oy; cy <= oy2; cy++){
 +                    Tile tile = world.tile(cx, cy);
 +                    if(!tile.block().isAir() && (tile.build == null || counted.add(tile.build.pos())))
-+                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y));
++                        tiles.add(new Stile(tile.block(), tile.x - x, tile.y - y, null, (byte)0));
 +                }
 +            }
 +        }

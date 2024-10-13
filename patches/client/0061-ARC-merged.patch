@@ -99,11 +99,10 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
  .../mindustry/entities/comp/StatusComp.java   |   3 +
- core/src/mindustry/game/Schematic.java        | 158 ++++++++
+ core/src/mindustry/game/Schematic.java        | 104 ++++++
  core/src/mindustry/game/Universe.java         |   2 +-
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
  .../mindustry/graphics/OverlayRenderer.java   |  84 ++++-
- core/src/mindustry/input/Binding.java         |   6 +
  core/src/mindustry/input/DesktopInput.java    |  85 ++++-
  core/src/mindustry/input/InputHandler.java    |  51 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
@@ -123,7 +122,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/ui/fragments/MenuFragment.java  |  59 ++-
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  93 +++--
- core/src/mindustry/world/Block.java           |  11 +-
+ core/src/mindustry/world/Block.java           |   7 +-
  .../world/blocks/ConstructBlock.java          |  42 ++-
  .../world/blocks/defense/ForceProjector.java  |   2 +
  .../world/blocks/defense/MendProjector.java   |   5 +-
@@ -133,7 +132,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../world/blocks/production/Drill.java        |  23 +-
  .../blocks/production/GenericCrafter.java     |  16 +
  .../world/blocks/storage/CoreBlock.java       |   9 +
- 40 files changed, 1965 insertions(+), 237 deletions(-)
+ 39 files changed, 1903 insertions(+), 235 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -629,10 +628,10 @@ index 4d3dd11dd07972d4c6dcada51ece6382586fb986..edd79bbd195b7f108534e33337548753
 +    }
  }
 diff --git a/core/src/mindustry/game/Schematic.java b/core/src/mindustry/game/Schematic.java
-index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f13484c0c7eea 100644
+index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..793e1b23c43d7beb6677d8e29f6c9e22cf0d028b 100644
 --- a/core/src/mindustry/game/Schematic.java
 +++ b/core/src/mindustry/game/Schematic.java
-@@ -8,7 +8,15 @@ import mindustry.mod.Mods.*;
+@@ -8,7 +8,13 @@ import mindustry.mod.Mods.*;
  import mindustry.type.*;
  import mindustry.world.*;
  import mindustry.world.blocks.power.*;
@@ -643,12 +642,10 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f1348
 +import mindustry.world.consumers.ConsumeItems;
 +import mindustry.world.consumers.ConsumeLiquid;
 +import mindustry.world.consumers.ConsumeLiquids;
-+
-+import java.util.concurrent.atomic.AtomicBoolean;
  
  import static mindustry.Vars.*;
  
-@@ -23,6 +31,9 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -23,6 +29,9 @@ public class Schematic implements Publishable, Comparable<Schematic>{
      /** Associated mod. If null, no mod is associated with this schematic. */
      public @Nullable LoadedMod mod;
  
@@ -658,7 +655,7 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f1348
      public Schematic(Seq<Stile> tiles, StringMap tags, int width, int height){
          this.tiles = tiles;
          this.tags = tags;
-@@ -30,6 +41,10 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -30,6 +39,10 @@ public class Schematic implements Publishable, Comparable<Schematic>{
          this.height = height;
      }
  
@@ -669,39 +666,36 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f1348
      public float powerProduction(){
          return tiles.sumf(s -> s.block instanceof PowerGenerator p ? p.getDisplayedPowerProduction() : 0f);
      }
-@@ -38,6 +53,143 @@ public class Schematic implements Publishable, Comparable<Schematic>{
+@@ -38,6 +51,97 @@ public class Schematic implements Publishable, Comparable<Schematic>{
          return tiles.sumf(s -> s.block.consPower != null ? s.block.consPower.usage : 0f);
      }
  
-+    public void calProduction() {
++    public void calProduction(){
 +        items = new ObjectFloatMap<>(content.items().copy().size << 1);
 +        liquids = new ObjectFloatMap<>(content.liquids().copy().size << 1);
 +        tiles.each(t -> {
-+            if(t.block== null)
++            if(t.block == null)
 +                return;
 +
-+            if (t.block instanceof GenericCrafter gc) {
-+                for(var c:gc.consumeBuilder){
-+                    if(c.optional) continue;
-+                    else if(c instanceof ConsumeItems consumeItems){
-+                        for (ItemStack stack : consumeItems.items) {
++            if(t.block instanceof GenericCrafter gc){
++                for(var c : gc.nonOptionalConsumers){
++                    if(c instanceof ConsumeItems consumeItems){
++                        for(ItemStack stack : consumeItems.items){
 +                            Item item = stack.item;
 +                            items.put(item, items.get(item, 0) - stack.amount * 60f / gc.craftTime);
 +                        }
-+                    }
-+                    else if(c instanceof ConsumeLiquid consumeLiquid){
++                    }else if(c instanceof ConsumeLiquid consumeLiquid){
 +                        Liquid liquid = consumeLiquid.liquid;
 +                        liquids.put(liquid, liquids.get(liquid, 0) - consumeLiquid.amount * 60f);
-+                    }
-+                    else if(c instanceof ConsumeLiquids consumeLiquids){
-+                        for (LiquidStack stack : consumeLiquids.liquids) {
++                    }else if(c instanceof ConsumeLiquids consumeLiquids){
++                        for(LiquidStack stack : consumeLiquids.liquids){
 +                            Liquid liquid = stack.liquid;
 +                            liquids.put(liquid, liquids.get(liquid, 0) - stack.amount * 60f);
 +                        }
 +                    }
 +                }
 +                if(gc.outputsItems()){
-+                    for (ItemStack stack : gc.outputItems) {
++                    for(ItemStack stack : gc.outputItems){
 +                        Item item = stack.item;
 +                        items.put(item, items.get(item, 0) + stack.amount * 60f / gc.craftTime);
 +                    }
@@ -709,97 +703,54 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f1348
 +                if(gc.outputLiquid != null){
 +                    liquids.put(gc.outputLiquid.liquid, liquids.get(gc.outputLiquid.liquid, 0) + gc.outputLiquid.amount * 60f);
 +                }*/
-+                if(gc.outputLiquids !=null) {
-+                    for (LiquidStack stack : gc.outputLiquids) {
++                if(gc.outputLiquids != null){
++                    for(LiquidStack stack : gc.outputLiquids){
 +                        Liquid liquid = stack.liquid;
 +                        liquids.put(liquid, liquids.get(liquid, 0) + stack.amount * 60f);
 +                    }
 +                }
-+            }
-+            else if (t.block instanceof Separator s) {
-+                for(var c:s.consumeBuilder){
-+                    if(c.optional) continue;
-+                    else if(c instanceof ConsumeItems consumeItems){
-+                        for (ItemStack stack : consumeItems.items) {
++            }else if(t.block instanceof Separator s){
++                for(var c : s.nonOptionalConsumers){
++                    if(c instanceof ConsumeItems consumeItems){
++                        for(ItemStack stack : consumeItems.items){
 +                            Item item = stack.item;
 +                            items.put(item, items.get(item, 0) - stack.amount * 60f / s.craftTime);
 +                        }
-+                    }
-+                    else if (c instanceof ConsumeLiquid consumeLiquid) {
++                    }else if(c instanceof ConsumeLiquid consumeLiquid){
 +                        Liquid liquid = consumeLiquid.liquid;
 +                        liquids.put(liquid, liquids.get(liquid, 0) - consumeLiquid.amount * 60f);
 +                    }
 +                }
-+            }
-+            else if (t.block instanceof Fracker f) {
-+                for(var c:f.consumeBuilder) {
-+                    if (c.optional) continue;
-+                    else if (c instanceof ConsumeItems consumeItems) {
-+                        for (ItemStack stack : consumeItems.items) {
++            }else if(t.block instanceof Fracker f){
++                for(var c : f.nonOptionalConsumers){
++                    if(c instanceof ConsumeItems consumeItems){
++                        for(ItemStack stack : consumeItems.items){
 +                            Item item = stack.item;
 +                            items.put(item, items.get(item, 0) - stack.amount * f.itemUseTime / 60f);
 +                        }
 +                    }
 +                }
-+            }
-+            else if (t.block instanceof PowerGenerator) {
-+                if (t.block instanceof  ConsumeGenerator cg) {
-+                    for(var c:cg.consumeBuilder){
-+                        if(c.optional) continue;
-+                        else if(c instanceof ConsumeItems consumeItems){
-+                            for (ItemStack stack : consumeItems.items) {
-+                                Item item = stack.item;
-+                                items.put(item, items.get(item, 0) - stack.amount * 60f / cg.itemDuration);
-+                            }
-+                        }
-+                        else if(c instanceof ConsumeLiquid consumeLiquid){
-+                            Liquid liquid = consumeLiquid.liquid;
-+                            liquids.put(liquid, liquids.get(liquid, 0) - consumeLiquid.amount * 60f);
-+                        }
-+                        else if(c instanceof ConsumeLiquids consumeLiquids){
-+                            for (LiquidStack stack : consumeLiquids.liquids) {
-+                                Liquid liquid = stack.liquid;
-+                                liquids.put(liquid, liquids.get(liquid, 0) - stack.amount * 60f);
-+                            }
-+                        }
-+                    }
++            }else if(t.block instanceof PowerGenerator){
++                float itemDuration = 0;
++                if(t.block instanceof ConsumeGenerator cg){
++                    itemDuration = cg.itemDuration;
++                }else if(t.block instanceof NuclearReactor nr){
++                    itemDuration = nr.itemDuration;
++                }else if(t.block instanceof ImpactReactor ir){
++                    itemDuration = ir.itemDuration;
 +                }
-+                else if (t.block instanceof NuclearReactor nr) {
-+                    for(var c:nr.consumeBuilder){
-+                        if(c.optional) continue;
-+                        else if(c instanceof ConsumeItems consumeItems){
-+                            for (ItemStack stack : consumeItems.items) {
++                if(itemDuration > 0){
++                    for(var c : t.block.nonOptionalConsumers){
++                        if(c instanceof ConsumeItems consumeItems){
++                            for(ItemStack stack : consumeItems.items){
 +                                Item item = stack.item;
-+                                items.put(item, items.get(item, 0) - stack.amount * 60f / nr.itemDuration);
++                                items.put(item, items.get(item, 0) - stack.amount * 60f / itemDuration);
 +                            }
-+                        }
-+                        else if(c instanceof ConsumeLiquid consumeLiquid){
++                        }else if(c instanceof ConsumeLiquid consumeLiquid){
 +                            Liquid liquid = consumeLiquid.liquid;
 +                            liquids.put(liquid, liquids.get(liquid, 0) - consumeLiquid.amount * 60f);
-+                        }
-+                        else if(c instanceof ConsumeLiquids consumeLiquids){
-+                            for (LiquidStack stack : consumeLiquids.liquids) {
-+                                Liquid liquid = stack.liquid;
-+                                liquids.put(liquid, liquids.get(liquid, 0) - stack.amount * 60f);
-+                            }
-+                        }
-+                    }
-+                }
-+                else if (t.block instanceof ImpactReactor ir) {
-+                    for(var c:ir.consumeBuilder){
-+                        if(c.optional) continue;
-+                        else if(c instanceof ConsumeItems consumeItems){
-+                            for (ItemStack stack : consumeItems.items) {
-+                                Item item = stack.item;
-+                                items.put(item, items.get(item, 0) - stack.amount * 60f / ir.itemDuration);
-+                            }
-+                        }
-+                        else if(c instanceof ConsumeLiquid consumeLiquid){
-+                            Liquid liquid = consumeLiquid.liquid;
-+                            liquids.put(liquid, liquids.get(liquid, 0) - consumeLiquid.amount * 60f);
-+                        }
-+                        else if(c instanceof ConsumeLiquids consumeLiquids){
-+                            for (LiquidStack stack : consumeLiquids.liquids) {
++                        }else if(c instanceof ConsumeLiquids consumeLiquids){
++                            for(LiquidStack stack : consumeLiquids.liquids){
 +                                Liquid liquid = stack.liquid;
 +                                liquids.put(liquid, liquids.get(liquid, 0) - stack.amount * 60f);
 +                            }
@@ -813,19 +764,6 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..4b5c81d32cda84f44ea177cf176f1348
      public ItemSeq requirements(){
          ItemSeq requirements = new ItemSeq();
  
-@@ -142,6 +294,12 @@ public class Schematic implements Publishable, Comparable<Schematic>{
-             block = Blocks.air;
-         }
- 
-+        public Stile(Block block, int x, int y){
-+            this.block = block;
-+            this.x = (short)x;
-+            this.y = (short)y;
-+        }
-+
-         public Stile set(Stile other){
-             block = other.block;
-             x = other.x;
 diff --git a/core/src/mindustry/game/Universe.java b/core/src/mindustry/game/Universe.java
 index a22d073f9d3cebcfb22d1f7c22d47116a3dc3af6..41f2aabc05aa1fc55bf58b7191b5837c9fa1c8ba 100644
 --- a/core/src/mindustry/game/Universe.java
@@ -1013,25 +951,8 @@ index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..5a245c5b2e1a960ba79122ac7f84c152
      }
  
      public void checkApplySelection(Unit u){
-diff --git a/core/src/mindustry/input/Binding.java b/core/src/mindustry/input/Binding.java
-index 164e92df620a43f5977f2714d1867d9835c2177a..ce62bbd61636b5f4fbb8708cc295d4a4d07419b0 100644
---- a/core/src/mindustry/input/Binding.java
-+++ b/core/src/mindustry/input/Binding.java
-@@ -101,6 +101,12 @@ public enum Binding implements KeyBind{
-     chat_mode(KeyCode.tab),
-     console(KeyCode.f8),
- 
-+    superUnitEffect(KeyCode.o,"ARC"),
-+    showRTSAi(KeyCode.l),
-+    arcDetail(KeyCode.unset),
-+    arcScanMode(KeyCode.unset),
-+    oreAdsorption(KeyCode.unset),
-+
-     //MDTX
-     toggle_unit(KeyCode.unset, "mindustryX"),
-     point(KeyCode.j),
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..125fe1e04946f53006452d125e565709db4234d9 100644
+index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922707ae3a4 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -14,17 +14,25 @@ import arc.scene.ui.layout.*;
@@ -1105,7 +1026,7 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..125fe1e04946f53006452d125e565709
                  Core.settings.put("lasersopacity", 0);
              }
          }
-+        if (input.keyDown(Binding.oreAdsorption) && player.unit().tileOn() != null) {
++        if (BindingExt.oreAdsorption.keyDown() && player.unit().tileOn() != null) {
 +            player.unit().tileOn().circle(Mathf.ceil(player.unit().type.mineRange / 8f), tile -> {
 +                Tile ptile = player.unit().mineTile;
 +                if ((ptile == null || player.dst(ptile) > player.dst(tile) || ptile.drop() == Items.sand) && canMine(tile) && tile.drop() != Items.sand) {
@@ -3924,27 +3845,9 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 7ddd5a5bc5ac35e9c64ac446cf689c25745d6c78..c7c92d01a7c9647e619033bfd306052b9487442c 100644
+index 7ddd5a5bc5ac35e9c64ac446cf689c25745d6c78..21b91b8de09b2a513dca8d4d4de8d4f9b42e3738 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
-@@ -370,7 +370,7 @@ public class Block extends UnlockableContent implements Senseable{
-     /** Map of bars by name. */
-     protected OrderedMap<String, Func<Building, Bar>> barMap = new OrderedMap<>();
-     /** List for building up consumption before init(). */
--    protected Seq<Consume> consumeBuilder = new Seq<>();
-+    public Seq<Consume> consumeBuilder = new Seq<>();
- 
-     protected TextureRegion[] generatedIcons;
-     protected TextureRegion[] editorVariantRegions;
-@@ -556,7 +556,7 @@ public class Block extends UnlockableContent implements Senseable{
-             }
-         }
- 
--        if(requirements.length > 0){
-+        if(canBeBuilt() && requirements.length > 0){
-             stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
-             stats.add(Stat.buildCost, StatValues.items(false, requirements));
-         }
 @@ -730,7 +730,12 @@ public class Block extends UnlockableContent implements Senseable{
  
      public void drawPlan(BuildPlan plan, Eachable<BuildPlan> list, boolean valid, float alpha){

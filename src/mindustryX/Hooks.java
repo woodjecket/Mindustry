@@ -5,11 +5,9 @@ import arc.files.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.gen.*;
-import mindustry.input.*;
 import mindustry.mod.*;
 import mindustryX.features.Settings;
 import mindustryX.features.*;
-import mindustryX.features.func.*;
 import mindustryX.features.ui.*;
 
 import java.net.*;
@@ -22,6 +20,7 @@ public class Hooks implements ApplicationListener{
         registerBundle();
         Settings.addSettings();
         DebugUtil.init();//this is safe, and better at beforeInit,
+        BindingExt.init();
     }
 
     /** invoke after loading, just before `Mod::init` */
@@ -76,35 +75,7 @@ public class Hooks implements ApplicationListener{
     @Override
     public void update(){
         updateTitle();
-        pollKeys();
-    }
-
-    public static void pollKeys(){
-        if(Vars.headless || Core.scene.hasField()) return;
-        if(Core.input.keyTap(Binding.toggle_unit)){
-            RenderExt.unitHide = !RenderExt.unitHide;
-        }
-        if(Core.input.keyTap(Binding.lockonLastMark)){
-            MarkerType.lockOnLastMark();
-        }
-        if(Core.input.keyTap(Binding.point)){
-            MarkerType.showPanUI();
-        }
-        if(Core.input.keyTap(Binding.toggle_block_render)){
-            Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
-        }
-        if(Core.input.keyTap(Binding.focusLogicController)){
-            FuncX.focusLogicController();
-        }
-        if(Core.input.keyTap(Binding.arcScanMode)){
-            ArcScanMode.enabled = !ArcScanMode.enabled;
-        }
-        if(Core.input.keyTap(Binding.showRTSAi)){
-            Settings.toggle("alwaysShowUnitRTSAi");
-        }
-        if(Core.input.keyTap(Binding.superUnitEffect)){
-            Settings.cycle("superUnitEffect", 3);
-        }
+        BindingExt.pollKeys();
     }
 
     private static void registerBundle(){
