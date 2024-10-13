@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 24 Mar 2024 00:02:12 +0800
-Subject: [PATCH] ARC setBars
+Subject: [PATCH] FR: ARC setBars
 
 ---
  .../entities/abilities/ShieldArcAbility.java  |  3 ++-

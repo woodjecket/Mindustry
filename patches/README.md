@@ -11,6 +11,7 @@
   * S: server/headless only change.
   * C: client only change.
   * R: Render/UI changes, implicit only C.
+  * API: patch for external usage.
   * BUILD: build time change, not affect runtime.
 
 Can be separated by `.`, and followed by specific scope tags. 

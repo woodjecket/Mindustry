@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Wed, 2 Feb 2022 17:42:16 +0800
-Subject: [PATCH] PS: update TypeIO.writeRequest
+Subject: [PATCH] OS: update TypeIO.writeRequest
 
 ---
  core/src/mindustry/io/TypeIO.java | 5 +++--

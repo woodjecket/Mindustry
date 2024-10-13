@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 15 Sep 2024 15:53:26 +0800
-Subject: [PATCH] F: compatibility for old mixed tech
+Subject: [PATCH] FIX.G: compatibility for old mixed tech
 
 ---
  core/src/mindustry/game/Rules.java     | 5 +++++

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 18 Feb 2024 15:57:51 +0800
-Subject: [PATCH] C(RenderExt) bulletShow showMineBeam displayAllMessage
+Subject: [PATCH] HR(RenderExt) bulletShow showMineBeam displayAllMessage
  arcTurretPlaceCheck
 
 ---
