@@ -93,9 +93,9 @@ way-zer <himc.wicp@gmail.com> on 2024/7/28
 * 更改开雾功能实现
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- core/src/mindustry/ai/BlockIndexer.java       | 116 ++++++
+ core/src/mindustry/ai/BlockIndexer.java       | 116 +++++++
  core/src/mindustry/core/UI.java               |   3 +
- core/src/mindustry/editor/MapInfoDialog.java  | 139 ++++++-
+ core/src/mindustry/editor/MapInfoDialog.java  | 139 +++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
  .../mindustry/entities/comp/StatusComp.java   |   3 +
@@ -105,24 +105,24 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/input/DesktopInput.java    |  85 ++++-
  core/src/mindustry/input/InputHandler.java    |  51 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
- core/src/mindustry/type/UnitType.java         | 142 +++++--
+ core/src/mindustry/type/UnitType.java         | 142 ++++++--
  core/src/mindustry/type/Weapon.java           |  26 +-
  core/src/mindustry/ui/Fonts.java              |   2 +-
  .../ui/dialogs/ContentInfoDialog.java         |  27 +-
- .../ui/dialogs/CustomRulesDialog.java         | 113 +++++-
+ .../ui/dialogs/CustomRulesDialog.java         | 113 ++++++-
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   3 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |  12 +-
  .../mindustry/ui/dialogs/PlanetDialog.java    |  68 +++-
- .../ui/dialogs/SchematicsDialog.java          | 350 +++++++++++++++++-
+ .../ui/dialogs/SchematicsDialog.java          | 320 +++++++++++++++++-
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |  25 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 228 +++++++++++-
- .../mindustry/ui/fragments/MenuFragment.java  |  59 ++-
+ .../mindustry/ui/fragments/HudFragment.java   | 228 ++++++++++++-
+ .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  93 +++--
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1738 insertions(+), 211 deletions(-)
+ 29 files changed, 1708 insertions(+), 211 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2195,52 +2195,49 @@ index 1a040bc00a33047552bdf29df50e51458646f84f..143ffa03b83b9b15a2a6357e18812c09
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c30017da3ca2 100644
+index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3e04ff925 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-@@ -15,6 +15,11 @@ import arc.scene.ui.layout.*;
+@@ -15,6 +15,8 @@ import arc.scene.ui.layout.*;
  import arc.scene.utils.*;
  import arc.struct.*;
  import arc.util.*;
-+import mindustryX.features.PicToMindustry;
++import mindustry.content.*;
 +import mindustry.core.*;
-+import mindustryX.features.ui.ArcMessageDialog;
-+import mindustry.content.Blocks;
-+import mindustry.content.UnitTypes;
  import mindustry.ctype.*;
  import mindustry.game.*;
  import mindustry.gen.*;
-@@ -22,10 +27,15 @@ import mindustry.graphics.*;
+@@ -22,10 +24,16 @@ import mindustry.graphics.*;
  import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
-+import mindustry.world.Block;
-+import mindustry.world.blocks.production.GenericCrafter;
-+import mindustry.world.meta.StatUnit;
++import mindustry.world.*;
++import mindustry.world.blocks.production.*;
++import mindustry.world.meta.*;
 +import mindustryX.features.*;
++import mindustryX.features.ui.*;
  
  import java.util.regex.*;
  
  import static mindustry.Vars.*;
-+import static mindustry.content.Items.*;
++import static mindustry.content.Items.copper;
  
  public class SchematicsDialog extends BaseDialog{
      private static final float tagh = 42f;
-@@ -37,6 +47,13 @@ public class SchematicsDialog extends BaseDialog{
+@@ -37,6 +45,12 @@ public class SchematicsDialog extends BaseDialog{
      private Pattern ignoreSymbols = Pattern.compile("[`~!@#$%^&*()\\-_=+{}|;:'\",<.>/?]");
      private Seq<String> tags, selectedTags = new Seq<>();
      private boolean checkedTags;
 +    private final String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
 +
-+    private String surpuloTags = UnitTypes.gamma.emoji(), erekirTags = UnitTypes.emanate.emoji();
-+    private  Seq<String> planetTags = new Seq<String>().add(surpuloTags,erekirTags);
++    private Planet selectedPlanet;
 +
 +    private boolean clipbroad = true;
 +    private boolean fromShare = false;
  
      public SchematicsDialog(){
          super("@schematics");
-@@ -47,6 +64,14 @@ public class SchematicsDialog extends BaseDialog{
+@@ -47,6 +61,14 @@ public class SchematicsDialog extends BaseDialog{
          shouldPause = true;
          addCloseButton();
          buttons.button("@schematic.import", Icon.download, this::showImport);
@@ -2255,24 +2252,20 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
          makeButtonOverlay();
          shown(this::setup);
          onResize(this::setup);
-@@ -110,6 +135,34 @@ public class SchematicsDialog extends BaseDialog{
+@@ -110,6 +132,30 @@ public class SchematicsDialog extends BaseDialog{
              in.button(Icon.pencilSmall, this::showAllTags).size(tagh).pad(2).tooltip("@schematic.edittags");
          }).height(tagh).fillX();
  
 +        cont.row().table(in -> {
 +            in.left();
 +            in.add("科技树：").padRight(4);
-+            for(var tag : planetTags){
-+                in.button(tag, Styles.togglet, () -> {
-+                    if(selectedTags.contains(tag)){
-+                        selectedTags.remove(tag);
-+                    }else{
-+                        selectedTags.add(tag);
-+                    }
++            for(var tag : content.planets().select(it -> it.alwaysUnlocked)){
++                in.button(tag.localizedName, Styles.togglet, () -> {
++                    if(selectedPlanet == tag) selectedPlanet = null;
++                    else selectedPlanet = tag;
 +                    rebuildPane.run();
-+                }).checked(selectedTags.contains(tag)).with(c -> c.getLabel().setWrap(false));
++                }).checked((t) -> selectedPlanet == tag).get().getLabel().setWrap(false);
 +            }
-+            in.button(Icon.refreshSmall, this::syncPlanetTags).size(tagh).pad(2).tooltip("刷新分类");
 +
 +            in.add("辅助筛选：").padLeft(20f).padRight(4);
 +            in.button(copper.emoji(), Styles.togglet, () -> {
@@ -2290,17 +2283,18 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
          cont.row();
  
          cont.pane(t -> {
-@@ -140,6 +193,9 @@ public class SchematicsDialog extends BaseDialog{
+@@ -140,6 +186,10 @@ public class SchematicsDialog extends BaseDialog{
                      if(selectedTags.any() && !s.labels.containsAll(selectedTags)) continue;
                      //make sure search fits
                      if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
 +
++                    if(selectedPlanet != null && !s.tiles.allMatch((it) -> it.block.isOnPlanet(selectedPlanet))) continue;
 +                    if(Core.settings.getBool("autoSelSchematic") && control.input.block != null && !s.containsBlock(control.input.block)) continue;
 +                    if(Core.settings.getBool("arcSchematicCanBuild") && !arcSchematicCanBuild(s)) continue;
                      if(firstSchematic == null) firstSchematic = s;
  
                      Button[] sel = {null};
-@@ -212,6 +268,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -212,6 +262,11 @@ public class SchematicsDialog extends BaseDialog{
  
              rebuildPane.run();
          }).grow().scrollX(false);
@@ -2312,7 +2306,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
      }
  
      public void showInfo(Schematic schematic){
-@@ -282,15 +343,48 @@ public class SchematicsDialog extends BaseDialog{
+@@ -282,15 +337,48 @@ public class SchematicsDialog extends BaseDialog{
                      t.row();
                      dialog.hide();
                  }
@@ -2366,7 +2360,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
                  }).marginLeft(12f);
              });
          });
-@@ -299,6 +393,85 @@ public class SchematicsDialog extends BaseDialog{
+@@ -299,6 +387,85 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -2452,7 +2446,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
      public void showEdit(Schematic s){
          new BaseDialog("@schematic.edit"){{
              setFillParent(true);
-@@ -579,6 +752,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -579,6 +746,11 @@ public class SchematicsDialog extends BaseDialog{
                      t.button("@schematic.texttag", Icon.add, () -> showNewTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                      t.button("@schematic.icontag", Icon.add, () -> showNewIconTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                  });
@@ -2464,7 +2458,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
  
              };
  
-@@ -587,6 +765,135 @@ public class SchematicsDialog extends BaseDialog{
+@@ -587,6 +759,111 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -2563,30 +2557,6 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
 +        }}.show();
 +    }
 +
-+    void syncPlanetTags(){
-+        UIExt.announce("标签自动分类中...请稍后");
-+        for(Schematic s : schematics.all()){
-+            Boolean surpulo = true;
-+            Boolean erekir = true;
-+            for (Item item:erekirOnlyItems){
-+                if(s.requirements().has(item)) {
-+                    surpulo = false;
-+                    break;
-+                }
-+            }
-+            for(Item item : serpuloItems.copy().removeAll(erekirItems::contains)){
-+                if(s.requirements().has(item)) {
-+                    erekir = false;
-+                    break;
-+                }
-+            }
-+
-+            if(surpulo && !s.labels.contains(surpuloTags)) addTag(s,surpuloTags);
-+            if(erekir && !s.labels.contains(erekirTags)) addTag(s,erekirTags);
-+        }
-+        UIExt.announce("标签分类完成");
-+    }
-+
 +    boolean arcSchematicCanBuild(Schematic s){
 +        for (ItemStack item : s.requirements()){
 +            if (!UIExt.coreItems.hadItem(item.item)) return false;
@@ -2600,7 +2570,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..7e1f8795df22e368163623c0c611c300
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -800,13 +1107,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -800,13 +1077,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
