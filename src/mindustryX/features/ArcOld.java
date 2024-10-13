@@ -22,7 +22,6 @@ public class ArcOld{
         categories.add(new LazySettingsCategory("@settings.arc", () -> Icon.star, (c) -> {
             c.addCategory("arcCgameview");
             c.checkPref("hoveredTileInfo", false);
-            c.checkPref("alwaysshowdropzone", false);
             c.checkPref("showFlyerSpawn", false);
             c.checkPref("showFlyerSpawnLine", false);
             c.checkPref("bulletShow", true);
