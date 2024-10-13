@@ -1,0 +1,327 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 13 Oct 2024 21:55:53 +0800
+Subject: [PATCH] FR: ARC drawPlace and drawSelect
+
+---
+ core/src/mindustry/game/Universe.java         |  2 +-
+ .../world/blocks/ConstructBlock.java          | 42 ++++++++++++++++++-
+ .../world/blocks/defense/ForceProjector.java  |  2 +
+ .../world/blocks/defense/MendProjector.java   |  5 ++-
+ .../blocks/defense/OverdriveProjector.java    |  6 ++-
+ .../blocks/defense/turrets/BaseTurret.java    |  5 ++-
+ .../world/blocks/defense/turrets/Turret.java  | 12 ++++++
+ .../world/blocks/production/Drill.java        | 23 ++++++----
+ .../world/blocks/storage/CoreBlock.java       |  9 ++++
+ 9 files changed, 92 insertions(+), 14 deletions(-)
+
+diff --git a/core/src/mindustry/game/Universe.java b/core/src/mindustry/game/Universe.java
+index a22d073f9d3cebcfb22d1f7c22d47116a3dc3af6..41f2aabc05aa1fc55bf58b7191b5837c9fa1c8ba 100644
+--- a/core/src/mindustry/game/Universe.java
++++ b/core/src/mindustry/game/Universe.java
+@@ -20,7 +20,7 @@ public class Universe{
+     private int netSeconds;
+     private float secondCounter;
+     private int turn;
+-    private float turnCounter;
++    public static float turnCounter;
+ 
+     private @Nullable Schematic lastLoadout;
+     private ItemSeq lastLaunchResources = new ItemSeq();
+diff --git a/core/src/mindustry/world/blocks/ConstructBlock.java b/core/src/mindustry/world/blocks/ConstructBlock.java
+index 0a49f8212f38c18f3df2293e46ea55eb09b7eb53..c0afb43544a5933a91301ee3d1f9894eb9865a2c 100644
+--- a/core/src/mindustry/world/blocks/ConstructBlock.java
++++ b/core/src/mindustry/world/blocks/ConstructBlock.java
+@@ -3,14 +3,17 @@ package mindustry.world.blocks;
+ import arc.*;
+ import arc.Graphics.*;
+ import arc.Graphics.Cursor.*;
++import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
++import arc.scene.ui.layout.*;
+ import arc.struct.*;
+ import arc.util.*;
+ import arc.util.io.*;
+ import mindustry.*;
+ import mindustry.annotations.Annotations.*;
+ import mindustry.content.*;
++import mindustry.core.*;
+ import mindustry.entities.*;
+ import mindustry.entities.units.*;
+ import mindustry.game.EventType.*;
+@@ -23,6 +26,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.environment.*;
+ import mindustry.world.blocks.storage.CoreBlock.*;
+ import mindustry.world.modules.*;
++import mindustryX.features.func.*;
+ 
+ import java.util.*;
+ 
+@@ -127,7 +131,7 @@ public class ConstructBlock extends Block{
+     static float calcPitch(boolean up){
+         if(Time.timeSinceMillis(lastTime) < 16 * 30){
+             lastTime = Time.millis();
+-            pitchSeq ++;
++            pitchSeq++;
+             if(pitchSeq > 30){
+                 pitchSeq = 0;
+             }
+@@ -170,6 +174,40 @@ public class ConstructBlock extends Block{
+         private @Nullable float[] totalAccumulator;
+         private @Nullable int[] itemsLeft;
+ 
++        @Override
++        public void drawSelect(){
++            if(team.core() == null){
++                return;
++            }
++
++            // BlockUnit之上
++            Draw.z(Layer.flyingUnit + 0.1f);
++
++            float scl = block.size / 4f;
++            float buildHitSize = hitSize();
++
++            // 显示建造进度
++            var pos = Tmp.v1.set(this).add(0, buildHitSize / 2f);//顶部
++            FuncX.drawText(pos, Strings.fixed(progress * 100, 2) + "%", scl, Pal.accent, Align.bottom);
++
++            // 显示物品需求
++            StringBuilder requirements = new StringBuilder();
++            for(int i = 0; i < current.requirements.length; i++){
++                ItemStack stack = current.requirements[i];
++                float consumeAmount = state.rules.buildCostMultiplier * stack.amount;
++                int coreAmount = team.core().items.get(stack.item);
++
++                int investItem = (int)(progress * consumeAmount);
++                int needItem = (int)(consumeAmount) - investItem;
++                boolean hasItem = coreAmount >= needItem;
++
++                if(i != 0) requirements.append('\n');
++                requirements.append(stack.item.emoji()).append(hasItem ? "[#ffd37f]" : "[#e55454]").append(investItem).append("/").append(needItem).append("/").append(UI.formatAmount(coreAmount)).append("[]");
++            }
++            pos.set(this).add(-buildHitSize / 2f, -buildHitSize / 2f);//左下角
++            FuncX.drawText(pos, requirements.toString(), scl, Color.white, Align.topLeft);
++        }
++
+         @Override
+         public String getDisplayName(){
+             return Core.bundle.format("block.constructing", current.localizedName);
+@@ -248,7 +286,7 @@ public class ConstructBlock extends Block{
+ 
+                     Draw.rect(region, x, y, current.rotate && (noOverrides || current.regionRotated2 == i || current.regionRotated1 == i) ? rotdeg() : 0);
+                     Draw.flush();
+-                    i ++;
++                    i++;
+                 }
+ 
+                 Draw.color();
+diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
+index ca12743b5a353709be7519875ff83db23daa0462..e9c3e8faed71d9885ef598858f251dab4f76b5f7 100644
+--- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
++++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
+@@ -1,6 +1,7 @@
+ package mindustry.world.blocks.defense;
+ 
+ import arc.*;
++import arc.Core;
+ import arc.func.*;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+@@ -128,6 +129,7 @@ public class ForceProjector extends Block{
+         Draw.color(player.team().color);
+         Lines.stroke(1f);
+         Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius, shieldRotation);
++        Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius + phaseRadiusBoost, shieldRotation);
+         Draw.color();
+     }
+ 
+diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
+index 8ae4dec654dd860c1dd7de479521c9e163c106a2..253896adc8c4661564a81a988737bd938551351e 100644
+--- a/core/src/mindustry/world/blocks/defense/MendProjector.java
++++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
+@@ -1,5 +1,6 @@
+ package mindustry.world.blocks.defense;
+ 
++import arc.*;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
+@@ -21,7 +22,7 @@ import static mindustry.Vars.*;
+ public class MendProjector extends Block{
+     public final int timerUse = timers++;
+     public Color baseColor = Color.valueOf("84f491");
+-    public Color phaseColor = baseColor;
++    public Color phaseColor = Color.valueOf("ffd59e");
+     public @Load("@-top") TextureRegion topRegion;
+     public float reload = 250f;
+     public float range = 60f;
+@@ -79,7 +80,9 @@ public class MendProjector extends Block{
+         super.drawPlace(x, y, rotation, valid);
+         
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);
++        Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, phaseColor);
+ 
++        indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> true, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
+         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> true, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
+     }
+ 
+diff --git a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+index 11cd57fb65dcac2eb118cd7d584dd83be20b7c0f..236d6fa7f5e779f3d7a05d3b7862fa41df64edba 100644
+--- a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
++++ b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
+@@ -1,6 +1,5 @@
+ package mindustry.world.blocks.defense;
+ 
+-import arc.*;
+ import arc.graphics.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
+@@ -57,6 +56,11 @@ public class OverdriveProjector extends Block{
+         super.drawPlace(x, y, rotation, valid);
+ 
+         Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range, baseColor);
++        if (hasBoost){
++            Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, phaseColor);
++
++            indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
++        }
+ 
+         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
+     }
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+index eced3dc7581a4916970634e600d0f5cd86f6ee7e..58e315a6d9ec8c4c32df8a8220a9ccbb564e862d 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/BaseTurret.java
+@@ -14,6 +14,7 @@ import mindustry.world.*;
+ import mindustry.world.blocks.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -77,6 +78,8 @@ public class BaseTurret extends Block{
+         if(fogRadiusMultiplier < 0.99f && state.rules.fog){
+             Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
+         }
++        if(Core.settings.getBool("arcTurretPlacementItem"))
++            ArcBuilds.turretPlaceDraw(x * tilesize + offset, y * tilesize + offset, this);
+     }
+ 
+     @Override
+@@ -101,7 +104,7 @@ public class BaseTurret extends Block{
+ 
+         @Override
+         public void drawSelect(){
+-            Drawf.dashCircle(x, y, range(), team.color);
++            drawPlace(tileX(), tileY(), 0, true);
+         }
+ 
+         public float estimateDps(){
+diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
+index fc64bc181d9c1ef73d325de51f7d814206a77c47..9234713a0313b89d856db1cd70da9a8f752ebd58 100644
+--- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
++++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
+@@ -367,6 +367,18 @@ public class Turret extends ReloadTurret{
+             drawer.draw(this);
+         }
+ 
++        //show shoot target line
++        @Override
++        public void drawSelect(){
++            super.drawSelect();
++            if(!targetPos.isZero() && dst(targetPos) < range * 5){
++                Lines.stroke(1f);
++                Lines.dashLine(x, y, targetPos.x, targetPos.y, (int)(Mathf.len(targetPos.x - x, targetPos.y - y) / 8));
++                Lines.dashCircle(targetPos.x, targetPos.y, 8);
++                Draw.reset();
++            }
++        }
++
+         @Override
+         public void updateTile(){
+             if(!validateTarget()) target = null;
+diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
+index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601a5e0f214 100644
+--- a/core/src/mindustry/world/blocks/production/Drill.java
++++ b/core/src/mindustry/world/blocks/production/Drill.java
+@@ -18,7 +18,6 @@ import mindustry.logic.*;
+ import mindustry.type.*;
+ import mindustry.ui.*;
+ import mindustry.world.*;
+-import mindustry.world.blocks.environment.*;
+ import mindustry.world.consumers.*;
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
+@@ -146,12 +145,12 @@ public class Drill extends Block{
+         countOre(tile);
+ 
+         if(returnItem != null){
+-            float width = drawPlaceText(Core.bundle.formatFloat("bar.drillspeed", 60f / getDrillTime(returnItem) * returnCount, 2), x, y, valid);
+-            float dx = x * tilesize + offset - width/2f - 4f, dy = y * tilesize + offset + size * tilesize / 2f + 5, s = iconSmall / 4f;
+-            Draw.mixcol(Color.darkGray, 1f);
+-            Draw.rect(returnItem.fullIcon, dx, dy - 1, s, s);
+-            Draw.reset();
+-            Draw.rect(returnItem.fullIcon, dx, dy, s, s);
++            //MDTX ARC: 改变挖掘速度显示, 增加冷却加成速度.
++            float speed = 60f / getDrillTime(returnItem) * returnCount;
++            String msg = liquidBoostIntensity > 1
++            ? Strings.format("@ [white]@@[] @[white]([cyan]@[])", Iconc.production, returnItem.emoji(), returnItem.localizedName, Strings.autoFixed(speed, 2), Strings.autoFixed(speed * liquidBoostIntensity * liquidBoostIntensity, 2))
++            : Strings.format("@ [white]@@[] @", Iconc.production, returnItem.emoji(), returnItem.localizedName, Strings.autoFixed(speed, 2));
++            drawPlaceText(msg, x, y, valid);
+ 
+             if(drawMineItem){
+                 Draw.color(returnItem.color);
+@@ -162,7 +161,10 @@ public class Drill extends Block{
+             Tile to = tile.getLinkedTilesAs(this, tempTiles).find(t -> t.drop() != null && (t.drop().hardness > tier || t.drop() == blockedItem));
+             Item item = to == null ? null : to.drop();
+             if(item != null){
+-                drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, valid);
++                if (item == blockedItem) {
++                    drawPlaceText(Core.bundle.format("bar.drillcantmine"), x, y, valid);
++                }
++                else drawPlaceText(Core.bundle.format("bar.drilltierreq", item.hardness, tier), x, y, valid);
+             }
+         }
+     }
+@@ -192,6 +194,11 @@ public class Drill extends Block{
+         return new TextureRegion[]{region, rotatorRegion, topRegion};
+     }
+ 
++    public int countOreArc(Tile tile){
++        countOre(tile);
++        return returnCount;
++    }
++
+     protected void countOre(Tile tile){
+         returnItem = null;
+         returnCount = 0;
+diff --git a/core/src/mindustry/world/blocks/storage/CoreBlock.java b/core/src/mindustry/world/blocks/storage/CoreBlock.java
+index 15a80f0c6e61210c702cf42d672ebc24a6cfc0f6..a3feeffe80258f74116ab767bf1b12b386226b0e 100644
+--- a/core/src/mindustry/world/blocks/storage/CoreBlock.java
++++ b/core/src/mindustry/world/blocks/storage/CoreBlock.java
+@@ -90,6 +90,7 @@ public class CoreBlock extends StorageBlock{
+         player.set(core);
+ 
+         if(!net.client()){
++            player.team(tile.team());
+             Unit unit = spawnType.create(tile.team());
+             unit.set(core);
+             unit.rotation(90f);
+@@ -712,6 +713,14 @@ public class CoreBlock extends StorageBlock{
+                 outline.get(core);
+                 core.proximity.each(storage -> storage.items == items, outline);
+             });
++            if(state.isCampaign()){
++                Draw.z(Layer.blockOver);
++                float t = turnDuration - Universe.turnCounter;
++                String min = Strings.fixed(Mathf.floor(t / 60f / 60f), 0);
++                float s = Mathf.floor(t / 60f % 60f);
++                String sec = (s < 10f ? "0" : "") + Strings.fixed(s, 0);
++                drawPlaceText(("资源接收  "+ min+":"+sec), tileX(), tileY(), true);
++            }
+             Draw.reset();
+         }
+ 

@@ -21,13 +21,14 @@ Subject: [PATCH] FR: ARC setBars
  .../world/blocks/power/PowerGenerator.java    |  3 +--
  .../world/blocks/production/BeamDrill.java    |  2 +-
  .../world/blocks/production/Drill.java        |  5 +++-
+ .../blocks/production/GenericCrafter.java     | 14 +++++++++++
  .../world/blocks/production/HeatCrafter.java  |  5 ++--
  .../world/blocks/production/WallCrafter.java  |  2 +-
  .../world/blocks/sandbox/LiquidSource.java    |  7 ------
  .../world/blocks/units/Reconstructor.java     |  6 ++++-
  .../world/blocks/units/UnitAssembler.java     |  6 ++++-
  .../world/blocks/units/UnitFactory.java       |  4 +++-
- 23 files changed, 120 insertions(+), 41 deletions(-)
+ 24 files changed, 134 insertions(+), 41 deletions(-)
 
 diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 index 0af8f3377c35ae3c105e18ffcfa15cb27de84a55..96b532f848fd85f5471f29a8f37d25542333f972 100644
@@ -444,6 +445,48 @@ index a923b427a598215747366b4748c28c9ce0a59115..f5c6656ea21eedfc2bcb65edcf271bfd
      }
  
      public Item getDrop(Tile tile){
+diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+index a55bc18a055c74d4e7de3332bd1315beb3c42a63..ea5356c6af626bcdc4038fd00b695a50ed609b0a 100644
+--- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
++++ b/core/src/mindustry/world/blocks/production/GenericCrafter.java
+@@ -1,5 +1,6 @@
+ package mindustry.world.blocks.production;
+ 
++import arc.scene.ui.layout.*;
+ import arc.graphics.g2d.*;
+ import arc.math.*;
+ import arc.math.geom.*;
+@@ -12,11 +13,14 @@ import mindustry.entities.units.*;
+ import mindustry.gen.*;
+ import mindustry.logic.*;
+ import mindustry.type.*;
++import mindustry.graphics.*;
++import mindustry.ui.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.liquid.Conduit.*;
+ import mindustry.world.draw.*;
+ import mindustry.world.meta.*;
+ import mindustryX.features.*;
++import mindustryX.features.ui.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -358,5 +362,15 @@ public class GenericCrafter extends Block{
+             warmup = read.f();
+             if(legacyReadWarmup) read.f();
+         }
++
++        @Override
++        public void displayBars(Table bars){
++            super.displayBars(bars);
++            //bar for shoot cd
++            bars.add(new Bar(() -> Iconc.crafting + " " + Strings.fixed(progress * 100f, 0) + " %"
++            + (getProgressIncrease(craftTime) == 0 ? "" : FormatDefault.duration((1 - progress) / (getProgressIncrease(craftTime) / Time.delta * 60f))),
++            () -> Pal.ammo, () -> progress));
++            bars.row();
++        }
+     }
+ }
 diff --git a/core/src/mindustry/world/blocks/production/HeatCrafter.java b/core/src/mindustry/world/blocks/production/HeatCrafter.java
 index 5af67c37c74871553a35e9b5ff9757869072b6da..8c7ef00a68c89b1b82d8a1dbfbf63ad65e9c91cf 100644
 --- a/core/src/mindustry/world/blocks/production/HeatCrafter.java
