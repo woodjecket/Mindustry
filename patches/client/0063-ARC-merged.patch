@@ -784,7 +784,7 @@ index ea5060298da5e478b234e8d0575ab2ceedb5b6e6..e59bff905f7398b0eb3c780c0cda5a30
                  }
                  Draw.reset();
 diff --git a/core/src/mindustry/graphics/OverlayRenderer.java b/core/src/mindustry/graphics/OverlayRenderer.java
-index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..b4c62ef8cb7c5e67659a64bb6d558f109821bd48 100644
+index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..4d949d8c653e526cf99f1df1f6bf772ddbb79767 100644
 --- a/core/src/mindustry/graphics/OverlayRenderer.java
 +++ b/core/src/mindustry/graphics/OverlayRenderer.java
 @@ -17,6 +17,7 @@ import mindustry.gen.*;
@@ -848,9 +848,9 @@ index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..b4c62ef8cb7c5e67659a64bb6d558f10
  
 +        //单位射程
 +        if(ui.hudfrag.blockfrag.hover() instanceof Unit unit){
-+            Draw.reset();
 +            Draw.color(unit.team.color);
 +            Lines.dashCircle(unit.x, unit.y, unit.type.range);
++            Draw.color();
 +        }
 +
          if(ui.hudfrag.blockfrag.hover() instanceof Unit unit && unit.controller() instanceof LogicAI ai && ai.controller != null && ai.controller.isValid()){
