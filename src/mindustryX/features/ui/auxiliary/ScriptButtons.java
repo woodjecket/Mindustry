@@ -37,27 +37,17 @@ public class ScriptButtons extends AuxiliaryTools.Table{
             build.block instanceof BaseTurret || build.block instanceof GenericCrafter),
             build -> Call.transferInventory(player, build));
         }).tooltip("一键放置");
-        addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", null);
-        addSettingButton(new TextureRegionDrawable(UnitTypes.vela.uiIcon), "forceBoost", "强制助推", null);
-        addSettingButton(Icon.eyeSmall, "viewMode", "视角脱离玩家", s -> {
-            if(s){
-                if(control.input instanceof DesktopInput desktopInput){
-                    desktopInput.panning = true;
-                }
-            }else{
-                Core.camera.position.set(player);
-            }
-        });
+        addSettingButton(Icon.modeAttack, "autotarget", "自动攻击");
+        addSettingButton(new TextureRegionDrawable(UnitTypes.vela.uiIcon), "forceBoost", "强制助推");
+        addSettingButton(Icon.eyeSmall, "detach-camera", "视角脱离玩家");
     }
 
-    protected void addSettingButton(Drawable icon, String settingName, String description, Boolc onClick){
+    protected void addSettingButton(Drawable icon, String settingName, String description){
         button(icon, RStyles.clearLineNoneTogglei, iconMed, () -> {
             boolean setting = Core.settings.getBool(settingName);
 
             Core.settings.put(settingName, !setting);
             UIExt.announce("已" + (setting ? "取消" : "开启") + description);
-
-            if(onClick != null) onClick.get(!setting);
         }).tooltip(description, true).checked(b -> Core.settings.getBool(settingName));
     }
 }

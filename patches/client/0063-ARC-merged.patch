@@ -102,7 +102,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/game/Schematic.java        | 104 ++++++
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
  .../mindustry/graphics/OverlayRenderer.java   |  37 +-
- core/src/mindustry/input/DesktopInput.java    |  84 ++++-
+ core/src/mindustry/input/DesktopInput.java    |  82 ++++-
  core/src/mindustry/input/InputHandler.java    |  47 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/logic/LExecutor.java       |  12 +-
@@ -123,7 +123,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++--
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1681 insertions(+), 207 deletions(-)
+ 30 files changed, 1680 insertions(+), 206 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -872,7 +872,7 @@ index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..4d949d8c653e526cf99f1df1f6bf772d
  
      public void checkApplySelection(Unit u){
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index 0563b27754bbfeaebd11988c41e070b46e0d9b81..21949e646c9ffb3e5cc111802658b7aa87e85514 100644
+index 0563b27754bbfeaebd11988c41e070b46e0d9b81..0ccb166c6334e0090a628172b23415563fa1c00d 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -14,17 +14,25 @@ import arc.scene.ui.layout.*;
@@ -922,15 +922,6 @@ index 0563b27754bbfeaebd11988c41e070b46e0d9b81..21949e646c9ffb3e5cc111802658b7aa
              }).margin(6f);
          });
      }
-@@ -246,7 +261,7 @@ public class DesktopInput extends InputHandler{
-             }
- 
-             if((Math.abs(Core.input.axis(Binding.move_x)) > 0 || Math.abs(Core.input.axis(Binding.move_y)) > 0 || input.keyDown(Binding.mouse_move))){
--                panning = false;
-+                if(!Core.settings.getBool("viewMode")) panning = false;
-                 spectating = null;
-             }
-         }
 @@ -428,7 +443,8 @@ public class DesktopInput extends InputHandler{
              }
          }
@@ -1182,7 +1173,7 @@ index dfa815b16f55d90dd65eb576a64662840143b9fc..b18f8618bcd2415848a8230f3f80bdea
          !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
      }
 diff --git a/core/src/mindustry/input/MobileInput.java b/core/src/mindustry/input/MobileInput.java
-index 37ec6c9ec9c8c4a4d9d62cf85d3d2161db086b56..fae17adb1fb30965fe0ae9ee860c449f7efd5d4f 100644
+index 37ec6c9ec9c8c4a4d9d62cf85d3d2161db086b56..f61ac3f7b798c84dda1b2a86feb9a1efadc02d1b 100644
 --- a/core/src/mindustry/input/MobileInput.java
 +++ b/core/src/mindustry/input/MobileInput.java
 @@ -333,7 +333,7 @@ public class MobileInput extends InputHandler implements GestureListener{
@@ -1200,7 +1191,7 @@ index 37ec6c9ec9c8c4a4d9d62cf85d3d2161db086b56..fae17adb1fb30965fe0ae9ee860c449f
  
 -        movement.set(targetPos).sub(player).limit(speed);
 -        movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
-+        if(!Core.settings.getBool("viewMode")){
++        if(!Core.settings.getBool("detach-camera")){
 +            movement.set(targetPos).sub(player).limit(speed);
 +            movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
  
