@@ -94,7 +94,7 @@ way-zer <himc.wicp@gmail.com> on 2024/7/28
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/ai/BlockIndexer.java       | 116 +++++++
- core/src/mindustry/core/UI.java               |   3 +
+ core/src/mindustry/core/UI.java               |   2 +
  core/src/mindustry/editor/MapInfoDialog.java  | 139 +++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
@@ -105,6 +105,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/input/DesktopInput.java    |  84 ++++-
  core/src/mindustry/input/InputHandler.java    |  47 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
+ core/src/mindustry/logic/LExecutor.java       |  12 +-
  core/src/mindustry/type/UnitType.java         | 142 ++++++--
  core/src/mindustry/type/Weapon.java           |  26 +-
  core/src/mindustry/ui/Fonts.java              |   2 +-
@@ -115,14 +116,14 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/ui/dialogs/PlanetDialog.java    |  68 +++-
  .../ui/dialogs/SchematicsDialog.java          | 320 +++++++++++++++++-
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
- .../mindustry/ui/fragments/ChatFragment.java  |  25 +-
+ .../mindustry/ui/fragments/ChatFragment.java  |   9 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
  .../mindustry/ui/fragments/HudFragment.java   | 228 ++++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++--
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1687 insertions(+), 206 deletions(-)
+ 30 files changed, 1681 insertions(+), 207 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -290,7 +291,7 @@ index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987
          var team = tile.team();
          //only process entity changes with centered tiles
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..1de9f9267961db96ceb6f405f12508f44e9106cb 100644
+index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..85e6e273a013f686b9145c97ae57df2a777065d3 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -28,6 +28,7 @@ import mindustry.logic.*;
@@ -301,15 +302,7 @@ index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..1de9f9267961db96ceb6f405f12508f4
  
  import static arc.scene.actions.Actions.*;
  import static mindustry.Vars.*;
-@@ -368,6 +369,7 @@ public class UI implements ApplicationListener, Loadable{
- 
-     /** Shows a fading label at the top of the screen. */
-     public void showInfoToast(String info, float duration){
-+        if (!info.contains("建筑过多单位") && !info.contains("可能造成服务器卡顿"))  ui.chatfrag.addMessage("[acid][公屏][white]"+info);
-         var cinfo = Core.scene.find("coreinfo");
-         Table table = new Table();
-         table.touchable = Touchable.disabled;
-@@ -384,6 +386,7 @@ public class UI implements ApplicationListener, Loadable{
+@@ -384,6 +385,7 @@ public class UI implements ApplicationListener, Loadable{
  
      /** Shows a label at some position on the screen. Does not fade. */
      public void showInfoPopup(String info, float duration, int align, int top, int left, int bottom, int right){
@@ -1229,6 +1222,43 @@ index 37ec6c9ec9c8c4a4d9d62cf85d3d2161db086b56..fae17adb1fb30965fe0ae9ee860c449f
  
          unit.movePref(movement);
  
+diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
+index f4a0bf74cf25e1b0869d77bb220cfbc245cfb014..96039ad83f7a4e0fe5f0007114ce962b65a54993 100644
+--- a/core/src/mindustry/logic/LExecutor.java
++++ b/core/src/mindustry/logic/LExecutor.java
+@@ -10,6 +10,7 @@ import arc.util.*;
+ import mindustry.*;
+ import mindustry.ai.types.*;
+ import mindustry.annotations.Annotations.*;
++import mindustryX.features.ui.ArcMessageDialog;
+ import mindustry.content.*;
+ import mindustry.core.*;
+ import mindustry.ctype.*;
+@@ -31,6 +32,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
+ import mindustry.world.blocks.logic.MessageBlock.*;
+ import mindustry.world.blocks.payloads.*;
+ import mindustry.world.meta.*;
++import mindustryX.features.ui.ArcMessageDialog.*;
+ 
+ import static mindustry.Vars.*;
+ 
+@@ -1631,8 +1633,14 @@ public class LExecutor{
+             }
+ 
+             switch(type){
+-                case notify -> ui.hudfrag.showToast(Icon.info, text);
+-                case announce -> ui.announce(text, duration.numf());
++                case notify -> {
++                    ui.hudfrag.showToast(Icon.info, text);
++                    new ArcMessageDialog.Msg(Type.logicNotify, text).add();
++                }
++                case announce -> {
++                    ui.announce(text, duration.numf());
++                    new ArcMessageDialog.Msg(Type.logicAnnounce, text).add();
++                }
+                 case toast -> ui.showInfoToast(text, duration.numf());
+                 //TODO desync?
+                 case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
 index 7c1f0d6e5575387d980faa295dcffb6c9025fc4f..02e3a396155e70f6638ff026ffc79b55187b719a 100644
 --- a/core/src/mindustry/type/UnitType.java
@@ -2671,40 +2701,10 @@ index b93dced65be5c1eea38adc80f8dc2d84c2b3864d..b71452eca5b3527f0c2ee15edd8d6ef0
          graphics.checkPref("animatedwater", true);
  
 diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
-index 89b9a23ce2bb850df5c7ae99a5f964753a807662..03bbbbfca69229893fc097479f4078843ea0c56d 100644
+index 89b9a23ce2bb850df5c7ae99a5f964753a807662..3ace45e2b2b37f9b631e9bf6a84720733dc3d758 100644
 --- a/core/src/mindustry/ui/fragments/ChatFragment.java
 +++ b/core/src/mindustry/ui/fragments/ChatFragment.java
-@@ -163,7 +163,10 @@ public class ChatFragment extends Table{
-         Draw.alpha(shadowColor.a * opacity);
- 
-         float theight = offsety + spacing + getMarginBottom() + scene.marginBottom;
--        for(int i = scrollPos; i < messages.size && i < messagesShown + scrollPos && (i < fadetime || shown); i++){
-+        int messageCount = 0;
-+        for(int i = scrollPos; i < messages.size && messageCount < messagesShown && (i < fadetime || shown); i++){
-+            if(!chatValidType(messages.get(i))) continue;
-+            messageCount += 1;
- 
-             layout.setText(font, messages.get(i), Color.white, textWidth, Align.bottomLeft, true);
-             theight += layout.height + textspacing;
-@@ -194,6 +197,17 @@ public class ChatFragment extends Table{
-         }
-     }
- 
-+    private boolean chatValidType(String msg){
-+        int chatType = settings.getInt("chatValidType");
-+        if(chatType == 0 && (msg.contains("[acid][公屏][white]") || msg.contains("[逻辑~"))) return false;
-+        else if(chatType == 1 &&
-+        (msg.contains("加入了服务器") || msg.contains("离开了服务器") || msg.contains("小贴士") || msg.contains("自动存档完成") ||
-+        msg.contains("登录成功") || msg.contains("经验+") || msg.contains("[ARC")
-+        || (msg.contains("[acid][公屏][white]")) || msg.contains("[逻辑~"))) return false;
-+        else if(chatType == 2 && !(msg.contains("[acid][公屏][white]") || msg.contains("[逻辑~"))) return false;
-+        return true;
-+    }
-+
-     private void sendMessage(){
-         String message = chatfield.getText().trim();
-         clearChatInput();
-@@ -216,6 +230,8 @@ public class ChatFragment extends Table{
+@@ -216,6 +216,8 @@ public class ChatFragment extends Table{
              if(mobile){
                  TextInput input = new TextInput();
                  input.maxLength = maxTextLength;
@@ -2713,7 +2713,7 @@ index 89b9a23ce2bb850df5c7ae99a5f964753a807662..03bbbbfca69229893fc097479f407884
                  input.accepted = text -> {
                      chatfield.setText(text);
                      sendMessage();
-@@ -245,7 +261,12 @@ public class ChatFragment extends Table{
+@@ -245,7 +247,12 @@ public class ChatFragment extends Table{
      }
  
      public void updateChat(){

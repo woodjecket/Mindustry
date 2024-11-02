@@ -101,13 +101,6 @@ public class HudSettingsTable extends ToolTableBase{
             case 3 -> "全部";
             default -> s + "";
         });
-        sliderPref("chatValidType", 0, 3, 1, s -> switch(s){
-            case 0 -> "原版模式";
-            case 1 -> "纯净聊天";
-            case 2 -> "服务器记录";
-            case 3 -> "全部记录";
-            default -> s + "";
-        });
         checkPref("unitHealthBar");
         sliderPref("unitTransparency", 0, 100, 5, i -> i > 0 ? i + "%" : "关闭");
         sliderPref("unitDrawMinHealth", 0, 2500, 50, i -> i + "[red]HP");

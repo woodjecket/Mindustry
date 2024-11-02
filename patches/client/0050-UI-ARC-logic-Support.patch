@@ -19,12 +19,12 @@ way-zer <himc.wicp@gmail.com> on 2024/7/14
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/logic/LCanvas.java         |  54 +++-
- core/src/mindustry/logic/LExecutor.java       |  19 +-
+ core/src/mindustry/logic/LExecutor.java       |   7 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
  core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
  .../world/blocks/logic/LogicBlock.java        |  66 ++++-
  .../world/blocks/logic/MemoryBlock.java       |  72 +++++-
- 6 files changed, 402 insertions(+), 58 deletions(-)
+ 6 files changed, 392 insertions(+), 56 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -125,26 +125,10 @@ index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..3e300e5359f53cccaaa0938dc3e37f74a8662565 100644
+index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..f4a0bf74cf25e1b0869d77bb220cfbc245cfb014 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
-@@ -10,6 +10,7 @@ import arc.util.*;
- import mindustry.*;
- import mindustry.ai.types.*;
- import mindustry.annotations.Annotations.*;
-+import mindustryX.features.ui.ArcMessageDialog;
- import mindustry.content.*;
- import mindustry.core.*;
- import mindustry.ctype.*;
-@@ -31,6 +32,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
- import mindustry.world.blocks.logic.MessageBlock.*;
- import mindustry.world.blocks.payloads.*;
- import mindustry.world.meta.*;
-+import mindustryX.features.ui.ArcMessageDialog.*;
- 
- import static mindustry.Vars.*;
- 
-@@ -45,9 +47,9 @@ public class LExecutor{
+@@ -45,9 +45,9 @@ public class LExecutor{
      public LInstruction[] instructions = {};
      /** Non-constant variables used for network sync */
      public LVar[] vars = {};
@@ -156,7 +140,7 @@ index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..3e300e5359f53cccaaa0938dc3e37f74
      public int[] binds;
      public boolean yield;
  
-@@ -501,6 +503,7 @@ public class LExecutor{
+@@ -501,6 +501,7 @@ public class LExecutor{
          public void run(LExecutor exec){
              Object obj = target.obj();
              if(obj instanceof Building b && (exec.privileged || (b.team == exec.team && exec.linkIds.contains(b.id)))){
@@ -164,7 +148,7 @@ index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..3e300e5359f53cccaaa0938dc3e37f74
  
                  if(type == LAccess.enabled && !p1.bool()){
                      b.lastDisabler = exec.build;
-@@ -1191,7 +1194,7 @@ public class LExecutor{
+@@ -1191,7 +1192,7 @@ public class LExecutor{
          @Override
          public void run(LExecutor exec){
              if(headless) return;
@@ -173,23 +157,6 @@ index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..3e300e5359f53cccaaa0938dc3e37f74
              switch(action){
                  case pan -> {
                      control.input.logicCutscene = true;
-@@ -1630,8 +1633,14 @@ public class LExecutor{
-             }
- 
-             switch(type){
--                case notify -> ui.hudfrag.showToast(Icon.info, text);
--                case announce -> ui.announce(text, duration.numf());
-+                case notify -> {
-+                    ui.hudfrag.showToast(Icon.info, text);
-+                    ArcMessageDialog.addMsg(new Msg(Type.logicNotify,text).sendMessage());
-+                }
-+                case announce -> {
-+                    ui.announce(text, duration.numf());
-+                    ArcMessageDialog.addMsg(new Msg(Type.logicAnnounce,text).sendMessage());
-+                }
-                 case toast -> ui.showInfoToast(text, duration.numf());
-                 //TODO desync?
-                 case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
 index 580202ec1745ae6982dc5b485c16914e24439b93..d4ad76458ac0aee2f84d11443a7a630eafdda578 100644
 --- a/core/src/mindustry/logic/LStatements.java
