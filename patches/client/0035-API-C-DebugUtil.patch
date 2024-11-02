@@ -62,7 +62,7 @@ index 4f88b9fd412f09073bdb1e9aff277650a4bbde09..f44dceb09dfef63bd11d3b54a75d0183
          assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
  
 diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
-index bbf4d7f3edd86db0c42e821ee638453fe7c04bd4..c2473771010f62dabb6bd10d1da1b9381a7243c5 100644
+index af704fcd94b9450636afd989816a03390e5edcec..702270773464a207981bb88b77cfa1bbcbc0befb 100644
 --- a/core/src/mindustry/core/Logic.java
 +++ b/core/src/mindustry/core/Logic.java
 @@ -16,6 +16,7 @@ import mindustry.type.*;

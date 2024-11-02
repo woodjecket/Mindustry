@@ -102,8 +102,8 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/game/Schematic.java        | 104 ++++++
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
  .../mindustry/graphics/OverlayRenderer.java   |  37 +-
- core/src/mindustry/input/DesktopInput.java    |  85 ++++-
- core/src/mindustry/input/InputHandler.java    |  51 ++-
+ core/src/mindustry/input/DesktopInput.java    |  84 ++++-
+ core/src/mindustry/input/InputHandler.java    |  47 ++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/type/UnitType.java         | 142 ++++++--
  core/src/mindustry/type/Weapon.java           |  26 +-
@@ -120,9 +120,9 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/ui/fragments/HudFragment.java   | 228 ++++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
- .../ui/fragments/PlayerListFragment.java      |  93 +++--
+ .../ui/fragments/PlayerListFragment.java      |  72 ++--
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1708 insertions(+), 211 deletions(-)
+ 29 files changed, 1687 insertions(+), 206 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -879,7 +879,7 @@ index fe8d7dc18df91b5f8484e87f0d37ab8dce06b54f..4d949d8c653e526cf99f1df1f6bf772d
  
      public void checkApplySelection(Unit u){
 diff --git a/core/src/mindustry/input/DesktopInput.java b/core/src/mindustry/input/DesktopInput.java
-index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922707ae3a4 100644
+index 0563b27754bbfeaebd11988c41e070b46e0d9b81..21949e646c9ffb3e5cc111802658b7aa87e85514 100644
 --- a/core/src/mindustry/input/DesktopInput.java
 +++ b/core/src/mindustry/input/DesktopInput.java
 @@ -14,17 +14,25 @@ import arc.scene.ui.layout.*;
@@ -929,17 +929,16 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922
              }).margin(6f);
          });
      }
-@@ -244,7 +259,8 @@ public class DesktopInput extends InputHandler{
+@@ -246,7 +261,7 @@ public class DesktopInput extends InputHandler{
              }
  
              if((Math.abs(Core.input.axis(Binding.move_x)) > 0 || Math.abs(Core.input.axis(Binding.move_y)) > 0 || input.keyDown(Binding.mouse_move))){
 -                panning = false;
 +                if(!Core.settings.getBool("viewMode")) panning = false;
-+                follow = null;
+                 spectating = null;
              }
          }
- 
-@@ -423,7 +439,8 @@ public class DesktopInput extends InputHandler{
+@@ -428,7 +443,8 @@ public class DesktopInput extends InputHandler{
              }
          }
  
@@ -949,7 +948,7 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922
              cursorType = SystemCursor.arrow;
              if(!Core.scene.hasMouse()){
                  Core.graphics.cursor(cursorType);
-@@ -801,6 +818,14 @@ public class DesktopInput extends InputHandler{
+@@ -815,6 +831,14 @@ public class DesktopInput extends InputHandler{
                  Core.settings.put("lasersopacity", 0);
              }
          }
@@ -964,7 +963,7 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922
      }
  
      @Override
-@@ -875,7 +900,7 @@ public class DesktopInput extends InputHandler{
+@@ -889,7 +913,7 @@ public class DesktopInput extends InputHandler{
      }
  
      protected void updateMovement(Unit unit){
@@ -973,7 +972,7 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922
  
          float speed = unit.speed();
          float xa = Core.input.axis(Binding.move_x);
-@@ -898,21 +923,63 @@ public class DesktopInput extends InputHandler{
+@@ -912,21 +936,63 @@ public class DesktopInput extends InputHandler{
              }
          }
  
@@ -1044,10 +1043,10 @@ index ad7f14ee658cec9fae3813b1adbc8cd5dbc5b474..e939c95c29335c4cc905cf7a620ef922
          player.mouseY = unit.aimY();
  
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740d1e8ed80 100644
+index dfa815b16f55d90dd65eb576a64662840143b9fc..b18f8618bcd2415848a8230f3f80bdea243a7bd9 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
-@@ -36,11 +36,13 @@ import mindustry.world.*;
+@@ -37,11 +37,13 @@ import mindustry.world.*;
  import mindustry.world.blocks.ConstructBlock.*;
  import mindustry.world.blocks.*;
  import mindustry.world.blocks.distribution.*;
@@ -1061,15 +1060,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
  
  import java.util.*;
  
-@@ -59,6 +61,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-     final static int maxLength = 100;
-     final static Rect r1 = new Rect(), r2 = new Rect();
-     final static Seq<Unit> tmpUnits = new Seq<>(false);
-+    public static Player follow;
-     final static Binding[] controlGroupBindings = {
-     Binding.block_select_01,
-     Binding.block_select_02,
-@@ -109,6 +112,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -113,6 +115,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      /** Groups of units saved to different hotkeys */
      public IntSeq[] controlGroups = new IntSeq[controlGroupBindings.length];
  
@@ -1077,7 +1068,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
      private Seq<BuildPlan> plansOut = new Seq<>(BuildPlan.class);
      private QuadTree<BuildPlan> playerPlanTree = new QuadTree<>(new Rect());
  
-@@ -627,7 +631,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -635,7 +638,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                  player.con.send(packet, true);
              }
  
@@ -1086,29 +1077,25 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
          }
          build.configured(player == null || player.dead() ? null : player.unit(), value);
          Events.fire(new ConfigEvent(build, player, value));
-@@ -651,9 +655,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -659,7 +662,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              throw new ValidateException(player, "Player cannot control a building.");
          }
  
 -        if(player.team() == build.team && build.canControlSelect(player.unit())){
 +        if((player.team() == build.team || (build instanceof CoreBuild && state.rules.editor)) && build.canControlSelect(player.unit())){
              var before = player.unit();
--
-             build.onControlSelect(player.unit());
  
-             if(!before.dead && before.spawnedByCore && !before.isPlayer()){
-@@ -854,6 +857,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
-                 }
-             }
-         }
-+
-+        if(follow != null && !follow.dead()){
-+            Core.camera.position.lerpDelta(follow, 0.08f);
-+        }
+             build.onControlSelect(player.unit());
+@@ -809,7 +812,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
-     public void checkUnit(){
-@@ -1007,6 +1014,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+     public void update(){
+-        if(spectating != null && (!spectating.isValid() || spectating.team != player.team())){
++        if(spectating != null && (!spectating.isValid())){
+             spectating = null;
+         }
+ 
+@@ -1041,6 +1044,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                      attack = selectedEnemyUnit(target.x, target.y);
                  }
  
@@ -1117,7 +1104,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
                  int[] ids = new int[selectedUnits.size];
                  for(int i = 0; i < ids.length; i++){
                      ids[i] = selectedUnits.get(i).id;
-@@ -1223,6 +1232,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1257,6 +1262,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
          });
      }
  
@@ -1129,7 +1116,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
      public void rotatePlans(Seq<BuildPlan> plans, int direction){
          int ox = schemOriginX(), oy = schemOriginY();
  
-@@ -1256,6 +1270,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1290,6 +1300,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
              plan.x = World.toTile(wx - plan.block.offset) + ox;
              plan.y = World.toTile(wy - plan.block.offset) + oy;
              plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));
@@ -1149,7 +1136,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
          });
      }
  
-@@ -1287,6 +1314,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1321,6 +1344,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              //flip rotation
              plan.block.flipRotation(plan, x);
@@ -1164,7 +1151,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
          });
      }
  
-@@ -1425,12 +1460,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1459,12 +1490,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength, Color col1, Color col2){
          NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
  
@@ -1182,7 +1169,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
      }
  
      protected void flushSelectPlans(Seq<BuildPlan> plans){
-@@ -1797,7 +1837,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1832,7 +1868,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
      public @Nullable Building selectedControlBuild(){
          Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
@@ -1191,7 +1178,7 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
              return build;
          }
          return null;
-@@ -1883,6 +1923,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -1919,6 +1955,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
      }
  
      public boolean canShoot(){
@@ -1202,10 +1189,10 @@ index 87c2db7eba5f15e4dbba2cc520ab2f66ff98d05d..1b8f6ec98aaaa1e9edc7aa8d6a414740
          !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
      }
 diff --git a/core/src/mindustry/input/MobileInput.java b/core/src/mindustry/input/MobileInput.java
-index fb9e24eac579f26b0a5e913a14732713e3f8afee..662afb7d29d87c03d0b47a05053887b4f59ea935 100644
+index 37ec6c9ec9c8c4a4d9d62cf85d3d2161db086b56..fae17adb1fb30965fe0ae9ee860c449f7efd5d4f 100644
 --- a/core/src/mindustry/input/MobileInput.java
 +++ b/core/src/mindustry/input/MobileInput.java
-@@ -331,7 +331,7 @@ public class MobileInput extends InputHandler implements GestureListener{
+@@ -333,7 +333,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                      //why the heck doesn't setOrigin work for scaling
                      img.setTranslation(img.getWidth(), 0f);
                  });
@@ -1214,7 +1201,7 @@ index fb9e24eac579f26b0a5e913a14732713e3f8afee..662afb7d29d87c03d0b47a05053887b4
              }).margin(4f);
          });
      }
-@@ -1024,18 +1024,22 @@ public class MobileInput extends InputHandler implements GestureListener{
+@@ -1031,18 +1031,22 @@ public class MobileInput extends InputHandler implements GestureListener{
              payloadTarget = null;
          }
  
@@ -1243,7 +1230,7 @@ index fb9e24eac579f26b0a5e913a14732713e3f8afee..662afb7d29d87c03d0b47a05053887b4
          unit.movePref(movement);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329d2abae25 100644
+index 7c1f0d6e5575387d980faa295dcffb6c9025fc4f..02e3a396155e70f6638ff026ffc79b55187b719a 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -17,6 +17,7 @@ import mindustry.ai.*;
@@ -1271,7 +1258,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
  
      /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
      public int envRequired = 0;
-@@ -518,23 +522,83 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -522,23 +526,83 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void landed(Unit unit){}
  
@@ -1359,7 +1346,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
                  bars.row();
              }
  
-@@ -542,8 +606,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -546,8 +610,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                  ability.displayBars(unit, bars);
              }
  
@@ -1373,7 +1360,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
                  bars.row();
  
                  var count = new float[]{-1};
-@@ -553,18 +620,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -557,18 +624,21 @@ public class UnitType extends UnlockableContent implements Senseable{
                          count[0] = payload.payloadUsed();
                      }
                  }).growX().left().height(0f).pad(0f);
@@ -1401,7 +1388,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
              if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                  table.row();
                  table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
-@@ -575,6 +645,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -579,6 +649,11 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
  
          table.row();
@@ -1413,7 +1400,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1244,6 +1319,9 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1248,6 +1323,9 @@ public class UnitType extends UnlockableContent implements Senseable{
          Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
          float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
  
@@ -1423,7 +1410,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          if(unit.controller().isBeingControlled(player.unit())){
              drawControl(unit);
          }
-@@ -1385,7 +1463,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1389,7 +1467,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawShield(Unit unit){
@@ -1432,7 +1419,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          float radius = unit.hitSize() * 1.3f;
          Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,
              Color.clear,
-@@ -1397,6 +1475,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1401,6 +1479,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);
  
          Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));
@@ -1440,7 +1427,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);
  
          Draw.reset();
-@@ -1410,7 +1489,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1414,7 +1493,7 @@ public class UnitType extends UnlockableContent implements Senseable{
          float dest = floor.canShadow ? 1f : 0f;
          //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
          unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
@@ -1449,7 +1436,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
  
          Draw.rect(shadowRegion, unit.x + shadowTX * e, unit.y + shadowTY * e, unit.rotation - 90);
          Draw.color();
-@@ -1425,7 +1504,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1429,7 +1508,7 @@ public class UnitType extends UnlockableContent implements Senseable{
      }
  
      public void drawSoftShadow(float x, float y, float rotation, float alpha){
@@ -1458,7 +1445,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          float rad = 1.6f;
          float size = Math.max(region.width, region.height) * region.scl();
          Draw.rect(softShadowRegion, x, y, size * rad * Draw.xscl, size * rad * Draw.yscl, rotation - 90);
-@@ -1448,18 +1527,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1452,18 +1531,21 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.mixcol();
  
              size = ((3f + sin) * unit.itemTime + 0.5f) * 2;
@@ -1482,7 +1469,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
              }
  
              Draw.reset();
-@@ -1542,7 +1624,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1546,7 +1628,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public Color cellColor(Unit unit){
          float f = Mathf.clamp(unit.healthf());
@@ -1491,7 +1478,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
      }
  
      public void drawLight(Unit unit){
-@@ -1583,7 +1665,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1587,7 +1669,7 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          if(footRegion.found()){
              for(Leg leg : legs){
@@ -1500,7 +1487,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
              }
          }
  
-@@ -1601,7 +1683,7 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1605,7 +1687,7 @@ public class UnitType extends UnlockableContent implements Senseable{
              if(footRegion.found() && leg.moving && shadowElevation > 0){
                  float scl = shadowElevation * invDrown;
                  float elev = Mathf.slope(1f - leg.stage) * scl;
@@ -1509,7 +1496,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
                  Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                  Draw.color();
              }
-@@ -1680,8 +1762,9 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1684,8 +1766,9 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();
  
@@ -1520,7 +1507,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          }
  
          for(int i : Mathf.signs){
-@@ -1703,6 +1786,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1707,6 +1790,8 @@ public class UnitType extends UnlockableContent implements Senseable{
              Draw.color(Color.white);
          }
  
@@ -1529,7 +1516,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
  
          Draw.mixcol();
-@@ -1710,12 +1795,12 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1714,12 +1799,12 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void applyOutlineColor(Unit unit){
          if(unit.drownTime > 0 && unit.lastDrownFloor != null){
@@ -1544,7 +1531,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
          if(healFlash){
              Tmp.c1.set(Color.white).lerp(healColor, Mathf.clamp(unit.healTime - unit.hitTime));
          }
-@@ -1730,6 +1815,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1734,6 +1819,13 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
      }
  
@@ -1558,7 +1545,7 @@ index 100459d9da22fd433a5820ca1a91f04678357e8b..de2a10d82bcfccd6bb5b8265216c0329
      //endregion
  
      public static class UnitEngine implements Cloneable{
-@@ -1768,13 +1860,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1772,13 +1864,13 @@ public class UnitType extends UnlockableContent implements Senseable{
              );
              Draw.z(z);*/
  
@@ -3236,7 +3223,7 @@ index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba9
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index d127d3a0fdd2f656b562403ec1a39bc3707057e1..2804e594dbbbaf77f483998972e1855ce002ff23 100644
+index 53076e919c5bdb66c61619208c5234a22c943250..59823ae9b730bce9204fda187903945f0284e819 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -3399,10 +3386,10 @@ index d127d3a0fdd2f656b562403ec1a39bc3707057e1..2804e594dbbbaf77f483998972e1855c
 +                                            });
 +                                        }
 +
-+                                        if (units.contains(unit -> unit.type.commands.length > 1) && units.contains(unit -> unit.type.commands.length <= 1)){
++                                        if (units.contains(unit -> unit.type.commands.size > 1) && units.contains(unit -> unit.type.commands.size <= 1)){
 +                                            sp.table(spp->{
-+                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.length <= 1);
-+                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.length > 1);
++                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.size <= 1);
++                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.size > 1);
 +                                            });
 +                                        }
 +
@@ -3543,10 +3530,10 @@ index d127d3a0fdd2f656b562403ec1a39bc3707057e1..2804e594dbbbaf77f483998972e1855c
      }
  }
 diff --git a/core/src/mindustry/ui/fragments/PlayerListFragment.java b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c826a9b78e 100644
+index 58d82ae32d4a37b4e2bea1559c854b775048350f..9b0966bfb36da990de4bd410317c3528e32a0bd4 100644
 --- a/core/src/mindustry/ui/fragments/PlayerListFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlayerListFragment.java
-@@ -10,14 +10,16 @@ import arc.scene.ui.ImageButton.*;
+@@ -10,13 +10,16 @@ import arc.scene.ui.ImageButton.*;
  import arc.scene.ui.layout.*;
  import arc.struct.*;
  import arc.util.*;
@@ -3555,7 +3542,6 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
 +import mindustry.input.*;
  import mindustry.gen.*;
  import mindustry.graphics.*;
--import mindustry.input.*;
  import mindustry.net.*;
  import mindustry.net.Packets.*;
  import mindustry.ui.*;
@@ -3565,7 +3551,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
  
  import static mindustry.Vars.*;
  
-@@ -68,7 +70,7 @@ public class PlayerListFragment{
+@@ -67,7 +70,7 @@ public class PlayerListFragment{
                      menu.button("@close", this::toggle);
                  }).margin(0f).pad(10f).growX();
  
@@ -3574,7 +3560,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          });
  
          rebuild();
-@@ -79,7 +81,7 @@ public class PlayerListFragment{
+@@ -78,7 +81,7 @@ public class PlayerListFragment{
  
          content.clear();
  
@@ -3583,7 +3569,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          boolean found = false;
  
          players.clear();
-@@ -87,7 +89,7 @@ public class PlayerListFragment{
+@@ -86,7 +89,7 @@ public class PlayerListFragment{
  
          players.sort(Structs.comps(Structs.comparing(Player::team), Structs.comparingBool(p -> !p.admin)));
          if(search.getText().length() > 0){
@@ -3592,7 +3578,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          }
  
          for(var user : players){
-@@ -120,28 +122,25 @@ public class PlayerListFragment{
+@@ -119,7 +122,7 @@ public class PlayerListFragment{
                  iconTable.addListener(listener);
                  iconTable.addListener(new HandCursorListener());
              }
@@ -3601,16 +3587,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
              iconTable.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
              iconTable.name = user.name();
              iconTable.touchable = Touchable.enabled;
- 
-             iconTable.tapped(() -> {
-                 if(!user.dead() && clickable){
--                    Core.camera.position.set(user.unit());
-                     ui.showInfoFade(Core.bundle.format("viewplayer", user.name), 1f);
--                    if(control.input instanceof DesktopInput input){
--                        input.panning = true;
--                    }
-+                    control.input.panCamera(Tmp.v1.set(user.unit()));
-                 }
+@@ -132,12 +135,12 @@ public class PlayerListFragment{
              });
  
              button.add(iconTable).size(h);
@@ -3627,7 +3604,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
  
              var ustyle = new ImageButtonStyle(){{
                  down = Styles.none;
-@@ -151,11 +150,37 @@ public class PlayerListFragment{
+@@ -147,11 +150,22 @@ public class PlayerListFragment{
                  imageOverColor = Color.lightGray;
              }};
  
@@ -3636,21 +3613,6 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
 +                UIExt.announce("已复制昵称：" + user.name);
 +            }).size(iconMed);
 +            button.button(Icon.linkSmall, ustyle, () -> ArcMessageDialog.share("AT", "戳了" + user.name + "[white]一下，并提醒你留意对话框")).size(iconMed);
-+            button.button(Icon.lockSmall, ustyle, () -> {
-+                if(InputHandler.follow != user){
-+                    InputHandler.follow = user;
-+                    if(control.input instanceof DesktopInput d){
-+                        d.panning = true;
-+                    }
-+                }else{
-+                    InputHandler.follow = null;
-+                }
-+                UIExt.announce("追踪玩家：" + user.name);
-+            }).checked(b -> {
-+                boolean checked = InputHandler.follow == user;
-+                b.getImage().setDrawable(checked ? Icon.lockSmall : Icon.lockOpenSmall);
-+                return checked;
-+            }).size(iconMed);
 +
 +            button.button(Icon.planeOutlineSmall, ustyle, () ->
 +            ui.showTextInput("@votekick.reason", Core.bundle.format("votekick.reason.message", user.name()), "", reason ->
@@ -3666,7 +3628,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
                          var dialog = new BaseDialog(user.coloredName());
  
                          dialog.title.setColor(Color.white);
-@@ -191,30 +216,7 @@ public class PlayerListFragment{
+@@ -187,30 +201,7 @@ public class PlayerListFragment{
                              //there's generally no reason to team switch outside PvP or sandbox, and it's basically an easy way to cheat
                              if(allowTeamSwitch){
                                  t.button("@player.team", Icon.redo, bstyle, () -> {
@@ -3698,7 +3660,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
                                      dialog.hide();
                                  }).row();
                              }
-@@ -242,20 +244,11 @@ public class PlayerListFragment{
+@@ -238,20 +229,11 @@ public class PlayerListFragment{
                          dialog.cont.button("@back", Icon.left, dialog::hide).padTop(-1f).size(220f, 55f);
  
                          dialog.show();
@@ -3722,7 +3684,7 @@ index 9286aab19502b5cf40556311572157b20c60fef4..4713d507165bce6aabcd3fe448e190c8
          }
  
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 7ddd5a5bc5ac35e9c64ac446cf689c25745d6c78..21b91b8de09b2a513dca8d4d4de8d4f9b42e3738 100644
+index e3b63f597bb1cdc3302a745080976b620064d325..8d089013fc8b73de2792477e65a60fc8f6c96790 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -730,7 +730,12 @@ public class Block extends UnlockableContent implements Senseable{

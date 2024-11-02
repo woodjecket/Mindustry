@@ -8,7 +8,7 @@ Subject: [PATCH] F.API: Add `LogicBlock.running`
  1 file changed, 5 insertions(+)
 
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index b7baa0c587b1433bbfed051a02f1b65260b91035..b0af04af3eb5311bee7ef27fa0208f99d23d7894 100644
+index b978be999320695d1fcc6a7abfb19b463411d97d..3f83e47e8f34230fe6a6df99ff871b48dcaa932b 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -24,6 +24,7 @@ import mindustry.ui.*;
@@ -28,7 +28,7 @@ index b7baa0c587b1433bbfed051a02f1b65260b91035..b0af04af3eb5311bee7ef27fa0208f99
      private static final int maxByteLen = 1024 * 100;
      public static final int maxNameLength = 32;
  
-@@ -531,6 +534,7 @@ public class LogicBlock extends Block{
+@@ -539,6 +542,7 @@ public class LogicBlock extends Block{
  
                  if(accumulator > maxInstructionScale * ipt) accumulator = maxInstructionScale * ipt;
  
@@ -36,7 +36,7 @@ index b7baa0c587b1433bbfed051a02f1b65260b91035..b0af04af3eb5311bee7ef27fa0208f99
                  for(int i = 0; i < (int)accumulator; i++){
                      executor.runOnce();
                      accumulator --;
-@@ -539,6 +543,7 @@ public class LogicBlock extends Block{
+@@ -547,6 +551,7 @@ public class LogicBlock extends Block{
                          break;
                      }
                  }

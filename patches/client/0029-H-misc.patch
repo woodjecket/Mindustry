@@ -52,10 +52,10 @@ index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650
          }
      }
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index c7b05105ef282cb30e0ef62a702bb17f6cf85f8c..7f76f34f05765380cc23c39d977d65471d475829 100644
+index 41d2becbf09ec0b7f8e30bc4b8d93b06495840b4..6da7882759ce4dc5ccc400de0ff7732cc31407cd 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -389,6 +389,11 @@ public class Vars implements Loadable{
+@@ -391,6 +391,11 @@ public class Vars implements Loadable{
                  if(!headless && (ui == null || ui.consolefrag == null)){
                      logBuffer.add(result);
                  }else if(!headless){
@@ -82,10 +82,10 @@ index db1ccc68c38b2feda940cc2d022c13c84eeb5b4b..af40b8c86579e6e798aaa411e3be3feb
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0cf00afbd09a9bf38e6f2e947ada32b0792f9e3b..414692748f0fbc58782092aa884bf98a91e8bc51 100644
+index cd703731722f31995f3f2c8e6324ca0963ccffde..c53210a89cd342b0b3158fe9ac12b6d2ee6fe43d 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -63,6 +63,10 @@ public class NetClient implements ApplicationListener{
+@@ -65,6 +65,10 @@ public class NetClient implements ApplicationListener{
      public NetClient(){
  
          net.handleClient(Connect.class, packet -> {
@@ -97,7 +97,7 @@ index 0cf00afbd09a9bf38e6f2e947ada32b0792f9e3b..414692748f0fbc58782092aa884bf98a
  
              player.admin = false;
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 18612bbf72c9879f0ffb6142f00b268d809491e2..d21aa28efe895c7d76dfd903a9942a03f5a012b9 100644
+index c145a7f379d5c2f6cb0869c4ca4ba9dc1d6436bb..5c77afb95655f017af7c68926979cec0a3e77c55 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
 @@ -45,7 +45,7 @@ public class Renderer implements ApplicationListener{
@@ -166,7 +166,7 @@ index 085f97d6d83be5c8ed212406b5bc15e69be971df..f4d33d1e88e9cfc9477d8922b1d2d23d
  
      public static int roundAmount(int number){
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index 32b304f3e9e708aed49ad1c43b3165dbfcb23873..0a7394838bbb36aa985383eae069f7bf6a1fb15d 100644
+index d9abfa796be9c1f99135ca0842d67d78df02c432..2da5a90379f9b9896cdef7ac1540c34fe472d649 100644
 --- a/core/src/mindustry/game/Schematics.java
 +++ b/core/src/mindustry/game/Schematics.java
 @@ -97,7 +97,9 @@ public class Schematics implements Loadable{
@@ -223,7 +223,7 @@ index e5f42b2c9ac63558d517625ba32d454577a1ba5c..900a84cff8870a64f11e9ed0dbdf3958
          float dy = (Core.camera.position.y / tilesize);
          dx = Mathf.clamp(dx, sz, world.width() - sz);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index b0912c7b9ca65209f53f8b5817b15f44990c3d5b..b8a6e5f68f8bc42498a02c345d7cd0c8b27de6a0 100644
+index f6e4191c7b0f8fe421039878a6af5f2770fc3b6b..c71e5276a570a91db07df3ab7204587b62f8a467 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
 @@ -60,11 +60,9 @@ public class JoinDialog extends BaseDialog{

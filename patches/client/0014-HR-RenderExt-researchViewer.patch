@@ -13,7 +13,7 @@ Content-Transfer-Encoding: 8bit
  2 files changed, 10 insertions(+), 5 deletions(-)
 
 diff --git a/core/src/mindustry/game/Objectives.java b/core/src/mindustry/game/Objectives.java
-index f50c8c0ca180f07cc2ce13068540910c915189d5..fbb783f85810db49bd6a321d729f5214fd0d22b3 100644
+index fb947c4bd06e676c79ff2c4b3578e286d048e60a..1941128ce1c18c771c3660f00ae6c8a2b731f125 100644
 --- a/core/src/mindustry/game/Objectives.java
 +++ b/core/src/mindustry/game/Objectives.java
 @@ -4,6 +4,7 @@ import arc.*;
@@ -29,20 +29,20 @@ index f50c8c0ca180f07cc2ce13068540910c915189d5..fbb783f85810db49bd6a321d729f5214
              return Core.bundle.format("requirement.research",
                  //TODO broken for multi tech nodes.
 +            RenderExt.researchViewer ||
-                 (content.techNode == null || content.techNode.parent == null || content.techNode.parent.content.unlocked()) ?
+                 (content.techNode == null || content.techNode.parent == null || content.techNode.parent.content.unlockedHost()) ?
                      (content.emoji() + " " + content.localizedName) : "???");
          }
 @@ -48,7 +50,7 @@ public class Objectives{
          @Override
          public String display(){
              return Core.bundle.format("requirement.produce",
--                content.unlocked() ? (content.emoji() + " " + content.localizedName) : "???");
-+                RenderExt.researchViewer || content.unlocked() ? (content.emoji() + " " + content.localizedName) : "???");
+-                content.unlockedHost() ? (content.emoji() + " " + content.localizedName) : "???");
++                RenderExt.researchViewer || content.unlockedHost() ? (content.emoji() + " " + content.localizedName) : "???");
          }
      }
  
 diff --git a/core/src/mindustry/ui/dialogs/ResearchDialog.java b/core/src/mindustry/ui/dialogs/ResearchDialog.java
-index e601e02b5df2ea34d97a338b992ca30554a7e3fa..5c53145060b5775f5cb1cef75701f2d857019389 100644
+index e9286ab8f6a30b567e001d34b4e5e69c21c284dc..242c0fa95f1eb70e0ba87ccaf09f9fb8e2ac144e 100644
 --- a/core/src/mindustry/ui/dialogs/ResearchDialog.java
 +++ b/core/src/mindustry/ui/dialogs/ResearchDialog.java
 @@ -27,6 +27,7 @@ import mindustry.type.*;
@@ -53,7 +53,7 @@ index e601e02b5df2ea34d97a338b992ca30554a7e3fa..5c53145060b5775f5cb1cef75701f2d8
  
  import java.util.*;
  
-@@ -349,7 +350,7 @@ public class ResearchDialog extends BaseDialog{
+@@ -361,7 +362,7 @@ public class ResearchDialog extends BaseDialog{
      }
  
      void checkNodes(TechTreeNode node){
@@ -62,25 +62,25 @@ index e601e02b5df2ea34d97a338b992ca30554a7e3fa..5c53145060b5775f5cb1cef75701f2d8
          if(!locked && (node.parent == null || node.parent.visible)) node.visible = true;
          node.selectable = selectable(node.node);
          for(TechTreeNode l : node.children){
-@@ -361,6 +362,8 @@ public class ResearchDialog extends BaseDialog{
+@@ -373,6 +374,8 @@ public class ResearchDialog extends BaseDialog{
      }
  
      boolean selectable(TechNode node){
-+        if(node.content.unlocked()) return true;
++        if(node.content.unlockedHost()) return true;
 +        if(RenderExt.researchViewer && locked(node.parent)) return false;
-         return node.content.unlocked() || !node.objectives.contains(i -> !i.complete());
+         //there's a desync here as far as sectors go, since the client doesn't know about that, but I'm not too concerned
+         return node.content.unlockedHost() || !node.objectives.contains(i -> !i.complete());
      }
- 
-@@ -463,7 +466,7 @@ public class ResearchDialog extends BaseDialog{
+@@ -480,7 +483,7 @@ public class ResearchDialog extends BaseDialog{
                      button.setPosition(node.x + panX + width / 2f, node.y + panY + height / 2f + offset, Align.center);
-                     button.getStyle().up = !locked(node.node) ? Tex.buttonOver : !selectable(node.node) || !canSpend(node.node) ? Tex.buttonRed : Tex.button;
+                     button.getStyle().up = !locked(node.node) ? Tex.buttonOver : !selectable(node.node) || (!canSpend(node.node) && !net.client()) ? Tex.buttonRed : Tex.button;
  
 -                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable ? node.node.content.uiIcon : Icon.lock.getRegion());
 +                    ((TextureRegionDrawable)button.getStyle().imageUp).setRegion(node.selectable || RenderExt.researchViewer ? node.node.content.uiIcon : Icon.lock.getRegion());
                      button.getImage().setColor(!locked(node.node) ? Color.white : node.selectable ? Color.gray : Pal.gray);
                      button.getImage().layout();
                  });
-@@ -603,13 +606,13 @@ public class ResearchDialog extends BaseDialog{
+@@ -622,13 +625,13 @@ public class ResearchDialog extends BaseDialog{
              infoTable.table(b -> {
                  b.margin(0).left().defaults().left();
  
@@ -94,5 +94,5 @@ index e601e02b5df2ea34d97a338b992ca30554a7e3fa..5c53145060b5775f5cb1cef75701f2d8
 -                    desc.add(selectable ? node.content.localizedName : "[accent]???");
 +                    desc.add(selectable ? node.content.localizedName : RenderExt.researchViewer ? node.content.localizedName + "\n[red]未满足前置科技" : "[accent]???");
                      desc.row();
-                     if(locked(node) || debugShowRequirements){
+                     if(locked(node) || (debugShowRequirements && !net.client())){
  

@@ -51,7 +51,7 @@ index 0af8f3377c35ae3c105e18ffcfa15cb27de84a55..96b532f848fd85f5471f29a8f37d2554
      }
  }
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index 5ffc734ae64ac7c7982386a06efb02400c6909e6..15ffd3bb28294dd47aaac20cd317f810e12d20a5 100644
+index 8e79e085c053b9c66d295110b2fa0ee881832e82..2cf7bef8c849e77730559938b53a876adb0c7a65 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -33,6 +33,7 @@ import mindustry.world.blocks.power.*;
@@ -542,7 +542,7 @@ index f51b9cda1ffeefdb689ffc64144669b737a03b3d..575d0d5f08ef4e9b7bb5fa277e5dd5c0
      public void drawPlanConfig(BuildPlan plan, Eachable<BuildPlan> list){
          drawPlanConfigCenter(plan, plan.config, "center", true);
 diff --git a/core/src/mindustry/world/blocks/units/Reconstructor.java b/core/src/mindustry/world/blocks/units/Reconstructor.java
-index f0448063a416b8e94051762f0cd345397983fcac..6ac2aa76340dc546b7859b2a847f5c132d6c7060 100644
+index 8c243d878cb8db27be2a28b0ccc2ea3847cf1d41..7c96d661fcaa60f48f1fdbabb0b477c727aac7c7 100644
 --- a/core/src/mindustry/world/blocks/units/Reconstructor.java
 +++ b/core/src/mindustry/world/blocks/units/Reconstructor.java
 @@ -62,7 +62,11 @@ public class Reconstructor extends UnitBlock{
@@ -583,10 +583,10 @@ index aab15b2b17c6b82af48ead9b31a0a0956f3bb0f1..f0aae8beef7f2e67daed50ebbc21dc23
          addBar("units", (UnitAssemblerBuild e) ->
              new Bar(() ->
 diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
-index 6747310d2d3b0b6a73eab9905a8e651b893bf95b..fd76416dd3660b7ce094004021e49e6e56b5c747 100644
+index 10ee5a3a13d7592d619e59d0e3a677d3f27dbe7c..54dd64382d99f65a1d396516e664d008fcf38010 100644
 --- a/core/src/mindustry/world/blocks/units/UnitFactory.java
 +++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
-@@ -84,7 +84,9 @@ public class UnitFactory extends UnitBlock{
+@@ -96,7 +96,9 @@ public class UnitFactory extends UnitBlock{
      @Override
      public void setBars(){
          super.setBars();

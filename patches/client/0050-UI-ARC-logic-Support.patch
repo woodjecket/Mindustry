@@ -530,7 +530,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
          canvas.rebuild();
          canvas.privileged = privileged;
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c91f23e459 100644
+index ee667f5f8b96bb248fa8b097a5b04c0428f34f7e..5cdee96ecda0ad4258821e12fec517bc9288477e 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
@@ -568,7 +568,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c9
          /** Block of code to run after load. */
          public @Nullable Runnable loadBlock;
  
-@@ -424,7 +431,7 @@ public class LogicBlock extends Block{
+@@ -432,7 +439,7 @@ public class LogicBlock extends Block{
  
          @Override
          public boolean displayable(){
@@ -577,7 +577,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c9
          }
  
          @Override
-@@ -447,7 +454,7 @@ public class LogicBlock extends Block{
+@@ -455,7 +462,7 @@ public class LogicBlock extends Block{
  
          @Override
          public Cursor getCursor(){
@@ -586,7 +586,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c9
          }
  
          //logic blocks cause write problems when picked up
-@@ -583,17 +590,19 @@ public class LogicBlock extends Block{
+@@ -591,17 +598,19 @@ public class LogicBlock extends Block{
              }
  
              //draw top text on separate layer
@@ -608,7 +608,7 @@ index 12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d..173d9cdef76f74e56019c97ae7a3a2c9
  
              Groups.unit.each(u -> u.controller() instanceof LogicAI ai && ai.controller == this, unit -> {
                  Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);
-@@ -640,12 +649,53 @@ public class LogicBlock extends Block{
+@@ -648,12 +657,53 @@ public class LogicBlock extends Block{
  
          @Override
          public boolean shouldShowConfigure(Player player){

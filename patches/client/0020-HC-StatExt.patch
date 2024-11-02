@@ -98,10 +98,10 @@ index e344f652f0c1f9993d401ea225e56a3edb780514..a211cc0968ac9ba4911efc26a7b2167c
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index c2917941210017a7fd0a03b792ee4ebe835dea68..100459d9da22fd433a5820ca1a91f04678357e8b 100644
+index a083aad8ccfdef139c046e7e295a4d4dd76cd341..7c1f0d6e5575387d980faa295dcffb6c9025fc4f 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
-@@ -615,29 +615,47 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -619,29 +619,47 @@ public class UnitType extends UnlockableContent implements Senseable{
          stats.add(Stat.health, health);
          stats.add(Stat.armor, armor);
          stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
@@ -155,7 +155,7 @@ index c2917941210017a7fd0a03b792ee4ebe835dea68..100459d9da22fd433a5820ca1a91f046
          }
          if(buildSpeed > 0){
              stats.addPercent(Stat.buildSpeed, buildSpeed);
-@@ -656,6 +674,10 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -660,6 +678,10 @@ public class UnitType extends UnlockableContent implements Senseable{
              stats.add(Stat.weapons, StatValues.weapons(this, weapons));
          }
  
@@ -166,7 +166,7 @@ index c2917941210017a7fd0a03b792ee4ebe835dea68..100459d9da22fd433a5820ca1a91f046
          if(immunities.size > 0){
              var imm = immunities.toSeq().sort();
              //it's redundant to list wet for naval units
-@@ -687,6 +709,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -691,6 +713,8 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          allowLegStep = example instanceof Legsc;
  
@@ -199,7 +199,7 @@ index d097677d3ca8d8b34dca7e35bc0d82cabba807fe..36ddd96f325b49b989b910ca80d0c9ee
              t.row();
              t.add("[lightgray]" + Stat.inaccuracy.localized() + ": [white]" + (int)inaccuracy + " " + StatUnit.degrees.localized());
 diff --git a/core/src/mindustry/world/Block.java b/core/src/mindustry/world/Block.java
-index eaafecee8c9dfb4fe6d2b27389927144063f9dab..5ffc734ae64ac7c7982386a06efb02400c6909e6 100644
+index 9daa65d5aaac2e74173c4c185457ff1113ab61ac..8e79e085c053b9c66d295110b2fa0ee881832e82 100644
 --- a/core/src/mindustry/world/Block.java
 +++ b/core/src/mindustry/world/Block.java
 @@ -32,6 +32,7 @@ import mindustry.world.blocks.environment.*;

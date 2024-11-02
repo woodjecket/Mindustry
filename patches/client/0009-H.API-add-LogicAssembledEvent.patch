@@ -61,7 +61,7 @@ index 9d8faa880a9e518d6b303c7d0e67f4419026e208..580202ec1745ae6982dc5b485c16914e
          @Override
          public void build(Table table){
 diff --git a/core/src/mindustry/world/blocks/logic/LogicBlock.java b/core/src/mindustry/world/blocks/logic/LogicBlock.java
-index b0af04af3eb5311bee7ef27fa0208f99d23d7894..12cda95f81156b8b5ce60d3ab97aa6db90bd3f0d 100644
+index 3f83e47e8f34230fe6a6df99ff871b48dcaa932b..ee667f5f8b96bb248fa8b097a5b04c0428f34f7e 100644
 --- a/core/src/mindustry/world/blocks/logic/LogicBlock.java
 +++ b/core/src/mindustry/world/blocks/logic/LogicBlock.java
 @@ -1,5 +1,6 @@
@@ -79,12 +79,12 @@ index b0af04af3eb5311bee7ef27fa0208f99d23d7894..12cda95f81156b8b5ce60d3ab97aa6db
  
  import java.io.*;
  import java.util.zip.*;
-@@ -404,6 +406,8 @@ public class LogicBlock extends Block{
+@@ -410,6 +412,8 @@ public class LogicBlock extends Block{
                      asm.putConst("@thisx", World.conv(x));
                      asm.putConst("@thisy", World.conv(y));
  
 +                    //MDTX: LogicAssembledEvent
 +                    Events.fire(new LogicAssembledEvent(this, asm));
                      executor.load(asm);
-                 }catch(Exception e){
-                     //handle malformed code and replace it with nothing
+                     executor.unit.objval = oldUnit;
+                     executor.unit.isobj = true;
