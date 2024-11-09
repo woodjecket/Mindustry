@@ -16,13 +16,23 @@ import mindustry.world.blocks.storage.StorageBlock
 object AutoFill {
     @JvmField
     var enable = false
+    private val justTransferred = mutableSetOf<Building>()
+    private val justTransferredNext = mutableSetOf<Building>()
+
+    private fun justTransferred(build: Building): Boolean {
+        if (justTransferred.add(build)) return false
+        justTransferredNext.add(build)
+        return true
+    }
 
     private fun tryFill(build: Building) {
         val player = Vars.player ?: return
         if (build.block is StorageBlock || build.team != player.team()) return
         val item = player.unit()?.item() ?: return
-        if (build.within(player, Vars.itemTransferRange) && build.acceptItem(build, item))
+        if (build.within(player, Vars.itemTransferRange) && build.acceptItem(build, item)) {
+            if (justTransferred(build)) return
             Call.transferInventory(player, build)
+        }
     }
 
     init {
@@ -35,6 +45,9 @@ object AutoFill {
     }
 
     fun update() {
+        justTransferred.clear()
+        justTransferred.addAll(justTransferredNext)
+        justTransferredNext.clear()
         if (!enable || Vars.player.dead()) return
         val player = Vars.player
         val item = player.unit()?.item() ?: return
@@ -45,6 +58,7 @@ object AutoFill {
             Vars.indexer.findTile(player.team(), player.x, player.y, Vars.buildingRange, {
                 it.block is StorageBlock && it.items.has(item)
             })?.let { find ->
+                if (justTransferred(find)) return@let
                 Call.requestItem(player, find, item, 9999)
             }
         }
