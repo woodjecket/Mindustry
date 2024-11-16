@@ -118,12 +118,12 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |   9 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 228 ++++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 211 +++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
  .../ui/fragments/PlacementFragment.java       | 168 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++--
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1680 insertions(+), 206 deletions(-)
+ 30 files changed, 1670 insertions(+), 199 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2743,7 +2743,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3ba3bac9a9 100644
+index 14c352d619878848526ebd2106e6a4328082bdd1..51f08e819f885c527b4cb2bd5695afc08cc5eed0 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -29,14 +29,17 @@ import mindustry.net.Packets.*;
@@ -2794,31 +2794,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
          //paused table
          parent.fill(t -> {
              t.name = "paused";
-@@ -196,13 +208,16 @@ public class HudFragment{
-             t.add(new Minimap()).name("minimap");
-             t.row();
-             //position
--            t.label(() ->
--                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
--                (Core.settings.getBool("mouseposition") ? "[lightgray]" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
--            .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
--            .touchable(Touchable.disabled)
--            .style(Styles.outlineLabel)
--            .name("position");
-+            t.table(tt-> {
-+                tt.label(() -> player.unit().type.emoji() +
-+                                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
-+                                (Core.settings.getBool("mouseposition") ? "[lightgray]" + "♐" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
-+                        .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
-+                        .touchable(Touchable.disabled)
-+                        .style(Styles.outlineLabel)
-+                        .name("position");
-+                tt.button("♐",cleart, MarkerType::lockOnLastMark).size(30,30).tooltip("锁定上个标记点");
-+            }).style(Styles.outlineLabel);
-             if(Core.settings.getInt("AuxiliaryTable") == 3){
-                 t.row().add(UIExt.auxiliaryTools);
-             }
-@@ -295,12 +310,16 @@ public class HudFragment{
+@@ -300,12 +312,16 @@ public class HudFragment{
              Table wavesMain, editorMain;
  
              cont.stack(wavesMain = new Table(), editorMain = new Table()).height(wavesMain.getPrefHeight())
@@ -2836,7 +2812,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
                  //wave info button with text
                  s.add(makeStatusTable()).grow().name("status");
  
-@@ -321,7 +340,13 @@ public class HudFragment{
+@@ -326,7 +342,13 @@ public class HudFragment{
                          logic.skipWave();
                      }
                  }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
@@ -2851,7 +2827,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
  
              wavesMain.row();
  
-@@ -333,6 +358,7 @@ public class HudFragment{
+@@ -338,6 +360,7 @@ public class HudFragment{
  
              editorMain.name = "editor";
              editorMain.table(Tex.buttonEdge4, t -> {
@@ -2859,7 +2835,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
                  t.name = "teams";
                  t.top().table(teams -> {
                      teams.left();
-@@ -348,6 +374,7 @@ public class HudFragment{
+@@ -353,6 +376,7 @@ public class HudFragment{
                              teams.row();
                          }
                      }
@@ -2867,7 +2843,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
                  }).top().left();
  
                  t.row();
-@@ -424,6 +451,8 @@ public class HudFragment{
+@@ -429,6 +453,8 @@ public class HudFragment{
                  IntFormat mem = new IntFormat("memory");
                  IntFormat memnative = new IntFormat("memory2");
  
@@ -2876,7 +2852,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -433,6 +462,11 @@ public class HudFragment{
+@@ -438,6 +464,11 @@ public class HudFragment{
                  DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw"), ()->DebugUtil.renderDebug);
                  info.row();
  
@@ -2888,7 +2864,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
                  }else{
-@@ -1046,6 +1080,142 @@ public class HudFragment{
+@@ -1051,6 +1082,142 @@ public class HudFragment{
          return table;
      }
  
@@ -3031,7 +3007,7 @@ index a3391efca9e25ee57be7efcbb8a69f54d94adbe7..0d743838357c333d32f0db8c75380e3b
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -1090,7 +1260,45 @@ public class HudFragment{
+@@ -1095,7 +1262,45 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){

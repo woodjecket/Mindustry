@@ -6,26 +6,45 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(波次信息显示)
+AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(波次信息显示), MarkType(标记功能)
 ---
- .../mindustry/ui/fragments/HudFragment.java   | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ .../mindustry/ui/fragments/HudFragment.java   | 38 +++++++++++++++----
+ 1 file changed, 30 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..a3391efca9e25ee57be7efcbb8a69f54d94adbe7 100644
+index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..14c352d619878848526ebd2106e6a4328082bdd1 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
-@@ -203,6 +203,9 @@ public class HudFragment{
-             .touchable(Touchable.disabled)
-             .style(Styles.outlineLabel)
-             .name("position");
+@@ -196,13 +196,21 @@ public class HudFragment{
+             t.add(new Minimap()).name("minimap");
+             t.row();
+             //position
+-            t.label(() ->
+-                (Core.settings.getBool("position") ? player.tileX() + "," + player.tileY() + "\n" : "") +
+-                (Core.settings.getBool("mouseposition") ? "[lightgray]" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
+-            .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
+-            .touchable(Touchable.disabled)
+-            .style(Styles.outlineLabel)
+-            .name("position");
++            t.table(tt -> {
++                tt.label(() ->
++                (Core.settings.getBool("position") ? player.unit().type.emoji() + player.tileX() + "," + player.tileY() + "\n" : "") +
++                (Core.settings.getBool("mouseposition") ? "[lightgray]" + "♐" + World.toTile(Core.input.mouseWorldX()) + "," + World.toTile(Core.input.mouseWorldY()) : ""))
++                .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
++                .touchable(Touchable.disabled).style(Styles.outlineLabel);
++
++                tt.button("♐", cleart, MarkerType::toggleMarkHitterUI).size(iconMed).tooltip("进入标记模式");
++                tt.button("T", cleart, () -> ui.chatfrag.nextMode())
++                .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(iconMed).tooltip("前缀添加/t");
++                tt.button("" + Iconc.zoom, cleart, MarkerType::lockOnLastMark).size(iconMed).tooltip("锁定上个标记点");
++            }).name("position");
 +            if(Core.settings.getInt("AuxiliaryTable") == 3){
 +                t.row().add(UIExt.auxiliaryTools);
 +            }
              t.top().right();
          });
  
-@@ -322,6 +325,10 @@ public class HudFragment{
+@@ -322,6 +330,10 @@ public class HudFragment{
  
              wavesMain.row();
  
@@ -36,7 +55,7 @@ index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..a3391efca9e25ee57be7efcbb8a69f54
              addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
  
              editorMain.name = "editor";
-@@ -401,6 +408,11 @@ public class HudFragment{
+@@ -401,6 +413,11 @@ public class HudFragment{
              }
              editorMain.visible(() -> shown && state.isEditor());
  
@@ -48,7 +67,7 @@ index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..a3391efca9e25ee57be7efcbb8a69f54
              //fps display
              cont.table(info -> {
                  info.name = "fps/ping";
-@@ -450,7 +462,12 @@ public class HudFragment{
+@@ -450,7 +467,12 @@ public class HudFragment{
  
              t.table(c -> {
                  //core items

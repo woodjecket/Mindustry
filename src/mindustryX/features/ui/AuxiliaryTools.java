@@ -17,11 +17,9 @@ public class AuxiliaryTools extends Table{
     private boolean shown = true;
     private final Seq<Table> toolsTables = Seq.with(
     new MapInfoTable(),
-    new WaveInfoTable(),
     new AITools(),
     new ScriptButtons(),
-    new MobileScriptButtons(),
-    new MarkTable()
+    new MobileScriptButtons()
     );
 
     public AuxiliaryTools(){
