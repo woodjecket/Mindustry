@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sat, 23 Nov 2024 19:43:57 +0800
+Subject: [PATCH] =?UTF-8?q?OC:=20limit=20pingExecutor(=E9=99=90=E5=88=B6Pi?=
+ =?UTF-8?q?ng=E5=B9=B6=E5=8F=91)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ core/src/mindustry/net/Net.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
+index 5a2d439bbcab56edbb5b1bb21871c26ed950b3a9..c8da7ba7aef51472343f5204881cfb0630eba0be 100644
+--- a/core/src/mindustry/net/Net.java
++++ b/core/src/mindustry/net/Net.java
+@@ -37,7 +37,7 @@ public class Net{
+     private final ObjectMap<Class<?>, Cons> clientListeners = new ObjectMap<>();
+     private final ObjectMap<Class<?>, Cons2<NetConnection, Object>> serverListeners = new ObjectMap<>();
+     private final IntMap<StreamBuilder> streams = new IntMap<>();
+-    private final ExecutorService pingExecutor = OS.isWindows && !OS.is64Bit ? Threads.boundedExecutor("Ping Servers", 5) : Threads.unboundedExecutor();
++    private final ExecutorService pingExecutor = Threads.boundedExecutor("Ping Servers", OS.isWindows && !OS.is64Bit ? 5 : 16);//MDTX: 最大并发限制到16
+ 
+     private final NetProvider provider;
+ 
