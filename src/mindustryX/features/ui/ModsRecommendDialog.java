@@ -69,10 +69,7 @@ public class ModsRecommendDialog extends BaseDialog{
 
         if(!fetchModList){
             setLoading(cont);
-
-            Reflect.invoke(Vars.ui.mods, "getModList", new Cons[]{listings -> {
-                Seq<ModListing> modListings = (Seq<ModListing>)listings;
-
+            Vars.ui.mods.getModList(0, modListings -> {
                 // ???
                 if(modListings == null){
                     setLoadFailed(cont);
@@ -85,7 +82,7 @@ public class ModsRecommendDialog extends BaseDialog{
 
                 fetchModList = true;
                 rebuildCont();
-            }}, Cons.class);
+            });
 
             return;
         }
