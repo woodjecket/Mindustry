@@ -8,14 +8,14 @@ Content-Transfer-Encoding: 8bit
 
 AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(波次信息显示), MarkType(标记功能)
 ---
- .../mindustry/ui/fragments/HudFragment.java   | 38 +++++++++++++++----
- 1 file changed, 30 insertions(+), 8 deletions(-)
+ .../mindustry/ui/fragments/HudFragment.java   | 26 +++++++++++++------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..14c352d619878848526ebd2106e6a4328082bdd1 100644
+index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..5035c181fb29c78a8c9e8411da3e7d6ee3ca7daf 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
-@@ -196,13 +196,21 @@ public class HudFragment{
+@@ -196,13 +196,18 @@ public class HudFragment{
              t.add(new Minimap()).name("minimap");
              t.row();
              //position
@@ -38,36 +38,10 @@ index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..14c352d619878848526ebd2106e6a432
 +                .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(iconMed).tooltip("前缀添加/t");
 +                tt.button("" + Iconc.zoom, cleart, MarkerType::lockOnLastMark).size(iconMed).tooltip("锁定上个标记点");
 +            }).name("position");
-+            if(Core.settings.getInt("AuxiliaryTable") == 3){
-+                t.row().add(UIExt.auxiliaryTools);
-+            }
              t.top().right();
          });
  
-@@ -322,6 +330,10 @@ public class HudFragment{
- 
-             wavesMain.row();
- 
-+            if(Core.settings.getInt("AuxiliaryTable") == 2){
-+                wavesMain.add(UIExt.auxiliaryTools).left().top().row();
-+            }
-+
-             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
- 
-             editorMain.name = "editor";
-@@ -401,6 +413,11 @@ public class HudFragment{
-             }
-             editorMain.visible(() -> shown && state.isEditor());
- 
-+            //map info/nextwave display
-+            if(Core.settings.getInt("AuxiliaryTable") == 1){
-+                cont.add(UIExt.auxiliaryTools).left().top();
-+            }
-+
-             //fps display
-             cont.table(info -> {
-                 info.name = "fps/ping";
-@@ -450,7 +467,12 @@ public class HudFragment{
+@@ -450,7 +454,12 @@ public class HudFragment{
  
              t.table(c -> {
                  //core items
