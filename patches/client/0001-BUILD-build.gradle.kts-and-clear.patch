@@ -11,7 +11,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  android/proguard-rules.pro                    |   4 +
  .../com/github/bsideup/jabel/Desugar.java     |  13 +
  .../javax.annotation.processing.Processor     |   6 +
- build.gradle                                  | 249 ++--------------
+ build.gradle                                  | 247 ++-------------
  core/build.gradle                             |   2 -
  core/build.gradle.kts                         |  65 ++++
  desktop/build.gradle                          | 166 +----------
@@ -23,7 +23,7 @@ way-zer <himc.wicp@gmail.com> on 2024/6/9
  settings.gradle                               |  10 +-
  tools/build.gradle                            |  44 ++-
  tools/src/mindustry/tools/Generators.java     |   2 +-
- 17 files changed, 385 insertions(+), 621 deletions(-)
+ 17 files changed, 384 insertions(+), 620 deletions(-)
  create mode 100644 annotations/src/main/java/com/github/bsideup/jabel/Desugar.java
  create mode 100644 annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor
  delete mode 100644 core/build.gradle
@@ -240,15 +240,11 @@ index 0000000000000000000000000000000000000000..181b87c1d5f3755f16a01c0528d0a89f
 +mindustry.annotations.misc.LogicStatementProcessor
 +mindustry.annotations.remote.RemoteProcess
 diff --git a/build.gradle b/build.gradle
-index 6a49b0ce6e761aaa7fa09c5e74ab466388e62d87..4599d8a8554059a9f7764d6b7f17daf85d1e0318 100644
+index 6a49b0ce6e761aaa7fa09c5e74ab466388e62d87..31c5318bb29640dde16d33ddc81e4c82d8736933 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -7,22 +7,9 @@ buildscript{
-         arcModule = { String name ->
-             //skip to last submodule
-             name = name.substring(name.lastIndexOf(':') + 1)
--            return "com.github.Anuken${localArc ? "" : ".Arc"}:$name:$arcHash"
-+            return "com.github.anuken${localArc ? "" : ".Arc"}:$name:$arcHash"
+@@ -10,19 +10,6 @@ buildscript{
+             return "com.github.Anuken${localArc ? "" : ".Arc"}:$name:$arcHash"
          }
      }
 -

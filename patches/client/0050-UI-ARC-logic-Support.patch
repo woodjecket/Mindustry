@@ -18,13 +18,13 @@ way-zer <himc.wicp@gmail.com> on 2024/7/14
 防止多人模式下编辑世处，并给出提示
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- core/src/mindustry/logic/LCanvas.java         |  54 +++-
+ core/src/mindustry/logic/LCanvas.java         |  54 ++++-
  core/src/mindustry/logic/LExecutor.java       |   7 +-
  core/src/mindustry/logic/LStatements.java     |  12 +
- core/src/mindustry/logic/LogicDialog.java     | 237 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  66 ++++-
+ core/src/mindustry/logic/LogicDialog.java     | 209 +++++++++++++++---
+ .../world/blocks/logic/LogicBlock.java        |  66 +++++-
  .../world/blocks/logic/MemoryBlock.java       |  72 +++++-
- 6 files changed, 392 insertions(+), 56 deletions(-)
+ 6 files changed, 378 insertions(+), 42 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -188,18 +188,18 @@ index 580202ec1745ae6982dc5b485c16914e24439b93..d4ad76458ac0aee2f84d11443a7a630e
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4af34bfb3 100644
+index 18b6dc32a2cbf088b3deec43808564a6ea15b8ae..20e8c2a6962523c013ef72b4773bd0f133dc5c3f 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
-@@ -4,6 +4,7 @@ import arc.*;
- import arc.func.*;
+@@ -5,6 +5,7 @@ import arc.func.*;
  import arc.graphics.*;
+ import arc.input.*;
  import arc.scene.actions.*;
 +import arc.scene.event.*;
  import arc.scene.ui.*;
  import arc.scene.ui.TextButton.*;
  import arc.scene.ui.layout.*;
-@@ -18,6 +19,9 @@ import mindustry.logic.LStatements.*;
+@@ -19,6 +20,9 @@ import mindustry.logic.LStatements.*;
  import mindustry.ui.*;
  import mindustry.ui.dialogs.*;
  import mindustry.world.blocks.logic.*;
@@ -207,9 +207,9 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
 +import mindustryX.features.*;
 +import mindustryX.features.Settings;
  
- import static mindustry.Vars.*;
- import static mindustry.logic.LCanvas.*;
-@@ -26,6 +30,10 @@ public class LogicDialog extends BaseDialog{
+ import java.util.*;
+ 
+@@ -29,6 +33,10 @@ public class LogicDialog extends BaseDialog{
      public LCanvas canvas;
      Cons<String> consumer = s -> {};
      boolean privileged;
@@ -220,7 +220,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
      @Nullable LExecutor executor;
      GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
      boolean wasRows, wasPortrait;
-@@ -45,23 +53,157 @@ public class LogicDialog extends BaseDialog{
+@@ -48,11 +56,17 @@ public class LogicDialog extends BaseDialog{
              wasRows = LCanvas.useRows();
              wasPortrait = Core.graphics.isPortrait();
          });
@@ -239,6 +239,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
                  wasPortrait = Core.graphics.isPortrait();
                  wasRows = LCanvas.useRows();
              }
+@@ -66,12 +80,140 @@ public class LogicDialog extends BaseDialog{
          });
  
          add(canvas).grow().name("canvas");
@@ -379,7 +380,7 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
      public static Color typeColor(LVar s, Color color){
          return color.set(
              !s.isobj ? Pal.place :
-@@ -133,6 +275,17 @@ public class LogicDialog extends BaseDialog{
+@@ -143,6 +285,17 @@ public class LogicDialog extends BaseDialog{
                              ui.showException(e);
                          }
                      }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
@@ -397,18 +398,31 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
                  });
              });
  
-@@ -213,54 +366,60 @@ public class LogicDialog extends BaseDialog{
-         }).name("variables").disabled(b -> executor == null || executor.vars.length == 0);
+@@ -228,6 +381,11 @@ public class LogicDialog extends BaseDialog{
+     }
  
-         buttons.button("@add", Icon.add, () -> {
--            BaseDialog dialog = new BaseDialog("@add");
--            dialog.cont.table(table -> {
--                table.background(Tex.button);
--                table.pane(t -> {
--                    for(Prov<LStatement> prov : LogicIO.allStatements){
--                        LStatement example = prov.get();
--                        if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
--
+     public void showAddDialog(){
++        showAddStatement(privileged, (t) -> canvas.add(t));
++    }
++
++    @MindustryXApi
++    public static void showAddStatement(boolean privileged, Cons<LStatement> cons){
+         BaseDialog dialog = new BaseDialog("@add");
+         dialog.cont.table(table -> {
+             String[] searchText = {""};
+@@ -252,7 +410,7 @@ public class LogicDialog extends BaseDialog{
+ 
+                     search.keyDown(KeyCode.enter, () -> {
+                         if(!searchText[0].isEmpty() && matched[0] != null){
+-                            canvas.add((LStatement)matched[0].get());
++                            cons.get((LStatement)matched[0].get());
+                             dialog.hide();
+                         }
+                     });
+@@ -275,33 +433,33 @@ public class LogicDialog extends BaseDialog{
+                             matched[0] = prov;
+                         }
+ 
 -                        LCategory category = example.category();
 -                        Table cat = t.find(category.name);
 -                        if(cat == null){
@@ -419,21 +433,6 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
 -                                s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
 -                                s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
 -                            }).growX().pad(5f).padTop(10f);
-+            showAddStatement(privileged, (t) -> canvas.add(t));
-+        }).disabled(t -> canvas.statements.getChildren().size >= LExecutor.maxInstructions);
-+    }
- 
--                            t.row();
-+    @MindustryXApi
-+    public static void showAddStatement(boolean privileged, Cons<LStatement> cons){
-+        BaseDialog dialog = new BaseDialog("@add");
-+        dialog.cont.table(table -> {
-+            table.background(Tex.button);
-+            table.pane(t -> {
-+                for(Prov<LStatement> prov : LogicIO.allStatements){
-+                    LStatement example = prov.get();
-+                    if(example instanceof InvalidStatement || example.hidden() || (example.privileged() && !privileged) || (example.nonPrivileged() && privileged)) continue;
-+
 +                    LCategory category = example.category();
 +                    Table cat = t.find(category.name);
 +                    if(cat == null){
@@ -445,50 +444,39 @@ index eaac0dd322acdd748e4476140fd712f285718179..95fb6aa02687fd17b01c51611ba285d4
 +                            s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
 +                        }).growX().pad(5f).padTop(10f);
  
+-                            t.row();
++                        t.row();
+ 
 -                            cat = t.table(c -> {
 -                                c.top().left();
 -                            }).name(category.name).top().left().growX().fillY().get();
 -                            t.row();
 -                        }
-+                        t.row();
- 
--                        TextButtonStyle style = new TextButtonStyle(Styles.flatt);
--                        style.fontColor = category.color;
--                        style.font = Fonts.outline;
 +                        cat = t.table(c -> {
 +                            c.top().left();
 +                        }).name(category.name).top().left().growX().fillY().get();
 +                        t.row();
 +                    }
  
--                        cat.button(example.name(), style, () -> {
--                            canvas.add(prov.get());
--                            dialog.hide();
--                        }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
+-                        TextButtonStyle style = new TextButtonStyle(Styles.flatt);
+-                        style.fontColor = category.color;
+-                        style.font = Fonts.outline;
 +                    TextButtonStyle style = new TextButtonStyle(Styles.flatt);
 +                    style.fontColor = category.color;
 +                    style.font = Fonts.outline;
  
--                        if(cat.getChildren().size % 3 == 0) cat.row();
--                    }
--                }).grow();
--            }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
--            dialog.addCloseButton();
--            dialog.show();
--        }).disabled(t -> canvas.statements.getChildren().size >= LExecutor.maxInstructions);
+-                        cat.button(example.name(), style, () -> {
+-                            canvas.add(prov.get());
+-                            dialog.hide();
+-                        }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
 +                    cat.button(example.name(), style, () -> {
 +                        cons.get(prov.get());
 +                        dialog.hide();
 +                    }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
-+
-+                    if(cat.getChildren().size % 3 == 0) cat.row();
-+                }
-+            }).grow();
-+        }).fill().maxHeight(Core.graphics.getHeight() * 0.8f);
-+        dialog.addCloseButton();
-+        dialog.show();
-     }
  
+                         if(cat.getChildren().size % 3 == 0) cat.row();
+                     }
+@@ -317,6 +475,7 @@ public class LogicDialog extends BaseDialog{
      public void show(String code, LExecutor executor, boolean privileged, Cons<String> modified){
          this.executor = executor;
          this.privileged = privileged;

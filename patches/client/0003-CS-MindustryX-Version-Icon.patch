@@ -67,7 +67,7 @@ index d42ffe6d4a318ce558f1010eae46140f88ed5c99..bf44ead5c58abfb79c500e6daae30c3e
 +    <string name="app_name">MindustryX</string>
  </resources>
 diff --git a/build.gradle b/build.gradle
-index 2b81d7a3fbe4d4fecffdf9ce97773fb558f71c23..1a6cf5eb26635a2112d98ce2012cc666f3452a3f 100644
+index c106887f71c6877fec692cd380dbd2c561038de6..8c629d8d4b8b67461aacc4e0f791166bf915f427 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -21,7 +21,7 @@ allprojects{
@@ -106,10 +106,10 @@ index b18ee6062fa3868ec0f72d4e42d66c0eceae0d81..cc0161c79d36af0988f91eae7e37fdd1
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index cf9882dcb3ec74f9527f0745ed36f36fb93ad7fb..0704ad388df6c4941211e800f0a18fa34f9433aa 100644
+index e44926875e5b945d37ce7db2fdf78e2f16edc3f1..85b982b12e7d216ab4fd5a8a0453ae268ea1ca0f 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -24,6 +24,7 @@ import mindustry.net.*;
+@@ -26,6 +26,7 @@ import mindustry.net.*;
  import mindustry.net.Packets.*;
  import mindustry.world.*;
  import mindustry.world.modules.*;
@@ -117,7 +117,7 @@ index cf9882dcb3ec74f9527f0745ed36f36fb93ad7fb..0704ad388df6c4941211e800f0a18fa3
  
  import java.io.*;
  import java.util.*;
-@@ -137,6 +138,7 @@ public class NetClient implements ApplicationListener{
+@@ -140,6 +141,7 @@ public class NetClient implements ApplicationListener{
              Log.info("Received world data: @ bytes.", data.stream.available());
              NetworkIO.loadWorld(new InflaterInputStream(data.stream));
  
@@ -182,14 +182,14 @@ index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a057
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 20fdd669c0ea8f54f30e8452fae82043c4475aec..ecfdc2720be50d7307803157cb73f7133adbbbfb 100644
+index 30b8c15f9baaf7a5483580a35736280af34bd9f8..a94bd9d7e6d1c5986fe9f4570a484be0458ab475 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=d962d6078c
+ archash=ed5dd285b7
 +
-+upstreamBuild=25417
++upstreamBuild=25445
 +versionType=bleeding-edge
 \ No newline at end of file

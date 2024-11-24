@@ -82,10 +82,10 @@ index db1ccc68c38b2feda940cc2d022c13c84eeb5b4b..af40b8c86579e6e798aaa411e3be3feb
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index cd703731722f31995f3f2c8e6324ca0963ccffde..c53210a89cd342b0b3158fe9ac12b6d2ee6fe43d 100644
+index 20ef1004e5d31de0da5637ddd2c74cbff6383f80..0d27fbfb034eea3fc39258b8350c28aa4eb69a62 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -65,6 +65,10 @@ public class NetClient implements ApplicationListener{
+@@ -68,6 +68,10 @@ public class NetClient implements ApplicationListener{
      public NetClient(){
  
          net.handleClient(Connect.class, packet -> {
@@ -128,7 +128,7 @@ index c145a7f379d5c2f6cb0869c4ca4ba9dc1d6436bb..5c77afb95655f017af7c68926979cec0
      }
  
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index 085f97d6d83be5c8ed212406b5bc15e69be971df..f4d33d1e88e9cfc9477d8922b1d2d23dd60189d6 100644
+index 1eb38240d11937a92a6be0ce4dcae8847e56708f..1dd8e39f5c5de35b49ef7c31b63f066a314eb8c0 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -593,7 +593,7 @@ public class UI implements ApplicationListener, Loadable{
@@ -140,7 +140,7 @@ index 085f97d6d83be5c8ed212406b5bc15e69be971df..f4d33d1e88e9cfc9477d8922b1d2d23d
          t.pack();
          t.act(0.1f);
          Core.scene.add(t);
-@@ -697,23 +697,7 @@ public class UI implements ApplicationListener, Loadable{
+@@ -698,23 +698,7 @@ public class UI implements ApplicationListener, Loadable{
      }
  
      public static String formatAmount(long number){
@@ -166,7 +166,7 @@ index 085f97d6d83be5c8ed212406b5bc15e69be971df..f4d33d1e88e9cfc9477d8922b1d2d23d
  
      public static int roundAmount(int number){
 diff --git a/core/src/mindustry/game/Schematics.java b/core/src/mindustry/game/Schematics.java
-index d9abfa796be9c1f99135ca0842d67d78df02c432..2da5a90379f9b9896cdef7ac1540c34fe472d649 100644
+index a54ddca43eb5ce1c861385cfb2da3be3ad576869..8996a4292eefa05cba61a174e3469971dd881c13 100644
 --- a/core/src/mindustry/game/Schematics.java
 +++ b/core/src/mindustry/game/Schematics.java
 @@ -97,7 +97,9 @@ public class Schematics implements Loadable{
@@ -180,7 +180,7 @@ index d9abfa796be9c1f99135ca0842d67d78df02c432..2da5a90379f9b9896cdef7ac1540c34f
          }
      }
  
-@@ -542,7 +544,7 @@ public class Schematics implements Loadable{
+@@ -541,7 +543,7 @@ public class Schematics implements Loadable{
          try(DataInputStream stream = new DataInputStream(new InflaterInputStream(input))){
              short width = stream.readShort(), height = stream.readShort();
  
@@ -189,7 +189,7 @@ index d9abfa796be9c1f99135ca0842d67d78df02c432..2da5a90379f9b9896cdef7ac1540c34f
  
              StringMap map = new StringMap();
              int tags = stream.readUnsignedByte();
-@@ -568,7 +570,7 @@ public class Schematics implements Loadable{
+@@ -567,7 +569,7 @@ public class Schematics implements Loadable{
  
              int total = stream.readInt();
  

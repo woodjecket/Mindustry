@@ -35,10 +35,10 @@ index cc0161c79d36af0988f91eae7e37fdd17842a958..41d2becbf09ec0b7f8e30bc4b8d93b06
  
          if(loadLocales){
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0704ad388df6c4941211e800f0a18fa34f9433aa..dca28c1fa0005714d929cdadc2399af6ae86e194 100644
+index 85b982b12e7d216ab4fd5a8a0453ae268ea1ca0f..ae2ef939bac85fd345abb5dd884c48c8d500a670 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -224,6 +224,8 @@ public class NetClient implements ApplicationListener{
+@@ -227,6 +227,8 @@ public class NetClient implements ApplicationListener{
  
      @Remote(targets = Loc.server, variants = Variant.both)
      public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
@@ -47,7 +47,7 @@ index 0704ad388df6c4941211e800f0a18fa34f9433aa..dca28c1fa0005714d929cdadc2399af6
          if(Vars.ui != null){
              Vars.ui.chatfrag.addMessage(message);
              Sounds.chatMessage.play();
-@@ -241,6 +243,8 @@ public class NetClient implements ApplicationListener{
+@@ -244,6 +246,8 @@ public class NetClient implements ApplicationListener{
      //equivalent to above method but there's no sender and no console log
      @Remote(called = Loc.server, targets = Loc.server)
      public static void sendMessage(String message){

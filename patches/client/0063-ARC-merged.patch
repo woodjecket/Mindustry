@@ -291,7 +291,7 @@ index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987
          var team = tile.team();
          //only process entity changes with centered tiles
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index ba021c6f6e788c869e2f1c6678a0b95e3f73a744..85e6e273a013f686b9145c97ae57df2a777065d3 100644
+index c9b650accafc2e93e362027688be3c26dd5007b5..9d6754fafcb75cb705be44a3ab577ec42b884889 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -28,6 +28,7 @@ import mindustry.logic.*;
@@ -484,7 +484,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..545ca919c9c6eb5bd6ba0c8b0d7d897a
      }
  }
 diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
-index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd323685f545e3b 100644
+index e87acaf08a54cb0bd1a9358da90a1762a972ed25..4aa2da1e9f9ff4c8263653db16b779579869b769 100644
 --- a/core/src/mindustry/entities/comp/BuildingComp.java
 +++ b/core/src/mindustry/entities/comp/BuildingComp.java
 @@ -41,6 +41,7 @@ import mindustry.world.blocks.power.*;
@@ -512,7 +512,7 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd32368
      }
  
      public float timeScale(){
-@@ -1425,7 +1427,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1426,7 +1428,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          //derelict team icon currently doesn't display
          return team == Team.derelict ?
              block.localizedName + "\n" + Core.bundle.get("block.derelict") :
@@ -522,7 +522,7 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd32368
      }
  
      public TextureRegion getDisplayIcon(){
-@@ -1449,7 +1452,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1450,7 +1453,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
          table.row();
  
          //only display everything else if the team is the same
@@ -531,7 +531,7 @@ index 92d3c35100dd2833ec9bd1b94f9c14e05f041dda..e9c438ff0316356f9a737fd34bd32368
              table.table(bars -> {
                  bars.defaults().growX().height(18f).pad(4);
  
-@@ -1550,6 +1553,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+@@ -1551,6 +1554,15 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
              table.add(result).growX();
              table.row();
          }

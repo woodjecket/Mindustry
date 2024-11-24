@@ -15,7 +15,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 144 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/editor/WaveInfoDialog.java b/core/src/mindustry/editor/WaveInfoDialog.java
-index a708f7ae2b9487695e5930e4d7703f5cf71d0de1..2c845dfa2fbd37964cc677cec622333229e4962e 100644
+index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d744716b6a4924 100644
 --- a/core/src/mindustry/editor/WaveInfoDialog.java
 +++ b/core/src/mindustry/editor/WaveInfoDialog.java
 @@ -6,6 +6,7 @@ import arc.graphics.*;
@@ -132,8 +132,8 @@ index a708f7ae2b9487695e5930e4d7703f5cf71d0de1..2c845dfa2fbd37964cc677cec6223332
                      t.button(b -> {
                          b.left();
                          b.image(group.type.uiIcon).size(32f).padRight(3).scaling(Scaling.fit);
--                        b.add(group.type.localizedName).color(Pal.accent);
-+                        b.add(group.type.typeColor() + group.type.localizedName).color(Pal.accent);
+-                        b.add(group.type.localizedName).ellipsis(true).width(110f).left().color(Pal.accent);
++                        b.add(group.type.typeColor() + group.type.localizedName).ellipsis(true).width(110f).left().color(Pal.accent);
 +                        if(group.effect != null && group.effect != StatusEffects.none)
 +                            b.image(group.effect.uiIcon).size(20f).padRight(3).scaling(Scaling.fit);
 +                        if(group.items != null && group.items.amount > 0)
