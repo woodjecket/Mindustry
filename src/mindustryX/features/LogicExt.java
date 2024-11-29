@@ -3,6 +3,7 @@ package mindustryX.features;
 import arc.*;
 import mindustry.*;
 import mindustry.game.EventType.*;
+import mindustry.net.Packets.*;
 
 public class LogicExt{
     public static boolean limitUpdate = false;
@@ -13,6 +14,7 @@ public class LogicExt{
     public static boolean invertMapClick = false;
     public static boolean reliableSync = false;
     public static boolean placeShiftReplacement = false;
+    public static boolean v146Mode = false;
 
     public static void init(){
         Events.run(Trigger.update, () -> {
@@ -28,6 +30,7 @@ public class LogicExt{
             invertMapClick = Core.settings.getBool("invertMapClick");
             reliableSync = Core.settings.getBool("reliableSync");
             placeShiftReplacement = Core.settings.getBool("placeReplacement");
+            v146Mode = ConnectPacket.clientVersion == 146;
         });
     }
 }
