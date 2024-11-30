@@ -29,7 +29,7 @@ index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485
                      break;
                  }
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index c8da7ba7aef51472343f5204881cfb0630eba0be..537dcfd8dfe1bd14e7f285f6504451608b0e5166 100644
+index aaaf83f6e49bd78a88ada08471c53229fc478ac7..d247d184fc43488f32b4de6b982b54a4877ac3fa 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -19,7 +19,7 @@ import java.nio.*;
