@@ -120,10 +120,10 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/fragments/ConsoleFragment.java         |   3 +
  .../mindustry/ui/fragments/HudFragment.java   | 211 +++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
- .../ui/fragments/PlacementFragment.java       | 168 +++++++--
+ .../ui/fragments/PlacementFragment.java       | 169 +++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++--
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1668 insertions(+), 197 deletions(-)
+ 30 files changed, 1669 insertions(+), 197 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -3168,7 +3168,7 @@ index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba9
                  new MenuButton("@settings", Icon.settings, ui.settings::show)
              );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 53076e919c5bdb66c61619208c5234a22c943250..59823ae9b730bce9204fda187903945f0284e819 100644
+index 53076e919c5bdb66c61619208c5234a22c943250..395fbd79e4fbb2154936cb3e923d06b255b7b796 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -1,6 +1,7 @@
@@ -3406,9 +3406,11 @@ index 53076e919c5bdb66c61619208c5234a22c943250..59823ae9b730bce9204fda187903945f
                          for(Category cat : getCategories()){
                              if(f++ % 2 == 0) categories.row();
  
-@@ -775,37 +874,46 @@ public class PlacementFragment{
+@@ -774,38 +873,48 @@ public class PlacementFragment{
+     }
  
      boolean hasInfoBox(){
++        if(!state.isGame()) return false;
          hover = hovered();
 -        return control.input.block != null || menuHoverBlock != null || hover != null;
 +        return control.input.block != null || menuHoverBlock != null || hover != null || hoverTile != null;
@@ -3430,7 +3432,7 @@ index 53076e919c5bdb66c61619208c5234a22c943250..59823ae9b730bce9204fda187903945f
  
          //check for a unit
 -        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
-+        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
++        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> u.displayable());
          //if cursor has a unit, display it
          if(unit != null) return unit;
 +        unit = Units.closestEnemy(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
