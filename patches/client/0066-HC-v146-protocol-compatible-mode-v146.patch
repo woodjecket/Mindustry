@@ -10,10 +10,11 @@ Content-Transfer-Encoding: 8bit
 
 ---
  core/src/mindustry/core/NetClient.java |  2 +-
+ core/src/mindustry/io/TypeIO.java      | 14 ++++++++--
  core/src/mindustry/net/Net.java        | 38 ++++++++++++++++++++++++--
  core/src/mindustry/net/NetworkIO.java  | 12 ++++++++
  core/src/mindustry/net/Packets.java    |  2 +-
- 4 files changed, 49 insertions(+), 5 deletions(-)
+ 5 files changed, 61 insertions(+), 7 deletions(-)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
 index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485fa41b781 100644
@@ -28,6 +29,52 @@ index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485
                      Log.warn("Block ID mismatch at @: @ != @. Skipping block snapshot.", tile, tile.build.block.id, block);
                      break;
                  }
+diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
+index f5d9b3e1587022a0652af6acdfb71c2d03475504..fa3b37f73f0c3e47866a9f6671224da8fccab6c0 100644
+--- a/core/src/mindustry/io/TypeIO.java
++++ b/core/src/mindustry/io/TypeIO.java
+@@ -25,6 +25,7 @@ import mindustry.type.*;
+ import mindustry.world.*;
+ import mindustry.world.blocks.*;
+ import mindustry.world.blocks.payloads.*;
++import mindustryX.features.*;
+ 
+ import java.io.*;
+ import java.nio.*;
+@@ -54,7 +55,10 @@ public class TypeIO{
+         }else if(object instanceof Content map){
+             write.b((byte)5);
+             write.b((byte)map.getContentType().ordinal());
+-            write.s(map.id);
++            if(LogicExt.v146Mode && map instanceof Block b)
++                writeBlock(write, b);
++            else
++                write.s(map.id);
+         }else if(object instanceof IntSeq arr){
+             write.b((byte)6);
+             write.s((short)arr.size);
+@@ -349,6 +353,12 @@ public class TypeIO{
+     }
+ 
+     public static void writeBlock(Writes write, Block block){
++        if(LogicExt.v146Mode){
++            if(block.id > 414) write.s(block.id - 3);
++            else if(block.id > 2) write.s(block.id - 2);
++            else write.s(block.id);
++            return;
++        }
+         write.s(block.id);
+     }
+ 
+@@ -411,7 +421,7 @@ public class TypeIO{
+         write.b(plan.breaking ? (byte)1 : 0);
+         write.i(Point2.pack(plan.x, plan.y));
+         if(!plan.breaking){
+-            write.s(plan.block.id);
++            writeBlock(write, plan.block);
+             write.b((byte)plan.rotation);
+             boolean writePlan = !headless || !net.server();
+             write.b(writePlan ? 1 : 0); //always has config
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
 index aaaf83f6e49bd78a88ada08471c53229fc478ac7..58428b05dbe2b194e4e7d6c12521d09f874f4eb7 100644
 --- a/core/src/mindustry/net/Net.java
