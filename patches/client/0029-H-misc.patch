@@ -19,12 +19,12 @@ Content-Transfer-Encoding: 8bit
  core/src/mindustry/ui/dialogs/JoinDialog.java | 19 ++++++++++--------
  .../mindustry/ui/dialogs/KeybindDialog.java   |  9 ++++++---
  .../ui/fragments/BlockInventoryFragment.java  |  2 +-
- .../mindustry/ui/fragments/ChatFragment.java  |  3 +++
+ .../mindustry/ui/fragments/ChatFragment.java  |  7 +++++--
  .../mindustry/world/blocks/defense/Radar.java |  9 +++++++++
  .../world/blocks/distribution/Router.java     |  3 ++-
  .../world/blocks/production/BeamDrill.java    | 12 ++++-------
  .../mindustry/desktop/DesktopLauncher.java    | 12 ++++++++++-
- 16 files changed, 79 insertions(+), 49 deletions(-)
+ 16 files changed, 81 insertions(+), 51 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
 index 1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6..4f88b9fd412f09073bdb1e9aff277650a4bbde09 100644
@@ -301,7 +301,7 @@ index 54a36cde6eee102c9c8f3bfd5e4c76a2f4d0f1e1..bd810004301a4534c6568fb0bcd85f4a
  
          table.margin(4f);
 diff --git a/core/src/mindustry/ui/fragments/ChatFragment.java b/core/src/mindustry/ui/fragments/ChatFragment.java
-index 30c344478857c5d20db41f89bc2358cee2c1c8e5..7a968f1c21275eb4a571350adfcf59df1fa37df9 100644
+index 30c344478857c5d20db41f89bc2358cee2c1c8e5..89b9a23ce2bb850df5c7ae99a5f964753a807662 100644
 --- a/core/src/mindustry/ui/fragments/ChatFragment.java
 +++ b/core/src/mindustry/ui/fragments/ChatFragment.java
 @@ -5,6 +5,7 @@ import arc.Input.*;
@@ -312,6 +312,15 @@ index 30c344478857c5d20db41f89bc2358cee2c1c8e5..7a968f1c21275eb4a571350adfcf59df
  import arc.math.*;
  import arc.scene.*;
  import arc.scene.ui.*;
+@@ -29,7 +30,7 @@ public class ChatFragment extends Table{
+     private boolean shown = false;
+     private TextField chatfield;
+     private Label fieldlabel = new Label(">");
+-    private ChatMode mode = ChatMode.normal;
++    public ChatMode mode = ChatMode.normal;
+     private Font font;
+     private GlyphLayout layout = new GlyphLayout();
+     private float offsetx = Scl.scl(4), offsety = Scl.scl(4), fontoffsetx = Scl.scl(2), chatspace = Scl.scl(50);
 @@ -73,6 +74,8 @@ public class ChatFragment extends Table{
                      historyPos--;
                      updateChat();
@@ -321,6 +330,15 @@ index 30c344478857c5d20db41f89bc2358cee2c1c8e5..7a968f1c21275eb4a571350adfcf59df
                  if(input.keyTap(Binding.chat_mode)){
                      nextMode();
                  }
+@@ -287,7 +290,7 @@ public class ChatFragment extends Table{
+         if(scrollPos > 0) scrollPos++;
+     }
+ 
+-    private enum ChatMode{
++    public enum ChatMode{
+         normal(""),
+         team("/t"),
+         admin("/a", player::admin)
 diff --git a/core/src/mindustry/world/blocks/defense/Radar.java b/core/src/mindustry/world/blocks/defense/Radar.java
 index e24a3368d190f64fdaf002130a76f4799834c9a5..0811c4520865cff648084cbc743a141367a103c5 100644
 --- a/core/src/mindustry/world/blocks/defense/Radar.java

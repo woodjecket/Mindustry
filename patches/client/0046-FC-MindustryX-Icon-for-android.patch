@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 9 Jun 2024 20:05:22 +0800
-Subject: [PATCH] FC: Icon
+Subject: [PATCH] FC: MindustryX Icon for android
 
 ---
  android/AndroidManifest.xml                   |   3 +--
