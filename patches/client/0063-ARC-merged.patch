@@ -93,37 +93,37 @@ way-zer <himc.wicp@gmail.com> on 2024/7/28
 * 更改开雾功能实现
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- core/src/mindustry/ai/BlockIndexer.java       | 116 +++++++
+ core/src/mindustry/ai/BlockIndexer.java       | 116 ++++++++
  core/src/mindustry/core/UI.java               |   2 +
- core/src/mindustry/editor/MapInfoDialog.java  | 135 +++++++-
+ core/src/mindustry/editor/MapInfoDialog.java  | 135 ++++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
  .../mindustry/entities/comp/StatusComp.java   |   3 +
- core/src/mindustry/game/Schematic.java        | 104 ++++++
+ core/src/mindustry/game/Schematic.java        | 104 +++++++
  .../src/mindustry/graphics/BlockRenderer.java |  17 +-
- .../mindustry/graphics/OverlayRenderer.java   |  37 +-
- core/src/mindustry/input/DesktopInput.java    |  82 ++++-
- core/src/mindustry/input/InputHandler.java    |  47 ++-
+ .../mindustry/graphics/OverlayRenderer.java   |  37 ++-
+ core/src/mindustry/input/DesktopInput.java    |  82 +++++-
+ core/src/mindustry/input/InputHandler.java    |  47 +++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/logic/LExecutor.java       |  12 +-
- core/src/mindustry/type/UnitType.java         | 142 ++++++--
+ core/src/mindustry/type/UnitType.java         | 142 ++++++++--
  core/src/mindustry/type/Weapon.java           |  26 +-
  core/src/mindustry/ui/Fonts.java              |   2 +-
  .../ui/dialogs/ContentInfoDialog.java         |  27 +-
- .../ui/dialogs/CustomRulesDialog.java         | 113 ++++++-
+ .../ui/dialogs/CustomRulesDialog.java         | 113 +++++++-
  .../mindustry/ui/dialogs/DatabaseDialog.java  |   3 +-
  .../mindustry/ui/dialogs/PausedDialog.java    |  12 +-
- .../mindustry/ui/dialogs/PlanetDialog.java    |  68 +++-
- .../ui/dialogs/SchematicsDialog.java          | 320 +++++++++++++++++-
+ .../mindustry/ui/dialogs/PlanetDialog.java    |  68 ++++-
+ .../ui/dialogs/SchematicsDialog.java          | 261 +++++++++++++++++-
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |   9 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 211 +++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 211 +++++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
- .../ui/fragments/PlacementFragment.java       | 169 +++++++--
- .../ui/fragments/PlayerListFragment.java      |  72 ++--
+ .../ui/fragments/PlacementFragment.java       | 169 ++++++++++--
+ .../ui/fragments/PlayerListFragment.java      |  72 ++---
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1669 insertions(+), 197 deletions(-)
+ 30 files changed, 1615 insertions(+), 192 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2181,7 +2181,7 @@ index 1a040bc00a33047552bdf29df50e51458646f84f..143ffa03b83b9b15a2a6357e18812c09
          /** Look around for existing sectors. Can only deploy. */
          look,
 diff --git a/core/src/mindustry/ui/dialogs/SchematicsDialog.java b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
-index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3e04ff925 100644
+index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..0a9cd8867275e1131e424189ee05a74ab2e6a5e3 100644
 --- a/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/SchematicsDialog.java
 @@ -15,6 +15,8 @@ import arc.scene.ui.layout.*;
@@ -2193,7 +2193,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
  import mindustry.ctype.*;
  import mindustry.game.*;
  import mindustry.gen.*;
-@@ -22,10 +24,16 @@ import mindustry.graphics.*;
+@@ -22,6 +24,11 @@ import mindustry.graphics.*;
  import mindustry.input.*;
  import mindustry.type.*;
  import mindustry.ui.*;
@@ -2205,25 +2205,18 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
  
  import java.util.regex.*;
  
- import static mindustry.Vars.*;
-+import static mindustry.content.Items.copper;
- 
- public class SchematicsDialog extends BaseDialog{
-     private static final float tagh = 42f;
-@@ -37,6 +45,12 @@ public class SchematicsDialog extends BaseDialog{
+@@ -37,6 +44,10 @@ public class SchematicsDialog extends BaseDialog{
      private Pattern ignoreSymbols = Pattern.compile("[`~!@#$%^&*()\\-_=+{}|;:'\",<.>/?]");
      private Seq<String> tags, selectedTags = new Seq<>();
      private boolean checkedTags;
 +    private final String blueprintlink = "https://docs.qq.com/sheet/DVHNoS3lIcm1NbFFS";
 +
 +    private Planet selectedPlanet;
-+
-+    private boolean clipbroad = true;
 +    private boolean fromShare = false;
  
      public SchematicsDialog(){
          super("@schematics");
-@@ -47,6 +61,14 @@ public class SchematicsDialog extends BaseDialog{
+@@ -47,6 +58,14 @@ public class SchematicsDialog extends BaseDialog{
          shouldPause = true;
          addCloseButton();
          buttons.button("@schematic.import", Icon.download, this::showImport);
@@ -2238,7 +2231,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
          makeButtonOverlay();
          shown(this::setup);
          onResize(this::setup);
-@@ -110,6 +132,30 @@ public class SchematicsDialog extends BaseDialog{
+@@ -110,6 +129,30 @@ public class SchematicsDialog extends BaseDialog{
              in.button(Icon.pencilSmall, this::showAllTags).size(tagh).pad(2).tooltip("@schematic.edittags");
          }).height(tagh).fillX();
  
@@ -2254,7 +2247,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
 +            }
 +
 +            in.add("辅助筛选：").padLeft(20f).padRight(4);
-+            in.button(copper.emoji(), Styles.togglet, () -> {
++            in.button(Items.copper.emoji(), Styles.togglet, () -> {
 +                Core.settings.put("arcSchematicCanBuild", !Core.settings.getBool("arcSchematicCanBuild"));
 +                rebuildPane.run();
 +            }).size(tagh).pad(2).tooltip("可建造(核心有此类资源+地图未禁用)").checked(t -> Core.settings.getBool("arcSchematicCanBuild"));
@@ -2269,7 +2262,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
          cont.row();
  
          cont.pane(t -> {
-@@ -140,6 +186,10 @@ public class SchematicsDialog extends BaseDialog{
+@@ -140,6 +183,10 @@ public class SchematicsDialog extends BaseDialog{
                      if(selectedTags.any() && !s.labels.containsAll(selectedTags)) continue;
                      //make sure search fits
                      if(!search.isEmpty() && !ignoreSymbols.matcher(s.name().toLowerCase()).replaceAll("").contains(searchString)) continue;
@@ -2280,7 +2273,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
                      if(firstSchematic == null) firstSchematic = s;
  
                      Button[] sel = {null};
-@@ -212,6 +262,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -212,6 +259,11 @@ public class SchematicsDialog extends BaseDialog{
  
              rebuildPane.run();
          }).grow().scrollX(false);
@@ -2292,86 +2285,55 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
      }
  
      public void showInfo(Schematic schematic){
-@@ -282,15 +337,48 @@ public class SchematicsDialog extends BaseDialog{
-                     t.row();
+@@ -291,6 +343,20 @@ public class SchematicsDialog extends BaseDialog{
+                 t.button("@schematic.exportfile", Icon.export, style, () -> {
                      dialog.hide();
-                 }
--                t.button("@schematic.copy", Icon.copy, style, () -> {
-+                t.button("@schematic.exportfile", Icon.export, style, () -> {
-                     dialog.hide();
--                    ui.showInfoFade("@copied");
--                    Core.app.setClipboardText(schematics.writeBase64(s));
-+                    platform.export(s.name(), schematicExtension, file -> Schematics.write(s, file));
-                 }).marginLeft(12f);
-                 t.row();
--                t.button("@schematic.exportfile", Icon.export, style, () -> {
-+                t.button("[cyan]剪贴板[white]/[gray]消息框", Icon.copy, style, () -> {
-+                    clipbroad = !clipbroad;
-+                }).marginLeft(12f).update(button -> button.setText(clipbroad? "[cyan]剪贴板[white]/[gray]消息框" : "[gray]剪贴板[white]/[cyan]消息框"));
-+                t.row();
-+
-+                t.button("蓝图代码", Icon.copy, style, () -> {
+                     platform.export(s.name(), schematicExtension, file -> Schematics.write(s, file));
++                }).marginLeft(12f).row();
++                t.button("分享蓝图", Icon.chat, style, () -> {
 +                    dialog.hide();
-+                    arcSendBlueprintMsg(schematics.writeBase64(s));
-+                }).marginLeft(12f);
-+                t.row();
-+                t.button("记录蓝图[cyan][简]", Icon.export, style, () -> {
++                    uploadPasteBin(schematics.writeBase64(s), code -> {
++                        if(code == null) return;
++                        ArcMessageDialog.share("[blue]<Schem>[]", " " + code.substring(code.lastIndexOf('/') + 1));
++                    });
++                }).marginLeft(12f).row();
++                t.button("复制到剪切板[cyan](高级版，含介绍)", Icon.star, style, () -> {
 +                    dialog.hide();
-+                    arcSendBlueprintMsg(arcSchematicsInfo(s,false));
-+                }).marginLeft(12f);
-+                t.row();
-+                t.button("记录蓝图[cyan][详]", Icon.export, style, () -> {
-+                    dialog.hide();
-+                    arcSendBlueprintMsg(arcSchematicsInfo(s,true));
-+                }).marginLeft(12f);
-+                t.row();
-+                t.button("分享蓝图", Icon.export, style, () -> {
-+                    try {
-+                        Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + schematics.writeBase64(s));
-+                        req.submit(r -> {
-+                            String code = r.getResultAsString();
-+                            if (clipbroad) arcSendClipBroadMsg(s, code);
-+                            //添加颜色字符，保持ARC兼容性
-+                            else ArcMessageDialog.share("[blue]<Schem>[]", " " + code.substring(code.lastIndexOf('/') + 1));
-+                        });
-+                        req.error(e -> Core.app.post(() -> {
-+                            ui.showException("分享失败", e);
-+                            if(clipbroad) arcSendClipBroadMsg(s, "x");
-+                        }));
-+                    } catch (Exception e) {
-+                        ui.showException("分享失败", e);
-+                    }
-                     dialog.hide();
--                    platform.export(s.name(), schematicExtension, file -> Schematics.write(s, file));
++                    uploadPasteBin(schematics.writeBase64(s), code -> {
++                        if(code == null) code = "x";
++                        arcSendClipBroadMsg(s, code);
++                    });
                  }).marginLeft(12f);
              });
          });
-@@ -299,6 +387,85 @@ public class SchematicsDialog extends BaseDialog{
+@@ -299,6 +365,60 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
-+    private void arcSendBlueprintMsg(String msg){
-+        if(clipbroad){
-+            Core.app.setClipboardText(msg);
-+            UIExt.announce("已保存至剪贴板");
-+        }else{
-+            UIExt.sendChatMessage(msg);
-+            UIExt.announce("已发送到聊天框");
-+        }
++    private void uploadPasteBin(String content, Cons<String> callback){
++        Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + content);
++        req.submit(r -> {
++            String code = r.getResultAsString();
++            Core.app.post(() -> callback.get(code));
++        });
++        req.error(e -> Core.app.post(() -> {
++            ui.showException("上传蓝图失败，再重试一下？", e);
++            Core.app.post(() -> callback.get(null));
++        }));
 +    }
 +
-+    private void arcSendClipBroadMsg(Schematic schem, String msg){
++    private void arcSendClipBroadMsg(Schematic schem, String link){
 +        StringBuilder s = new StringBuilder();
 +        s.append("这是一条来自 MDTX-").append(Version.mdtXBuild).append("的分享记录\n");
-+        s.append("分享者：").append(player.name).append("\n");
-+        s.append("蓝图代码链接：").append(msg).append("\n");
 +        s.append("蓝图名：").append(schem.name()).append("\n");
++        s.append("分享者：").append(player.name).append("\n");
 +        s.append("蓝图造价：");
 +        ItemSeq arr = schem.requirements();
 +        for(ItemStack stack : arr){
-+            s.append(stack.item.localizedName).append(stack.amount).append("|");
++            s.append(stack.item.emoji()).append(stack.item.localizedName).append(stack.amount).append("|");
 +        }
-+        s.append("\n").append("电力：");
++        s.append("\n");
++        s.append("电力：");
 +        float cons = schem.powerConsumption() * 60, prod = schem.powerProduction() * 60;
 +        if(!Mathf.zero(prod)){
 +            s.append("+").append(Strings.autoFixed(prod, 2));
@@ -2382,69 +2344,42 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
 +        if(!Mathf.zero(cons)){
 +            s.append("-").append(Strings.autoFixed(cons, 2));
 +        }
-+        if (schematics.writeBase64(schem).length() > 3500) s.append("\n").append("蓝图代码过长，请点击链接查看");
-+        else s.append("\n").append("蓝图代码：\n").append(schematics.writeBase64(schem));
++        s.append("\n");
++        s.append("蓝图代码链接：").append(link).append("\n");
++        if(schematics.writeBase64(schem).length() > 3500) s.append("蓝图代码过长，请点击链接查看");
++        else s.append("蓝图代码：\n").append(schematics.writeBase64(schem));
 +        Core.app.setClipboardText(Strings.stripColors(s.toString()));
 +        UIExt.announce("已保存至剪贴板");
 +    }
 +
-+    public void readShare(String base64, @Nullable Player sender) {
-+        Core.app.post(() -> {
-+            try {
-+                Schematic s = Schematics.readBase64(base64);
-+                s.removeSteamID();
-+                s.tags.put("name", sender == null ? "来自服务器的蓝图" : "来自" + sender.plainName() + "的蓝图");
-+                fromShare = true;
-+                SchematicsDialog.this.showInfo(s);
-+            } catch(Throwable e) {
-+                ui.showException(e);
-+            }
-+        });
-+    }
-+
-+    private String arcSchematicsInfo(Schematic schem, boolean description){
-+        StringBuilder builder = new StringBuilder("标记了蓝图[" + schem.name() + "]。");
-+        builder.append("属性：").append(schem.width).append("x").append(schem.height).append("，").append(schem.tiles.size).append("个建筑。");
-+        if(description){
-+            builder.append("耗材：");
-+            ItemSeq arr = schem.requirements();
-+            for(ItemStack s : arr){
-+                builder.append(s.item.emoji()).append(s.amount).append("|");
-+            }
-+
-+            builder.append("。电力：");
-+            cont.row();
-+            float cons = schem.powerConsumption() * 60, prod = schem.powerProduction() * 60;
-+            if(!Mathf.zero(prod)){
-+                builder.append("+").append(Strings.autoFixed(prod, 2));
-+                if(!Mathf.zero(cons)){
-+                    builder.append("|");
-+                }
-+            }
-+            if(!Mathf.zero(cons)){
-+                builder.append("-").append(Strings.autoFixed(cons, 2));
-+            }
++    public void readShare(String base64, @Nullable Player sender){
++        try{
++            Schematic s = Schematics.readBase64(base64);
++            s.removeSteamID();
++            s.tags.put("name", sender == null ? "来自服务器的蓝图" : "来自" + sender.plainName() + "的蓝图");
++            fromShare = true;
++            SchematicsDialog.this.showInfo(s);
++        }catch(Throwable e){
++            ui.showException(e);
 +        }
-+        return builder.toString();
 +    }
-+
 +
      public void showEdit(Schematic s){
          new BaseDialog("@schematic.edit"){{
              setFillParent(true);
-@@ -579,6 +746,11 @@ public class SchematicsDialog extends BaseDialog{
+@@ -579,6 +699,11 @@ public class SchematicsDialog extends BaseDialog{
                      t.button("@schematic.texttag", Icon.add, () -> showNewTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                      t.button("@schematic.icontag", Icon.add, () -> showNewIconTag(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
                  });
 +                p.row();
-+                p.table(t ->{
++                p.table(t -> {
 +                    t.left().defaults().fillX().height(tagh).pad(2);
 +                    t.button("自动标签", Icon.add, () -> arcAutoTags(res -> rebuild[0].run())).wrapLabel(false).get().getLabelCell().padLeft(5);
 +                });
  
              };
  
-@@ -587,6 +759,111 @@ public class SchematicsDialog extends BaseDialog{
+@@ -587,6 +712,109 @@ public class SchematicsDialog extends BaseDialog{
          dialog.show();
      }
  
@@ -2479,47 +2414,45 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
 +                                        for(Schematic s : schematics.all()){
 +                                            s.tiles.each(sBlock -> {
 +                                                if(sBlock.block == block){
-+                                                    addTag(s,out);
++                                                    addTag(s, out);
 +                                                    cons.get(out);
 +                                                    hide();
 +                                                }
 +                                            });
 +                                        }
-+                                    }
-+                                    else if(u instanceof Item item){
++                                    }else if(u instanceof Item item){
 +                                        Seq<Block> blocklist = new Seq<>();
-+                                        for (Block factory : content.blocks()) {
++                                        for(Block factory : content.blocks()){
 +                                            if(factory instanceof GenericCrafter crafter){
 +                                                if(crafter.outputItems == null) continue;
-+                                                for(ItemStack stack:crafter.outputItems){
-+                                                if (stack.item == item) blocklist.add(factory);
++                                                for(ItemStack stack : crafter.outputItems){
++                                                    if(stack.item == item) blocklist.add(factory);
 +                                                }
 +                                            }
 +                                        }
 +                                        for(Schematic s : schematics.all()){
 +                                            s.tiles.each(sBlock -> {
 +                                                if(blocklist.contains(sBlock.block)){
-+                                                    addTag(s,out);
++                                                    addTag(s, out);
 +                                                    cons.get(out);
 +                                                    hide();
 +                                                }
 +                                            });
 +                                        }
-+                                    }
-+                                    else if(u instanceof Liquid liquid){
++                                    }else if(u instanceof Liquid liquid){
 +                                        Seq<Block> blocklist = new Seq<>();
-+                                        for (Block factory : content.blocks()) {
++                                        for(Block factory : content.blocks()){
 +                                            if(factory instanceof GenericCrafter crafter){
-+                                                if(crafter.outputLiquids==null) continue;
-+                                                for(LiquidStack stack: crafter.outputLiquids){
-+                                                    if (stack.liquid == liquid) blocklist.add(factory);
++                                                if(crafter.outputLiquids == null) continue;
++                                                for(LiquidStack stack : crafter.outputLiquids){
++                                                    if(stack.liquid == liquid) blocklist.add(factory);
 +                                                }
 +                                            }
 +                                        }
 +                                        for(Schematic s : schematics.all()){
 +                                            s.tiles.each(sBlock -> {
 +                                                if(blocklist.contains(sBlock.block)){
-+                                                    addTag(s,out);
++                                                    addTag(s, out);
 +                                                    cons.get(out);
 +                                                    hide();
 +                                                }
@@ -2544,11 +2477,11 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
 +    }
 +
 +    boolean arcSchematicCanBuild(Schematic s){
-+        for (ItemStack item : s.requirements()){
-+            if (!UIExt.coreItems.hadItem(item.item)) return false;
++        for(ItemStack item : s.requirements()){
++            if(!UIExt.coreItems.hadItem(item.item)) return false;
 +        }
-+        for (Block block: state.rules.bannedBlocks){
-+            if (s.containsBlock(block)) return false;
++        for(Block block : state.rules.bannedBlocks){
++            if(s.containsBlock(block)) return false;
 +        }
 +        return true;
 +    }
@@ -2556,7 +2489,7 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
      void buildTags(Schematic schem, Table t){
          buildTags(schem, t, true);
      }
-@@ -800,13 +1077,44 @@ public class SchematicsDialog extends BaseDialog{
+@@ -800,13 +1028,44 @@ public class SchematicsDialog extends BaseDialog{
                      }
                  });
              }
@@ -2568,16 +2501,16 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
 +                for(Item item : schem.items.keys()){
 +                    r.image(item.uiIcon).left().size(iconMed);
 +                    r.label(
-+                            () -> (schem.items.get(item, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.items.get(item, 0), 2) + StatUnit.perSecond.localized()
++                    () -> (schem.items.get(item, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.items.get(item, 0), 2) + StatUnit.perSecond.localized()
 +                    ).padLeft(2).left().padRight(5).color(Color.lightGray);
 +                    if(++i % 4 == 0){
 +                        r.row();
 +                    }
 +                }
-+                for (Liquid liquid : schem.liquids.keys()) {
++                for(Liquid liquid : schem.liquids.keys()){
 +                    r.image(liquid.uiIcon).left().size(iconMed);
 +                    r.label(
-+                            () -> (schem.liquids.get(liquid, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.liquids.get(liquid, 0), 2) + StatUnit.perSecond.localized()
++                    () -> (schem.liquids.get(liquid, 0) > 0 ? "+" : "") + Strings.autoFixed(schem.liquids.get(liquid, 0), 2) + StatUnit.perSecond.localized()
 +                    ).padLeft(2).left().padRight(5).color(Color.lightGray);
 +                    if(++i % 4 == 0){
 +                        r.row();
@@ -2590,9 +2523,9 @@ index 1819d3cabac2aeadbb57bf74cf6962f829c7dded..3de0a8c0452434f33180d7eb9d8777c3
              buttons.button("@editor.export", Icon.upload, () -> showExport(schem));
              buttons.button("@edit", Icon.edit, () -> showEdit(schem));
 -
-+            if (fromShare) {
-+                fromShare = false;
++            if(fromShare){
 +                buttons.button("@save", Icon.save, () -> {
++                    fromShare = false;
 +                    schematics.add(schem);
 +                    setup();
 +                    ui.showInfoFade("@schematic.saved");
