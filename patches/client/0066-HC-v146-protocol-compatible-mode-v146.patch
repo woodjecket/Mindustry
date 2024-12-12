@@ -10,10 +10,10 @@ Content-Transfer-Encoding: 8bit
 
 ---
  core/src/mindustry/core/NetClient.java |  2 +-
- core/src/mindustry/net/Net.java        | 35 +++++++++++++++++++++++---
- core/src/mindustry/net/NetworkIO.java  | 12 +++++++++
+ core/src/mindustry/net/Net.java        | 38 ++++++++++++++++++++++++--
+ core/src/mindustry/net/NetworkIO.java  | 12 ++++++++
  core/src/mindustry/net/Packets.java    |  2 +-
- 4 files changed, 46 insertions(+), 5 deletions(-)
+ 4 files changed, 49 insertions(+), 5 deletions(-)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
 index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485fa41b781 100644
@@ -29,10 +29,18 @@ index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485
                      break;
                  }
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee1080124c7b6a8 100644
+index aaaf83f6e49bd78a88ada08471c53229fc478ac7..58428b05dbe2b194e4e7d6c12521d09f874f4eb7 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
-@@ -19,7 +19,7 @@ import java.nio.*;
+@@ -1,6 +1,7 @@
+ package mindustry.net;
+ 
+ import arc.*;
++import arc.files.*;
+ import arc.func.*;
+ import arc.net.*;
+ import arc.net.Server.*;
+@@ -19,7 +20,7 @@ import java.nio.*;
  import java.nio.channels.*;
  import java.util.concurrent.*;
  
@@ -41,7 +49,7 @@ index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee10801
  import static mindustry.Vars.*;
  
  @SuppressWarnings("unchecked")
-@@ -27,6 +27,9 @@ public class Net{
+@@ -27,6 +28,9 @@ public class Net{
      private static Seq<Prov<? extends Packet>> packetProvs = new Seq<>();
      private static Seq<Class<? extends Packet>> packetClasses = new Seq<>();
      private static ObjectIntMap<Class<?>> packetToId = new ObjectIntMap<>();
@@ -51,11 +59,13 @@ index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee10801
  
      private boolean server;
      private boolean active;
-@@ -49,6 +52,22 @@ public class Net{
+@@ -49,6 +53,24 @@ public class Net{
  
          //register generated packet classes
          Call.registerPackets();
-+        oldMappings.addAll(Core.files.internal("packetsV146").readString().split(System.lineSeparator()));
++
++        Fi fi = Core.files != null ? Core.files.internal("packetsV146.txt") : new Fi("packetsV146.txt", Files.FileType.internal);
++        oldMappings.addAll(fi.readString().split(System.lineSeparator()));
 +        for(String name : oldMappings){
 +            oldPacketToId.put(name, oldPacketToId.size);
 +        }
@@ -74,7 +84,7 @@ index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee10801
      }
  
      /** Registers a new packet type for serialization. */
-@@ -60,12 +79,16 @@ public class Net{
+@@ -60,12 +82,16 @@ public class Net{
      }
  
      public static byte getPacketId(Packet packet){
@@ -92,7 +102,7 @@ index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee10801
          return ((Prov<T>)packetProvs.get(id & 0xff)).get();
      }
  
-@@ -200,6 +223,7 @@ public class Net{
+@@ -200,6 +226,7 @@ public class Net{
      }
  
      public void disconnect(){
@@ -100,7 +110,7 @@ index aaaf83f6e49bd78a88ada08471c53229fc478ac7..bfb6614ff479fcbbb1dadf0c6ee10801
          if(active && !server){
              Log.info("Disconnecting.");
          }
-@@ -269,7 +293,12 @@ public class Net{
+@@ -269,7 +296,12 @@ public class Net{
       * Call to handle a packet being received for the client.
       */
      public void handleClientReceived(Packet object){
