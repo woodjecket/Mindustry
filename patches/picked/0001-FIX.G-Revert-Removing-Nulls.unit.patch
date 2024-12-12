@@ -123,10 +123,10 @@ index 834d4c239aa261afd9828f0b4d17a97fb8809621..7f989fa8dfb2f6c9c2b1c0e7c88bf903
          if(isLocal() && unit == justSwitchFrom && justSwitchFrom != null && justSwitchTo != null){
              return;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 0be2e02705b784e36e0f56e6169c96cec6f3ef07..3ff2dc390d3c491602f9513040bc0261c9caee7c 100644
+index 55961ae9661cd54ef2e7cbea92984219c2b4b9c4..33b794176e6fb58858d180ec508db142a7ef087e 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
-@@ -703,7 +703,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+@@ -704,7 +704,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
  
              player.unit(unit);
  
@@ -136,7 +136,7 @@ index 0be2e02705b784e36e0f56e6169c96cec6f3ef07..3ff2dc390d3c491602f9513040bc0261
                      unit.dockedType = before.type;
                  }else if(before.dockedType != null && before.dockedType.coreUnitDock){
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index e74d4134affd4e040f14d42b2f74738eb6344cce..6654fd9e96b7015b5ef74b9ee9746a22787fe911 100644
+index 0c4a4eb66232dd619ceeebc47ef310352960b53f..c4b45c674c1a10a287dcded6fe431bfffc726151 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -1241,7 +1241,7 @@ public class LExecutor{

@@ -10,7 +10,7 @@ Subject: [PATCH] HR(RenderExt) bulletShow showMineBeam displayAllMessage
  2 files changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 3bce5fc53087a70988bd60ba39e02d645225f868..a083aad8ccfdef139c046e7e295a4d4dd76cd341 100644
+index c12e1309e20cd23bc16fb8c94c2122be84dff073..052abb11de2eb67770a746e22f2d4c522e463efc 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;

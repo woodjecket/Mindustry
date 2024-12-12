@@ -98,7 +98,7 @@ index e344f652f0c1f9993d401ea225e56a3edb780514..a211cc0968ac9ba4911efc26a7b2167c
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index a083aad8ccfdef139c046e7e295a4d4dd76cd341..7c1f0d6e5575387d980faa295dcffb6c9025fc4f 100644
+index 052abb11de2eb67770a746e22f2d4c522e463efc..f31acb66db5c7040ffb132375f0bb353aff752aa 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -619,29 +619,47 @@ public class UnitType extends UnlockableContent implements Senseable{

@@ -125,7 +125,7 @@ index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..f4a0bf74cf25e1b0869d77bb220cfbc245cfb014 100644
+index c4b45c674c1a10a287dcded6fe431bfffc726151..7779a23a88015aa92bc4f334584ce1e19ad154c7 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -45,9 +45,9 @@ public class LExecutor{
@@ -158,7 +158,7 @@ index 6654fd9e96b7015b5ef74b9ee9746a22787fe911..f4a0bf74cf25e1b0869d77bb220cfbc2
                  case pan -> {
                      control.input.logicCutscene = true;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index 580202ec1745ae6982dc5b485c16914e24439b93..d4ad76458ac0aee2f84d11443a7a630eafdda578 100644
+index 8e4ccdd4faa052b63c99720cdace544cdbf2fcce..260bb5eec6ca90cb6fc9da5f6f3fb17c2ac98c9f 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
 @@ -21,6 +21,7 @@ import mindustry.type.*;
@@ -188,7 +188,7 @@ index 580202ec1745ae6982dc5b485c16914e24439b93..d4ad76458ac0aee2f84d11443a7a630e
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index 18b6dc32a2cbf088b3deec43808564a6ea15b8ae..20e8c2a6962523c013ef72b4773bd0f133dc5c3f 100644
+index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a28af9f5f 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -5,6 +5,7 @@ import arc.func.*;

@@ -11,7 +11,7 @@ Subject: [PATCH] HG: Hooks
  4 files changed, 7 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index c68681b7a9d6caf8e0ed8dace53b839efbf34eb5..1b5a25a7cbbd00c5a8e463ec722fb3b3ac5da9d6 100644
+index a0fe9fbdb1fe03fdcc72a284895fdccd12b581b0..fe713c0a0579627d2fca31826ff553ef76882dde 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -173,6 +173,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
@@ -23,10 +23,10 @@ index c68681b7a9d6caf8e0ed8dace53b839efbf34eb5..1b5a25a7cbbd00c5a8e463ec722fb3b3
          assets.load(schematics);
  
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index cc0161c79d36af0988f91eae7e37fdd17842a958..41d2becbf09ec0b7f8e30bc4b8d93b06495840b4 100644
+index f9312cff1004cedc95e26b35d146f31c0c025ca2..79d06d5c254c74bfe538a3486276146040b1650d 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
-@@ -272,6 +272,7 @@ public class Vars implements Loadable{
+@@ -274,6 +274,7 @@ public class Vars implements Loadable{
      }
  
      public static void init(){

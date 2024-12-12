@@ -173,7 +173,7 @@ index 2cf7bef8c849e77730559938b53a876adb0c7a65..e3b63f597bb1cdc3302a745080976b62
  
      /** @return whether this block supports a specific environment. */
 diff --git a/core/src/mindustry/world/Build.java b/core/src/mindustry/world/Build.java
-index 777d2a8be6f825a5c134cd17fcfc39cb77824670..4d6754c30180f83feb0bda7dc699cdcb2a07da7d 100644
+index d0129890fc8caa1b9f12eb222e62a52f35386481..318803ab697d240be02ca6e158c926f621507a4b 100644
 --- a/core/src/mindustry/world/Build.java
 +++ b/core/src/mindustry/world/Build.java
 @@ -14,7 +14,10 @@ import mindustry.game.Teams.*;

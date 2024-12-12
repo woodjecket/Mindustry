@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 162 insertions(+), 104 deletions(-)
 
 diff --git a/core/src/mindustry/ui/dialogs/ModsDialog.java b/core/src/mindustry/ui/dialogs/ModsDialog.java
-index 92d912419eff91c5c4be471258bda6463c7c48cb..0db417d83a3ed61a96ddb7b98954deaa3ee3108a 100644
+index aa9593beaaedd26734ed563d3eca58f023e51e40..25ef46f2c54ae8838b7372f4f86f675ca954ac66 100644
 --- a/core/src/mindustry/ui/dialogs/ModsDialog.java
 +++ b/core/src/mindustry/ui/dialogs/ModsDialog.java
 @@ -1,6 +1,7 @@

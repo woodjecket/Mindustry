@@ -13,7 +13,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 3 insertions(+)
 
 diff --git a/core/src/mindustry/async/PhysicsProcess.java b/core/src/mindustry/async/PhysicsProcess.java
-index 183d1262177761cb378642575c9c35851d84eef4..8c73d7de9c79561d83b5261fa91692aef1eff361 100644
+index a38f28eeb2bb0559dc6a746af719494f0e4d8862..2b74b2c594beaedceaeceb5f1f90e1e3fb1c8558 100644
 --- a/core/src/mindustry/async/PhysicsProcess.java
 +++ b/core/src/mindustry/async/PhysicsProcess.java
 @@ -1,5 +1,6 @@

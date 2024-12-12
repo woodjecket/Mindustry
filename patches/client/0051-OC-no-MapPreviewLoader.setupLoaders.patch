@@ -8,7 +8,7 @@ Subject: [PATCH] OC: no MapPreviewLoader.setupLoaders
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index f44dceb09dfef63bd11d3b54a75d0183976bb13c..177d7e2513ffaedc2104a982c14d1d0d45ae7e9a 100644
+index 3694df477c8f1a51d623922cdc93273625c87873..0d4dace1bb102560301be35a21d7d54a206623f4 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -143,7 +143,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform

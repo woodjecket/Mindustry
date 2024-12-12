@@ -93,7 +93,7 @@ index 6dfb14b6bb9401ec083a0f6994ed9bab8b303c97..a68dd5cd58f7f012e3dd27750ae970b9
      processResources.configure {
          dependsOn(generateLocales, generateBasePartNames, writeVersion)
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index b18ee6062fa3868ec0f72d4e42d66c0eceae0d81..cc0161c79d36af0988f91eae7e37fdd17842a958 100644
+index c17d5a2ec64aed9aea214adca368294bbc319530..f9312cff1004cedc95e26b35d146f31c0c025ca2 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -78,7 +78,7 @@ public class Vars implements Loadable{
@@ -182,14 +182,14 @@ index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a057
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 30b8c15f9baaf7a5483580a35736280af34bd9f8..a94bd9d7e6d1c5986fe9f4570a484be0458ab475 100644
+index 54214068e822e8f5caa33973aae18d3d61e23894..32381dee582832f898efc83c6221b052e441af8d 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=ed5dd285b7
+ archash=ae657a7db3
 +
-+upstreamBuild=25445
++upstreamBuild=25465
 +versionType=bleeding-edge
 \ No newline at end of file
