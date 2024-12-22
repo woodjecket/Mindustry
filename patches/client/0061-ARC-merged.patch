@@ -1229,7 +1229,7 @@ index 7779a23a88015aa92bc4f334584ce1e19ad154c7..17e443cb75deed54645863f0df306885
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index f31acb66db5c7040ffb132375f0bb353aff752aa..84146529e1200f6ad7f52157bf6e1d65053990f3 100644
+index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f68235f5f95c9 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -17,6 +17,7 @@ import mindustry.ai.*;
@@ -2649,7 +2649,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index 43be1373da89214e28ea9f821533d9d558248b8c..631f14e744394b6ab76b14ccc9a9270050bbe338 100644
+index 3e14cbde8dec581eb5d72650fbd134f9122054a6..ff7ceccf1c5b5b29c44b60b3bea4376896f2e8e4 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -29,14 +29,17 @@ import mindustry.net.Packets.*;
@@ -2770,7 +2770,7 @@ index 43be1373da89214e28ea9f821533d9d558248b8c..631f14e744394b6ab76b14ccc9a92700
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
                  }else{
-@@ -1039,6 +1070,142 @@ public class HudFragment{
+@@ -1038,6 +1069,142 @@ public class HudFragment{
          return table;
      }
  
@@ -2913,7 +2913,7 @@ index 43be1373da89214e28ea9f821533d9d558248b8c..631f14e744394b6ab76b14ccc9a92700
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -1083,7 +1250,45 @@ public class HudFragment{
+@@ -1082,7 +1249,45 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){
