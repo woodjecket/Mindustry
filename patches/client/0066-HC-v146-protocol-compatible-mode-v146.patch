@@ -9,12 +9,13 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/src/mindustry/core/NetClient.java |  2 +-
- core/src/mindustry/io/TypeIO.java      | 14 ++++++++--
- core/src/mindustry/net/Net.java        | 38 ++++++++++++++++++++++++--
- core/src/mindustry/net/NetworkIO.java  | 12 ++++++++
- core/src/mindustry/net/Packets.java    |  2 +-
- 5 files changed, 61 insertions(+), 7 deletions(-)
+ core/src/mindustry/core/NetClient.java        |  2 +-
+ core/src/mindustry/io/TypeIO.java             | 14 ++++++-
+ core/src/mindustry/net/Net.java               | 38 +++++++++++++++++--
+ core/src/mindustry/net/NetworkIO.java         | 12 ++++++
+ core/src/mindustry/net/Packets.java           |  2 +-
+ .../world/blocks/units/UnitFactory.java       |  3 +-
+ 6 files changed, 63 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
 index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485fa41b781 100644
@@ -238,3 +239,17 @@ index 2b1e1f96159da194b1ac521faee8103c6e30019a..d7e7bd7f42d142e39db72c94e917fb5c
              TypeIO.writeString(buffer, name);
              TypeIO.writeString(buffer, locale);
              TypeIO.writeString(buffer, usid);
+diff --git a/core/src/mindustry/world/blocks/units/UnitFactory.java b/core/src/mindustry/world/blocks/units/UnitFactory.java
+index 54dd64382d99f65a1d396516e664d008fcf38010..90282e3fcb0cdb727b6384c8dad5081ee16c80fc 100644
+--- a/core/src/mindustry/world/blocks/units/UnitFactory.java
++++ b/core/src/mindustry/world/blocks/units/UnitFactory.java
+@@ -55,7 +55,8 @@ public class UnitFactory extends UnitBlock{
+             if(build.currentPlan == i) return;
+             build.currentPlan = i < 0 || i >= plans.size ? -1 : i;
+             build.progress = 0;
+-            if(build.command != null && !build.unit().commands.contains(build.command)){
++            //MDTX: v146 use this for clear, we don't NPE here
++            if(build.command != null && build.unit()!=null && !build.unit().commands.contains(build.command)){
+                 build.command = null;
+             }
+         });
