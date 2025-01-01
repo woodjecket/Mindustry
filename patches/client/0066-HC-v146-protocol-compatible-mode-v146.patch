@@ -9,27 +9,27 @@ Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 ---
- core/src/mindustry/core/NetClient.java        |  2 +-
+ core/src/mindustry/core/NetClient.java        |  2 +
  core/src/mindustry/io/TypeIO.java             | 14 ++++++-
  core/src/mindustry/net/Net.java               | 38 +++++++++++++++++--
  core/src/mindustry/net/NetworkIO.java         | 12 ++++++
  core/src/mindustry/net/Packets.java           |  2 +-
  .../world/blocks/units/UnitFactory.java       |  3 +-
- 6 files changed, 63 insertions(+), 8 deletions(-)
+ 6 files changed, 64 insertions(+), 7 deletions(-)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..fa656d977e05461ea63cad51e6679485fa41b781 100644
+index 0d27fbfb034eea3fc39258b8350c28aa4eb69a62..641c95edc5f90bf0e31198c264510769ca2b35c0 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
-@@ -528,7 +528,7 @@ public class NetClient implements ApplicationListener{
-                     Log.warn("Missing entity at @. Skipping block snapshot.", tile);
-                     break;
-                 }
--                if(tile.build.block.id != block){
-+                if(!LogicExt.v146Mode && tile.build.block.id != block){
-                     Log.warn("Block ID mismatch at @: @ != @. Skipping block snapshot.", tile, tile.build.block.id, block);
-                     break;
-                 }
+@@ -516,6 +516,8 @@ public class NetClient implements ApplicationListener{
+ 
+     @Remote(variants = Variant.both, priority = PacketPriority.low, unreliable = true)
+     public static void blockSnapshot(short amount, byte[] data){
++        //MDTX: As `Block.id` and `Building.version()` is different, snapshot can't read correctly
++        if(LogicExt.v146Mode) return;
+         try{
+             netClient.byteStream.setBytes(data);
+             DataInputStream input = netClient.dataStream;
 diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
 index f5d9b3e1587022a0652af6acdfb71c2d03475504..fa3b37f73f0c3e47866a9f6671224da8fccab6c0 100644
 --- a/core/src/mindustry/io/TypeIO.java
@@ -77,7 +77,7 @@ index f5d9b3e1587022a0652af6acdfb71c2d03475504..fa3b37f73f0c3e47866a9f6671224da8
              boolean writePlan = !headless || !net.server();
              write.b(writePlan ? 1 : 0); //always has config
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index f430daefc52dc1579094e8b0e90a713ebd5b5358..f202b0034de9feac574cd76159c2b971df4223a1 100644
+index f430daefc52dc1579094e8b0e90a713ebd5b5358..5bd7a404c1630bec7edfdc7d94bee6fb8046279e 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -1,6 +1,7 @@
@@ -113,7 +113,7 @@ index f430daefc52dc1579094e8b0e90a713ebd5b5358..f202b0034de9feac574cd76159c2b971
          Call.registerPackets();
 +
 +        Fi fi = Core.files != null ? Core.files.internal("packetsV146.txt") : new Fi("packetsV146.txt", Files.FileType.internal);
-+        oldMappings.addAll(fi.readString().split(System.lineSeparator()));
++        oldMappings.addAll(fi.readString().replace("\r", "").split("\n"));
 +        for(String name : oldMappings){
 +            oldPacketToId.put(name, oldPacketToId.size);
 +        }
