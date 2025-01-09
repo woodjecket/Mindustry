@@ -94,7 +94,6 @@ way-zer <himc.wicp@gmail.com> on 2024/7/28
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/ai/BlockIndexer.java       | 116 ++++++++
- core/src/mindustry/core/UI.java               |   2 +
  core/src/mindustry/editor/MapInfoDialog.java  | 135 ++++++++-
  .../mindustry/entities/comp/BuildingComp.java |  18 +-
  .../mindustry/entities/comp/ShieldComp.java   |   6 +
@@ -123,7 +122,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/fragments/PlacementFragment.java       | 169 ++++++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++---
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1585 insertions(+), 177 deletions(-)
+ 29 files changed, 1583 insertions(+), 177 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -290,26 +289,6 @@ index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987
      private void process(Tile tile){
          var team = tile.team();
          //only process entity changes with centered tiles
-diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index c9b650accafc2e93e362027688be3c26dd5007b5..9d6754fafcb75cb705be44a3ab577ec42b884889 100644
---- a/core/src/mindustry/core/UI.java
-+++ b/core/src/mindustry/core/UI.java
-@@ -28,6 +28,7 @@ import mindustry.logic.*;
- import mindustry.ui.*;
- import mindustry.ui.dialogs.*;
- import mindustry.ui.fragments.*;
-+import mindustryX.features.ui.*;
- 
- import static arc.scene.actions.Actions.*;
- import static mindustry.Vars.*;
-@@ -384,6 +385,7 @@ public class UI implements ApplicationListener, Loadable{
- 
-     /** Shows a label at some position on the screen. Does not fade. */
-     public void showInfoPopup(String info, float duration, int align, int top, int left, int bottom, int right){
-+        if (!Core.settings.getBool("ShowInfoPopup")) return;
-         Table table = new Table();
-         table.setFillParent(true);
-         table.touchable = Touchable.disabled;
 diff --git a/core/src/mindustry/editor/MapInfoDialog.java b/core/src/mindustry/editor/MapInfoDialog.java
 index ebc1f0b300d295e45333f1db38ea299c9658ec20..545ca919c9c6eb5bd6ba0c8b0d7d897ae49436ac 100644
 --- a/core/src/mindustry/editor/MapInfoDialog.java

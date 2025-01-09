@@ -126,7 +126,6 @@ public class ArcOld{
 
 
             c.addCategory("arcShareinfo");
-            c.checkPref("ShowInfoPopup", true);
             c.checkPref("arcAlwaysTeamColor", false);
 
             c.addCategory("arcWeakCheat");

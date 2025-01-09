@@ -43,7 +43,7 @@ index 0d4dace1bb102560301be35a21d7d54a206623f4..beecf6fe85396641a7efa9bfe1fe3566
          add(netServer = new NetServer());
          add(netClient = new NetClient());
 diff --git a/core/src/mindustry/core/UI.java b/core/src/mindustry/core/UI.java
-index 1dd8e39f5c5de35b49ef7c31b63f066a314eb8c0..c9b650accafc2e93e362027688be3c26dd5007b5 100644
+index 39e55358714acfc59f87d956af227a9f14562baf..531f9c845698719a162b8772e2739ac515169b3c 100644
 --- a/core/src/mindustry/core/UI.java
 +++ b/core/src/mindustry/core/UI.java
 @@ -82,10 +82,6 @@ public class UI implements ApplicationListener, Loadable{
