@@ -106,8 +106,8 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/input/InputHandler.java    |  47 +++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/logic/LExecutor.java       |  12 +-
- core/src/mindustry/type/UnitType.java         | 142 ++++++++--
- core/src/mindustry/type/Weapon.java           |  26 +-
+ core/src/mindustry/type/UnitType.java         | 109 +++++++-
+ core/src/mindustry/type/Weapon.java           |  19 ++
  core/src/mindustry/ui/Fonts.java              |   2 +-
  .../ui/dialogs/ContentInfoDialog.java         |  22 +-
  .../ui/dialogs/CustomRulesDialog.java         | 113 +++++++-
@@ -123,7 +123,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/fragments/PlacementFragment.java       | 169 ++++++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++---
  core/src/mindustry/world/Block.java           |   7 +-
- 30 files changed, 1610 insertions(+), 192 deletions(-)
+ 30 files changed, 1585 insertions(+), 177 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -1229,18 +1229,10 @@ index 7779a23a88015aa92bc4f334584ce1e19ad154c7..17e443cb75deed54645863f0df306885
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f68235f5f95c9 100644
+index 057f958d2537aa819afc47534e465d1f83ec64d9..e3170fee3fe5f116fd0ac4c0d87672960099a289 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
-@@ -17,6 +17,7 @@ import mindustry.ai.*;
- import mindustry.ai.Pathfinder.*;
- import mindustry.ai.types.*;
- import mindustry.annotations.Annotations.*;
-+import mindustryX.features.ArcUnits;
- import mindustry.content.*;
- import mindustry.core.*;
- import mindustry.ctype.*;
-@@ -38,6 +39,7 @@ import mindustry.world.blocks.units.*;
+@@ -38,6 +38,7 @@ import mindustry.world.blocks.units.*;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
  import mindustryX.features.*;
@@ -1248,16 +1240,15 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
  
  import static arc.graphics.g2d.Draw.*;
  import static mindustry.Vars.*;
-@@ -45,6 +47,8 @@ import static mindustry.Vars.*;
+@@ -45,6 +46,7 @@ import static mindustry.Vars.*;
  public class UnitType extends UnlockableContent implements Senseable{
      public static final float shadowTX = -12, shadowTY = -13;
      private static final Vec2 legOffset = new Vec2();
-+    public static float unitTrans = 1f;//current unitTrans when draw
 +    private Table unitStatus = new Table();
  
      /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
      public int envRequired = 0;
-@@ -522,23 +526,83 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -522,23 +524,83 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void landed(Unit unit){}
  
@@ -1345,7 +1336,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
                  bars.row();
              }
  
-@@ -546,8 +610,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -546,8 +608,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                  ability.displayBars(unit, bars);
              }
  
@@ -1359,7 +1350,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
                  bars.row();
  
                  var count = new float[]{-1};
-@@ -557,18 +624,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -557,18 +622,21 @@ public class UnitType extends UnlockableContent implements Senseable{
                          count[0] = payload.payloadUsed();
                      }
                  }).growX().left().height(0f).pad(0f);
@@ -1387,7 +1378,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
              if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                  table.row();
                  table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
-@@ -579,6 +649,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -579,6 +647,11 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
  
          table.row();
@@ -1399,64 +1390,12 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1248,6 +1323,9 @@ public class UnitType extends UnlockableContent implements Senseable{
-         Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
-         float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
- 
-+        unitTrans = ArcUnits.drawARCUnits(unit);
-+        if(unitTrans == 0) return;
-+
-         if(unit.controller().isBeingControlled(player.unit())){
-             drawControl(unit);
-         }
-@@ -1389,7 +1467,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-     }
- 
-     public void drawShield(Unit unit){
--        float alpha = unit.shieldAlpha();
-+        float alpha = unit.shieldAlpha() * unitTrans;
-         float radius = unit.hitSize() * 1.3f;
-         Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,
-             Color.clear,
-@@ -1401,6 +1479,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-         Draw.z(unit.isFlying() ? Layer.flyingUnitLow : Layer.groundUnit - 2);
- 
-         Draw.color(Pal.accent, Color.white, Mathf.absin(4f, 0.3f));
-+        Draw.alpha(unitTrans);
-         Lines.poly(unit.x, unit.y, 4, unit.hitSize + 1.5f);
- 
-         Draw.reset();
-@@ -1414,7 +1493,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-         float dest = floor.canShadow ? 1f : 0f;
-         //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
-         unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
--        Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
-+        Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha * unitTrans);
- 
-         Draw.rect(shadowRegion, unit.x + shadowTX * e, unit.y + shadowTY * e, unit.rotation - 90);
-         Draw.color();
-@@ -1429,7 +1508,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-     }
- 
-     public void drawSoftShadow(float x, float y, float rotation, float alpha){
--        Draw.color(0, 0, 0, 0.4f * alpha);
-+        Draw.color(0, 0, 0, 0.4f * alpha * unitTrans);
-         float rad = 1.6f;
-         float size = Math.max(region.width, region.height) * region.scl();
-         Draw.rect(softShadowRegion, x, y, size * rad * Draw.xscl, size * rad * Draw.yscl, rotation - 90);
-@@ -1452,18 +1531,21 @@ public class UnitType extends UnlockableContent implements Senseable{
-             Draw.mixcol();
- 
-             size = ((3f + sin) * unit.itemTime + 0.5f) * 2;
--            Draw.color(Pal.accent);
-+            Draw.color(Pal.accent, unitTrans);
-             Draw.rect(itemCircleRegion,
-             unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
+@@ -1458,12 +1531,15 @@ public class UnitType extends UnlockableContent implements Senseable{
              unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
              size, size);
  
 -            if(unit.isLocal() && !renderer.pixelate){
-+            if(ArcUnits.unitItemCarried || (unit.isLocal() && !renderer.pixelate)){
++            if(RenderExt.unitItemCarried || (unit.isLocal() && !renderer.pixelate)){
 +                float z = Draw.z();
 +                Draw.z(z + .01f); // Remove this if you enjoy 1000 texture swaps
                  Fonts.outline.draw(unit.stack.amount + "",
@@ -1468,69 +1407,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
              }
  
              Draw.reset();
-@@ -1546,7 +1628,7 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-     public Color cellColor(Unit unit){
-         float f = Mathf.clamp(unit.healthf());
--        return Tmp.c1.set(Color.black).lerp(unit.team.color, f + Mathf.absin(Time.time, Math.max(f * 5f, 1f), 1f - f));
-+        return Tmp.c1.set(Color.black).lerp(unit.team.color, f + Mathf.absin(Time.time, Math.max(f * 5f, 1f), 1f - f)).a(unitTrans);
-     }
- 
-     public void drawLight(Unit unit){
-@@ -1587,7 +1669,7 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-         if(footRegion.found()){
-             for(Leg leg : legs){
--                Drawf.shadow(leg.base.x, leg.base.y, ssize, invDrown);
-+                Drawf.shadow(leg.base.x, leg.base.y, ssize, invDrown * unitTrans);
-             }
-         }
- 
-@@ -1605,7 +1687,7 @@ public class UnitType extends UnlockableContent implements Senseable{
-             if(footRegion.found() && leg.moving && shadowElevation > 0){
-                 float scl = shadowElevation * invDrown;
-                 float elev = Mathf.slope(1f - leg.stage) * scl;
--                Draw.color(Pal.shadow);
-+                Draw.color(Pal.shadow, Pal.shadow.a * unitTrans);
-                 Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
-                 Draw.color();
-             }
-@@ -1684,8 +1766,9 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-         Floor floor = unit.isFlying() ? Blocks.air.asFloor() : unit.floorOn();
- 
-+        Draw.alpha(unitTrans);
-         if(floor.isLiquid){
--            Draw.color(Color.white, floor.mapColor, 0.5f);
-+            Draw.color(Color.white, floor.mapColor, 0.5f * unitTrans);
-         }
- 
-         for(int i : Mathf.signs){
-@@ -1707,6 +1790,8 @@ public class UnitType extends UnlockableContent implements Senseable{
-             Draw.color(Color.white);
-         }
- 
-+        Draw.alpha(unitTrans); //
-+
-         Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
- 
-         Draw.mixcol();
-@@ -1714,12 +1799,12 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-     public void applyOutlineColor(Unit unit){
-         if(unit.drownTime > 0 && unit.lastDrownFloor != null){
--            Draw.color(Color.white, Tmp.c1.set(unit.lastDrownFloor.mapColor).mul(0.8f), unit.drownTime * 0.9f);
-+            Draw.color(Color.white, Tmp.c1.set(unit.lastDrownFloor.mapColor).mul(0.8f), unit.drownTime * 0.9f * unitTrans);
-         }
-     }
- 
-     public void applyColor(Unit unit){
--        Draw.color();
-+        Draw.color(Color.white, unitTrans);
-         if(healFlash){
-             Tmp.c1.set(Color.white).lerp(healColor, Mathf.clamp(unit.healTime - unit.hitTime));
-         }
-@@ -1734,6 +1819,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1734,6 +1810,13 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
      }
  
@@ -1544,70 +1421,24 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..60ec2eae23def7a59bcce8dcca1f6823
      //endregion
  
      public static class UnitEngine implements Cloneable{
-@@ -1772,13 +1864,13 @@ public class UnitType extends UnlockableContent implements Senseable{
-             );
-             Draw.z(z);*/
- 
--            Draw.color(color);
-+            Draw.color(color, unitTrans);
-             Fill.circle(
-             unit.x + ex,
-             unit.y + ey,
-             (radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale
-             );
--            Draw.color(type.engineColorInner);
-+            Draw.color(type.engineColorInner, unitTrans);
-             Fill.circle(
-             unit.x + ex - Angles.trnsx(rot + rotation, 1f),
-             unit.y + ey - Angles.trnsy(rot + rotation, 1f),
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
-index 87d4b92337dd7e43fade327f20077ab947983157..776e647dd778ac25ac3d919827e2dd3fa7238650 100644
+index 87d4b92337dd7e43fade327f20077ab947983157..1eaa445d16d5c891ce514d5646cc1e0859e1a1d6 100644
 --- a/core/src/mindustry/type/Weapon.java
 +++ b/core/src/mindustry/type/Weapon.java
-@@ -22,7 +22,9 @@ import mindustry.entities.units.*;
+@@ -22,6 +22,8 @@ import mindustry.entities.units.*;
  import mindustry.gen.*;
  import mindustry.graphics.*;
  import mindustry.world.meta.*;
 +import mindustryX.features.*;
++import mindustryX.features.draw.*;
  
-+import static arc.math.Mathf.doubleRadDeg;
  import static mindustry.Vars.*;
  
- public class Weapon implements Cloneable{
-@@ -225,10 +227,11 @@ public class Weapon implements Cloneable{
-         wy = unit.y + Angles.trnsy(rotation, x, y) + Angles.trnsy(weaponRotation, 0, -realRecoil);
- 
-         if(shadow > 0){
--            Drawf.shadow(wx, wy, shadow);
-+            Drawf.shadow(wx, wy, shadow, UnitType.unitTrans);
-         }
- 
-         if(top){
-+            Draw.alpha(UnitType.unitTrans);
-             drawOutline(unit, mount);
-         }
- 
-@@ -254,13 +257,13 @@ public class Weapon implements Cloneable{
-         if(region.found()) Draw.rect(region, wx, wy, weaponRotation);
- 
-         if(cellRegion.found()){
--            Draw.color(unit.type.cellColor(unit));
-+            Draw.color(unit.type.cellColor(unit), UnitType.unitTrans);
-             Draw.rect(cellRegion, wx, wy, weaponRotation);
-             Draw.color();
-         }
- 
-         if(heatRegion.found() && mount.heat > 0){
--            Draw.color(heatColor, mount.heat);
-+            Draw.color(heatColor, mount.heat * UnitType.unitTrans);
-             Draw.blend(Blending.additive);
-             Draw.rect(heatRegion, wx, wy, weaponRotation);
-             Draw.blend();
-@@ -283,6 +286,23 @@ public class Weapon implements Cloneable{
+@@ -283,6 +285,23 @@ public class Weapon implements Cloneable{
  
          Draw.xscl = 1f;
  
-+        if (mount.shoot && ArcUnits.unitWeaponTargetLine){
++        if (mount.shoot && RenderExt.unitWeaponTargetLine){
 +            if(mount.aimX !=0 && mount.aimY != 0  && Mathf.len(mount.aimX - wx, mount.aimY - wy) <= 1200f){
 +                Draw.z(z + 1f);
 +                Lines.stroke(1f);
@@ -1619,7 +1450,7 @@ index 87d4b92337dd7e43fade327f20077ab947983157..776e647dd778ac25ac3d919827e2dd3f
 +                Draw.alpha(0.8f);
 +                Lines.line(wx, wy, mount.aimX, mount.aimY);
 +                if(!(unit.controller() instanceof Player) || Core.settings.getInt("unitTargetType") == 0)
-+                    Lines.spikes(mount.aimX, mount.aimY, 4f, 4f, 4, (float)(Math.atan((mount.aimX - wx) / (mount.aimY - wy) * doubleRadDeg)) + 45f);
++                    Lines.spikes(mount.aimX, mount.aimY, 4f, 4f, 4, (float)(Math.atan((mount.aimX - wx) / (mount.aimY - wy) * Mathf.doubleRadDeg)) + 45f);
 +                Draw.reset();
 +            }
 +        }
