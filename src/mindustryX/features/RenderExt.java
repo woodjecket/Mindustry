@@ -29,7 +29,7 @@ import mindustryX.features.func.*;
 import static mindustry.Vars.*;
 
 public class RenderExt{
-    public static boolean bulletShow, showMineBeam, displayAllMessage;
+    public static boolean bulletShow, displayAllMessage;
     public static boolean arcChoiceUiIcon;
     public static boolean researchViewer;
     public static boolean showPlacementEffect;
@@ -71,7 +71,6 @@ public class RenderExt{
 
         Events.run(Trigger.update, () -> {
             bulletShow = Core.settings.getBool("bulletShow");
-            showMineBeam = !unitHide && Core.settings.getBool("showminebeam");
             displayAllMessage = Core.settings.getBool("displayallmessage");
             arcChoiceUiIcon = Core.settings.getBool("arcchoiceuiIcon");
             researchViewer = Core.settings.getBool("researchViewer");

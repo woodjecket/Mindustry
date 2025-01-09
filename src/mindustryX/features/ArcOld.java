@@ -75,7 +75,6 @@ public class ArcOld{
 
             c.addCategory("arcAddUnitInfo");
             c.checkPref("unitHealthBar", false);
-            c.sliderPref("unitBarDrawMinHealth", settings.getInt("minhealth_unithealthbarshown", 0), 0, 2500, 100, i -> i + "[red]HP");
 
 
             c.sliderPref("unitWeaponRange", settings.getInt("unitAlertRange", 0), 0, 30, 1, s -> switch(s){
@@ -86,7 +85,6 @@ public class ArcOld{
             c.sliderPref("unitWeaponRangeAlpha", settings.getInt("unitweapon_range", 0), 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
 
             c.checkPref("unitWeaponTargetLine", false);
-            c.checkPref("showminebeam", true);
             c.checkPref("unitItemCarried", true);
             c.checkPref("unithitbox", false);
             c.checkPref("unitLogicMoveLine", false);
