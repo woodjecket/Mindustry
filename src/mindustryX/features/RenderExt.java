@@ -10,7 +10,6 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
-import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -128,6 +127,7 @@ public class RenderExt{
 
     public static void onGroupDraw(Drawc t){
         if(!bulletShow && t instanceof Bulletc) return;
+        if(unitHide && t instanceof Unitc u && !u.isPlayer()) return;
         t.draw();
     }
 
