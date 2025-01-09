@@ -15,10 +15,10 @@ way-zer <himc.wicp@gmail.com> on 2024/7/21
  3 files changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index 4d688f0c6ef1a48df309dc2db04a661c56e75cf4..3694df477c8f1a51d623922cdc93273625c87873 100644
+index 3af35def3785958e05ab0b8a668e721ab4d4dfbf..b5546786a0eb2de89f88f4fefa14827e7aaaa0df 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -76,7 +76,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -79,7 +79,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          });
  
          UI.loadColors();

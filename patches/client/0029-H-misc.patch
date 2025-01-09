@@ -27,7 +27,7 @@ Content-Transfer-Encoding: 8bit
  16 files changed, 81 insertions(+), 51 deletions(-)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index fe713c0a0579627d2fca31826ff553ef76882dde..4d688f0c6ef1a48df309dc2db04a661c56e75cf4 100644
+index 655d2b09e7cfc011efd194b2b65bc85584c8f7d8..3af35def3785958e05ab0b8a668e721ab4d4dfbf 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
 @@ -36,6 +36,10 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
@@ -41,7 +41,7 @@ index fe713c0a0579627d2fca31826ff553ef76882dde..4d688f0c6ef1a48df309dc2db04a661c
          if(dataDir != null){
              Core.settings.setDataDirectory(files.absolute(dataDir));
          }
-@@ -252,6 +256,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -255,6 +259,9 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
              if(nextFrame > current){
                  long toSleep = nextFrame - current;
                  Threads.sleep(toSleep / 1000000, (int)(toSleep % 1000000));

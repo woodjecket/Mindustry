@@ -265,7 +265,7 @@ index 92038694598090f098af6ac10f41c286e195e0d7..6b692dea2d5098c18a6632efb4b2fec0
      }
  }
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index 8c58f51a633cc5314a99bf30bda2b52d2f0a8715..fc64bc181d9c1ef73d325de51f7d814206a77c47 100644
+index 426d03891261431796c04aa17000e7c35dc055c8..f61b739b56ffd9947abe71cd6882b1565e782d0f 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -7,6 +7,7 @@ import arc.graphics.*;
@@ -276,7 +276,7 @@ index 8c58f51a633cc5314a99bf30bda2b52d2f0a8715..fc64bc181d9c1ef73d325de51f7d8142
  import arc.struct.*;
  import arc.util.*;
  import arc.util.io.*;
-@@ -692,6 +693,14 @@ public class Turret extends ReloadTurret{
+@@ -713,6 +714,14 @@ public class Turret extends ReloadTurret{
              rotation = oldRot;
              reloadCounter = oldReload;
          }
@@ -511,10 +511,10 @@ index 5af67c37c74871553a35e9b5ff9757869072b6da..8c7ef00a68c89b1b82d8a1dbfbf63ad6
              () -> entity.heat / heatRequirement));
      }
 diff --git a/core/src/mindustry/world/blocks/production/WallCrafter.java b/core/src/mindustry/world/blocks/production/WallCrafter.java
-index d499f2cfe3a8592171323d40b638d5ccd0121dcb..8a3ea96bf8a7e7acd146d16f05fbb61a9b1f6f08 100644
+index 22f621c613b79e68c49af98ac326eebe09f84ee5..238275ed91fe1784701817bbd630373730502b0b 100644
 --- a/core/src/mindustry/world/blocks/production/WallCrafter.java
 +++ b/core/src/mindustry/world/blocks/production/WallCrafter.java
-@@ -57,7 +57,7 @@ public class WallCrafter extends Block{
+@@ -68,7 +68,7 @@ public class WallCrafter extends Block{
          super.setBars();
  
          addBar("drillspeed", (WallCrafterBuild e) ->

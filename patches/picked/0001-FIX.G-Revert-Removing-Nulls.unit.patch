@@ -136,7 +136,7 @@ index 55961ae9661cd54ef2e7cbea92984219c2b4b9c4..33b794176e6fb58858d180ec508db142
                      unit.dockedType = before.type;
                  }else if(before.dockedType != null && before.dockedType.coreUnitDock){
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 0c4a4eb66232dd619ceeebc47ef310352960b53f..c4b45c674c1a10a287dcded6fe431bfffc726151 100644
+index 2333fdc344fae943513cf5d58ff075208e5ca909..0cdcd5381f0f044f29261ee2d08ea59cc3910c26 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -1241,7 +1241,7 @@ public class LExecutor{

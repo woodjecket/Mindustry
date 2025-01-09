@@ -1171,7 +1171,7 @@ index 20490ccd5c3ee675f7c3456de6713a47818a8a10..c226fbac494963a34eda11b9b35db812
          unit.movePref(movement);
  
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 7779a23a88015aa92bc4f334584ce1e19ad154c7..17e443cb75deed54645863f0df306885f1604f95 100644
+index 07b2fe9cbbcb2dd7aa1f05176915ab2dc2766f73..6d8feb67b14e0ee4fa838e510e1228c549e7685b 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
 @@ -10,6 +10,7 @@ import arc.util.*;
@@ -1451,7 +1451,7 @@ index 916b2ba5102ef670704e64a1f058c477c992d6dc..749c2180b6682361b568ca6d171675bc
  
      public static Font def, outline, icon, iconLarge, tech, logic;
 diff --git a/core/src/mindustry/ui/dialogs/ContentInfoDialog.java b/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
-index 701ea7a21ce2d67e9170b5ba0d33ce1f25a17a21..62f3396a0fb48dddb9553a7dad7cf2de97134231 100644
+index b0e2bfb3ea7e795ddf219838bf084fe67513a774..d5a7d2d7dde20696179fd49cf4c1cdea797ebb6b 100644
 --- a/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
 +++ b/core/src/mindustry/ui/dialogs/ContentInfoDialog.java
 @@ -9,8 +9,10 @@ import arc.util.*;
@@ -1502,8 +1502,8 @@ index 701ea7a21ce2d67e9170b5ba0d33ce1f25a17a21..62f3396a0fb48dddb9553a7dad7cf2de
 +        }).fillX().padLeft(10);
 +
          ScrollPane pane = new ScrollPane(table);
-         cont.add(pane);
- 
+         table.marginRight(30f);
+         //TODO: some things (e.g. reconstructor requirements) are too long and screw up the layout
 diff --git a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java b/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
 index 9c2dd9475996987afa16085a3bb5debac262acc1..e3d86b9a466b0e433d1a7cb06e3748b98ea2f5ac 100644
 --- a/core/src/mindustry/ui/dialogs/CustomRulesDialog.java
@@ -1747,7 +1747,7 @@ index 9c2dd9475996987afa16085a3bb5debac262acc1..e3d86b9a466b0e433d1a7cb06e3748b9
          current.row();
      }
 diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-index 9180f253d8daafc61d30a2f4f3dff8a109c1c644..ae2186a73a5ee7b1ede6f7c06d886adcb5406557 100644
+index 95d70aef09bd16aa26e1add85ba6c6ed1a5bf8de..0079479bdef517afe0c2d4b5abf5d4de9f99214b 100644
 --- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 +++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 @@ -21,7 +21,6 @@ import mindustry.world.*;

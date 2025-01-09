@@ -11,10 +11,10 @@ Subject: [PATCH] HG: Hooks
  4 files changed, 7 insertions(+)
 
 diff --git a/core/src/mindustry/ClientLauncher.java b/core/src/mindustry/ClientLauncher.java
-index a0fe9fbdb1fe03fdcc72a284895fdccd12b581b0..fe713c0a0579627d2fca31826ff553ef76882dde 100644
+index 3e2fbca7df76607c76f27133d60686e4d4833cb5..655d2b09e7cfc011efd194b2b65bc85584c8f7d8 100644
 --- a/core/src/mindustry/ClientLauncher.java
 +++ b/core/src/mindustry/ClientLauncher.java
-@@ -173,6 +173,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
+@@ -176,6 +176,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
          add(ui = new UI());
          add(netServer = new NetServer());
          add(netClient = new NetClient());
