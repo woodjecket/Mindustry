@@ -22,16 +22,11 @@ public class ArcOld{
             c.checkPref("hoveredTileInfo", false);
             c.checkPref("showFlyerSpawn", false);
             c.checkPref("showFlyerSpawnLine", false);
-            c.checkPref("bulletShow", true);
-            if(Shaders.shield != null){
-                c.checkPref("staticShieldsBorder", false);
-            }
+            c.checkPref("arcAlwaysTeamColor", false);
 
             c.addCategory("arcCDisplayBlock");
             c.checkPref("forceEnableDarkness", true, (b) -> enableDarkness = b);
             enableDarkness = settings.getBool("forceEnableDarkness");
-            c.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
-            c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
             c.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
             c.checkPref("blockdisabled", false);
             c.checkPref("blockBars", false);
@@ -131,10 +126,7 @@ public class ArcOld{
             c.addCategory("arcWeakCheat");
             c.checkPref("save_more_map", false);
             c.checkPref("forceIgnoreAttack", false);
-            c.checkPref("allUnlocked", false);
-            c.checkPref("worldCreator", false);
             c.checkPref("overrideSkipWave", false);
-            c.addCategory("arcStrongCheat");
             c.checkPref("playerNeedShooting", false);
         }));
     }
