@@ -123,7 +123,7 @@ index 834d4c239aa261afd9828f0b4d17a97fb8809621..7f989fa8dfb2f6c9c2b1c0e7c88bf903
          if(isLocal() && unit == justSwitchFrom && justSwitchFrom != null && justSwitchTo != null){
              return;
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index 55961ae9661cd54ef2e7cbea92984219c2b4b9c4..33b794176e6fb58858d180ec508db142a7ef087e 100644
+index 0ec67129218fc97593830b2cfd0a27d6cec31ea4..1d53b24d8e77e7c26ef7ed99ccc0dee745922ecc 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -704,7 +704,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{

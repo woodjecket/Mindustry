@@ -68,7 +68,7 @@ index 79d06d5c254c74bfe538a3486276146040b1650d..8323937eb8f2e69db456fcd18e0b590b
                          for(String code : ColorCodes.values){
                              result = result.replace(code, "");
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index db1ccc68c38b2feda940cc2d022c13c84eeb5b4b..af40b8c86579e6e798aaa411e3be3febea28e806 100644
+index da36e8009a494bb6d3a87e58d2af6b87a52d2488..cda8026ea0841a0cdfeb1e4628e9c98119b974bd 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
 @@ -570,7 +570,8 @@ public class Control implements ApplicationListener, Loadable{

@@ -35,7 +35,7 @@ index 6ce29f10b88b5e8f03327799534c7a64bc99fa38..42a05c901e5917fdc8252e12d9211eac
          Groups.draw.draw(RenderExt::onGroupDraw);
  
 diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
-index 5c57b1309660e500c38099d362b46a62846ac24c..ea5060298da5e478b234e8d0575ab2ceedb5b6e6 100644
+index 757434cb5bd9d951f773cd92a73fd0e0bdf8dad6..f99e534383b00780f427b14b95daa11cc7b19300 100644
 --- a/core/src/mindustry/graphics/BlockRenderer.java
 +++ b/core/src/mindustry/graphics/BlockRenderer.java
 @@ -341,7 +341,7 @@ public class BlockRenderer{

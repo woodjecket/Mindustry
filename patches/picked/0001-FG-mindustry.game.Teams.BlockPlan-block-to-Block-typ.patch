@@ -1,0 +1,226 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: way-zer <himc.wicp@gmail.com>
+Date: Sun, 12 Jan 2025 16:31:47 +0800
+Subject: [PATCH] FG: refactor `mindustry.game.Teams.BlockPlan#block` to Block type.
+
+---
+ core/src/mindustry/ai/BaseBuilderAI.java           |  2 +-
+ core/src/mindustry/ai/types/BuilderAI.java         |  6 +++---
+ core/src/mindustry/core/Control.java               |  2 +-
+ core/src/mindustry/core/Logic.java                 |  3 +--
+ core/src/mindustry/entities/comp/BuildingComp.java |  2 +-
+ core/src/mindustry/game/Teams.java                 |  6 ++++--
+ core/src/mindustry/graphics/BlockRenderer.java     |  2 +-
+ core/src/mindustry/input/InputHandler.java         | 14 +++++++-------
+ core/src/mindustry/io/SaveVersion.java             |  4 ++--
+ core/src/mindustry/io/versions/Save3.java          |  2 +-
+ .../world/blocks/defense/BuildTurret.java          |  4 ++--
+ 11 files changed, 24 insertions(+), 23 deletions(-)
+
+diff --git a/core/src/mindustry/ai/BaseBuilderAI.java b/core/src/mindustry/ai/BaseBuilderAI.java
+index 3df72adb708a1fb925a917af21a9f26d7eef5589..e9126f6ca510621d9b586abf9011576bf46f5257 100644
+--- a/core/src/mindustry/ai/BaseBuilderAI.java
++++ b/core/src/mindustry/ai/BaseBuilderAI.java
+@@ -258,7 +258,7 @@ public class BaseBuilderAI{
+ 
+         //queue it
+         for(Stile tile : result.tiles){
+-            data.plans.add(new BlockPlan(cx + tile.x, cy + tile.y, tile.rotation, tile.block.id, tile.config));
++            data.plans.add(new BlockPlan(cx + tile.x, cy + tile.y, tile.rotation, tile.block, tile.config));
+         }
+ 
+         return true;
+diff --git a/core/src/mindustry/ai/types/BuilderAI.java b/core/src/mindustry/ai/types/BuilderAI.java
+index 4fa15db50e18905adf5cdb4888682e4f1e718196..7932ad8d9c683fdf3f0b56a973d63a8d42fc40ee 100644
+--- a/core/src/mindustry/ai/types/BuilderAI.java
++++ b/core/src/mindustry/ai/types/BuilderAI.java
+@@ -179,12 +179,12 @@ public class BuilderAI extends AIController{
+                 BlockPlan block = blocks.first();
+ 
+                 //check if it's already been placed
+-                if(world.tile(block.x, block.y) != null && world.tile(block.x, block.y).block().id == block.block){
++                if(world.tile(block.x, block.y) != null && world.tile(block.x, block.y).block() == block.block){
+                     blocks.removeFirst();
+-                }else if(Build.validPlace(content.block(block.block), unit.team(), block.x, block.y, block.rotation) && (!alwaysFlee || !nearEnemy(block.x, block.y))){ //it's valid
++                }else if(Build.validPlace(block.block, unit.team(), block.x, block.y, block.rotation) && (!alwaysFlee || !nearEnemy(block.x, block.y))){ //it's valid
+                     lastPlan = block;
+                     //add build plan
+-                    unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));
++                    unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, block.block, block.config));
+                     //shift build plan to tail so next unit builds something else
+                     blocks.addLast(blocks.removeFirst());
+                 }else{
+diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
+index db1ccc68c38b2feda940cc2d022c13c84eeb5b4b..da36e8009a494bb6d3a87e58d2af6b87a52d2488 100644
+--- a/core/src/mindustry/core/Control.java
++++ b/core/src/mindustry/core/Control.java
+@@ -458,7 +458,7 @@ public class Control implements ApplicationListener, Loadable{
+                                 for(var plan : state.rules.waveTeam.data().plans){
+                                     Tile tile = world.tile(plan.x, plan.y);
+                                     if(tile != null){
+-                                        tile.setBlock(content.block(plan.block), state.rules.waveTeam, plan.rotation);
++                                        tile.setBlock(plan.block, state.rules.waveTeam, plan.rotation);
+                                         if(plan.config != null && tile.build != null){
+                                             tile.build.configureAny(plan.config);
+                                         }
+diff --git a/core/src/mindustry/core/Logic.java b/core/src/mindustry/core/Logic.java
+index 09c9e67e55e536e064d635e96ab42b6669821a5a..4b4f0be7d36222ccbcdf61d0ade1e0975a2f3d1f 100644
+--- a/core/src/mindustry/core/Logic.java
++++ b/core/src/mindustry/core/Logic.java
+@@ -210,8 +210,7 @@ public class Logic implements ApplicationListener{
+         var bounds = tile.block().bounds(tile.x, tile.y, Tmp.r1);
+         while(it.hasNext()){
+             BlockPlan b = it.next();
+-            Block block = content.block(b.block);
+-            if(bounds.overlaps(block.bounds(b.x, b.y, Tmp.r2))){
++            if(bounds.overlaps(b.block.bounds(b.x, b.y, Tmp.r2))){
+                 b.removed = true;
+                 it.remove();
+             }
+diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
+index 98c14d34977417fe82bf769d51113c4e63f75d96..b5611ca1782cae527220769347fe5778799dab0d 100644
+--- a/core/src/mindustry/entities/comp/BuildingComp.java
++++ b/core/src/mindustry/entities/comp/BuildingComp.java
+@@ -338,7 +338,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc,
+             }
+         }
+ 
+-        data.plans.addFirst(new BlockPlan(tile.x, tile.y, (short)rotation, toAdd.id, overrideConfig == null ? config() : overrideConfig));
++        data.plans.addFirst(new BlockPlan(tile.x, tile.y, (short)rotation, toAdd, overrideConfig == null ? config() : overrideConfig));
+     }
+ 
+     public @Nullable Tile findClosestEdge(Position to, Boolf<Tile> solid){
+diff --git a/core/src/mindustry/game/Teams.java b/core/src/mindustry/game/Teams.java
+index 036cbc2d43450cdec0f066cd62fc9ddd6005cdca..21ec385c69da731208372e20248cd43918e194bd 100644
+--- a/core/src/mindustry/game/Teams.java
++++ b/core/src/mindustry/game/Teams.java
+@@ -435,11 +435,13 @@ public class Teams{
+     /** Represents a block made by this team that was destroyed somewhere on the map.
+      * This does not include deconstructed blocks.*/
+     public static class BlockPlan{
+-        public final short x, y, rotation, block;
++        public final short x, y, rotation;
++        //MDTX: it was 'short', now it's 'Block'.
++        public final Block block;
+         public final Object config;
+         public boolean removed;
+ 
+-        public BlockPlan(int x, int y, short rotation, short block, Object config){
++        public BlockPlan(int x, int y, short rotation, Block block, Object config){
+             this.x = (short)x;
+             this.y = (short)y;
+             this.rotation = rotation;
+diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
+index aec39b666137666976321336b698e80177b05f84..10e29ef135cfbcbfa7ef4e5acf8a083e062e9110 100644
+--- a/core/src/mindustry/graphics/BlockRenderer.java
++++ b/core/src/mindustry/graphics/BlockRenderer.java
+@@ -274,7 +274,7 @@ public class BlockRenderer{
+ 
+         if(brokenFade > 0.001f){
+             for(BlockPlan block : player.team().data().plans){
+-                Block b = content.block(block.block);
++                Block b = block.block;
+                 if(!camera.bounds(Tmp.r1).grow(tilesize * 2f).overlaps(Tmp.r2.setSize(b.size * tilesize).setCenter(block.x * tilesize + b.offset, block.y * tilesize + b.offset))) continue;
+ 
+                 Draw.alpha(0.33f * brokenFade);
+diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
+index 55961ae9661cd54ef2e7cbea92984219c2b4b9c4..0ec67129218fc97593830b2cfd0a27d6cec31ea4 100644
+--- a/core/src/mindustry/input/InputHandler.java
++++ b/core/src/mindustry/input/InputHandler.java
+@@ -1441,9 +1441,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         }
+ 
+         for(BlockPlan plan : player.team().data().plans){
+-            Block block = content.block(plan.block);
++            Block block = plan.block;
+             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
+-                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.remove);
++                drawSelected(plan.x, plan.y, plan.block, Pal.remove);
+             }
+         }
+ 
+@@ -1463,9 +1463,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         Tmp.r1.set(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
+ 
+         for(BlockPlan plan : player.team().data().plans){
+-            Block block = content.block(plan.block);
++            Block block = plan.block;
+             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
+-                drawSelected(plan.x, plan.y, content.block(plan.block), Pal.sapBullet);
++                drawSelected(plan.x, plan.y, plan.block, Pal.sapBullet);
+             }
+         }
+ 
+@@ -1629,7 +1629,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         Iterator<BlockPlan> broken = player.team().data().plans.iterator();
+         while(broken.hasNext()){
+             BlockPlan plan = broken.next();
+-            Block block = content.block(plan.block);
++            Block block = plan.block;
+             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
+                 removed.add(Point2.pack(plan.x, plan.y));
+                 plan.removed = true;
+@@ -2000,9 +2000,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
+         Iterator<BlockPlan> broken = player.team().data().plans.iterator();
+         while(broken.hasNext()){
+             BlockPlan plan = broken.next();
+-            Block block = content.block(plan.block);
++            Block block = plan.block;
+             if(block.bounds(plan.x, plan.y, Tmp.r2).overlaps(Tmp.r1)){
+-                player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));
++                player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, plan.block, plan.config));
+             }
+         }
+ 
+diff --git a/core/src/mindustry/io/SaveVersion.java b/core/src/mindustry/io/SaveVersion.java
+index 71b7f72d72828b5e31912b9f809fefa3b97f5cda..1dff34d35f25ada0a328045bf956326d236444d7 100644
+--- a/core/src/mindustry/io/SaveVersion.java
++++ b/core/src/mindustry/io/SaveVersion.java
+@@ -368,7 +368,7 @@ public abstract class SaveVersion extends SaveFileReader{
+                 stream.writeShort(block.x);
+                 stream.writeShort(block.y);
+                 stream.writeShort(block.rotation);
+-                stream.writeShort(block.block);
++                stream.writeShort(block.block.id);
+                 TypeIO.writeObject(Writes.get(stream), block.config);
+             }
+         }
+@@ -426,7 +426,7 @@ public abstract class SaveVersion extends SaveFileReader{
+                 var obj = TypeIO.readObject(reads);
+                 //cannot have two in the same position
+                 if(set.add(Point2.pack(x, y))){
+-                    data.plans.addLast(new BlockPlan(x, y, rot, content.block(bid).id, obj));
++                    data.plans.addLast(new BlockPlan(x, y, rot, content.block(bid), obj));
+                 }
+             }
+         }
+diff --git a/core/src/mindustry/io/versions/Save3.java b/core/src/mindustry/io/versions/Save3.java
+index 51cd8bf4aaf4df7e77070af2aca7a42e72591ed1..6eff300d882a4b1343d1950d72ca9ee720d443ce 100644
+--- a/core/src/mindustry/io/versions/Save3.java
++++ b/core/src/mindustry/io/versions/Save3.java
+@@ -21,7 +21,7 @@ public class Save3 extends LegacySaveVersion{
+             TeamData data = team.data();
+             int blocks = stream.readInt();
+             for(int j = 0; j < blocks; j++){
+-                data.plans.addLast(new BlockPlan(stream.readShort(), stream.readShort(), stream.readShort(), content.block(stream.readShort()).id, stream.readInt()));
++                data.plans.addLast(new BlockPlan(stream.readShort(), stream.readShort(), stream.readShort(), content.block(stream.readShort()), stream.readInt()));
+             }
+         }
+ 
+diff --git a/core/src/mindustry/world/blocks/defense/BuildTurret.java b/core/src/mindustry/world/blocks/defense/BuildTurret.java
+index 10330650acfd01314450d80e9e4df8a1a52b795d..a6468c543361b31ba8633b59659a84d66281e868 100644
+--- a/core/src/mindustry/world/blocks/defense/BuildTurret.java
++++ b/core/src/mindustry/world/blocks/defense/BuildTurret.java
+@@ -146,10 +146,10 @@ public class BuildTurret extends BaseTurret{
+                     for(int i = 0; i < blocks.size; i++){
+                         var block = blocks.get(i);
+                         if(within(block.x * tilesize, block.y * tilesize, range)){
+-                            var btype = content.block(block.block);
++                            var btype = block.block;
+ 
+                             if(Build.validPlace(btype, unit.team(), block.x, block.y, block.rotation) && (state.rules.infiniteResources || team.rules().infiniteResources || team.items().has(btype.requirements, state.rules.buildCostMultiplier))){
+-                                unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));
++                                unit.addBuild(new BuildPlan(block.x, block.y, block.rotation, block.block, block.config));
+                                 //shift build plan to tail so next unit builds something else
+                                 blocks.addLast(blocks.removeIndex(i));
+                                 lastPlan = block;

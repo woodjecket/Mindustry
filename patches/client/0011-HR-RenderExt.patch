@@ -30,7 +30,7 @@ index c544e8bba23770999195d7650e45b8bf57a14805..d07cffac83d31e6978bb1c539517cc86
          Draw.reset();
          Draw.flush();
 diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
-index aec39b666137666976321336b698e80177b05f84..5c57b1309660e500c38099d362b46a62846ac24c 100644
+index 10e29ef135cfbcbfa7ef4e5acf8a083e062e9110..757434cb5bd9d951f773cd92a73fd0e0bdf8dad6 100644
 --- a/core/src/mindustry/graphics/BlockRenderer.java
 +++ b/core/src/mindustry/graphics/BlockRenderer.java
 @@ -18,6 +18,7 @@ import mindustry.gen.*;

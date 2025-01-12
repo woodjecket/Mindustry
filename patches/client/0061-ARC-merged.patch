@@ -463,7 +463,7 @@ index ebc1f0b300d295e45333f1db38ea299c9658ec20..545ca919c9c6eb5bd6ba0c8b0d7d897a
      }
  }
 diff --git a/core/src/mindustry/entities/comp/BuildingComp.java b/core/src/mindustry/entities/comp/BuildingComp.java
-index e87acaf08a54cb0bd1a9358da90a1762a972ed25..4aa2da1e9f9ff4c8263653db16b779579869b769 100644
+index 14090381fdd4b643b14056e8af0a2d2133ebf7d7..0ae44bc028104fc13cef6853bb8f0c4f8113a24e 100644
 --- a/core/src/mindustry/entities/comp/BuildingComp.java
 +++ b/core/src/mindustry/entities/comp/BuildingComp.java
 @@ -41,6 +41,7 @@ import mindustry.world.blocks.power.*;
@@ -705,7 +705,7 @@ index dde5886f6020aa1c372ac3346e81aab0c7fdedf7..793e1b23c43d7beb6677d8e29f6c9e22
          ItemSeq requirements = new ItemSeq();
  
 diff --git a/core/src/mindustry/graphics/BlockRenderer.java b/core/src/mindustry/graphics/BlockRenderer.java
-index ea5060298da5e478b234e8d0575ab2ceedb5b6e6..e59bff905f7398b0eb3c780c0cda5a3035a75bf2 100644
+index f99e534383b00780f427b14b95daa11cc7b19300..5ae574d597587ce387bf9038860d0ae242f7f215 100644
 --- a/core/src/mindustry/graphics/BlockRenderer.java
 +++ b/core/src/mindustry/graphics/BlockRenderer.java
 @@ -444,13 +444,18 @@ public class BlockRenderer{
@@ -984,7 +984,7 @@ index 78ac0604a7c2212dbe17280efa1f56cb23478edc..46efd160e65213187026d1101a25594a
          player.mouseY = unit.aimY();
  
 diff --git a/core/src/mindustry/input/InputHandler.java b/core/src/mindustry/input/InputHandler.java
-index d8c35243876edbb41977183bad567f58b91f24fb..c02246793e4660ea42a77a6ecc27a85f312eac6d 100644
+index 43e3a1f9101ae430cb1a73a92c1e2ca4e0c0831b..0daf39ca7a127841028488a5c71775b40a5093d8 100644
 --- a/core/src/mindustry/input/InputHandler.java
 +++ b/core/src/mindustry/input/InputHandler.java
 @@ -37,11 +37,13 @@ import mindustry.world.*;

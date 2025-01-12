@@ -37,7 +37,6 @@ public class AuxiliaryTools extends ToolTableBase{
 
     protected void rebuild(){
         defaults().size(40);
-        if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
         aiButton(new ArcMinerAI(), UnitTypes.mono.region, "矿机AI");
         aiButton(new ArcBuilderAI(), UnitTypes.poly.region, "重建AI");
         aiButton(new ArcRepairAI(), UnitTypes.mega.region, "修复AI");
@@ -50,7 +49,7 @@ public class AuxiliaryTools extends ToolTableBase{
             int count = 0;
             for(Teams.BlockPlan plan : player.team().data().plans){
                 if(player.within(plan.x * tilesize, plan.y * tilesize, buildingRange)){
-                    player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, content.block(plan.block), plan.config));
+                    player.unit().addBuild(new BuildPlan(plan.x, plan.y, plan.rotation, plan.block, plan.config));
                     if(++count >= 255) break;
                 }
             }
