@@ -12,7 +12,7 @@ AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(�
  1 file changed, 17 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..3e14cbde8dec581eb5d72650fbd134f9122054a6 100644
+index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -196,13 +196,18 @@ public class HudFragment{
@@ -33,10 +33,10 @@ index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..3e14cbde8dec581eb5d72650fbd134f9
 +                .visible(() -> Core.settings.getBool("position") || Core.settings.getBool("mouseposition"))
 +                .touchable(Touchable.disabled).style(Styles.outlineLabel);
 +
-+                tt.button("♐", cleart, MarkerType::toggleMarkHitterUI).size(iconMed).tooltip("进入标记模式");
-+                tt.button("T", cleart, () -> ui.chatfrag.nextMode())
++                tt.button("♐", Styles.cleart, MarkerType::toggleMarkHitterUI).size(iconMed).tooltip("进入标记模式");
++                tt.button("T", Styles.cleart, () -> ui.chatfrag.nextMode())
 +                .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(iconMed).tooltip("前缀添加/t");
-+                tt.button("" + Iconc.zoom, cleart, MarkerType::lockOnLastMark).size(iconMed).tooltip("锁定上个标记点");
++                tt.button("" + Iconc.zoom, Styles.cleart, MarkerType::lockOnLastMark).size(iconMed).tooltip("锁定上个标记点");
 +            }).name("position");
              t.top().right();
          });

@@ -1,7 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: way-zer <himc.wicp@gmail.com>
 Date: Sun, 12 Jan 2025 16:31:47 +0800
-Subject: [PATCH] FG: refactor `mindustry.game.Teams.BlockPlan#block` to Block type.
+Subject: [PATCH] FG: refactor `mindustry.game.Teams.BlockPlan#block` to Block
+ type.
 
 ---
  core/src/mindustry/ai/BaseBuilderAI.java           |  2 +-
