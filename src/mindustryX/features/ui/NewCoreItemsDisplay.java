@@ -2,14 +2,17 @@ package mindustryX.features.ui;
 
 import arc.*;
 import arc.graphics.*;
+import arc.math.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import kotlin.collections.*;
+import mindustry.*;
 import mindustry.core.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
+import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
@@ -29,7 +32,7 @@ import static mindustry.Vars.*;
 public class NewCoreItemsDisplay extends Table{
     public static final float MIN_WIDTH = 64f;
 
-    private Table itemsTable, unitsTable, plansTable;
+    private Table itemsTable, unitsTable, plansTable, powerTable;
 
     private static final Interval timer = new Interval(2);
 
@@ -45,7 +48,8 @@ public class NewCoreItemsDisplay extends Table{
     private final SettingsV2.Data<Boolean> showItem = CheckPref.INSTANCE.create("coreItems.showItem", true);
     private final SettingsV2.Data<Boolean> showUnit = CheckPref.INSTANCE.create("coreItems.showUnit", true);
     private final SettingsV2.Data<Boolean> showPlan = CheckPref.INSTANCE.create("coreItems.showPlan", true);
-    final List<Data<?>> settings = CollectionsKt.listOf(columns, showItem, showUnit, showPlan);
+    private final SettingsV2.Data<Boolean> showPower = CheckPref.INSTANCE.create("coreItems.showPower", true);
+    final List<Data<?>> settings = CollectionsKt.listOf(columns, showItem, showUnit, showPlan, showPower);
 
     public NewCoreItemsDisplay(){
         itemDelta = new int[content.items().size];
@@ -64,6 +68,7 @@ public class NewCoreItemsDisplay extends Table{
     }
 
     private void setup(){
+        collapser(powerTable = new Table(Styles.black3), showPower::getValue).growX().row();
         collapser(itemsTable = new Table(Styles.black3), showItem::getValue).growX().row();
         collapser(unitsTable = new Table(Styles.black3), showUnit::getValue).growX().row();
 
@@ -100,6 +105,41 @@ public class NewCoreItemsDisplay extends Table{
                 rebuildPlans();
             }
         });
+        buildPower();
+    }
+
+    private float balance, stored, capacity, produced, need, satisfaction;
+
+    private void buildPower(){
+        powerTable.update(() -> {
+            balance = 0;
+            stored = 0;
+            capacity = 0;
+            produced = 0;
+            need = 0;
+            Groups.powerGraph.each(item -> {
+                var graph = item.graph();
+                if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
+                balance += graph.getPowerBalance();
+                stored += graph.getLastPowerStored();
+                capacity += graph.getLastCapacity();
+                produced += graph.getLastPowerProduced();
+                need += graph.getLastPowerNeeded();
+            });
+            balance *= Time.toSeconds;
+            satisfaction = produced == 0 ? 1 : need == 0 ? 1 : Mathf.clamp(produced / need, 0, 1);
+        });
+        powerTable.margin(2f).stack(
+        new Bar("", Pal.powerBar, () -> capacity == 0 ? (balance > 0 ? 1 : 0) : stored / capacity),
+        new Table(t -> {
+            t.add().growX();
+            t.label(() -> Core.bundle.format("bar.powerbalance", (balance >= 0 ? "+" : "") + UI.formatAmount((long)balance)) +
+            (satisfaction >= 1 ? "" : " [gray]" + (int)(satisfaction * 100) + "%"));
+            t.add().width(16);
+            t.label(() -> Core.bundle.format("bar.powerstored", UI.formatAmount((long)stored), UI.formatAmount((long)capacity)));
+            t.add().growX();
+        })
+        ).growX();
     }
 
     private void updateItemMeans(){

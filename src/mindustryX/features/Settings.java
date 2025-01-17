@@ -40,7 +40,6 @@ public class Settings{
             c.checkPref("invertMapClick", false);
             c.checkPref("arcSpecificTable", true);
             c.checkPref("logicSupport", true);
-            c.checkPref("powerStatistic", true);
             c.checkPref("showOtherTeamResource", false);
             c.checkPref("showQuickToolTable", true);
             c.sliderPref("itemSelectionHeight", 4, 4, 12, i -> i + "行");

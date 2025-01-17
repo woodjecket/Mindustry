@@ -117,12 +117,12 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/dialogs/SettingsMenuDialog.java        |  28 +-
  .../mindustry/ui/fragments/ChatFragment.java  |   9 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
- .../mindustry/ui/fragments/HudFragment.java   | 186 ++++++++++++-
+ .../mindustry/ui/fragments/HudFragment.java   | 174 +++++++++++-
  .../mindustry/ui/fragments/MenuFragment.java  |  59 +++-
  .../ui/fragments/PlacementFragment.java       | 169 ++++++++++--
  .../ui/fragments/PlayerListFragment.java      |  72 ++---
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1560 insertions(+), 175 deletions(-)
+ 29 files changed, 1548 insertions(+), 175 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2459,7 +2459,7 @@ index e74e6a12e3da57eb58598eb4e679a7990c109def..013255ce5aa828d538814fa25dc64c6a
          //special case for 'clear' command
          if(message.equals("clear")){
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066f01142d1 100644
+index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..51c10a9342bd7a2610443c6b4b9885711aa4c15e 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -29,11 +29,13 @@ import mindustry.net.Packets.*;
@@ -2487,20 +2487,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
                  //wave info button with text
                  s.add(makeStatusTable()).grow().name("status");
  
-@@ -323,6 +329,12 @@ public class HudFragment{
-                         logic.skipWave();
-                     }
-                 }).growY().fillX().right().width(40f).disabled(b -> !canSkipWave()).name("skip").get().toBack();
-+                // Power bar display
-+                if (Core.settings.getBool("powerStatistic")){
-+                    s.row();
-+                    s.add(ArcPowerInfo.getBars()).growX().colspan(s.getColumns());
-+                }
-+
-             }).width(dsize * 5 + 4f).name("statustable");
- 
-             wavesMain.row();
-@@ -331,6 +343,7 @@ public class HudFragment{
+@@ -331,6 +337,7 @@ public class HudFragment{
  
              editorMain.name = "editor";
              editorMain.table(Tex.buttonEdge4, t -> {
@@ -2508,7 +2495,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
                  t.name = "teams";
                  t.top().table(teams -> {
                      teams.left();
-@@ -346,6 +359,7 @@ public class HudFragment{
+@@ -346,6 +353,7 @@ public class HudFragment{
                              teams.row();
                          }
                      }
@@ -2516,7 +2503,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
                  }).top().left();
  
                  t.row();
-@@ -417,6 +431,8 @@ public class HudFragment{
+@@ -417,6 +425,8 @@ public class HudFragment{
                  IntFormat mem = new IntFormat("memory");
                  IntFormat memnative = new IntFormat("memory2");
  
@@ -2525,7 +2512,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
                  info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                  info.row();
                  info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
-@@ -426,6 +442,11 @@ public class HudFragment{
+@@ -426,6 +436,11 @@ public class HudFragment{
                  DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw"), ()->DebugUtil.renderDebug);
                  info.row();
  
@@ -2537,7 +2524,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
                  if(android){
                      info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
                  }else{
-@@ -1038,6 +1059,169 @@ public class HudFragment{
+@@ -1038,6 +1053,163 @@ public class HudFragment{
          return table;
      }
  
@@ -2584,12 +2571,6 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
 +        }).size(110, 80).padRight(4);
 +
 +        table.table(this::buildArcStatus).growX().pad(4f);
-+
-+        // Power bar display
-+        if (Core.settings.getBool("powerStatistic")){
-+            table.row();
-+            table.add(ArcPowerInfo.getBars()).growX().colspan(table.getColumns());
-+        }
 +
 +        return table;
 +    }
@@ -2707,7 +2688,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..0fb8b07b1d30070ae7e3f924563ba066
      private void addInfoTable(Table table){
          table.name = "infotable";
          table.left();
-@@ -1082,7 +1266,7 @@ public class HudFragment{
+@@ -1082,7 +1254,7 @@ public class HudFragment{
      }
  
      private boolean canSkipWave(){
