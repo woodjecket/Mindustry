@@ -18,13 +18,13 @@ way-zer <himc.wicp@gmail.com> on 2024/7/14
 防止多人模式下编辑世处，并给出提示
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
- core/src/mindustry/logic/LCanvas.java         |  54 ++++-
+ core/src/mindustry/logic/LCanvas.java         |  54 ++++++-
  core/src/mindustry/logic/LExecutor.java       |   7 +-
- core/src/mindustry/logic/LStatements.java     |  12 +
- core/src/mindustry/logic/LogicDialog.java     | 209 +++++++++++++++---
- .../world/blocks/logic/LogicBlock.java        |  66 +++++-
- .../world/blocks/logic/MemoryBlock.java       |  72 +++++-
- 6 files changed, 378 insertions(+), 42 deletions(-)
+ core/src/mindustry/logic/LStatements.java     |  12 ++
+ core/src/mindustry/logic/LogicDialog.java     | 151 +++++++++++++++++-
+ .../world/blocks/logic/LogicBlock.java        |  66 +++++++-
+ .../world/blocks/logic/MemoryBlock.java       |  72 ++++++++-
+ 6 files changed, 342 insertions(+), 20 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -188,7 +188,7 @@ index 8e4ccdd4faa052b63c99720cdace544cdbf2fcce..260bb5eec6ca90cb6fc9da5f6f3fb17c
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a28af9f5f 100644
+index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..7236456a9d70f10af425e612148a646bb035a529 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -5,6 +5,7 @@ import arc.func.*;
@@ -239,19 +239,29 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
                  wasPortrait = Core.graphics.isPortrait();
                  wasRows = LCanvas.useRows();
              }
-@@ -66,12 +80,140 @@ public class LogicDialog extends BaseDialog{
+@@ -66,12 +80,131 @@ public class LogicDialog extends BaseDialog{
          });
  
          add(canvas).grow().name("canvas");
-+        addChild(new Table(t->{
-+            t.name = "vars";
++        addChild(new Table(t -> {
++            t.name = "logicSupport";
 +            t.setFillParent(true);
-+            t.center().left().add(varTable).growY().visible(() -> Core.settings.getBool("logicSupport"));
++            t.visible(() -> Core.settings.getBool("logicSupport"));
++
++            t.center().left();
++            t.table(this::buildLogicSupport).growY();
 +            Interval interval = new Interval();
-+            varTable.update(() -> {
++            t.update(() -> {
 +                if(!varTable.hasChildren()) buildVarsTable();
 +                doRefresh = refreshing && interval.get(period);
 +            });
++        }));
++        addChild(new Table(t -> {
++            t.name = "open_logicSupport";
++            t.setFillParent(true);
++            t.visible(() -> !Core.settings.getBool("logicSupport"));
++
++            t.center().left().button(Icon.rightOpen, Styles.clearNonei, iconMed, () -> Settings.toggle("logicSupport"));
 +        }));
  
          row();
@@ -259,112 +269,93 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
          add(buttons).growX().name("canvas");
      }
  
-+    private void buildVarsTable(){
-+        varTable.clear();
-+        varTable.table(t->{
-+            t.table(tt->{
++    private void buildLogicSupport(Table table){
++        table.background(Styles.black3);
++        table.table(t -> {
++            t.table(tt -> {
 +                tt.add("刷新间隔").padRight(5f).left();
-+                TextField field = tt.field((int)period + "", text -> {
-+                    period = Integer.parseInt(text);
-+                }).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
-+                tt.slider(1, 60,1, period, res -> {
++                TextField field = tt.field((int)period + "", text -> period = Integer.parseInt(text)).width(100f).valid(Strings::canParsePositiveInt).maxTextLength(5).get();
++                tt.slider(1, 60, 1, period, res -> {
 +                    period = res;
 +                    field.setText((int)res + "");
 +                });
 +            });
 +            t.row();
 +            t.table(tt -> {
-+                tt.button(Icon.refreshSmall, Styles.cleari, () -> {
++                tt.defaults().size(50f);
++                tt.button(Icon.downloadSmall, Styles.cleari, () -> {
 +                    executor.build.updateCode(executor.build.code);
 +                    buildVarsTable();
-+                    UIExt.announce("[orange]已更新逻辑显示！");
-+                }).size(50f);
-+                tt.button(Icon.pauseSmall, Styles.cleari, () -> {
++                    UIExt.announce("[orange]已重新加载逻辑！");
++                }).tooltip("加载逻辑代码");
++                tt.button(Icon.refreshSmall, Styles.clearTogglei, () -> {
 +                    refreshing = !refreshing;
 +                    String text = "[orange]已" + (refreshing ? "开启" : "关闭") + "逻辑刷新";
 +                    UIExt.announce(text);
-+                }).checked(refreshing).size(50f);
-+                tt.button(Icon.rightOpenOutSmall, Styles.cleari, () -> {
-+                    Core.settings.put("rectJumpLine", !Core.settings.getBool("rectJumpLine"));
-+                    String text = "[orange]已" + (refreshing ? "开启" : "关闭") + "方形跳转线";
++                }).checked((b) -> refreshing).tooltip("辅助器自动刷新");
++                tt.button(Icon.rightOpenOutSmall, Styles.clearTogglei, () -> {
++                    Settings.toggle("rectJumpLine");
++                    String text = "[orange]已" + (Core.settings.getBool("rectJumpLine") ? "开启" : "关闭") + "方形跳转线";
 +                    UIExt.announce(text);
 +                    this.canvas.rebuild();
-+                }).checked(refreshing).size(50f);
-+
-+                tt.button(Icon.playSmall, Styles.cleari, () -> {
-+                    if (state.isPaused()) state.set(State.playing);
++                }).checked((b) -> Core.settings.getBool("rectJumpLine")).tooltip("方形跳转线");
++                tt.button(Icon.pause, Styles.clearTogglei, () -> {
++                    if(state.isPaused()) state.set(State.playing);
 +                    else state.set(State.paused);
 +                    String text = state.isPaused() ? "已暂停" : "已继续游戏";
 +                    UIExt.announce(text);
-+                }).checked(state.isPaused()).size(50f);
++                }).checked((b) -> state.isPaused()).tooltip("暂停逻辑(游戏)运行");
++                tt.button(Icon.eyeOffSmall, Styles.cleari, () -> Settings.toggle("logicSupport"));
 +            });
-+        });
-+        varTable.row();
-+            varTable.pane(t->{
-+                if(executor==null) return;
-+                for(var s : executor.vars){
-+                    if(s.name.startsWith("___")) continue;
-+                    String text = arcVarsText(s);
-+                    t.table(tt->{
-+                        tt.background(Tex.whitePane);
++        }).row();
++        table.pane(varTable).width(400f).padLeft(20f);
++    }
 +
-+                        tt.table(tv->{
-+                            tv.labelWrap(s.name).width(100f);
-+                            tv.touchable = Touchable.enabled;
-+                            tv.tapped(()->{
-+                                Core.app.setClipboardText(s.name);
-+                                UIExt.announce("[cyan]复制变量名[white]\n " + s.name);
-+                            });
-+                        });
-+                        tt.table(tv->{
-+                            Label varPro = tv.labelWrap(text).width(200f).get();
-+                            tv.touchable = Touchable.enabled;
-+                            tv.tapped(()->{
-+                                Core.app.setClipboardText(varPro.getText().toString());
-+                                String text1 = "[cyan]复制变量属性[white]\n " + varPro.getText();
-+                                UIExt.announce(text1);
-+                            });
-+                            tv.update(()->{
-+                                if(doRefresh){
-+                                    varPro.setText(arcVarsText(s));
-+                                }
-+                            });
-+                        }).padLeft(20f);
++    private void buildVarsTable(){
++        varTable.clearChildren();
++        if(executor == null) return;
++        varTable.defaults().padTop(10f);
++        for(var s : executor.vars){
++            if(s.name.startsWith("___")) continue;
++            String text = arcVarsText(s);
++            varTable.table(tt -> {
++                tt.background(Tex.whitePane);
 +
-+                        tt.update(()->{
-+                            if(doRefresh){
-+                                tt.setColor(arcVarsColor(s));
-+                            }
-+                        });
-+
-+                    }).padTop(10f).row();
-+                }
-+                t.table(tt->{
-+                    tt.background(Tex.whitePane);
-+
-+                    tt.table(tv->{
-+                        Label varPro = tv.labelWrap(executor.textBuffer.toString()).width(300f).get();
-+                        tv.touchable = Touchable.enabled;
-+                        tv.tapped(()->{
-+                            Core.app.setClipboardText(varPro.getText().toString());
-+                            String text = "[cyan]复制信息版[white]\n " + varPro.getText();
-+                            UIExt.announce(text);
-+                        });
-+                        tv.update(()->{
-+                            if(doRefresh){
-+                                varPro.setText(executor.textBuffer.toString());
-+                            }
-+                        });
-+                    }).padLeft(20f);
-+
-+                    tt.update(()->{
++                tt.table(tv -> {
++                    tv.labelWrap(s.name).width(100f);
++                    tv.touchable = Touchable.enabled;
++                    tv.tapped(() -> {
++                        Core.app.setClipboardText(s.name);
++                        UIExt.announce("[cyan]复制变量名[white]\n " + s.name);
++                    });
++                });
++                tt.table(tv -> {
++                    Label varPro = tv.labelWrap(text).width(200f).get();
++                    tv.touchable = Touchable.enabled;
++                    tv.tapped(() -> {
++                        Core.app.setClipboardText(varPro.getText().toString());
++                        String text1 = "[cyan]复制变量属性[white]\n " + varPro.getText();
++                        UIExt.announce(text1);
++                    });
++                    tv.update(() -> {
 +                        if(doRefresh){
-+                            tt.setColor(Color.valueOf("#e600e6"));
++                            tt.setColor(arcVarsColor(s));
++                            varPro.setText(arcVarsText(s));
 +                        }
 +                    });
-+
-+                }).padTop(10f).row();
-+            }).width(400f).padLeft(20f);
++                }).padLeft(20f);
++            }).row();
++        }
++        varTable.table(Tex.whitePane, tt -> {
++            tt.setColor(Color.valueOf("#e600e6"));
++            tt.labelWrap(() -> executor.textBuffer).width(300f).get();
++            tt.touchable = Touchable.enabled;
++            tt.tapped(() -> {
++                String text = executor.textBuffer.toString();
++                Core.app.setClipboardText(text);
++                UIExt.announce("[cyan]复制信息版[white]\n " + text);
++            });
++        }).padLeft(4f).row();
 +    }
 +
 +    public static String arcVarsText(LVar s){
@@ -380,7 +371,7 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
      public static Color typeColor(LVar s, Color color){
          return color.set(
              !s.isobj ? Pal.place :
-@@ -143,6 +285,17 @@ public class LogicDialog extends BaseDialog{
+@@ -143,6 +276,12 @@ public class LogicDialog extends BaseDialog{
                              ui.showException(e);
                          }
                      }).marginLeft(12f).disabled(b -> Core.app.getClipboardText() == null);
@@ -390,15 +381,10 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
 +                        dialog.hide();
 +                        hide();
 +                    })).marginLeft(12f);
-+                    t.row();
-+                    t.button("[orange]逻辑辅助器", Icon.settings, style, () -> {
-+                        Settings.toggle("logicSupport");
-+                        dialog.hide();
-+                    }).marginLeft(12f);
                  });
              });
  
-@@ -228,6 +381,11 @@ public class LogicDialog extends BaseDialog{
+@@ -228,6 +367,11 @@ public class LogicDialog extends BaseDialog{
      }
  
      public void showAddDialog(){
@@ -410,7 +396,7 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
          BaseDialog dialog = new BaseDialog("@add");
          dialog.cont.table(table -> {
              String[] searchText = {""};
-@@ -252,7 +410,7 @@ public class LogicDialog extends BaseDialog{
+@@ -252,7 +396,7 @@ public class LogicDialog extends BaseDialog{
  
                      search.keyDown(KeyCode.enter, () -> {
                          if(!searchText[0].isEmpty() && matched[0] != null){
@@ -419,64 +405,16 @@ index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..53638cd780e4ba2c32bbe4aa8aa6e10a
                              dialog.hide();
                          }
                      });
-@@ -275,33 +433,33 @@ public class LogicDialog extends BaseDialog{
-                             matched[0] = prov;
-                         }
+@@ -299,7 +443,7 @@ public class LogicDialog extends BaseDialog{
+                         style.font = Fonts.outline;
  
--                        LCategory category = example.category();
--                        Table cat = t.find(category.name);
--                        if(cat == null){
--                            t.table(s -> {
--                                if(category.icon != null){
--                                    s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);
--                                }
--                                s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
--                                s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
--                            }).growX().pad(5f).padTop(10f);
-+                    LCategory category = example.category();
-+                    Table cat = t.find(category.name);
-+                    if(cat == null){
-+                        t.table(s -> {
-+                            if(category.icon != null){
-+                                s.image(category.icon, Pal.darkishGray).left().size(15f).padRight(10f);
-+                            }
-+                            s.add(category.localized()).color(Pal.darkishGray).left().tooltip(category.description());
-+                            s.image(Tex.whiteui, Pal.darkishGray).left().height(5f).growX().padLeft(10f);
-+                        }).growX().pad(5f).padTop(10f);
- 
--                            t.row();
-+                        t.row();
- 
--                            cat = t.table(c -> {
--                                c.top().left();
--                            }).name(category.name).top().left().growX().fillY().get();
--                            t.row();
--                        }
-+                        cat = t.table(c -> {
-+                            c.top().left();
-+                        }).name(category.name).top().left().growX().fillY().get();
-+                        t.row();
-+                    }
- 
--                        TextButtonStyle style = new TextButtonStyle(Styles.flatt);
--                        style.fontColor = category.color;
--                        style.font = Fonts.outline;
-+                    TextButtonStyle style = new TextButtonStyle(Styles.flatt);
-+                    style.fontColor = category.color;
-+                    style.font = Fonts.outline;
- 
--                        cat.button(example.name(), style, () -> {
+                         cat.button(example.name(), style, () -> {
 -                            canvas.add(prov.get());
--                            dialog.hide();
--                        }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
-+                    cat.button(example.name(), style, () -> {
-+                        cons.get(prov.get());
-+                        dialog.hide();
-+                    }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
++                            cons.get(prov.get());
+                             dialog.hide();
+                         }).size(130f, 50f).self(c -> tooltip(c, "lst." + example.name())).top().left();
  
-                         if(cat.getChildren().size % 3 == 0) cat.row();
-                     }
-@@ -317,6 +475,7 @@ public class LogicDialog extends BaseDialog{
+@@ -317,6 +461,7 @@ public class LogicDialog extends BaseDialog{
      public void show(String code, LExecutor executor, boolean privileged, Cons<String> modified){
          this.executor = executor;
          this.privileged = privileged;
