@@ -1,6 +1,7 @@
 package mindustryX.features.ui;
 
 import arc.*;
+import arc.func.*;
 import arc.graphics.*;
 import arc.math.geom.*;
 import arc.scene.ui.*;
@@ -97,6 +98,18 @@ public class ArcMessageDialog extends BaseDialog{
             builder.append("。介绍: ").append(content.description);
         }
         ArcMessageDialog.share("Content", builder.toString());
+    }
+
+    public static void uploadPasteBin(String content, Cons<String> callback){
+        Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + content);
+        req.submit(r -> {
+            String code = r.getResultAsString();
+            Core.app.post(() -> callback.get(code));
+        });
+        req.error(e -> Core.app.post(() -> {
+            ui.showException("上传失败，再重试一下？", e);
+            Core.app.post(() -> callback.get(null));
+        }));
     }
 
     public static String getWaveInfo(int waves){

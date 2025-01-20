@@ -81,13 +81,7 @@ public class PicToMindustry{
         }).padBottom(20f).visible(() -> oriImage != null).row();
         pt.cont.add(tTable);
         pt.cont.row();
-        pt.cont.button("逻辑画网站 " + Blocks.logicDisplay.emoji(), () -> {
-            String imageUrl = "https://buibiu.github.io/imageToMLogicPage/#/";
-            if(!Core.app.openURI(imageUrl)){
-                ui.showErrorMessage("打开失败，网址已复制到粘贴板\n请自行在阅览器打开");
-                Core.app.setClipboardText(imageUrl);
-            }
-        }).width(200f);
+        pt.cont.button("逻辑画网站 " + Blocks.logicDisplay.emoji(), () -> UIExt.openURI("https://buibiu.github.io/imageToMLogicPage/#/")).width(200f);
         pt.addCloseButton();
         pt.show();
     }
