@@ -105,7 +105,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  core/src/mindustry/input/InputHandler.java    |  47 +++-
  core/src/mindustry/input/MobileInput.java     |  16 +-
  core/src/mindustry/logic/LExecutor.java       |  12 +-
- core/src/mindustry/type/UnitType.java         | 110 +++++++-
+ core/src/mindustry/type/UnitType.java         |  91 ++++++-
  core/src/mindustry/type/Weapon.java           |  19 ++
  core/src/mindustry/ui/Fonts.java              |   2 +-
  .../ui/dialogs/ContentInfoDialog.java         |  22 +-
@@ -122,7 +122,7 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../ui/fragments/PlacementFragment.java       | 169 +++++++++---
  .../ui/fragments/PlayerListFragment.java      |  72 ++----
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1530 insertions(+), 172 deletions(-)
+ 29 files changed, 1512 insertions(+), 171 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -1215,7 +1215,7 @@ index 07b2fe9cbbcb2dd7aa1f05176915ab2dc2766f73..6d8feb67b14e0ee4fa838e510e1228c5
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4de30deae 100644
+index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..2924755d22439504f8ef5035afcd22c93b7bccab 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -38,6 +38,7 @@ import mindustry.world.blocks.units.*;
@@ -1226,53 +1226,7 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
  
  import static arc.graphics.g2d.Draw.*;
  import static mindustry.Vars.*;
-@@ -45,6 +46,7 @@ import static mindustry.Vars.*;
- public class UnitType extends UnlockableContent implements Senseable{
-     public static final float shadowTX = -12, shadowTY = -13;
-     private static final Vec2 legOffset = new Vec2();
-+    private Table unitStatus = new Table();
- 
-     /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
-     public int envRequired = 0;
-@@ -525,23 +527,84 @@ public class UnitType extends UnlockableContent implements Senseable{
- 
-     public void landed(Unit unit){}
- 
-+    private void updateStatusTable(Unit unit){
-+        unitStatus.clear();
-+        if(unit.statuses().isEmpty()) return;
-+        unitStatus.row().table(t -> {
-+            for(StatusEntry entry : unit.statuses()){
-+                if(t.getChildren().size % 5 == 0) t.row();
-+                t.stack(
-+                new Table(o -> {
-+                    o.left();
-+                    o.image(entry.effect.uiIcon).size(iconMed).scaling(Scaling.fit);
-+                }),
-+                new Table(tt -> {
-+                    tt.left().bottom();
-+                    tt.add(entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)).style(Styles.outlineLabel);
-+                    tt.pack();
-+                })).padLeft(8f);
-+            }
-+        });
-+
-+        unitStatus.row();
-+        unitStatus.table(tt -> {
-+            tt.defaults().pad(0, 8, 0, 8);
-+            tt.add("[acid]血量");
-+            tt.add("[red]伤害");
-+            tt.add("[violet]攻速");
-+            tt.add("[cyan]移速");
-+            tt.row();
-+            tt.add(FormatDefault.format(unit.healthMultiplier));
-+            tt.add(FormatDefault.format(unit.damageMultiplier));
-+            tt.add(FormatDefault.format(unit.reloadMultiplier));
-+            tt.add(FormatDefault.format(unit.speedMultiplier));
-+        }).row();
-+    }
-+
-     public void display(Unit unit, Table table){
+@@ -529,19 +530,45 @@ public class UnitType extends UnlockableContent implements Senseable{
          table.table(t -> {
              t.left();
              t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
@@ -1299,7 +1253,6 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
 -            //TODO overlay shields
 -            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
 +            bars.add(new Bar(() -> {
-+                updateStatusTable(unit);
 +                StringBuilder str = new StringBuilder();
 +                if(unit.shield() > 0){
 +                    str.append(FormatDefault.format(unit.health)).append("[gray]+[white]").append(FormatDefault.format(unit.shield));
@@ -1323,13 +1276,11 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
                  bars.row();
              }
  
-@@ -549,8 +612,11 @@ public class UnitType extends UnlockableContent implements Senseable{
-                 ability.displayBars(unit, bars);
+@@ -550,7 +577,10 @@ public class UnitType extends UnlockableContent implements Senseable{
              }
  
--            if(payloadCapacity > 0 && unit instanceof Payloadc payload){
+             if(payloadCapacity > 0 && unit instanceof Payloadc payload){
 -                bars.add(new Bar("stat.payloadcapacity", Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
-+            if(unit instanceof Payloadc payload){
 +                bars.add(new Bar(() -> Strings.format("装载：@/@ @",
 +                Strings.autoFixed(payload.payloadUsed() / tilesize / tilesize, 4),
 +                Strings.autoFixed(payloadCapacity / tilesize / tilesize, 4),
@@ -1337,15 +1288,39 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
                  bars.row();
  
                  var count = new float[]{-1};
-@@ -560,18 +626,21 @@ public class UnitType extends UnlockableContent implements Senseable{
-                         count[0] = payload.payloadUsed();
-                     }
+@@ -562,16 +592,45 @@ public class UnitType extends UnlockableContent implements Senseable{
                  }).growX().left().height(0f).pad(0f);
-+                bars.row();
              }
          }).growX();
-+        table.row();
-+        table.table(t-> unitStatus = t).growX();
++        if(!unit.statuses().isEmpty()){
++            table.row().table(t -> {
++                for(StatusEntry entry : unit.statuses()){
++                    if(t.getChildren().size % 5 == 0) t.row();
++                    t.stack(
++                    new Table(o -> {
++                        o.left();
++                        o.image(entry.effect.uiIcon).size(iconMed).scaling(Scaling.fit);
++                    }),
++                    new Table(tt -> {
++                        tt.left().bottom();
++                        tt.add(entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)).style(Styles.outlineLabel);
++                        tt.pack();
++                    })).padLeft(8f);
++                }
++            });
++            table.row().table(tt -> {
++                tt.defaults().pad(0, 8, 0, 8);
++                tt.add("[acid]血量");
++                tt.add("[red]伤害");
++                tt.add("[violet]攻速");
++                tt.add("[cyan]移速");
++                tt.row();
++                tt.add(FormatDefault.format(unit.healthMultiplier));
++                tt.add(FormatDefault.format(unit.damageMultiplier));
++                tt.add(FormatDefault.format(unit.reloadMultiplier));
++                tt.add(FormatDefault.format(unit.speedMultiplier));
++            }).growX().row();
++        }
  
          if(unit.controller() instanceof LogicAI ai){
              table.row();
@@ -1365,7 +1340,7 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
              if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                  table.row();
                  table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
-@@ -582,6 +651,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -582,6 +641,11 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
  
          table.row();
@@ -1377,7 +1352,7 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1461,12 +1535,15 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1461,12 +1525,15 @@ public class UnitType extends UnlockableContent implements Senseable{
              unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
              size, size);
  
@@ -1394,20 +1369,6 @@ index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4
              }
  
              Draw.reset();
-@@ -1737,6 +1814,13 @@ public class UnitType extends UnlockableContent implements Senseable{
-         }
-     }
- 
-+    public String typeColor() {
-+        if (naval) return "[cyan]";
-+        else if (allowLegStep) return "[magenta]";
-+        else if (flying) return "[acid]";
-+        else if (hovering) return "[sky]";
-+        else return "[stat]";
-+    }
-     //endregion
- 
-     public static class UnitEngine implements Cloneable{
 diff --git a/core/src/mindustry/type/Weapon.java b/core/src/mindustry/type/Weapon.java
 index 87d4b92337dd7e43fade327f20077ab947983157..1eaa445d16d5c891ce514d5646cc1e0859e1a1d6 100644
 --- a/core/src/mindustry/type/Weapon.java

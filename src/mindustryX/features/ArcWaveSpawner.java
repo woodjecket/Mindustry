@@ -11,6 +11,8 @@ import arc.util.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.game.*;
+import mindustry.graphics.*;
+import mindustry.type.*;
 import mindustry.world.*;
 import mindustryX.features.ui.*;
 
@@ -95,6 +97,14 @@ public class ArcWaveSpawner{
         }
     }
 
+    public static Color unitTypeColor(UnitType type){
+        if(type.naval) return Color.cyan;
+        if(type.allowLegStep) return Color.magenta;
+        if(type.flying) return Color.acid;
+        if(type.hovering) return Color.sky;
+        return Pal.stat;
+    }
+
     /**
      * 单一波次详情
      */
@@ -174,7 +184,7 @@ public class ArcWaveSpawner{
                 t.table(tt -> {
                     tt.table(ttt -> {
                         ttt.image(wg.group.type.uiIcon).size(30);
-                        ttt.add(wg.group.type.typeColor() + wg.amount).fillX();
+                        ttt.add("" + wg.amount).color(unitTypeColor(wg.group.type)).fillX();
                     }).row();
                     StringBuilder groupInfo = new StringBuilder();
                     if(wg.shield > 0f)

@@ -15,7 +15,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 144 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/editor/WaveInfoDialog.java b/core/src/mindustry/editor/WaveInfoDialog.java
-index b4bc26acc2d26abe0dc2630f332fc40da08cd94f..7f2b10185808ddd3d6dc36a98e7ae7a9e4de315a 100644
+index b4bc26acc2d26abe0dc2630f332fc40da08cd94f..2c29fe824db62c75fce2c8e1866da1ac5a688ae1 100644
 --- a/core/src/mindustry/editor/WaveInfoDialog.java
 +++ b/core/src/mindustry/editor/WaveInfoDialog.java
 @@ -6,6 +6,7 @@ import arc.graphics.*;
@@ -133,7 +133,7 @@ index b4bc26acc2d26abe0dc2630f332fc40da08cd94f..7f2b10185808ddd3d6dc36a98e7ae7a9
                          b.left();
                          b.image(group.type.uiIcon).size(32f).padRight(3).scaling(Scaling.fit);
 -                        b.add(group.type.localizedName).ellipsis(true).width(110f).left().color(Pal.accent);
-+                        b.add(group.type.typeColor() + group.type.localizedName).ellipsis(true).width(110f).left().color(Pal.accent);
++                        b.add(group.type.localizedName).ellipsis(true).width(110f).left().color(ArcWaveSpawner.unitTypeColor(group.type));
 +                        if(group.effect != null && group.effect != StatusEffects.none)
 +                            b.image(group.effect.uiIcon).size(20f).padRight(3).scaling(Scaling.fit);
 +                        if(group.items != null && group.items.amount > 0)
