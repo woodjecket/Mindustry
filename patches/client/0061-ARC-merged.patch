@@ -118,11 +118,11 @@ way-zer <himc.wicp@gmail.com> on 2024/9/8
  .../mindustry/ui/fragments/ChatFragment.java  |   9 +-
  .../ui/fragments/ConsoleFragment.java         |   3 +
  .../mindustry/ui/fragments/HudFragment.java   | 174 ++++++++++++-
- .../mindustry/ui/fragments/MenuFragment.java  |  59 ++++-
+ .../mindustry/ui/fragments/MenuFragment.java  |  51 +++-
  .../ui/fragments/PlacementFragment.java       | 169 +++++++++---
  .../ui/fragments/PlayerListFragment.java      |  72 ++----
  core/src/mindustry/world/Block.java           |   7 +-
- 29 files changed, 1535 insertions(+), 175 deletions(-)
+ 29 files changed, 1530 insertions(+), 172 deletions(-)
 
 diff --git a/core/src/mindustry/ai/BlockIndexer.java b/core/src/mindustry/ai/BlockIndexer.java
 index 7f944a3eb06180f9e2b760bbd5aa41709ddf6611..4972f424edd41b8a29d926a09bc55987066d33aa 100644
@@ -2688,7 +2688,7 @@ index ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd..51c10a9342bd7a2610443c6b4b988571
  
  }
 diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
-index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba90b9542a2 100644
+index 25d953a861fbcddea24225be733445e953e717ef..b7898ec2a8fa025e4ee95cae0d542382c4ee694d 100644
 --- a/core/src/mindustry/ui/fragments/MenuFragment.java
 +++ b/core/src/mindustry/ui/fragments/MenuFragment.java
 @@ -1,6 +1,7 @@
@@ -2792,36 +2792,21 @@ index 25d953a861fbcddea24225be733445e953e717ef..85a5ca45ad3c3741633b646bff8d8ba9
          }else{
              container.marginTop(0f);
              container.add(play);
-@@ -174,7 +216,9 @@ public class MenuFragment{
+@@ -169,12 +211,13 @@ public class MenuFragment{
+             container.add(tools);
+             container.row();
+             container.add(mods);
++            container.add(database);
++            container.row();
+             // add custom buttons
+             for(int i = 0; i < customs.size; i++){
                  container.add(customs.get(i));
                  if(i % 2 == 0) container.row();
              }
 -            container.add(ios ? about : exit);
-+            if(!ios) container.add(exit);
-+            container.row();
-+            container.add(database);
          }
      }
  
-@@ -196,14 +240,15 @@ public class MenuFragment{
-                     new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
-                     new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
-                     new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
--                    new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show))
--                ),
-+                    new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show)),
-+                    new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)),
-+                     steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null
-+            ),
-                 new MenuButton("@database.button", Icon.menu,
-                     new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                     new MenuButton("@database", Icon.book, ui.database::show),
-                     new MenuButton("@about.button", Icon.info, ui.about::show)
-                 ),
--                new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null,
-                 new MenuButton("@mods", Icon.book, ui.mods::show),
-                 new MenuButton("@settings", Icon.settings, ui.settings::show)
-             );
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
 index 53076e919c5bdb66c61619208c5234a22c943250..395fbd79e4fbb2154936cb3e923d06b255b7b796 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
