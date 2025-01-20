@@ -530,7 +530,7 @@ index 14090381fdd4b643b14056e8af0a2d2133ebf7d7..0ae44bc028104fc13cef6853bb8f0c4f
  
       /** Called when this block is tapped to build a UI on the table.
 diff --git a/core/src/mindustry/entities/comp/ShieldComp.java b/core/src/mindustry/entities/comp/ShieldComp.java
-index c290fa6251edaaa4d2854fc6f06be8cdb6050dda..eceebdb3c9fe002b06e4d464fd9a71982f212a74 100644
+index f2f6e4c8083486ee5f764a6f13af232da4534300..1e06d2950428331e65745d4821d3c53f079c75c4 100644
 --- a/core/src/mindustry/entities/comp/ShieldComp.java
 +++ b/core/src/mindustry/entities/comp/ShieldComp.java
 @@ -1,5 +1,6 @@
@@ -549,7 +549,7 @@ index c290fa6251edaaa4d2854fc6f06be8cdb6050dda..eceebdb3c9fe002b06e4d464fd9a7198
  
      @Replace
      @Override
-@@ -70,5 +73,12 @@ abstract class ShieldComp implements Healthc, Posc{
+@@ -72,5 +75,12 @@ abstract class ShieldComp implements Healthc, Posc{
      public void update(){
          shieldAlpha -= Time.delta / 15f;
          if(shieldAlpha < 0) shieldAlpha = 0f;
@@ -1215,7 +1215,7 @@ index 07b2fe9cbbcb2dd7aa1f05176915ab2dc2766f73..6d8feb67b14e0ee4fa838e510e1228c5
                  //TODO desync?
                  case mission -> state.rules.mission = text;
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc568d8c4a4 100644
+index 8bac021e81c465b3ff33bfce8cae7db796f49cc6..35635f9c7686f74f600c8d21659c2db4de30deae 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -38,6 +38,7 @@ import mindustry.world.blocks.units.*;
@@ -1234,7 +1234,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
  
      /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
      public int envRequired = 0;
-@@ -522,23 +524,84 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -525,23 +527,84 @@ public class UnitType extends UnlockableContent implements Senseable{
  
      public void landed(Unit unit){}
  
@@ -1323,7 +1323,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
                  bars.row();
              }
  
-@@ -546,8 +609,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -549,8 +612,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                  ability.displayBars(unit, bars);
              }
  
@@ -1337,7 +1337,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
                  bars.row();
  
                  var count = new float[]{-1};
-@@ -557,18 +623,21 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -560,18 +626,21 @@ public class UnitType extends UnlockableContent implements Senseable{
                          count[0] = payload.payloadUsed();
                      }
                  }).growX().left().height(0f).pad(0f);
@@ -1365,7 +1365,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
              if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                  table.row();
                  table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
-@@ -579,6 +648,11 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -582,6 +651,11 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
  
          table.row();
@@ -1377,7 +1377,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
      }
  
      /** @return whether this block supports a specific environment. */
-@@ -1458,12 +1532,15 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1461,12 +1535,15 @@ public class UnitType extends UnlockableContent implements Senseable{
              unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
              size, size);
  
@@ -1394,7 +1394,7 @@ index 057f958d2537aa819afc47534e465d1f83ec64d9..5045d7fc12d5e5df86c1d2eae1c03bc5
              }
  
              Draw.reset();
-@@ -1734,6 +1811,13 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -1737,6 +1814,13 @@ public class UnitType extends UnlockableContent implements Senseable{
          }
      }
  

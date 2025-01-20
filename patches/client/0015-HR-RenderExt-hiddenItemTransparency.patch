@@ -17,7 +17,7 @@ Content-Transfer-Encoding: 8bit
  5 files changed, 112 insertions(+)
 
 diff --git a/core/src/mindustry/world/DirectionalItemBuffer.java b/core/src/mindustry/world/DirectionalItemBuffer.java
-index 48cbdc84c09863a52f82282a70b3882e36fbed00..a55e582e7f670494adce17090e209caa7db3972f 100644
+index f71aa74671a3ef59579ff3e1fde127406a1401ea..d15edc5db9297ae74cfa6f91e53a60b1cf8b8009 100644
 --- a/core/src/mindustry/world/DirectionalItemBuffer.java
 +++ b/core/src/mindustry/world/DirectionalItemBuffer.java
 @@ -21,6 +21,17 @@ public class DirectionalItemBuffer{
@@ -37,7 +37,7 @@ index 48cbdc84c09863a52f82282a70b3882e36fbed00..a55e582e7f670494adce17090e209caa
 +
      public void accept(int buffer, Item item){
          if(!accepts(buffer)) return;
-         buffers[buffer][indexes[buffer]++] = BufferItem.get((byte)item.id, Time.time);
+         buffers[buffer][indexes[buffer]++] = BufferItem.get(item.id, Time.time);
 diff --git a/core/src/mindustry/world/ItemBuffer.java b/core/src/mindustry/world/ItemBuffer.java
 index d91da022ce4ca749164958cf8fc4438ddf777b23..1b8ac44e8773af0b69e40f284a1dfff5f523c040 100644
 --- a/core/src/mindustry/world/ItemBuffer.java
@@ -160,7 +160,7 @@ index 0ec2e16bcd63482b2d3a24a50d8700b2f6b33afe..fa11e9f00f1e62b7bfb78067d1da88e4
  
              Tile other = world.tile(link);
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index d02fb844045f4cf7b11050e86661ae6f5529e0dc..a34377db8cec36032d8a27014ea9d1e79f99b0aa 100644
+index ec21de0b1618f59bec6816a906e1dd612513822b..7c1ac4c85932b974434abce3cbd3a160edcdf0ab 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
 @@ -1,11 +1,17 @@
@@ -210,5 +210,5 @@ index d02fb844045f4cf7b11050e86661ae6f5529e0dc..a34377db8cec36032d8a27014ea9d1e7
 +
 +
          @Override
-         public void write(Writes write){
-             super.write(write);
+         public byte version(){
+             return 1;

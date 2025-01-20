@@ -17,7 +17,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  2 files changed, 5 insertions(+)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index ae2ef939bac85fd345abb5dd884c48c8d500a670..20ef1004e5d31de0da5637ddd2c74cbff6383f80 100644
+index 0882f64f8774c5c5b029b358a4183bb7bec52299..706dcd0a68fe225f35bb105f857527989df114a0 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -27,6 +27,7 @@ import mindustry.net.Packets.*;
@@ -28,7 +28,7 @@ index ae2ef939bac85fd345abb5dd884c48c8d500a670..20ef1004e5d31de0da5637ddd2c74cbf
  
  import java.io.*;
  import java.util.*;
-@@ -110,12 +111,14 @@ public class NetClient implements ApplicationListener{
+@@ -113,12 +114,14 @@ public class NetClient implements ApplicationListener{
                  return;
              }
  
@@ -44,7 +44,7 @@ index ae2ef939bac85fd345abb5dd884c48c8d500a670..20ef1004e5d31de0da5637ddd2c74cbf
              logic.reset();
              platform.updateRPC();
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index 7db098b1985ea7df7516f43ab4b0c49f05c723fa..638b11dc980ce4001faaaab28ec70c2b7f95a5ab 100644
+index cc25224fa3d8b3f2397ac4d660409ed4874e16ba..b6cffd4bf69edcd49f59794e615a4abc0bc16fdc 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -11,6 +11,7 @@ import mindustry.gen.*;
@@ -55,7 +55,7 @@ index 7db098b1985ea7df7516f43ab4b0c49f05c723fa..638b11dc980ce4001faaaab28ec70c2b
  import net.jpountz.lz4.*;
  
  import java.io.*;
-@@ -268,6 +269,7 @@ public class Net{
+@@ -271,6 +272,7 @@ public class Net{
       */
      public void handleClientReceived(Packet object){
          object.handled();

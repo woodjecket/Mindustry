@@ -106,7 +106,7 @@ index c17d5a2ec64aed9aea214adca368294bbc319530..f9312cff1004cedc95e26b35d146f31c
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index e44926875e5b945d37ce7db2fdf78e2f16edc3f1..85b982b12e7d216ab4fd5a8a0453ae268ea1ca0f 100644
+index 97f2d96160879a16df59f9b567b5a16740706170..c1974bca4a264eeb2724d4fd36346d322fe20677 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -26,6 +26,7 @@ import mindustry.net.*;
@@ -117,7 +117,7 @@ index e44926875e5b945d37ce7db2fdf78e2f16edc3f1..85b982b12e7d216ab4fd5a8a0453ae26
  
  import java.io.*;
  import java.util.*;
-@@ -140,6 +141,7 @@ public class NetClient implements ApplicationListener{
+@@ -143,6 +144,7 @@ public class NetClient implements ApplicationListener{
              Log.info("Received world data: @ bytes.", data.stream.available());
              NetworkIO.loadWorld(new InflaterInputStream(data.stream));
  
@@ -182,14 +182,14 @@ index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a057
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index cc6b77df6b6fa7c0e8024fc782c28f741d375a9d..0d99195c83a247ee47bd4eb3858d67f358860226 100644
+index 1792f04d172eb61e79048b61a77700aa39fc5733..ac631e1de988d452223850865fc821d54c5f65f2 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=124ba82104
+ archash=4940b68158
 +
-+upstreamBuild=25486
++upstreamBuild=25514
 +versionType=bleeding-edge
 \ No newline at end of file

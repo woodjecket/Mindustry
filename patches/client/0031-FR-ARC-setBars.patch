@@ -31,18 +31,18 @@ Subject: [PATCH] FR: ARC setBars
  24 files changed, 134 insertions(+), 41 deletions(-)
 
 diff --git a/core/src/mindustry/entities/abilities/ShieldArcAbility.java b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
-index 0af8f3377c35ae3c105e18ffcfa15cb27de84a55..96b532f848fd85f5471f29a8f37d25542333f972 100644
+index a4d60c3eec14d87c8310b146ff1550e8145dbf89..0c05a4deafb47f756f1f3e31e26e3d4cec41ea7d 100644
 --- a/core/src/mindustry/entities/abilities/ShieldArcAbility.java
 +++ b/core/src/mindustry/entities/abilities/ShieldArcAbility.java
-@@ -13,6 +13,7 @@ import mindustry.gen.*;
+@@ -12,6 +12,7 @@ import mindustry.content.*;
+ import mindustry.gen.*;
  import mindustry.graphics.*;
- import mindustry.type.*;
  import mindustry.ui.*;
 +import mindustryX.features.ui.*;
  
  public class ShieldArcAbility extends Ability{
      private static Unit paramUnit;
-@@ -135,6 +136,6 @@ public class ShieldArcAbility extends Ability{
+@@ -134,6 +135,6 @@ public class ShieldArcAbility extends Ability{
  
      @Override
      public void displayBars(Unit unit, Table bars){
@@ -232,24 +232,21 @@ index 51c07de96f6214aed028845c388ac306461fbe1c..59dd7e060664c7c7be5d0819947586bd
          );
      }
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java b/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
-index 92038694598090f098af6ac10f41c286e195e0d7..6b692dea2d5098c18a6632efb4b2fec000e99d35 100644
+index 8748b91ed8a54cd400bd1953dbf64d9e8e20bc75..f8ae33745f7037b3120cac24095361a27edb30ce 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/ReloadTurret.java
-@@ -1,9 +1,13 @@
+@@ -1,6 +1,10 @@
  package mindustry.world.blocks.defense.turrets;
  
 +import arc.Core;
  import arc.math.*;
- import arc.struct.*;
- import arc.util.*;
 +import arc.scene.ui.layout.Table;
- import mindustry.type.*;
 +import mindustry.graphics.Pal;
 +import mindustry.ui.Bar;
  import mindustry.world.consumers.*;
  import mindustry.world.meta.*;
  
-@@ -60,5 +64,14 @@ public class ReloadTurret extends BaseTurret{
+@@ -45,5 +49,14 @@ public class ReloadTurret extends BaseTurret{
          protected float baseReloadSpeed(){
              return efficiency;
          }
@@ -265,7 +262,7 @@ index 92038694598090f098af6ac10f41c286e195e0d7..6b692dea2d5098c18a6632efb4b2fec0
      }
  }
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index 426d03891261431796c04aa17000e7c35dc055c8..f61b739b56ffd9947abe71cd6882b1565e782d0f 100644
+index e56be0378a4bba85e04e911c8ebae373454b6d00..c69768e91ad508682c514cd439fed2a6bcf7aedd 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -7,6 +7,7 @@ import arc.graphics.*;
@@ -276,7 +273,7 @@ index 426d03891261431796c04aa17000e7c35dc055c8..f61b739b56ffd9947abe71cd6882b156
  import arc.struct.*;
  import arc.util.*;
  import arc.util.io.*;
-@@ -713,6 +714,14 @@ public class Turret extends ReloadTurret{
+@@ -717,6 +718,14 @@ public class Turret extends ReloadTurret{
              rotation = oldRot;
              reloadCounter = oldReload;
          }
@@ -559,7 +556,7 @@ index 8c243d878cb8db27be2a28b0ccc2ea3847cf1d41..7c96d661fcaa60f48f1fdbabb0b477c7
          new Bar(
              () -> e.unit() == null ? "[lightgray]" + Iconc.cancel :
 diff --git a/core/src/mindustry/world/blocks/units/UnitAssembler.java b/core/src/mindustry/world/blocks/units/UnitAssembler.java
-index aab15b2b17c6b82af48ead9b31a0a0956f3bb0f1..f0aae8beef7f2e67daed50ebbc21dc235e9419c8 100644
+index 2311d4100a8e4d36c667c62dc1d7c15a7282d167..f5579cb3fa20b72a24a9d4b3339b5c05a405376e 100644
 --- a/core/src/mindustry/world/blocks/units/UnitAssembler.java
 +++ b/core/src/mindustry/world/blocks/units/UnitAssembler.java
 @@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;

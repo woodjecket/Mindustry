@@ -188,7 +188,7 @@ index 8e4ccdd4faa052b63c99720cdace544cdbf2fcce..260bb5eec6ca90cb6fc9da5f6f3fb17c
  
              String name = name();
 diff --git a/core/src/mindustry/logic/LogicDialog.java b/core/src/mindustry/logic/LogicDialog.java
-index 1dd6907e9826e6a313c2da7b9848c4de0206fcfa..7236456a9d70f10af425e612148a646bb035a529 100644
+index ef3dfb4a53e64e08bb81dad0e70e3efdd286977a..8958c52ced6c66efa426e5e7ba320a6d6a17e042 100644
 --- a/core/src/mindustry/logic/LogicDialog.java
 +++ b/core/src/mindustry/logic/LogicDialog.java
 @@ -5,6 +5,7 @@ import arc.func.*;

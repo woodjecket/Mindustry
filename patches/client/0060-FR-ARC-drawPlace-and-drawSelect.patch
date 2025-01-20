@@ -221,7 +221,7 @@ index eced3dc7581a4916970634e600d0f5cd86f6ee7e..58e315a6d9ec8c4c32df8a8220a9ccbb
  
          public float estimateDps(){
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index f61b739b56ffd9947abe71cd6882b1565e782d0f..3dcf22a47dbf506e4d7d2782c6b40369be58b05f 100644
+index c69768e91ad508682c514cd439fed2a6bcf7aedd..dff464f04cb0053dff7827ed0c2845934df2e930 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 @@ -376,6 +376,18 @@ public class Turret extends ReloadTurret{

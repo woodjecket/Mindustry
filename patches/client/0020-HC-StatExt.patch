@@ -98,7 +98,7 @@ index e344f652f0c1f9993d401ea225e56a3edb780514..a211cc0968ac9ba4911efc26a7b2167c
          if(damage < 0) stats.add(Stat.healing, -damage * 60f, StatUnit.perSecond);
  
 diff --git a/core/src/mindustry/type/UnitType.java b/core/src/mindustry/type/UnitType.java
-index c12e1309e20cd23bc16fb8c94c2122be84dff073..057f958d2537aa819afc47534e465d1f83ec64d9 100644
+index 5ddbbe776373ab7bd158fcc5ef6afc47842d0892..8bac021e81c465b3ff33bfce8cae7db796f49cc6 100644
 --- a/core/src/mindustry/type/UnitType.java
 +++ b/core/src/mindustry/type/UnitType.java
 @@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;
@@ -109,7 +109,7 @@ index c12e1309e20cd23bc16fb8c94c2122be84dff073..057f958d2537aa819afc47534e465d1f
  
  import static arc.graphics.g2d.Draw.*;
  import static mindustry.Vars.*;
-@@ -618,29 +619,47 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -621,29 +622,47 @@ public class UnitType extends UnlockableContent implements Senseable{
          stats.add(Stat.health, health);
          stats.add(Stat.armor, armor);
          stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
@@ -163,7 +163,7 @@ index c12e1309e20cd23bc16fb8c94c2122be84dff073..057f958d2537aa819afc47534e465d1f
          }
          if(buildSpeed > 0){
              stats.addPercent(Stat.buildSpeed, buildSpeed);
-@@ -659,6 +678,10 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -662,6 +681,10 @@ public class UnitType extends UnlockableContent implements Senseable{
              stats.add(Stat.weapons, StatValues.weapons(this, weapons));
          }
  
@@ -174,7 +174,7 @@ index c12e1309e20cd23bc16fb8c94c2122be84dff073..057f958d2537aa819afc47534e465d1f
          if(immunities.size > 0){
              var imm = immunities.toSeq().sort();
              //it's redundant to list wet for naval units
-@@ -690,6 +713,8 @@ public class UnitType extends UnlockableContent implements Senseable{
+@@ -693,6 +716,8 @@ public class UnitType extends UnlockableContent implements Senseable{
  
          allowLegStep = example instanceof Legsc;
  
@@ -377,7 +377,7 @@ index 8a6de353e073b653abfd14a2610905705cc4e034..3a206039844a00ea43e9ac3c12e23886
          ItemBuffer buffer = new ItemBuffer(bufferCapacity);
  
 diff --git a/core/src/mindustry/world/blocks/distribution/Junction.java b/core/src/mindustry/world/blocks/distribution/Junction.java
-index a34377db8cec36032d8a27014ea9d1e79f99b0aa..e3593dbef6fc1c812a9b392de892ad0aed4c4fa6 100644
+index 7c1ac4c85932b974434abce3cbd3a160edcdf0ab..4396a58080056488344ae0d8c86d2b0c660283b3 100644
 --- a/core/src/mindustry/world/blocks/distribution/Junction.java
 +++ b/core/src/mindustry/world/blocks/distribution/Junction.java
 @@ -30,6 +30,16 @@ public class Junction extends Block{

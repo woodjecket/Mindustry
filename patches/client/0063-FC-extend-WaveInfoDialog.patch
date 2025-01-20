@@ -15,7 +15,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 144 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/editor/WaveInfoDialog.java b/core/src/mindustry/editor/WaveInfoDialog.java
-index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d744716b6a4924 100644
+index b4bc26acc2d26abe0dc2630f332fc40da08cd94f..7f2b10185808ddd3d6dc36a98e7ae7a9e4de315a 100644
 --- a/core/src/mindustry/editor/WaveInfoDialog.java
 +++ b/core/src/mindustry/editor/WaveInfoDialog.java
 @@ -6,6 +6,7 @@ import arc.graphics.*;
@@ -56,7 +56,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
              checkedSpawns = false;
              setup();
          });
-@@ -91,6 +101,11 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -90,6 +100,11 @@ public class WaveInfoDialog extends BaseDialog{
              dialog.show();
          }).size(250f, 64f);
  
@@ -68,7 +68,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
          buttons.button(Core.bundle.get("waves.random"), Icon.refresh, () -> {
              groups.clear();
              groups = Waves.generate(1f / 10f);
-@@ -99,7 +114,6 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -98,7 +113,6 @@ public class WaveInfoDialog extends BaseDialog{
      }
  
      void setup(){
@@ -76,7 +76,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
          if(groups == null) groups = new Seq<>();
  
          cont.clear();
-@@ -150,11 +164,50 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -149,11 +163,50 @@ public class WaveInfoDialog extends BaseDialog{
              setAlignment(Align.center, Align.center);
          }}).width(390f).growY();
  
@@ -128,7 +128,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
      void buildGroups(){
          table.clear();
          table.top();
-@@ -173,12 +226,25 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -172,12 +225,25 @@ public class WaveInfoDialog extends BaseDialog{
                      t.button(b -> {
                          b.left();
                          b.image(group.type.uiIcon).size(32f).padRight(3).scaling(Scaling.fit);
@@ -157,7 +157,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
                          b.button(Icon.copySmall, Styles.emptyi, () -> {
                              groups.insert(groups.indexOf(group) + 1, expandedGroup = group.copy());
                              buildGroups();
-@@ -340,7 +406,39 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -339,7 +405,39 @@ public class WaveInfoDialog extends BaseDialog{
                                  dialog.show();
                              }).width(160f).height(36f).get().getLabel().setText(() -> group.spawn == -1 ? "@waves.spawn.all" : Point2.x(group.spawn) + ", " + Point2.y(group.spawn));
  
@@ -198,7 +198,7 @@ index e36bada5aec2624d3ed6f1b0b6b37c9b26857743..a6d898fa8f339f61c8c01a02f2d74471
                      }
                  }).width(340f).pad(8);
  
-@@ -391,6 +489,46 @@ public class WaveInfoDialog extends BaseDialog{
+@@ -390,6 +488,46 @@ public class WaveInfoDialog extends BaseDialog{
          dialog.show();
      }
  
