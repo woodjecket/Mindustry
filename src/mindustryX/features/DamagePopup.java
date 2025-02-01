@@ -11,13 +11,14 @@ import arc.util.*;
 import arc.util.pooling.*;
 import arc.util.pooling.Pool.*;
 import mindustry.*;
+import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
+import mindustry.world.blocks.*;
 import mindustryX.events.*;
-import mindustryX.events.HealthChangedEvent.*;
 
 import java.util.*;
 
@@ -47,14 +48,13 @@ public class DamagePopup{
     public static float popupMinHealth;
 
     public static void init(){
-        Events.on(HealthChangedEvent.class, e -> {
-            if(enable && e.entity instanceof Sized entitySized && shouldPopup(e.source, e.entity, e.type)){
-                popup(e.source, entitySized, e.type, e.amount);
-            }
-        });
+        Events.on(HealthChangedEvent.class, DamagePopup::handleEvent);
 
         Events.run(Trigger.update, () -> {
-            updateSettings();
+            enable = Core.settings.getBool("damagePopup");
+            healPopup = Core.settings.getBool("healPopup");
+            playerPopupOnly = Core.settings.getBool("playerPopupOnly");
+            popupMinHealth = Core.settings.getInt("popupMinHealth");
 
             if(Vars.state.isPaused()) return;
             if(popups.isEmpty()) return;
@@ -90,23 +90,21 @@ public class DamagePopup{
             }
         });
 
-        Events.on(ResetEvent.class, e -> {
-            clearPopup();
-        });
+        Events.on(ResetEvent.class, e -> clearPopup());
     }
 
-    private static void updateSettings(){
-        enable = Core.settings.getBool("damagePopup");
-        healPopup = Core.settings.getBool("healPopup");
-        playerPopupOnly = Core.settings.getBool("playerPopupOnly");
-        popupMinHealth = Core.settings.getInt("popupMinHealth");
+    private static void handleEvent(HealthChangedEvent event){
+        if(!enable) return;
+        if(event.entity.maxHealth() < popupMinHealth) return;
+        if(event.amount < 0 && !healPopup) return;
+        if(event.source != null){// 视角外的跳字
+            Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
+            if(!cameraBounds.contains(event.entity.getX(), event.entity.getY())) return;
+            if(event.source != null && playerPopupOnly && !inControl(getOwner(event.source))) return;
+        }
 
-//        if(enable != enableSetting){
-//            enable = enableSetting;
-//
-//            // 关闭后保留已有跳字
-//            // if(!enable) clearPopup();
-//        }
+        if(event.entity instanceof Sized entitySized)
+            popup(event.source instanceof Sized sized ? sized : null, entitySized, event.amount, event.isSplash);
     }
 
     public static void clearPopup(){
@@ -119,45 +117,21 @@ public class DamagePopup{
         mappedPopup.clear();
     }
 
-    private static Entityc getSourceOwner(Ownerc source){
-        Entityc current = source.owner();
-
-        while(current instanceof Ownerc o && o.owner() != null){
+    private static @Nullable Entityc getOwner(Entityc source){
+        Entityc current = source;
+        while(current instanceof Ownerc o){
             current = o.owner();
         }
-
         return current;
     }
 
-    private static boolean shouldPopup(Sized source, Healthc damaged, DamageType type){
-        if(damaged.maxHealth() < popupMinHealth){
-            return false;
-        }
-
-        if(type == DamageType.heal && !healPopup) return false;
-        if(source == null) return true;
-
-        // 视角外的跳字
-        Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
-        if(!cameraBounds.contains(damaged.getX(), damaged.getY())){
-            return false;
-        }
-
-        if(!playerPopupOnly) return true;
-
-        if(!(source instanceof Ownerc sourceOwner)) return true;
-
-        Entityc owner = getSourceOwner(sourceOwner);
-        Unit playerUnit = Vars.player.unit();
-
-        return owner == playerUnit
-        || (playerUnit instanceof BlockUnitUnit blockUnit && owner == blockUnit.tile())
-        || (Vars.control.input.commandMode &&
-        (owner instanceof Unit unitOwner && Vars.control.input.selectedUnits.contains(unitOwner)
-        || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
+    private static boolean inControl(Entityc entity){
+        if(entity instanceof Unit u && (u.isLocal() || Vars.control.input.selectedUnits.contains(u))) return true;
+        if(entity instanceof ControlBlock b && b.unit().isLocal()) return true;
+        return false;
     }
 
-    private static void popup(Sized source, Sized damaged, DamageType type, float amount){
+    private static void popup(Sized source, Sized damaged, float amount, boolean isSplash){
         if(Mathf.equal(amount, 0f)) return;
 
         float hitSize = damaged.hitSize();
@@ -170,7 +144,7 @@ public class DamagePopup{
         float scale = Mathf.clamp(hitSize / 64 / Scl.scl(1), minScale, maxScale);
         float offsetLength = hitSize * Mathf.random(0.4f, 0.7f);
 
-        if(superpose(type)){
+        if(!isSplash){
             offsetX = Angles.trnsx(rotation, hitSize * Mathf.random(0.2f, 0.4f));
             offsetY = Angles.trnsy(rotation, hitSize * Mathf.random(0.2f, 0.4f));
         }else{
@@ -180,7 +154,9 @@ public class DamagePopup{
             scale *= 0.65f; // 堆叠的跳字有更大的效果
         }
 
-        if(superpose(type)){
+        DamageType type = amount < 0 ? DamageType.heal : isSplash ? DamageType.splash : DamageType.normal;
+
+        if(!isSplash){
             ObjectMap<DamageType, Popup> map = mappedPopup.get(damaged, ObjectMap::new);
             Popup popup = map.get(type);
 
@@ -342,6 +318,21 @@ public class DamagePopup{
         @Override
         public float getY(){
             return !superpose(type) ? originY : damaged.getY();
+        }
+    }
+
+    public static class DamageType{
+        public static DamageType
+        normal = new DamageType(null, Pal.health),
+        heal = new DamageType(null, Pal.heal),
+        splash = new DamageType(StatusEffects.blasted.emoji(), StatusEffects.blasted.color);
+
+        public final Color color;
+        public @Nullable String icon;
+
+        private DamageType(String icon, Color color){
+            this.icon = icon;
+            this.color = color.cpy();
         }
     }
 }
