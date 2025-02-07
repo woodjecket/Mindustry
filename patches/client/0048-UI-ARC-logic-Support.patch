@@ -19,12 +19,12 @@ way-zer <himc.wicp@gmail.com> on 2024/7/14
 way-zer <himc.wicp@gmail.com> on 2024/9/8
 ---
  core/src/mindustry/logic/LCanvas.java         |  54 ++++++-
- core/src/mindustry/logic/LExecutor.java       |   7 +-
+ core/src/mindustry/logic/LExecutor.java       |   3 +-
  core/src/mindustry/logic/LStatements.java     |  12 ++
  core/src/mindustry/logic/LogicDialog.java     | 151 +++++++++++++++++-
  .../world/blocks/logic/LogicBlock.java        |  66 +++++++-
  .../world/blocks/logic/MemoryBlock.java       |  72 ++++++++-
- 6 files changed, 342 insertions(+), 20 deletions(-)
+ 6 files changed, 340 insertions(+), 18 deletions(-)
 
 diff --git a/core/src/mindustry/logic/LCanvas.java b/core/src/mindustry/logic/LCanvas.java
 index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3b0121390 100644
@@ -125,21 +125,9 @@ index b78908ef6fcc26c8f7770da8135527c6d6d66867..e40b426a3c3ec656f9364c25ac762ed3
  
                  float maxX = Math.max(x, x2) + len;
 diff --git a/core/src/mindustry/logic/LExecutor.java b/core/src/mindustry/logic/LExecutor.java
-index 0cdcd5381f0f044f29261ee2d08ea59cc3910c26..07b2fe9cbbcb2dd7aa1f05176915ab2dc2766f73 100644
+index 726f21d5460f0626d9e5c2ede9fc7aec64c49caa..29777759b300977770ba6941cf311d443512ffee 100644
 --- a/core/src/mindustry/logic/LExecutor.java
 +++ b/core/src/mindustry/logic/LExecutor.java
-@@ -45,9 +45,9 @@ public class LExecutor{
-     public LInstruction[] instructions = {};
-     /** Non-constant variables used for network sync */
-     public LVar[] vars = {};
--    
-+
-     public LVar counter, unit, thisv, ipt;
--    
-+
-     public int[] binds;
-     public boolean yield;
- 
 @@ -501,6 +501,7 @@ public class LExecutor{
          public void run(LExecutor exec){
              Object obj = target.obj();
@@ -148,7 +136,7 @@ index 0cdcd5381f0f044f29261ee2d08ea59cc3910c26..07b2fe9cbbcb2dd7aa1f05176915ab2d
  
                  if(type == LAccess.enabled && !p1.bool()){
                      b.lastDisabler = exec.build;
-@@ -1191,7 +1192,7 @@ public class LExecutor{
+@@ -1214,7 +1215,7 @@ public class LExecutor{
          @Override
          public void run(LExecutor exec){
              if(headless) return;
@@ -158,18 +146,18 @@ index 0cdcd5381f0f044f29261ee2d08ea59cc3910c26..07b2fe9cbbcb2dd7aa1f05176915ab2d
                  case pan -> {
                      control.input.logicCutscene = true;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index 8e4ccdd4faa052b63c99720cdace544cdbf2fcce..260bb5eec6ca90cb6fc9da5f6f3fb17c2ac98c9f 100644
+index 76284ef27228027d0e57313cd2932ab030456dd8..869b2550de9a9bc950525e6eb20fb630138b72fa 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
-@@ -21,6 +21,7 @@ import mindustry.type.*;
- import mindustry.ui.*;
+@@ -22,6 +22,7 @@ import mindustry.ui.*;
+ import mindustry.world.*;
  import mindustry.world.meta.*;
  import mindustryX.*;
 +import mindustryX.features.*;
  
  import static mindustry.Vars.*;
  import static mindustry.logic.LCanvas.*;
-@@ -881,6 +882,17 @@ public class LStatements{
+@@ -945,6 +946,17 @@ public class LStatements{
              table.table(this::rebuild);
  
              table.add().growX();

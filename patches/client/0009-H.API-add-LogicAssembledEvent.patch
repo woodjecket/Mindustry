@@ -32,18 +32,18 @@ index 6f65e9981f2291d1c892c23f3ec8603aec8e3a4c..32133826223d3e4fe1be991c8abd3bc2
                  }
                  line ++;
 diff --git a/core/src/mindustry/logic/LStatements.java b/core/src/mindustry/logic/LStatements.java
-index 11477feb1f020d1fac28b32f3607f9fbf1567e79..8e4ccdd4faa052b63c99720cdace544cdbf2fcce 100644
+index 078e9977860c88da862415f100d1fdc5daa7d1bf..76284ef27228027d0e57313cd2932ab030456dd8 100644
 --- a/core/src/mindustry/logic/LStatements.java
 +++ b/core/src/mindustry/logic/LStatements.java
-@@ -20,6 +20,7 @@ import mindustry.logic.LogicFx.*;
- import mindustry.type.*;
+@@ -21,6 +21,7 @@ import mindustry.type.*;
  import mindustry.ui.*;
+ import mindustry.world.*;
  import mindustry.world.meta.*;
 +import mindustryX.*;
  
  import static mindustry.Vars.*;
  import static mindustry.logic.LCanvas.*;
-@@ -45,6 +46,16 @@ public class LStatements{
+@@ -46,6 +47,16 @@ public class LStatements{
  
      @RegisterStatement("noop")
      public static class InvalidStatement extends LStatement{

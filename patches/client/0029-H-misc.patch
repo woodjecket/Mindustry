@@ -52,7 +52,7 @@ index 655d2b09e7cfc011efd194b2b65bc85584c8f7d8..3af35def3785958e05ab0b8a668e721a
          }
      }
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index 79d06d5c254c74bfe538a3486276146040b1650d..8323937eb8f2e69db456fcd18e0b590b565d0545 100644
+index 39ba8ad8de2dbf6de6baac3cff94fb3c73b6b57f..109c59c53d3828c8b0be5f8077ac91318a02dddd 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -393,6 +393,11 @@ public class Vars implements Loadable{
@@ -68,10 +68,10 @@ index 79d06d5c254c74bfe538a3486276146040b1650d..8323937eb8f2e69db456fcd18e0b590b
                          for(String code : ColorCodes.values){
                              result = result.replace(code, "");
 diff --git a/core/src/mindustry/core/Control.java b/core/src/mindustry/core/Control.java
-index da36e8009a494bb6d3a87e58d2af6b87a52d2488..cda8026ea0841a0cdfeb1e4628e9c98119b974bd 100644
+index dd49e90f88d455e1272fb35ead0a7a176835d4ec..fa7c3933d8264ea48db6927678453df001c73a04 100644
 --- a/core/src/mindustry/core/Control.java
 +++ b/core/src/mindustry/core/Control.java
-@@ -570,7 +570,8 @@ public class Control implements ApplicationListener, Loadable{
+@@ -574,7 +574,8 @@ public class Control implements ApplicationListener, Loadable{
                  BaseDialog dialog = new BaseDialog("@confirm");
                  dialog.setFillParent(true);
  
@@ -82,7 +82,7 @@ index da36e8009a494bb6d3a87e58d2af6b87a52d2488..cda8026ea0841a0cdfeb1e4628e9c981
                      Core.settings.put("uiscale", 100);
                      Core.settings.put("uiscalechanged", false);
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 706dcd0a68fe225f35bb105f857527989df114a0..0ac9087522dd2cddfe4e5ea3492e50ea0130c3f3 100644
+index 4707fbaae3b75f6b5a9c27efa66829c606943507..074511d19d9f2d2ffbb6be2c20fe42a649a091af 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -71,6 +71,10 @@ public class NetClient implements ApplicationListener{
@@ -97,10 +97,10 @@ index 706dcd0a68fe225f35bb105f857527989df114a0..0ac9087522dd2cddfe4e5ea3492e50ea
  
              player.admin = false;
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 42a05c901e5917fdc8252e12d9211eac8f5247b4..1c7982889c554307c83d3d4cda33ec83b3f9df16 100644
+index 4b41c4c0271d62790e64ffa59bab8b0b4036ca5f..76d3b6ab5fd2eeebb9ed2751f7d1d6da2386e4bb 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
-@@ -45,7 +45,7 @@ public class Renderer implements ApplicationListener{
+@@ -44,7 +44,7 @@ public class Renderer implements ApplicationListener{
      public boolean animateShields, drawWeather = true, drawStatus, enableEffects, drawDisplays = true, drawLight = true, pixelate = false;
      public float weatherAlpha;
      /** minZoom = zooming out, maxZoom = zooming in */
@@ -109,7 +109,7 @@ index 42a05c901e5917fdc8252e12d9211eac8f5247b4..1c7982889c554307c83d3d4cda33ec83
      public Seq<EnvRenderer> envRenderers = new Seq<>();
      public ObjectMap<String, Runnable> customBackgrounds = new ObjectMap<>();
      public TextureRegion[] bubbles = new TextureRegion[16], splashes = new TextureRegion[12];
-@@ -160,7 +160,7 @@ public class Renderer implements ApplicationListener{
+@@ -156,7 +156,7 @@ public class Renderer implements ApplicationListener{
              baseTarget = Mathf.lerp(minZoom, maxZoom, control.input.logicCutsceneZoom);
          }
  
@@ -117,8 +117,8 @@ index 42a05c901e5917fdc8252e12d9211eac8f5247b4..1c7982889c554307c83d3d4cda33ec83
 +        float dest = Mathf.clamp(Mathf.round(baseTarget, 0.1f), minScale(), maxScale());
          camerascale = Mathf.lerpDelta(camerascale, dest, 0.1f);
          if(Mathf.equal(camerascale, dest, 0.001f)) camerascale = dest;
-         laserOpacity = settings.getInt("lasersopacity") / 100f;
-@@ -479,7 +479,7 @@ public class Renderer implements ApplicationListener{
+         unitLaserOpacity = settings.getInt("unitlaseropacity") / 100f;
+@@ -481,7 +481,7 @@ public class Renderer implements ApplicationListener{
      }
  
      public void scaleCamera(float amount){
@@ -223,7 +223,7 @@ index e5f42b2c9ac63558d517625ba32d454577a1ba5c..900a84cff8870a64f11e9ed0dbdf3958
          float dy = (Core.camera.position.y / tilesize);
          dx = Mathf.clamp(dx, sz, world.width() - sz);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index f6e4191c7b0f8fe421039878a6af5f2770fc3b6b..c71e5276a570a91db07df3ab7204587b62f8a467 100644
+index 3147a1c1964d54be686855f8ac76696769b3a44e..9b6a1d4af2f93e3b9a7c8cc5a783c4df1af15c76 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
 @@ -60,11 +60,9 @@ public class JoinDialog extends BaseDialog{
@@ -387,10 +387,10 @@ index 1e4a9399aac99d771d201d6ac01055295da686d4..fd1ef350517446c74427f85d27372bdd
  
          @Override
 diff --git a/core/src/mindustry/world/blocks/production/BeamDrill.java b/core/src/mindustry/world/blocks/production/BeamDrill.java
-index 163019c9c2562301984912c212e5d5558a028e36..85ec19d8a4d07d7c02245226b5ce39589edf01b4 100644
+index 008953ff51f5aab6e8e18ad0d318d1ed4118af2e..469a04f54eb79b41a2ad382e9a989df6991b487e 100644
 --- a/core/src/mindustry/world/blocks/production/BeamDrill.java
 +++ b/core/src/mindustry/world/blocks/production/BeamDrill.java
-@@ -171,14 +171,10 @@ public class BeamDrill extends Block{
+@@ -181,14 +181,10 @@ public class BeamDrill extends Block{
          }
  
          if(item != null){

@@ -68,10 +68,10 @@ index d3346510927f3b567c93f9998ec2ab18b3d6b344..219b36a19a6930cd82d78f5193121b9d
                  result = e;
                  cdist = cost;
 diff --git a/core/src/mindustry/entities/bullet/BulletType.java b/core/src/mindustry/entities/bullet/BulletType.java
-index cb177512f0e99bf4edc15fc9b62b0fc53c93b1fb..ca93099d7918da2727870e6396931e2e2f31f80a 100644
+index 5f958bb0139672ec64bba0eb90a34943072bb215..9aeec16e63cb0ffe7a667158e39a2bd5dd2aa075 100644
 --- a/core/src/mindustry/entities/bullet/BulletType.java
 +++ b/core/src/mindustry/entities/bullet/BulletType.java
-@@ -634,6 +634,7 @@ public class BulletType extends Content implements Cloneable{
+@@ -644,6 +644,7 @@ public class BulletType extends Content implements Cloneable{
          }
      }
  
@@ -79,7 +79,7 @@ index cb177512f0e99bf4edc15fc9b62b0fc53c93b1fb..ca93099d7918da2727870e6396931e2e
      public void updateHoming(Bullet b){
          if(homingPower > 0.0001f && b.time >= homingDelay){
              float realAimX = b.aimX < 0 ? b.x : b.aimX;
-@@ -641,20 +642,22 @@ public class BulletType extends Content implements Cloneable{
+@@ -651,20 +652,22 @@ public class BulletType extends Content implements Cloneable{
  
              Teamc target;
              //home in on allies if possible

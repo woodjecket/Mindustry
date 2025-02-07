@@ -14,7 +14,7 @@ Content-Transfer-Encoding: 8bit
  2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/core/src/mindustry/net/Packets.java b/core/src/mindustry/net/Packets.java
-index c8b2ccfe4eaca33e06cce6d107a4f1da19ccacc8..2b1e1f96159da194b1ac521faee8103c6e30019a 100644
+index e766e594341959adfdaf7efef819806a7227f5c2..1b445b3ff268b1d626cf9ba84797560c04e9bb0a 100644
 --- a/core/src/mindustry/net/Packets.java
 +++ b/core/src/mindustry/net/Packets.java
 @@ -6,6 +6,7 @@ import arc.util.io.*;
@@ -44,10 +44,10 @@ index c8b2ccfe4eaca33e06cce6d107a4f1da19ccacc8..2b1e1f96159da194b1ac521faee8103c
              TypeIO.writeString(buffer, name);
              TypeIO.writeString(buffer, locale);
 diff --git a/core/src/mindustry/ui/dialogs/JoinDialog.java b/core/src/mindustry/ui/dialogs/JoinDialog.java
-index c71e5276a570a91db07df3ab7204587b62f8a467..e3f88396a9482bd21dde6a55c8f7b4f1e4a4c799 100644
+index 9b6a1d4af2f93e3b9a7c8cc5a783c4df1af15c76..633e350de83d599e6d608b29bfc85477beeff372 100644
 --- a/core/src/mindustry/ui/dialogs/JoinDialog.java
 +++ b/core/src/mindustry/ui/dialogs/JoinDialog.java
-@@ -612,9 +612,22 @@ public class JoinDialog extends BaseDialog{
+@@ -616,9 +616,22 @@ public class JoinDialog extends BaseDialog{
      }
  
      void safeConnect(String ip, int port, int version){

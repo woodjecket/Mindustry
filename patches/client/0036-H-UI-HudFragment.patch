@@ -12,7 +12,7 @@ AuxiliaryTools, NewCoreItemsDisplay(新制核心资源显示), WaveInfoDisplay(�
  1 file changed, 17 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/ui/fragments/HudFragment.java b/core/src/mindustry/ui/fragments/HudFragment.java
-index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..ca1ef15de7fdf940eff0d1e1b1a9f36ebc78aafd 100644
+index c8679b9e5084d675a6b525e0df6ce88093db6117..345e19a0bf630125d772fddd395a054006bce745 100644
 --- a/core/src/mindustry/ui/fragments/HudFragment.java
 +++ b/core/src/mindustry/ui/fragments/HudFragment.java
 @@ -196,13 +196,18 @@ public class HudFragment{
@@ -41,7 +41,7 @@ index d1a1f52f79fd1a7ac09a12c4d606c82432c87e9f..ca1ef15de7fdf940eff0d1e1b1a9f36e
              t.top().right();
          });
  
-@@ -450,7 +455,11 @@ public class HudFragment{
+@@ -420,7 +425,11 @@ public class HudFragment{
  
              t.table(c -> {
                  //core items

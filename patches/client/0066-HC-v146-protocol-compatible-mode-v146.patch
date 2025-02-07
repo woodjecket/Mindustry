@@ -54,7 +54,7 @@ index 4e2f86410a33f8189976a143d0cd697ec7c56de5..67b051c81d5ce7f0f134ab5cd99d4aa7
  
      /** @return the last registered content with the specified name. Note that the content loader makes no attempt to resolve name conflicts. This method can be unreliable. */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0ac9087522dd2cddfe4e5ea3492e50ea0130c3f3..aeff3eb5a6c9513343a0a10155dcea5fe7834e4f 100644
+index 074511d19d9f2d2ffbb6be2c20fe42a649a091af..0bac9d883ddadf259b66b2a7bb617c4dceb4c01f 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -520,6 +520,8 @@ public class NetClient implements ApplicationListener{
@@ -67,7 +67,7 @@ index 0ac9087522dd2cddfe4e5ea3492e50ea0130c3f3..aeff3eb5a6c9513343a0a10155dcea5f
              netClient.byteStream.setBytes(data);
              DataInputStream input = netClient.dataStream;
 diff --git a/core/src/mindustry/io/TypeIO.java b/core/src/mindustry/io/TypeIO.java
-index f5d9b3e1587022a0652af6acdfb71c2d03475504..8ea230aae0f00ef353e18c73e342c5e14a4b69dc 100644
+index 21d16d848be4df4ab8c9317b6825717d4037f198..6b31b63100f05e83d179c39e1b3baafebe7ac5cc 100644
 --- a/core/src/mindustry/io/TypeIO.java
 +++ b/core/src/mindustry/io/TypeIO.java
 @@ -25,6 +25,7 @@ import mindustry.type.*;
@@ -111,7 +111,7 @@ index f5d9b3e1587022a0652af6acdfb71c2d03475504..8ea230aae0f00ef353e18c73e342c5e1
              boolean writePlan = !headless || !net.server();
              write.b(writePlan ? 1 : 0); //always has config
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index f430daefc52dc1579094e8b0e90a713ebd5b5358..5bd7a404c1630bec7edfdc7d94bee6fb8046279e 100644
+index 48c4d6749bd6f0776547fd633d7ac18c76af2452..14e2f7fc8790a36b7293334f7311b75f0d2befb3 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -1,6 +1,7 @@
@@ -261,7 +261,7 @@ index e84b86d10ff75d0e1bd8283a541f83777ec67bd7..a8d640c82fc1689cc5bd9ce5a7496bcf
          }
      }
 diff --git a/core/src/mindustry/net/Packets.java b/core/src/mindustry/net/Packets.java
-index 2b1e1f96159da194b1ac521faee8103c6e30019a..d7e7bd7f42d142e39db72c94e917fb5c186f4e36 100644
+index 1b445b3ff268b1d626cf9ba84797560c04e9bb0a..8f91b6abf01af158cb8b2c81d10b55b3887b006d 100644
 --- a/core/src/mindustry/net/Packets.java
 +++ b/core/src/mindustry/net/Packets.java
 @@ -124,7 +124,7 @@ public class Packets{

@@ -11,15 +11,15 @@ Subject: [PATCH] FR: ARC drawPlace and drawSelect
  .../blocks/defense/OverdriveProjector.java    |  6 ++-
  .../blocks/defense/turrets/BaseTurret.java    |  5 ++-
  .../world/blocks/defense/turrets/Turret.java  | 12 ++++++
- .../world/blocks/production/Drill.java        | 23 ++++++----
+ .../world/blocks/production/Drill.java        | 22 ++++++----
  .../world/blocks/storage/CoreBlock.java       |  9 ++++
- 9 files changed, 92 insertions(+), 14 deletions(-)
+ 9 files changed, 92 insertions(+), 13 deletions(-)
 
 diff --git a/core/src/mindustry/game/Universe.java b/core/src/mindustry/game/Universe.java
-index a22d073f9d3cebcfb22d1f7c22d47116a3dc3af6..41f2aabc05aa1fc55bf58b7191b5837c9fa1c8ba 100644
+index 33fcc893c17585aef5f24f0282db5788410a5237..4012377fec3fb9161645e7d76616b2f7f78d48c8 100644
 --- a/core/src/mindustry/game/Universe.java
 +++ b/core/src/mindustry/game/Universe.java
-@@ -20,7 +20,7 @@ public class Universe{
+@@ -21,7 +21,7 @@ public class Universe{
      private int netSeconds;
      private float secondCounter;
      private int turn;
@@ -118,7 +118,7 @@ index 0a49f8212f38c18f3df2293e46ea55eb09b7eb53..c0afb43544a5933a91301ee3d1f9894e
  
                  Draw.color();
 diff --git a/core/src/mindustry/world/blocks/defense/ForceProjector.java b/core/src/mindustry/world/blocks/defense/ForceProjector.java
-index ca12743b5a353709be7519875ff83db23daa0462..e9c3e8faed71d9885ef598858f251dab4f76b5f7 100644
+index 177eafc2d311ab2c64adfbc638250c3019ba690d..a5b800876084c1bc10be7000bfc24717b3d71148 100644
 --- a/core/src/mindustry/world/blocks/defense/ForceProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/ForceProjector.java
 @@ -1,6 +1,7 @@
@@ -138,7 +138,7 @@ index ca12743b5a353709be7519875ff83db23daa0462..e9c3e8faed71d9885ef598858f251dab
      }
  
 diff --git a/core/src/mindustry/world/blocks/defense/MendProjector.java b/core/src/mindustry/world/blocks/defense/MendProjector.java
-index 8ae4dec654dd860c1dd7de479521c9e163c106a2..253896adc8c4661564a81a988737bd938551351e 100644
+index 4bd399c1b344c4db2b7582a15e083e5bf4d15800..297d62456badce41055e6a03d9f6a72ab5a42f37 100644
 --- a/core/src/mindustry/world/blocks/defense/MendProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/MendProjector.java
 @@ -1,5 +1,6 @@
@@ -168,7 +168,7 @@ index 8ae4dec654dd860c1dd7de479521c9e163c106a2..253896adc8c4661564a81a988737bd93
      }
  
 diff --git a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
-index 11cd57fb65dcac2eb118cd7d584dd83be20b7c0f..236d6fa7f5e779f3d7a05d3b7862fa41df64edba 100644
+index 1d42c5aa400a046bb69da65ca96146893e50ad9c..9ef9bc840e4c6cc458bfa2791b6ad7481129b4aa 100644
 --- a/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
 +++ b/core/src/mindustry/world/blocks/defense/OverdriveProjector.java
 @@ -1,6 +1,5 @@
@@ -221,10 +221,10 @@ index eced3dc7581a4916970634e600d0f5cd86f6ee7e..58e315a6d9ec8c4c32df8a8220a9ccbb
  
          public float estimateDps(){
 diff --git a/core/src/mindustry/world/blocks/defense/turrets/Turret.java b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-index c69768e91ad508682c514cd439fed2a6bcf7aedd..dff464f04cb0053dff7827ed0c2845934df2e930 100644
+index e7d42f773eab372a4a69ed3f1735958d259e8e82..95108c8e31a90d1923851e9c3ae8a23b812de47a 100644
 --- a/core/src/mindustry/world/blocks/defense/turrets/Turret.java
 +++ b/core/src/mindustry/world/blocks/defense/turrets/Turret.java
-@@ -376,6 +376,18 @@ public class Turret extends ReloadTurret{
+@@ -380,6 +380,18 @@ public class Turret extends ReloadTurret{
              drawer.draw(this);
          }
  
@@ -244,18 +244,10 @@ index c69768e91ad508682c514cd439fed2a6bcf7aedd..dff464f04cb0053dff7827ed0c284593
          public void updateTile(){
              if(!validateTarget()) target = null;
 diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
-index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601a5e0f214 100644
+index 85e29932269c006ffa8bdc4f81d888ebb690dcb7..e2cf4a09930a218111f82ba2b93ba1546e638437 100644
 --- a/core/src/mindustry/world/blocks/production/Drill.java
 +++ b/core/src/mindustry/world/blocks/production/Drill.java
-@@ -18,7 +18,6 @@ import mindustry.logic.*;
- import mindustry.type.*;
- import mindustry.ui.*;
- import mindustry.world.*;
--import mindustry.world.blocks.environment.*;
- import mindustry.world.consumers.*;
- import mindustry.world.meta.*;
- import mindustryX.features.*;
-@@ -146,12 +145,12 @@ public class Drill extends Block{
+@@ -151,12 +151,12 @@ public class Drill extends Block{
          countOre(tile);
  
          if(returnItem != null){
@@ -274,8 +266,8 @@ index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601
  
              if(drawMineItem){
                  Draw.color(returnItem.color);
-@@ -162,7 +161,10 @@ public class Drill extends Block{
-             Tile to = tile.getLinkedTilesAs(this, tempTiles).find(t -> t.drop() != null && (t.drop().hardness > tier || t.drop() == blockedItem));
+@@ -167,7 +167,10 @@ public class Drill extends Block{
+             Tile to = tile.getLinkedTilesAs(this, tempTiles).find(t -> t.drop() != null && (t.drop().hardness > tier || (blockedItems != null && blockedItems.contains(t.drop()))));
              Item item = to == null ? null : to.drop();
              if(item != null){
 -                drawPlaceText(Core.bundle.get("bar.drilltierreq"), x, y, valid);
@@ -286,7 +278,7 @@ index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601
              }
          }
      }
-@@ -192,6 +194,11 @@ public class Drill extends Block{
+@@ -200,6 +203,11 @@ public class Drill extends Block{
          return new TextureRegion[]{region, rotatorRegion, topRegion};
      }
  
@@ -299,10 +291,10 @@ index f5c6656ea21eedfc2bcb65edcf271bfdc49469eb..97b8404dba179b441685c2361fd1c601
          returnItem = null;
          returnCount = 0;
 diff --git a/core/src/mindustry/world/blocks/storage/CoreBlock.java b/core/src/mindustry/world/blocks/storage/CoreBlock.java
-index 11f7b8c893d49ec2eee5b59e86f05e27bc508892..582433fb9441a5bf1d8307ca528a202014bfe8e9 100644
+index 5aff273ddcdfbedb9027ca61c2d4e4dd08fa2997..dfa60c02a0a798dcf79dc59377c1b6d42b9f75f5 100644
 --- a/core/src/mindustry/world/blocks/storage/CoreBlock.java
 +++ b/core/src/mindustry/world/blocks/storage/CoreBlock.java
-@@ -90,6 +90,7 @@ public class CoreBlock extends StorageBlock{
+@@ -91,6 +91,7 @@ public class CoreBlock extends StorageBlock{
          player.set(core);
  
          if(!net.client()){
@@ -310,7 +302,7 @@ index 11f7b8c893d49ec2eee5b59e86f05e27bc508892..582433fb9441a5bf1d8307ca528a2020
              Unit unit = spawnType.create(tile.team());
              unit.set(core);
              unit.rotation(90f);
-@@ -712,6 +713,14 @@ public class CoreBlock extends StorageBlock{
+@@ -715,6 +716,14 @@ public class CoreBlock extends StorageBlock{
                  outline.get(core);
                  core.proximity.each(storage -> storage.items == items, outline);
              });

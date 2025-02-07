@@ -37,7 +37,7 @@ index 66d2d5278ccc45716c9eb2802d64cc6f2fa22899..cf34367b9c350622a017abf329656826
                  if(connection.isConnected()){
                      if(reliable){
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index a5c319220ef911ce369a0b2b7ea441798f45046d..cc25224fa3d8b3f2397ac4d660409ed4874e16ba 100644
+index 7271c06aaf52d4e1592293c4d9e2a2a30e8fba0f..7072e96706e4134bccc29c2cd6b40e2290b1072c 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -10,6 +10,7 @@ import mindustry.game.EventType.*;

@@ -59,7 +59,7 @@ index 52d6972f5111e55502e3187e3c600e1843f2ec3f..6dfb14b6bb9401ec083a0f6994ed9bab
  sourceSets.main {
      java.setSrcDirs(listOf("src/", "../../src/", layout.buildDirectory.dir("/generated/sources/annotationProcessor/java/main")))
 diff --git a/gradle.properties b/gradle.properties
-index c5d42ecc57cf529968f9c1e5a0a2c20aff10aecf..1792f04d172eb61e79048b61a77700aa39fc5733 100644
+index 04720cf292c592fdf94fabb8006456e8165de917..f14aa88a098b28e43179ddd21b6c4652226c420b 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -18,7 +18,7 @@ kapt.use.worker.api=true
@@ -72,7 +72,7 @@ index c5d42ecc57cf529968f9c1e5a0a2c20aff10aecf..1792f04d172eb61e79048b61a77700aa
  android.useAndroidX=true
  org.gradle.caching=true
 diff --git a/settings.gradle b/settings.gradle
-index 304e893b1657dd6d23f87a0c6c2939ac7c1d5c84..116bd48602f25dbaa4f6438934e42698abd4a0a4 100644
+index 3347bf0220d955a807ecde61a01573aac521f749..a13e48468c9f7196a460c2ebf2b95cfee8a1fc66 100644
 --- a/settings.gradle
 +++ b/settings.gradle
 @@ -9,6 +9,8 @@ if(JavaVersion.current().ordinal() < JavaVersion.VERSION_17.ordinal()){

@@ -12,7 +12,7 @@ Content-Transfer-Encoding: 8bit
  1 file changed, 7 insertions(+)
 
 diff --git a/core/src/mindustry/ui/fragments/MenuFragment.java b/core/src/mindustry/ui/fragments/MenuFragment.java
-index 497b2077e17316a2582a5abdea274c4f773b99fd..593d8e2bfbb8c1e156b998dc44d3554317e171bf 100644
+index 296f3c5a89b16d68bd1609cb47b84eab8c13a787..8965e450b7761e5a160f8a3d5cbd5da0fa2249e8 100644
 --- a/core/src/mindustry/ui/fragments/MenuFragment.java
 +++ b/core/src/mindustry/ui/fragments/MenuFragment.java
 @@ -19,6 +19,7 @@ import mindustry.game.EventType.*;
@@ -23,16 +23,16 @@ index 497b2077e17316a2582a5abdea274c4f773b99fd..593d8e2bfbb8c1e156b998dc44d35543
  
  import static mindustry.Vars.*;
  import static mindustry.gen.Tex.*;
-@@ -29,6 +30,8 @@ public class MenuFragment{
-     private MenuRenderer renderer;
+@@ -30,6 +31,8 @@ public class MenuFragment{
      private Seq<MenuButton> customButtons = new Seq<>();
+     public Seq<MenuButton> desktopButtons = null;
  
 +    MenuFloatLabel floatLabel;
 +
      public void build(Group parent){
          renderer = new MenuRenderer();
  
-@@ -37,6 +40,7 @@ public class MenuFragment{
+@@ -38,6 +41,7 @@ public class MenuFragment{
          group.visible(() -> !ui.editor.isShown());
          parent.addChild(group);
  
@@ -40,7 +40,7 @@ index 497b2077e17316a2582a5abdea274c4f773b99fd..593d8e2bfbb8c1e156b998dc44d35543
          parent = group;
  
          parent.fill((x, y, w, h) -> renderer.render());
-@@ -104,6 +108,9 @@ public class MenuFragment{
+@@ -105,6 +109,9 @@ public class MenuFragment{
                  fy -= Scl.scl(macNotchHeight);
              }
  

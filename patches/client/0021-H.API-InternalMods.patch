@@ -8,10 +8,10 @@ Subject: [PATCH] H.API: InternalMods
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/core/src/mindustry/mod/Mods.java b/core/src/mindustry/mod/Mods.java
-index 470811fc9e23962e778925496f53353e64a0c1b2..af50983ead6b47eeacea610b6571245a5872886b 100644
+index 70b83ab3c88ce56ac15b004bd0e7a6f53fcad3a8..06b1ae931d3c52db8ee3f152ea6de5b88830c1d8 100644
 --- a/core/src/mindustry/mod/Mods.java
 +++ b/core/src/mindustry/mod/Mods.java
-@@ -457,7 +457,7 @@ public class Mods implements Loadable{
+@@ -459,7 +459,7 @@ public class Mods implements Loadable{
      /** Loads all mods from the folder, but does not call any methods on them.*/
      public void load(){
          var candidates = new Seq<Fi>();

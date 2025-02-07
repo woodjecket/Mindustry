@@ -11,10 +11,10 @@ Subject: [PATCH] FR(RenderExt) blockRenderLevel
  4 files changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/core/src/mindustry/core/Renderer.java b/core/src/mindustry/core/Renderer.java
-index 6ce29f10b88b5e8f03327799534c7a64bc99fa38..42a05c901e5917fdc8252e12d9211eac8f5247b4 100644
+index a1d1f0c1fe1e76cfaa99ea93146166f0f59928e7..4b41c4c0271d62790e64ffa59bab8b0b4036ca5f 100644
 --- a/core/src/mindustry/core/Renderer.java
 +++ b/core/src/mindustry/core/Renderer.java
-@@ -308,7 +308,8 @@ public class Renderer implements ApplicationListener{
+@@ -305,7 +305,8 @@ public class Renderer implements ApplicationListener{
  
          Draw.draw(Layer.background, this::drawBackground);
          Draw.draw(Layer.floor, blocks.floor::drawFloor);
@@ -24,8 +24,8 @@ index 6ce29f10b88b5e8f03327799534c7a64bc99fa38..42a05c901e5917fdc8252e12d9211eac
          Draw.draw(Layer.block - 0.09f, () -> {
              blocks.floor.beginDraw();
              blocks.floor.drawLayer(CacheLayer.walls);
-@@ -389,7 +390,8 @@ public class Renderer implements ApplicationListener{
-         });
+@@ -391,7 +392,8 @@ public class Renderer implements ApplicationListener{
+         }
  
          Events.fire(Trigger.drawOver);
 -        blocks.drawBlocks();
@@ -48,10 +48,10 @@ index 757434cb5bd9d951f773cd92a73fd0e0bdf8dad6..f99e534383b00780f427b14b95daa11c
          }
  
 diff --git a/core/src/mindustry/world/blocks/production/Drill.java b/core/src/mindustry/world/blocks/production/Drill.java
-index 1c3ce617f2498facc3fe1a34c94dacbe71f8373c..a923b427a598215747366b4748c28c9ce0a59115 100644
+index 812dc18feaececf3b9ac8b15c56aac51df8b67f5..a36737b76144c313c7627dba4704046f7dae1418 100644
 --- a/core/src/mindustry/world/blocks/production/Drill.java
 +++ b/core/src/mindustry/world/blocks/production/Drill.java
-@@ -305,7 +305,7 @@ public class Drill extends Block{
+@@ -313,7 +313,7 @@ public class Drill extends Block{
                  warmup = Mathf.approachDelta(warmup, speed, warmupSpeed);
                  progress += delta() * dominantItems * speed * warmup;
  
@@ -60,17 +60,17 @@ index 1c3ce617f2498facc3fe1a34c94dacbe71f8373c..a923b427a598215747366b4748c28c9c
                      updateEffect.at(x + Mathf.range(size * 2f), y + Mathf.range(size * 2f));
              }else{
                  lastDrillSpeed = 0f;
-@@ -318,7 +318,7 @@ public class Drill extends Block{
+@@ -329,7 +329,7 @@ public class Drill extends Block{
  
                  progress %= delay;
  
--                if(wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
-+                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
+-                if(wasVisible && Mathf.chanceDelta(drillEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
++                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(drillEffectChance * warmup)) drillEffect.at(x + Mathf.range(drillEffectRnd), y + Mathf.range(drillEffectRnd), dominantItem.color);
              }
          }
  
 diff --git a/core/src/mindustry/world/blocks/production/GenericCrafter.java b/core/src/mindustry/world/blocks/production/GenericCrafter.java
-index 03a7b867bc5af050d217fc8fb7ea9f31f9279b86..a55bc18a055c74d4e7de3332bd1315beb3c42a63 100644
+index 9fe01d436ea1f067c0a4c930bbab429f686802fc..cd7a7e469b80213696e2274c5fa9417f295fa358 100644
 --- a/core/src/mindustry/world/blocks/production/GenericCrafter.java
 +++ b/core/src/mindustry/world/blocks/production/GenericCrafter.java
 @@ -16,6 +16,7 @@ import mindustry.world.*;
@@ -81,16 +81,16 @@ index 03a7b867bc5af050d217fc8fb7ea9f31f9279b86..a55bc18a055c74d4e7de3332bd1315be
  
  import static mindustry.Vars.*;
  
-@@ -232,7 +233,7 @@ public class GenericCrafter extends Block{
+@@ -233,7 +234,7 @@ public class GenericCrafter extends Block{
                      }
                  }
  
 -                if(wasVisible && Mathf.chanceDelta(updateEffectChance)){
 +                if(RenderExt.blockRenderLevel > 1 && wasVisible && Mathf.chanceDelta(updateEffectChance)){
-                     updateEffect.at(x + Mathf.range(size * 4f), y + Mathf.range(size * 4));
+                     updateEffect.at(x + Mathf.range(size * updateEffectSpread), y + Mathf.range(size * updateEffectSpread));
                  }
              }else{
-@@ -298,6 +299,8 @@ public class GenericCrafter extends Block{
+@@ -299,6 +300,8 @@ public class GenericCrafter extends Block{
              if(wasVisible){
                  craftEffect.at(x, y);
              }

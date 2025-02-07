@@ -17,7 +17,7 @@ way-zer <himc.wicp@gmail.com> on 2024/4/22 at 20:15
  2 files changed, 5 insertions(+)
 
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 0882f64f8774c5c5b029b358a4183bb7bec52299..706dcd0a68fe225f35bb105f857527989df114a0 100644
+index 2d1f5fc5606f8239dff13363e1c855fae3a2a687..4707fbaae3b75f6b5a9c27efa66829c606943507 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -27,6 +27,7 @@ import mindustry.net.Packets.*;
@@ -44,7 +44,7 @@ index 0882f64f8774c5c5b029b358a4183bb7bec52299..706dcd0a68fe225f35bb105f85752798
              logic.reset();
              platform.updateRPC();
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index cc25224fa3d8b3f2397ac4d660409ed4874e16ba..b6cffd4bf69edcd49f59794e615a4abc0bc16fdc 100644
+index 7072e96706e4134bccc29c2cd6b40e2290b1072c..8929ef9d867729c779f809f08bb4bd075e7b9593 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -11,6 +11,7 @@ import mindustry.gen.*;

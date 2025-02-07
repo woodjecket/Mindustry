@@ -17,7 +17,7 @@ Content-Transfer-Encoding: 8bit
  6 files changed, 95 insertions(+), 8 deletions(-)
 
 diff --git a/core/src/mindustry/ctype/UnlockableContent.java b/core/src/mindustry/ctype/UnlockableContent.java
-index c4ed0bf7081ef5c074baf1dd10339ad888bce6a3..2ce391f57a863b97823bf6e83952280323d2dac4 100644
+index f8fdc28679649f8b0612246590d272aac69ef5a1..913fd680af4cb2f9a53af24c7bbb8e8b95e28e8b 100644
 --- a/core/src/mindustry/ctype/UnlockableContent.java
 +++ b/core/src/mindustry/ctype/UnlockableContent.java
 @@ -17,6 +17,7 @@ import mindustry.graphics.MultiPacker.*;
@@ -28,7 +28,7 @@ index c4ed0bf7081ef5c074baf1dd10339ad888bce6a3..2ce391f57a863b97823bf6e839522803
  
  import static mindustry.Vars.*;
  
-@@ -223,7 +224,7 @@ public abstract class UnlockableContent extends MappableContent{
+@@ -225,7 +226,7 @@ public abstract class UnlockableContent extends MappableContent{
      }
  
      public boolean unlockedNowHost(){
@@ -37,7 +37,7 @@ index c4ed0bf7081ef5c074baf1dd10339ad888bce6a3..2ce391f57a863b97823bf6e839522803
      }
  
      /** @return in multiplayer, whether this is unlocked for the host player, otherwise, whether it is unlocked for the local player (same as unlocked()) */
-@@ -235,7 +236,7 @@ public abstract class UnlockableContent extends MappableContent{
+@@ -237,7 +238,7 @@ public abstract class UnlockableContent extends MappableContent{
  
      /** @return whether this content is unlocked, or the player is in a custom (non-campaign) game. */
      public boolean unlockedNow(){
@@ -47,7 +47,7 @@ index c4ed0bf7081ef5c074baf1dd10339ad888bce6a3..2ce391f57a863b97823bf6e839522803
  
      public boolean unlocked(){
 diff --git a/core/src/mindustry/ui/dialogs/DatabaseDialog.java b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
-index 10e2ab9ddb54812a53ed26d2e765c860f6b09000..95d70aef09bd16aa26e1add85ba6c6ed1a5bf8de 100644
+index 262afe96e6bdc9909f204a86e8519ef7fcd28520..7292f92feb5ab6721ccd8aad8ce8c8e4c77e5aaf 100644
 --- a/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 +++ b/core/src/mindustry/ui/dialogs/DatabaseDialog.java
 @@ -18,6 +18,8 @@ import mindustry.graphics.*;
@@ -76,9 +76,9 @@ index 10e2ab9ddb54812a53ed26d2e765c860f6b09000..95d70aef09bd16aa26e1add85ba6c6ed
              ContentType type = ContentType.all[j];
  
              Seq<UnlockableContent> array = allContent[j]
--                .select(c -> c instanceof UnlockableContent u && !u.isHidden() && (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
+-                .select(c -> c instanceof UnlockableContent u && !u.isHidden() && !u.hideDatabase && (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
 +                .select(c -> c instanceof UnlockableContent u &&
-+                    (LogicExt.allUnlocked || !u.isHidden()) &&
++                    (LogicExt.allUnlocked || !u.isHidden() && !u.hideDatabase) &&
 +                    (tab == Planets.sun || u.allDatabaseTabs || u.databaseTabs.contains(tab)) &&
                      (text.isEmpty() || u.localizedName.toLowerCase().contains(text))).as();
  
@@ -92,7 +92,7 @@ index 10e2ab9ddb54812a53ed26d2e765c860f6b09000..95d70aef09bd16aa26e1add85ba6c6ed
      }
  }
 diff --git a/core/src/mindustry/ui/fragments/PlacementFragment.java b/core/src/mindustry/ui/fragments/PlacementFragment.java
-index 6b42c3c3fc52e09ca98a51d1fb9b0891834a4ebd..53076e919c5bdb66c61619208c5234a22c943250 100644
+index d798d69f96517561b4f126c8ecb5d93304a0b6df..a1a1ab8a54afee42855b423e6212dd8806d6c26b 100644
 --- a/core/src/mindustry/ui/fragments/PlacementFragment.java
 +++ b/core/src/mindustry/ui/fragments/PlacementFragment.java
 @@ -25,13 +25,16 @@ import mindustry.input.*;
@@ -158,8 +158,8 @@ index 6b42c3c3fc52e09ca98a51d1fb9b0891834a4ebd..53076e919c5bdb66c61619208c5234a2
 +        lastAllUnlocked = LogicExt.allUnlocked;
          parent.fill(full -> {
              toggler = full;
-             full.bottom().right().visible(() -> {
-@@ -288,6 +317,7 @@ public class PlacementFragment{
+             full.bottom().right().visible(() -> ui.hudfrag.shown);
+@@ -281,6 +310,7 @@ public class PlacementFragment{
  
                      for(Block block : getUnlockedByCategory(currentCategory)){
                          if(!unlocked(block)) continue;
@@ -167,7 +167,7 @@ index 6b42c3c3fc52e09ca98a51d1fb9b0891834a4ebd..53076e919c5bdb66c61619208c5234a2
                          if(index++ % rowWidth == 0){
                              blockTable.row();
                          }
-@@ -739,7 +769,7 @@ public class PlacementFragment{
+@@ -732,7 +762,7 @@ public class PlacementFragment{
      }
  
      boolean unlocked(Block block){
@@ -195,7 +195,7 @@ index 2cf7bef8c849e77730559938b53a876adb0c7a65..e3b63f597bb1cdc3302a745080976b62
  
      /** @return whether this block supports a specific environment. */
 diff --git a/core/src/mindustry/world/Build.java b/core/src/mindustry/world/Build.java
-index d0129890fc8caa1b9f12eb222e62a52f35386481..318803ab697d240be02ca6e158c926f621507a4b 100644
+index fe48fd74b7a6d9f1f17340736d9ae15e6ada6fcf..75db775f86c6dff06c0198f3cd7fb3a925fd879e 100644
 --- a/core/src/mindustry/world/Build.java
 +++ b/core/src/mindustry/world/Build.java
 @@ -14,7 +14,10 @@ import mindustry.game.Teams.*;

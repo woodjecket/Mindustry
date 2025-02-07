@@ -240,7 +240,7 @@ index 0000000000000000000000000000000000000000..181b87c1d5f3755f16a01c0528d0a89f
 +mindustry.annotations.misc.LogicStatementProcessor
 +mindustry.annotations.remote.RemoteProcess
 diff --git a/build.gradle b/build.gradle
-index 6a49b0ce6e761aaa7fa09c5e74ab466388e62d87..31c5318bb29640dde16d33ddc81e4c82d8736933 100644
+index 90e98a89dc933d3ddb500d1e78ea5948c8760029..31c5318bb29640dde16d33ddc81e4c82d8736933 100644
 --- a/build.gradle
 +++ b/build.gradle
 @@ -10,19 +10,6 @@ buildscript{
@@ -510,7 +510,7 @@ index 6a49b0ce6e761aaa7fa09c5e74ab466388e62d87..31c5318bb29640dde16d33ddc81e4c82
 -    task assetsJar(type: Jar, dependsOn: ":tools:pack"){
 -        archiveClassifier = 'assets'
 -        from files("assets"){
--            exclude "config", "cache", "music", "sounds"
+-            exclude "config", "cache", "music", "sounds", "sprites/fallback"
 -        }
 -    }
 -
@@ -3159,7 +3159,7 @@ index f348e41dbf38a2ad4c676ce243e1fe4389bfefaf..079379178548b8c3fc9257668f85c3bf
 -
 -dist.dependsOn classes
 diff --git a/settings.gradle b/settings.gradle
-index dafd6bdf99f48074cd7f2a1a819236433e3c6a55..304e893b1657dd6d23f87a0c6c2939ac7c1d5c84 100644
+index b18346f65206aa9ddce3857083b40ce0c4001f53..3347bf0220d955a807ecde61a01573aac521f749 100644
 --- a/settings.gradle
 +++ b/settings.gradle
 @@ -1,8 +1,16 @@

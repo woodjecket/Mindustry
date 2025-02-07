@@ -93,7 +93,7 @@ index 6dfb14b6bb9401ec083a0f6994ed9bab8b303c97..a68dd5cd58f7f012e3dd27750ae970b9
      processResources.configure {
          dependsOn(generateLocales, generateBasePartNames, writeVersion)
 diff --git a/core/src/mindustry/Vars.java b/core/src/mindustry/Vars.java
-index c17d5a2ec64aed9aea214adca368294bbc319530..f9312cff1004cedc95e26b35d146f31c0c025ca2 100644
+index eacdd4bd2d79bf1b54a9bd63d2968bfc89a65c8f..b9330d11955f03f1c87563961ff02f17a720c0aa 100644
 --- a/core/src/mindustry/Vars.java
 +++ b/core/src/mindustry/Vars.java
 @@ -78,7 +78,7 @@ public class Vars implements Loadable{
@@ -106,7 +106,7 @@ index c17d5a2ec64aed9aea214adca368294bbc319530..f9312cff1004cedc95e26b35d146f31c
      public static final Seq<ServerGroup> defaultServers = Seq.with();
      /** maximum size of any block, do not change unless you know what you're doing */
 diff --git a/core/src/mindustry/core/NetClient.java b/core/src/mindustry/core/NetClient.java
-index 97f2d96160879a16df59f9b567b5a16740706170..c1974bca4a264eeb2724d4fd36346d322fe20677 100644
+index 32c454304337cfcfcf2c15aca817edec0a309eda..aed03c684b1f88c15c3f90056ff9f73377d9f368 100644
 --- a/core/src/mindustry/core/NetClient.java
 +++ b/core/src/mindustry/core/NetClient.java
 @@ -26,6 +26,7 @@ import mindustry.net.*;
@@ -182,14 +182,14 @@ index 2500d18e59a325d6f1a6286d4f0d214d65a78402..eba453ade66d5e72f44726f64a28a057
          }catch(Throwable e){
              handleCrash(e);
 diff --git a/gradle.properties b/gradle.properties
-index 1792f04d172eb61e79048b61a77700aa39fc5733..ac631e1de988d452223850865fc821d54c5f65f2 100644
+index f14aa88a098b28e43179ddd21b6c4652226c420b..df0d1a187ba2d072de7663b3144fe3ec2611bac4 100644
 --- a/gradle.properties
 +++ b/gradle.properties
 @@ -27,3 +27,6 @@ org.gradle.internal.http.socketTimeout=100000
  org.gradle.internal.http.connectionTimeout=100000
  android.enableR8.fullMode=false
- archash=4940b68158
+ archash=c8004178c4
 +
-+upstreamBuild=25514
++upstreamBuild=25637
 +versionType=bleeding-edge
 \ No newline at end of file

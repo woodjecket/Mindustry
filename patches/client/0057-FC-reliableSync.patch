@@ -8,7 +8,7 @@ Subject: [PATCH] FC: reliableSync
  1 file changed, 1 insertion(+)
 
 diff --git a/core/src/mindustry/net/Net.java b/core/src/mindustry/net/Net.java
-index b6cffd4bf69edcd49f59794e615a4abc0bc16fdc..91d0ebaf667db45bf30862c92754407d9e812448 100644
+index 8929ef9d867729c779f809f08bb4bd075e7b9593..7188c779a5a626e4ff1f1e54de89b6df2af8a5ea 100644
 --- a/core/src/mindustry/net/Net.java
 +++ b/core/src/mindustry/net/Net.java
 @@ -235,6 +235,7 @@ public class Net{

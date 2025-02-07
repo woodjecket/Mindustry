@@ -78,7 +78,7 @@ index 805fad17aa2548240be635f75085c158d100fb1f..c63355564e9c1f9419b8911af3f4a454
  
              super.draw();
 diff --git a/core/src/mindustry/world/blocks/sandbox/ItemSource.java b/core/src/mindustry/world/blocks/sandbox/ItemSource.java
-index 0a7461a7ec54131d4a81f0a80c3039341f3100d1..18a282b760a6adb78e21b8625b19ed6072d390df 100644
+index 28d42f86ec6509e16e387c95df2d0061ef94476a..962ba249a80bf0a35a690f486d08639fd4f2bb24 100644
 --- a/core/src/mindustry/world/blocks/sandbox/ItemSource.java
 +++ b/core/src/mindustry/world/blocks/sandbox/ItemSource.java
 @@ -11,6 +11,7 @@ import mindustry.type.*;
