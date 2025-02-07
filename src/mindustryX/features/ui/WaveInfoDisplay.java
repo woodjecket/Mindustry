@@ -84,7 +84,7 @@ public class WaveInfoDisplay extends Table{
 
     public Element wrapped(){
         var ret = new Table();
-        ret.add(UIExt.coreItems).touchable(Touchable.disabled).fillX().row();
+        ret.collapser(UIExt.coreItems, () -> Core.settings.getBool("coreitems")).touchable(Touchable.disabled).growX().row();
         ret.add().height(4).row();
         ret.collapser(this, () -> enable.getValue()).growX().row();
         ret.collapser(tt -> tt.button(Icon.downOpen, Styles.emptyi, () -> enable.setValue(true)), () -> !enable.getValue()).center().row();

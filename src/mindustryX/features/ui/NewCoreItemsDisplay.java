@@ -44,12 +44,13 @@ public class NewCoreItemsDisplay extends Table{
     private final ItemSeq planItems = new ItemSeq();
     private final ObjectIntMap<Block> planCounter = new ObjectIntMap<>();
 
+    private final SettingsV2.Data<Boolean> enable = CheckPref.INSTANCE.create("coreitems");//Origin Setting
     private final SettingsV2.Data<Integer> columns = new SettingsV2.SliderPref(4, 15).create("coreItems.columns", 5);
     private final SettingsV2.Data<Boolean> showItem = CheckPref.INSTANCE.create("coreItems.showItem", true);
     private final SettingsV2.Data<Boolean> showUnit = CheckPref.INSTANCE.create("coreItems.showUnit", true);
     private final SettingsV2.Data<Boolean> showPlan = CheckPref.INSTANCE.create("coreItems.showPlan", true);
     private final SettingsV2.Data<Boolean> showPower = CheckPref.INSTANCE.create("coreItems.showPower", true);
-    final List<Data<?>> settings = CollectionsKt.listOf(columns, showItem, showUnit, showPlan, showPower);
+    final List<Data<?>> settings = CollectionsKt.listOf(enable, columns, showItem, showUnit, showPlan, showPower);
 
     public NewCoreItemsDisplay(){
         itemDelta = new int[content.items().size];
