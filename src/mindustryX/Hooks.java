@@ -21,7 +21,6 @@ public class Hooks implements ApplicationListener{
         Settings.addSettings();
         DebugUtil.init();//this is safe, and better at beforeInit,
         BindingExt.init();
-        DamagePopup.init();
     }
 
     /** invoke after loading, just before `Mod::init` */
@@ -37,6 +36,7 @@ public class Hooks implements ApplicationListener{
             UIExt.init();
             ReplayController.init();
             ArcOld.colorizeContent();
+            DamagePopup.init();
         }
         if(Core.settings.getBool("console")){
             Vars.mods.getScripts().runConsole("X=Packages.mindustryX.features");
