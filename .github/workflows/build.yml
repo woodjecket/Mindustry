@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -58,20 +58,15 @@ jobs:
 #        with:
 #          tag: ${{ env.RELEASE_TAG }}
 #          force_push_tag: true
-      - name: Release
-        uses: softprops/action-gh-release@v2.0.2
+      - name: Arc Clone
+        run: |
+                cd ..
+                git clone https://github.com/Anuken/Arc.git
+                cd Mindustry
+      - name: iOS deploy
+        run: ./gradlew ios:deploy
+      - name: Upload file
+        uses: actions/upload-artifact@v3
         with:
-          repository: TinyLake/MindustryX-work
-          token: ${{secrets.PUBLISH_TOKEN}}
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: ${{ env.RELEASE_VERSION }}
-          target_commitish: ${{github.sha}}
-          files: artifacts/*
-          prerelease: true
-      - uses: oven-sh/setup-bun@v1
-      - name: clearOldAssets
-        run: bun run .github/actions/clearOldAssets.ts
-        env:
-          TOKEN: ${{secrets.PUBLISH_TOKEN}}
-          REPOSITORY: TinyLake/MindustryX-work
-          TAG: ${{ env.RELEASE_TAG }}
+              name: ios-build
+              path: ios/build/robovm/IOSLauncher.ipa
