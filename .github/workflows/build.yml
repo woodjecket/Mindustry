@@ -25,6 +25,7 @@ jobs:
            cp ./Arc/natives/natives-ios/libs/libarc.a ./Mindustry/ios/libs/
            cp ./Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./Mindustry/ios/libs/
            cd Mindustry
+           ls
     - name: iOS deploy
       run: ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-146.006
     - name: Upload file
