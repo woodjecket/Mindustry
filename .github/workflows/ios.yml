@@ -31,8 +31,7 @@ jobs:
            cp ../Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./ios/libs/
     - name: iOS deploy
       run: |
-           cd work
-           cat ./gradle.properties
+           ls
            ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-b147
     - name: Upload file
       uses: actions/upload-artifact@v4
