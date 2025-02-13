@@ -22,13 +22,15 @@ jobs:
     - name: Arc Clone
       run: |
            cd work && ../scripts/applyPatches.sh
+           cd ..
            git clone https://github.com/Anuken/Arc.git
+           cd work
            ls
            mkdir ios/libs
-           cp ./Arc/natives/natives-ios/libs/libarc.a ./work/ios/libs/
-           cp ./Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./work/ios/libs/
+           cp ../Arc/natives/natives-ios/libs/libarc.a ./ios/libs/
+           cp ../Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./ios/libs/
     - name: iOS deploy
-      run: ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-146.006
+      run: ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-b147
     - name: Upload file
       uses: actions/upload-artifact@v4
       with:
