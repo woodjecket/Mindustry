@@ -1,0 +1,35 @@
+name: iOS deploy
+
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    - name: Arc Clone
+      run: |
+           cd work && ../scripts/applyPatches.sh
+           git clone https://github.com/Anuken/Arc.git
+           mkdir ./work/ios/libs
+           cp ./Arc/natives/natives-ios/libs/libarc.a ./work/ios/libs/
+           cp ./Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./work/ios/libs/
+           cd work
+           ls
+    - name: iOS deploy
+      run: ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-146.006
+    - name: Upload file
+      uses: actions/upload-artifact@v4
+      with:
+          name: ios-build
+          path: ios/build/robovm/IOSLauncher.ipa
