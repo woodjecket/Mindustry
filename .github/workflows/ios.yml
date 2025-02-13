@@ -33,7 +33,7 @@ jobs:
       run: |
            cd work
            ls
-           cat build.gradle
+           cat settings.gradle
            ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-b147
     - name: Upload file
       uses: actions/upload-artifact@v4
