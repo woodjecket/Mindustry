@@ -3,7 +3,7 @@ name: iOS deploy
 on: [push]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -19,6 +19,8 @@ jobs:
         distribution: 'temurin'
     - name: Arc Clone
       run: |
+           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+           git config --global user.name "github-actions"
            cd work && ../scripts/applyPatches.sh
            git clone https://github.com/Anuken/Arc.git
            mkdir ./work/ios/libs
