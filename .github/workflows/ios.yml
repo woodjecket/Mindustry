@@ -23,11 +23,10 @@ jobs:
       run: |
            cd work && ../scripts/applyPatches.sh
            git clone https://github.com/Anuken/Arc.git
-           mkdir ./work/ios/libs
+           ls
+           mkdir ios/libs
            cp ./Arc/natives/natives-ios/libs/libarc.a ./work/ios/libs/
            cp ./Arc/natives/natives-freetype-ios/libs/libarc-freetype.a ./work/ios/libs/
-           cd work
-           ls
     - name: iOS deploy
       run: ./gradlew ios:deploy -Pbuildversion=mindustryX-ios-146.006
     - name: Upload file
