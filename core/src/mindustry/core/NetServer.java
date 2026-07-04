@@ -114,6 +114,11 @@ public class NetServer implements ApplicationListener{
     public static float voteDuration = 0.5f * 60;
     /** Cooldown between votes in seconds. */
     public static int voteCooldown = 60 * 5;
+    /**
+     * If this is true, isSyncHidden will called only once per team if FoW is enabled, or not at all.
+     * Set this to false if a mod uses isSyncHidden to hide entities.
+     */
+    public boolean skipHiddenEntitiesCheck = true;
 
     private ReusableByteOutStream writeBuffer = new ReusableByteOutStream(127);
     private Writes outputBuffer = new Writes(new DataOutputStream(writeBuffer));
@@ -129,6 +134,10 @@ public class NetServer implements ApplicationListener{
     private ObjectMap<String, Seq<Cons2<Player, byte[]>>> customBinaryPacketHandlers = new ObjectMap<>();
     /** Packet handlers for logic client data */
     private ObjectMap<String, Seq<Cons2<Player, Object>>> logicClientDataHandlers = new ObjectMap<>();
+    /** Reused Seq<Player> for writing entity snapshots per team. */
+    private Seq<Player> playersToSend = new Seq<>(false);
+    /** Used for entity snapshot timing. */
+    public long snapshotSyncTime;
 
     public NetServer(){
 
@@ -1085,7 +1094,7 @@ public class NetServer implements ApplicationListener{
         }
     }
 
-    public void writeEntitySnapshot(Player player) throws IOException{
+    public void writeStateSnapshot() throws IOException{
         byte tps = (byte)Math.min(Core.graphics.getFramesPerSecond(), 255);
         syncStream.reset();
         int activeTeams = (byte)state.teams.present.count(t -> t.cores.size > 0);
@@ -1103,10 +1112,11 @@ public class NetServer implements ApplicationListener{
 
         dataStream.close();
 
-        //write basic state data.
-        Call.stateSnapshot(player.con, state.wavetime, state.wave, state.enemies, state.isPaused(), state.gameOver,
+        Call.stateSnapshot(state.wavetime, state.wave, state.enemies, state.isPaused(), state.gameOver,
         universe.seconds(), tps, GlobalVars.rand.seed0, GlobalVars.rand.seed1, syncStream.toByteArray());
+    }
 
+    public void writeEntitySnapshot(Player player) throws IOException{
         syncStream.reset();
 
         hiddenIds.clear();
@@ -1146,6 +1156,84 @@ public class NetServer implements ApplicationListener{
         }
 
         player.con.snapshotsSent++;
+    }
+
+    /** Does not check isSyncHidden. Call this if no entities are hidden. */
+    public void writeEntitySnapshotsAll() throws IOException{
+        syncStream.reset();
+
+        int sent = 0;
+
+        for(Syncc entity : Groups.sync){
+            //write all entities now
+            dataStream.writeInt(entity.id()); //write id
+            dataStream.writeByte(entity.classId() & 0xFF); //write type ID
+            entity.beforeWrite();
+            entity.writeSync(dataStreamWrites); //write entity itself
+
+            sent++;
+
+            if(syncStream.size() > maxSnapshotSize){
+                dataStream.close();
+                Call.entitySnapshot((short)sent, syncStream.toByteArray());
+                sent = 0;
+                syncStream.reset();
+            }
+        }
+
+        if(sent > 0){
+            dataStream.close();
+
+            Call.entitySnapshot((short)sent, syncStream.toByteArray());
+        }
+
+        Groups.player.each(p -> p.con.snapshotsSent++);
+    }
+
+    /** Checks isSyncHidden for only one player per team. Called if FoW is enabled but there is no custom syncHidden. */
+    public void writeEntitySnapshotsTeam(Seq<Player> players) throws IOException{
+        syncStream.reset();
+
+        hiddenIds.clear();
+        int sent = 0;
+
+        for(Syncc entity : Groups.sync){
+            //TODO write to special list
+            if(entity.isSyncHidden(players.first())){
+                hiddenIds.add(entity.id());
+                continue;
+            }
+
+            //write all entities now
+            dataStream.writeInt(entity.id()); //write id
+            dataStream.writeByte(entity.classId() & 0xFF); //write type ID
+            entity.beforeWrite();
+            entity.writeSync(dataStreamWrites); //write entity itself
+
+            sent++;
+
+            if(syncStream.size() > maxSnapshotSize){
+                dataStream.close();
+                final var ssent = (short)sent;
+                var bytes = syncStream.toByteArray();
+                players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
+                sent = 0;
+                syncStream.reset();
+            }
+        }
+
+        if(sent > 0){
+            dataStream.close();
+            final var ssent = (short)sent;
+            var bytes = syncStream.toByteArray();
+            players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
+        }
+
+        if(hiddenIds.size > 0){
+            players.each(player -> Call.hiddenSnapshot(player.con, hiddenIds));
+        }
+
+        players.each(player -> player.con.snapshotsSent++);
     }
 
     public String fixName(String name){
@@ -1205,19 +1293,39 @@ public class NetServer implements ApplicationListener{
                     onDisconnect(player, "disappeared");
                     return;
                 }
-
-                var connection = player.con;
-
-                if(Time.timeSinceMillis(connection.syncTime) < interval || !connection.hasConnected) return;
-
-                connection.syncTime = Time.millis();
-
-                try{
-                    writeEntitySnapshot(player);
-                }catch(IOException e){
-                    Log.err(e);
-                }
             });
+
+            if(Time.timeSinceMillis(snapshotSyncTime) >= interval){
+                snapshotSyncTime = Time.millis();
+
+                writeStateSnapshot();
+
+                if(skipHiddenEntitiesCheck){
+                    if(Vars.state.rules.fog){
+                        //Serialize by teams
+                        for(Team team : Team.all){ //Not Teams.active, because players can be on inactive teams
+                            var tdata = team.data();
+                            playersToSend.selectFrom(tdata.players, p -> !p.isLocal() && p.con.hasConnected);
+                            if(!playersToSend.isEmpty()){
+                                writeEntitySnapshotsTeam(playersToSend);
+                            }
+                        }
+                    }else{
+                        //Serialize once for all players
+                        writeEntitySnapshotsAll();
+                    }
+                }else{
+                    //Serialize for each player
+                    Groups.player.each(p -> !p.isLocal() && p.con.hasConnected, player -> {
+                        try{
+                            writeEntitySnapshot(player);
+                        }catch(IOException e){
+                            Log.err(e);
+                        }
+                    });
+                }
+            }
+
 
             if(Groups.player.size() > 0 && Core.settings.getBool("blocksync") && blockSyncTime.poll()){
                 writeBlockSnapshots();
