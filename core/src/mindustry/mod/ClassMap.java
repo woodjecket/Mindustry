@@ -68,12 +68,12 @@ public class ClassMap{
         classes.put("SpaceLiquidBulletType", mindustry.entities.bullet.SpaceLiquidBulletType.class);
         classes.put("ExplosionEffect", mindustry.entities.effect.ExplosionEffect.class);
         classes.put("MultiEffect", mindustry.entities.effect.MultiEffect.class);
+        classes.put("NoiseEffect", mindustry.entities.effect.NoiseEffect.class);
         classes.put("ParticleEffect", mindustry.entities.effect.ParticleEffect.class);
         classes.put("RadialEffect", mindustry.entities.effect.RadialEffect.class);
         classes.put("SeqEffect", mindustry.entities.effect.SeqEffect.class);
         classes.put("SoundEffect", mindustry.entities.effect.SoundEffect.class);
         classes.put("WaveEffect", mindustry.entities.effect.WaveEffect.class);
-        classes.put("NoiseEffect", mindustry.entities.effect.NoiseEffect.class);
         classes.put("WrapEffect", mindustry.entities.effect.WrapEffect.class);
         classes.put("DrawPart", mindustry.entities.part.DrawPart.class);
         classes.put("PartFunc", mindustry.entities.part.DrawPart.PartFunc.class);
