@@ -131,6 +131,7 @@ public class NetServer implements ApplicationListener{
     private ObjectMap<String, Seq<Cons2<Player, Object>>> logicClientDataHandlers = new ObjectMap<>();
     /** Reused Seq<Player> for writing entity snapshots per team. */
     private Seq<Player> playersToSend = new Seq<>(false);
+    private Seq<NetConnection> tempConnections = new Seq<>(false);
     /** Used for entity snapshot timing. */
     public long snapshotSyncTime;
 
@@ -1145,6 +1146,13 @@ public class NetServer implements ApplicationListener{
 
         hiddenIds.clear();
         int sent = 0;
+        tempConnections.clear();
+
+        for(Player player : players){
+            //player.con must not be null here (the players seq must ONLY contain non-local connected clients)
+            tempConnections.add(player.con);
+            player.con.snapshotsSent ++;
+        }
 
         for(Syncc entity : Groups.sync){
             if(entity.isSyncHidden(team)){
@@ -1158,9 +1166,7 @@ public class NetServer implements ApplicationListener{
 
             if(syncStream.size() > maxSnapshotSize){
                 dataStream.close();
-                short ssent = (short)sent;
-                var bytes = syncStream.toByteArray();
-                players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
+                sendEntitySnapshots(tempConnections, (short)sent, syncStream.toByteArray());
                 sent = 0;
                 syncStream.reset();
             }
@@ -1168,18 +1174,22 @@ public class NetServer implements ApplicationListener{
 
         if(sent > 0){
             dataStream.close();
-            short ssent = (short)sent;
-            var bytes = syncStream.toByteArray();
-            players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
+            sendEntitySnapshots(tempConnections, (short)sent, syncStream.toByteArray());
         }
 
         if(hiddenIds.size > 0){
-            players.each(player -> Call.hiddenSnapshot(player.con, hiddenIds));
+            var packet = new HiddenSnapshotCallPacket();
+            packet.ids = hiddenIds;
+            net.send(packet, tempConnections, false);
         }
-
-        players.each(player -> player.con.snapshotsSent++);
     }
 
+    protected void sendEntitySnapshots(Seq<NetConnection> connections, short amount, byte[] data){
+        var packet = new EntitySnapshotCallPacket();
+        packet.amount = amount;
+        packet.data = data;
+        net.send(packet, connections, false);
+    }
 
     /** Writes a custom snapshot containing player-local entities; this is for entities other players don't see. */
     public void writeCustomEntitySnapshot(Player player, Iterable<Syncc> entities) throws IOException{
