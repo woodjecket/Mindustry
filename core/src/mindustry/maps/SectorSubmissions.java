@@ -53,7 +53,7 @@ public class SectorSubmissions{
         register(6, "Locla^Glass", "https://discord.com/channels/391020510269669376/1379926782966497322/1516634498307985460", extreme);
         register(265, "Dem0", "https://discord.com/channels/391020510269669376/1379928052921929891/1450757980206137359", extreme);
         register(161, "Hengryton Luck", "https://discord.com/channels/391020510269669376/1379926882203730024/1416686287204782217", extreme);
-        register(24, "Stormrider", "https://discord.com/channels/391020510269669376/1379926797042581716/1419213541512187935", eradication);
+        register(24, "Stormrider", "https://discord.com/channels/391020510269669376/1379926797042581716/1419213541512187935", extreme);
         register(263, "Locla^Glass", "https://discord.com/channels/391020510269669376/1379928050010951694/1518065606161862710", eradication);
         register(66, "quad", "https://discord.com/channels/391020510269669376/1379926825941078128/1419165493008535706", extreme);
         register(248, "iqtik123", "https://discord.com/channels/391020510269669376/1379926979129774151/1417864622412922890", high);
