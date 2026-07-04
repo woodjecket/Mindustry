@@ -114,11 +114,6 @@ public class NetServer implements ApplicationListener{
     public static float voteDuration = 0.5f * 60;
     /** Cooldown between votes in seconds. */
     public static int voteCooldown = 60 * 5;
-    /**
-     * If this is true, isSyncHidden will called only once per team if FoW is enabled, or not at all.
-     * Set this to false if a mod uses isSyncHidden to hide entities.
-     */
-    public boolean skipHiddenEntitiesCheck = true;
 
     private ReusableByteOutStream writeBuffer = new ReusableByteOutStream(127);
     private Writes outputBuffer = new Writes(new DataOutputStream(writeBuffer));
@@ -1116,48 +1111,6 @@ public class NetServer implements ApplicationListener{
         universe.seconds(), tps, GlobalVars.rand.seed0, GlobalVars.rand.seed1, syncStream.toByteArray());
     }
 
-    public void writeEntitySnapshot(Player player) throws IOException{
-        syncStream.reset();
-
-        hiddenIds.clear();
-        int sent = 0;
-
-        for(Syncc entity : Groups.sync){
-            //TODO write to special list
-            if(entity.isSyncHidden(player)){
-                hiddenIds.add(entity.id());
-                continue;
-            }
-
-            //write all entities now
-            dataStream.writeInt(entity.id()); //write id
-            dataStream.writeByte(entity.classId() & 0xFF); //write type ID
-            entity.beforeWrite();
-            entity.writeSync(dataStreamWrites); //write entity itself
-
-            sent++;
-
-            if(syncStream.size() > maxSnapshotSize){
-                dataStream.close();
-                Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());
-                sent = 0;
-                syncStream.reset();
-            }
-        }
-
-        if(sent > 0){
-            dataStream.close();
-
-            Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());
-        }
-
-        if(hiddenIds.size > 0){
-            Call.hiddenSnapshot(player.con, hiddenIds);
-        }
-
-        player.con.snapshotsSent++;
-    }
-
     /** Does not check isSyncHidden. Call this if no entities are hidden. */
     public void writeEntitySnapshotsAll() throws IOException{
         syncStream.reset();
@@ -1165,11 +1118,7 @@ public class NetServer implements ApplicationListener{
         int sent = 0;
 
         for(Syncc entity : Groups.sync){
-            //write all entities now
-            dataStream.writeInt(entity.id()); //write id
-            dataStream.writeByte(entity.classId() & 0xFF); //write type ID
-            entity.beforeWrite();
-            entity.writeSync(dataStreamWrites); //write entity itself
+            writeEntity(entity, dataStream);
 
             sent++;
 
@@ -1191,30 +1140,25 @@ public class NetServer implements ApplicationListener{
     }
 
     /** Checks isSyncHidden for only one player per team. Called if FoW is enabled but there is no custom syncHidden. */
-    public void writeEntitySnapshotsTeam(Seq<Player> players) throws IOException{
+    public void writeEntitySnapshotsTeam(Team team, Seq<Player> players) throws IOException{
         syncStream.reset();
 
         hiddenIds.clear();
         int sent = 0;
 
         for(Syncc entity : Groups.sync){
-            //TODO write to special list
-            if(entity.isSyncHidden(players.first())){
+            if(entity.isSyncHidden(team)){
                 hiddenIds.add(entity.id());
                 continue;
             }
 
-            //write all entities now
-            dataStream.writeInt(entity.id()); //write id
-            dataStream.writeByte(entity.classId() & 0xFF); //write type ID
-            entity.beforeWrite();
-            entity.writeSync(dataStreamWrites); //write entity itself
+            writeEntity(entity, dataStream);
 
             sent++;
 
             if(syncStream.size() > maxSnapshotSize){
                 dataStream.close();
-                final var ssent = (short)sent;
+                short ssent = (short)sent;
                 var bytes = syncStream.toByteArray();
                 players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
                 sent = 0;
@@ -1224,7 +1168,7 @@ public class NetServer implements ApplicationListener{
 
         if(sent > 0){
             dataStream.close();
-            final var ssent = (short)sent;
+            short ssent = (short)sent;
             var bytes = syncStream.toByteArray();
             players.each(player -> Call.entitySnapshot(player.con, ssent, bytes));
         }
@@ -1234,6 +1178,40 @@ public class NetServer implements ApplicationListener{
         }
 
         players.each(player -> player.con.snapshotsSent++);
+    }
+
+
+    /** Writes a custom snapshot containing player-local entities; this is for entities other players don't see. */
+    public void writeCustomEntitySnapshot(Player player, Iterable<Syncc> entities) throws IOException{
+        syncStream.reset();
+
+        int sent = 0;
+
+        for(Syncc entity : entities){
+            writeEntity(entity, dataStream);
+
+            sent++;
+
+            if(syncStream.size() > maxSnapshotSize){
+                dataStream.close();
+                Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());
+                sent = 0;
+                syncStream.reset();
+            }
+        }
+
+        if(sent > 0){
+            dataStream.close();
+
+            Call.entitySnapshot(player.con, (short)sent, syncStream.toByteArray());
+        }
+    }
+
+    protected void writeEntity(Syncc entity, DataOutputStream dataStream) throws IOException{
+        dataStream.writeInt(entity.id()); //write id
+        dataStream.writeByte(entity.classId() & 0xFF); //write type ID
+        entity.beforeWrite();
+        entity.writeSync(dataStreamWrites); //write entity itself
     }
 
     public String fixName(String name){
@@ -1291,7 +1269,6 @@ public class NetServer implements ApplicationListener{
             Groups.player.each(p -> !p.isLocal(), player -> {
                 if(player.con == null || !player.con.isConnected()){
                     onDisconnect(player, "disappeared");
-                    return;
                 }
             });
 
@@ -1300,29 +1277,25 @@ public class NetServer implements ApplicationListener{
 
                 writeStateSnapshot();
 
-                if(skipHiddenEntitiesCheck){
-                    if(Vars.state.rules.fog){
-                        //Serialize by teams
-                        for(Team team : Team.all){ //Not Teams.active, because players can be on inactive teams
-                            var tdata = team.data();
-                            playersToSend.selectFrom(tdata.players, p -> !p.isLocal() && p.con.hasConnected);
-                            if(!playersToSend.isEmpty()){
-                                writeEntitySnapshotsTeam(playersToSend);
-                            }
+                if(Vars.state.rules.fog){
+                    //Serialize by teams
+                    for(Team team : Team.all){ //Not Teams.active, because players can be on inactive teams
+                        var tdata = team.data();
+                        playersToSend.selectFrom(tdata.players, p -> !p.isLocal() && p.con.hasConnected);
+                        if(!playersToSend.isEmpty()){
+                            writeEntitySnapshotsTeam(team, playersToSend);
                         }
-                    }else{
-                        //Serialize once for all players
-                        writeEntitySnapshotsAll();
                     }
                 }else{
-                    //Serialize for each player
-                    Groups.player.each(p -> !p.isLocal() && p.con.hasConnected, player -> {
-                        try{
-                            writeEntitySnapshot(player);
-                        }catch(IOException e){
-                            Log.err(e);
-                        }
-                    });
+                    //Serialize once for all players
+                    writeEntitySnapshotsAll();
+                }
+
+                //write custom player-specific entities (usually labels)
+                for(Player player : Groups.player){
+                    if(player.con != null && player.con.hasConnected && player.con.localEntities.size > 0){
+                        writeCustomEntitySnapshot(player, player.con.localEntities);
+                    }
                 }
             }
 

@@ -31,6 +31,8 @@ public abstract class NetConnection{
     public Ratekeeper chatRate = new Ratekeeper();
     /** Handles packet spam rate limits. */
     public Ratekeeper packetRate = new Ratekeeper();
+    /** Entities that only this player will get synced to them. */
+    public Seq<Syncc> localEntities = new Seq<>(false);
 
     //TODO: refactor to state enum
     public boolean hasConnected, hasBegunConnecting, determiningAssets, receivingAssets, hasDisconnected;
