@@ -26,6 +26,7 @@ public class DataAudioLoader{
                 Log.warn("Duplicate audio file: " + asset.name);
                 continue;
             }
+
             Fi file = asset.getCacheFile();
             Sound sound = Vars.headless || file == null ? new Sound() : Sound.createStream(file);
             loadedSounds.add(sound);
@@ -33,6 +34,8 @@ public class DataAudioLoader{
             Sounds.registerSound(sound, nextSoundId ++);
 
             if(Vars.headless || !Core.audio.initialized() || sound.file == null) continue;
+
+            Vars.logicVars.put("@sfx-" + prefix + asset.name, nextSoundId - 1, false);
 
             Core.assets.addAsset(prefix + asset.name, Sound.class, sound);
             registered.add(prefix + asset.name);
@@ -66,6 +69,7 @@ public class DataAudioLoader{
 
         if(!Vars.headless){
            for(String reg : registered){
+               Vars.logicVars.remove("@sfx-" + reg);
                try{
                    Core.assets.unload(reg);
                }catch(Exception ignored){ //unloading shouldn't throw an error, but ignore it just in case

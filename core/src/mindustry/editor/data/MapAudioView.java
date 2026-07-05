@@ -94,11 +94,8 @@ public class MapAudioView implements AssetView{
 
             list.button(Icon.trash, Styles.graySquarei, iconMed, () -> {
                 ui.showConfirm("@asset.delete.confirm",  () -> {
-                    if(audioSource != null){
-                        audioSource.dispose();
-                    }
-                    Core.assets.unload("dp-" + asset.name);
                     assets.remove(asset);
+                    state.data.reloadAudio();
                     diag.rebuild();
                 });
             }).size(h);
