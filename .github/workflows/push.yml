@@ -22,7 +22,7 @@ jobs:
         git config --global user.name "Github Actions"
         git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/MindustryBuilds ${BNUM}
     - name: Set up JDK 17
-      uses: actions/setup-java@v7
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         java-version: 17
