@@ -60,10 +60,6 @@ public class MapFixer{
     }
 
     static void fixMapNames(){
-        if(!Locale.getDefault().toString().contains("en")){
-            throw new IllegalArgumentException("Language must be English!!! " + Locale.getDefault());
-        }
-
         Fi root = Core.files.local("maps");
         root.walk(f -> {
             try{
