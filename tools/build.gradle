@@ -261,6 +261,14 @@ tasks.register('updateScripts', JavaExec){
     workingDir = "../"
 }
 
+tasks.register('fixMaps', JavaExec){
+    dependsOn classes
+    mainClass = "mindustry.tools.MapFixer"
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = "../core/assets"
+}
+
 tasks.register('updateBundles'){
     doLast{
         def uniEscape = { String string ->
