@@ -45,11 +45,29 @@ public class SchematicsDialog extends BaseDialog{
 
         tags = Core.settings.getJson("schematic-tags", Seq.class, String.class, Seq::new);
 
+        searchField = new TextField();
+        searchField.changed(() -> {
+            search = searchField.getText();
+            rebuildPane.run();
+        });
+
+        searchField.setMessageText("@schematic.search");
+        searchField.clicked(KeyCode.mouseRight, () -> {
+            if(!search.isEmpty()){
+                search = "";
+                searchField.clearText();
+                rebuildPane.run();
+            }
+        });
+
         shouldPause = true;
         addCloseButton();
         buttons.button("@schematic.import", Icon.download, this::showImport);
         makeButtonOverlay();
-        shown(this::setup);
+        shown(() -> {
+            searchField.setText(search = "");
+            setup();
+        });
         onResize(this::setup);
     }
 
@@ -59,26 +77,13 @@ public class SchematicsDialog extends BaseDialog{
             checkedTags = true;
         }
 
-        search = "";
-
         cont.top();
         cont.clear();
 
         cont.table(s -> {
             s.left();
             s.image(Icon.zoom);
-            searchField = s.field(search, res -> {
-                search = res;
-                rebuildPane.run();
-            }).growX().get();
-            searchField.setMessageText("@schematic.search");
-            searchField.clicked(KeyCode.mouseRight, () -> {
-                if(!search.isEmpty()){
-                    search = "";
-                    searchField.clearText();
-                    rebuildPane.run();
-                }
-            });
+            s.add(searchField).growX();
         }).fillX().padBottom(4);
 
         cont.row();
