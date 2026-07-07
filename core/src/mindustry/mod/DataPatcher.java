@@ -601,6 +601,7 @@ public class DataPatcher{
                     Seq<Consume> prevBuilder = Reflect.<Seq<Consume>>get(Block.class, bl, "consumeBuilder").copy();
                     boolean hadItems = bl.hasItems, hadLiquids = bl.hasLiquids, hadPower = bl.hasPower, acceptedItems = bl.acceptsItems;
                     Runnable resetCons = () -> {
+                        if(bl.isPatchContent()) return; //useless
                         Reflect.set(Block.class, bl, "consumeBuilder", prevBuilder);
                         bl.reinitializeConsumers();
                         bl.hasItems = hadItems;
