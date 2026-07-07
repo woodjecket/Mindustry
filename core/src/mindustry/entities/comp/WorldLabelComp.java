@@ -38,7 +38,7 @@ public abstract class WorldLabelComp implements Posc, Drawc, Syncc{
     @Replace
     public float clipSize(){
         if(parent != null) return Float.MAX_VALUE;
-        return text.length() * 10f * fontSize;
+        return text == null ? 0f : text.length() * 10f * fontSize;
     }
 
     @Override
@@ -60,6 +60,7 @@ public abstract class WorldLabelComp implements Posc, Drawc, Syncc{
     }
 
     public static void drawAt(String text, float x, float y, float layer, int flags, float fontSize, int align, int lineAlign){
+        if(text == null) return;
         Draw.z(layer);
         float z = Drawf.text();
 

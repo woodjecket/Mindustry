@@ -447,7 +447,7 @@ public class UI implements ApplicationListener, Loadable{
             return;
         }
 
-        var label = labels.get(id, WorldLabel::create); // todo: pool?
+        var label = id == -1 ? WorldLabel.create() : labels.get(id, WorldLabel::create); // todo: pool?
         label.x = worldx;
         label.y = worldy;
         label.text = info;
