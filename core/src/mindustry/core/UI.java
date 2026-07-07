@@ -448,6 +448,7 @@ public class UI implements ApplicationListener, Loadable{
         }
 
         var label = id == -1 ? WorldLabel.create() : labels.get(id, WorldLabel::create); // todo: pool?
+        label.id = Integer.MIN_VALUE; //arbitrary value that won't be synced to, it's fine if IDs conflict
         label.x = worldx;
         label.y = worldy;
         label.text = info;
