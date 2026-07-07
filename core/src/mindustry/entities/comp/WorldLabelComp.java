@@ -32,8 +32,9 @@ public abstract class WorldLabelComp implements Posc, Drawc, Syncc{
     public byte flags = flagBackground | flagOutline;
     /** If not null, this label gets set to the parent position with x, y used as offsets. */
     public @Nullable Posc parent;
-    /** Duration in seconds. Ignored if zero or negative. */
-    public transient float duration;
+    /** Duration in seconds. Ignored if negative */
+    public transient float duration = -1;
+    public transient @Nullable Runnable expired;
 
     @Replace
     public float clipSize(){
@@ -43,9 +44,12 @@ public abstract class WorldLabelComp implements Posc, Drawc, Syncc{
 
     @Override
     public void update(){
-        if(duration > 0){
+        if(duration >= 0){
             duration -= Time.delta / 60f;
-            if(duration <= 0) hide();
+            if(duration <= 0){
+                hide();
+                if(expired != null) expired.run();
+            }
         }
     }
 
