@@ -466,7 +466,13 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        if(state.isMenu() || Core.scene.hasDialog()) return;
+        if(state.isMenu() || Core.scene.hasDialog()){
+            if(!Core.input.keyDown(Binding.select)) player.shooting = false;
+            if(mode == breaking && !Core.input.keyDown(Binding.breakBlock)) mode = none;
+            if(mode == placing && !Core.input.keyDown(Binding.select)) mode = none;
+
+            return;
+        }
 
         //zoom camera
         if((!Core.scene.hasScroll() || Core.input.keyDown(Binding.diagonalPlacement)) && !ui.chatfrag.shown() && !ui.consolefrag.shown() && Math.abs(Core.input.axisTap(Binding.zoom)) > 0
@@ -501,10 +507,6 @@ public class DesktopInput extends InputHandler{
             }
         }else{
             pollInputPlayer();
-        }
-
-        if(Core.input.keyRelease(Binding.select)){
-            player.shooting = false;
         }
 
         if(!Core.scene.hasMouse() && !ui.minimapfrag.shown()){
