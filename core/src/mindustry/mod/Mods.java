@@ -770,66 +770,7 @@ public class Mods implements Loadable{
     }
 
     private void downloadDependencies(Seq<String> toImport){
-        Seq<String> remaining = toImport.copy();
-        ui.mods.importDependencies(remaining, () -> {
-            toImport.removeAll(remaining);
-            if(toImport.any()) requiresReload = true;
-            displayDependencyImportStatus(remaining, toImport);
-        });
-    }
-
-    //TODO move to another class, Mods.java should not handle UI
-    private void displayDependencyImportStatus(Seq<String> failed, Seq<String> success){
-        new Dialog(""){{
-            setFillParent(true);
-            cont.margin(15);
-
-            cont.add("@mod.dependencies.status").color(Pal.accent).center();
-            cont.row();
-            cont.image().width(300f).pad(2).height(4f).color(Pal.accent);
-            cont.row();
-
-            cont.pane(p -> {
-                if(success.any()){
-                    p.add("@mod.dependencies.success").color(Pal.accent).wrap().fillX().left().labelAlign(Align.left);
-                    p.row();
-                    p.table(t -> {
-                        success.each(d -> {
-                            t.add("[accent] > []" + d).wrap().growX().left().labelAlign(Align.left);
-                            t.row();
-                        });
-                    }).growX().padBottom(8f).padLeft(8f);
-                    p.row();
-                }
-
-                if(failed.any()){
-                    p.add("@mod.dependencies.failure").color(Color.scarlet).wrap().fillX().left().labelAlign(Align.left);
-                    p.row();
-                    p.table(t -> {
-                        failed.each(d -> {
-                            t.add("[scarlet] > []" + d).wrap().growX().left().labelAlign(Align.left);
-                            t.row();
-                        });
-                    }).growX().padBottom(8f).padLeft(8f);
-                }
-            }).fillX();
-            cont.row();
-
-            if(success.any()){
-                cont.image().width(300f).pad(2).height(4f).color(Pal.accent);
-                cont.row();
-                cont.add("@mods.reloadexit").center();
-                cont.row();
-
-                hidden(() -> {
-                    Log.info("Exiting to reload mods after dependency auto-import.");
-                    Core.app.exit();
-                });
-            }
-
-            cont.button("@ok", this::hide).size(300, 50);
-            closeOnBack();
-        }}.show();
+        ui.mods.browser.downloadDependencies(toImport, results -> requiresReload |= results.any());
     }
 
     public void reload(){

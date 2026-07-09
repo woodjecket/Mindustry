@@ -4,9 +4,7 @@ import arc.*;
 import arc.files.*;
 import arc.func.*;
 import arc.graphics.*;
-import arc.graphics.Texture.*;
 import arc.graphics.g2d.*;
-import arc.input.*;
 import arc.scene.style.*;
 import arc.scene.ui.TextButton.*;
 import arc.scene.ui.*;
@@ -16,66 +14,29 @@ import arc.util.*;
 import arc.util.Http.*;
 import arc.util.io.*;
 import arc.util.serialization.*;
-import arc.util.serialization.Jval.*;
-import mindustry.*;
-import mindustry.core.*;
 import mindustry.ctype.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.io.*;
-import mindustry.mod.*;
 import mindustry.mod.Mods.*;
 import mindustry.ui.*;
 
-import java.text.*;
 import java.util.*;
 
 import static mindustry.Vars.*;
 
 public class ModsDialog extends BaseDialog{
-    private ObjectMap<String, TextureRegion> textureCache = new ObjectMap<>();
+    public ModBrowserDialog browser;
 
-    private float modImportProgress;
-    private boolean cancelledImport;
-    private String searchtxt = "";
-    private @Nullable Seq<ModListing> modList;
-    private boolean orderDate = true;
-    private BaseDialog currentContent;
+    protected float modImportProgress;
+    protected boolean cancelledImport;
+    protected BaseDialog currentContent;
 
-    private BaseDialog browser;
-    private Table browserTable;
-    private float scroll = 0f;
+    protected float scroll = 0f;
 
     public ModsDialog(){
         super("@mods");
         addCloseButton();
-
-        browser = new BaseDialog("@mods.browser");
-
-        browser.cont.table(table -> {
-            table.left();
-            table.image(Icon.zoom);
-            table.field(searchtxt, res -> {
-                searchtxt = res;
-                rebuildBrowser();
-            }).growX().get();
-            table.button(Icon.list, Styles.emptyi, 32f, () -> {
-                orderDate = !orderDate;
-                rebuildBrowser();
-            }).update(b -> b.getStyle().imageUp = (orderDate ? Icon.list : Icon.star)).size(40f).get()
-            .addListener(new Tooltip(tip -> tip.label(() -> orderDate ? "@mods.browser.sortdate" : "@mods.browser.sortstars").left()));
-        }).fillX().padBottom(4);
-
-        browser.cont.row();
-        browser.cont.pane(tablebrow -> {
-            tablebrow.margin(10f).top();
-            browserTable = tablebrow;
-        }).scrollX(false);
-        browser.addCloseButton();
-        browser.makeButtonOverlay();
-
-        browser.onResize(this::rebuildBrowser);
 
         buttons.button("@mods.guide", Icon.link, () -> Core.app.openURI(modGuideURL)).size(210, 64f);
 
@@ -99,69 +60,7 @@ public class ModsDialog extends BaseDialog{
             }
         });
 
-    }
-
-    void modError(Throwable error){
-        ui.loadfrag.hide();
-
-        if(error instanceof NoSuchMethodError || Strings.getCauses(error).contains(t -> t.getMessage() != null && (t.getMessage().contains("trust anchor") || t.getMessage().contains("SSL") || t.getMessage().contains("protocol")))){
-            ui.showErrorMessage("@feature.unsupported");
-        }else if(error instanceof HttpStatusException st){
-            ui.showErrorMessage(Core.bundle.format("connectfail", Strings.capitalize(st.status.toString().toLowerCase())));
-        }else if(error.getMessage() != null && error.getMessage().toLowerCase(Locale.ROOT).contains("writable dex")){
-            ui.showException("@error.moddex", error);
-        }else{
-            ui.showException(error);
-        }
-    }
-
-    void getModList(Cons<Seq<ModListing>> listener){
-        getModList(0, listener);
-    }
-
-    void getModList(int index, Cons<Seq<ModListing>> listener){
-        if(index >= modJsonURLs.length) return;
-
-        if(modList != null){
-            listener.get(modList);
-            return;
-        }
-
-        Http.get(modJsonURLs[index], response -> {
-            String strResult = response.getResultAsString();
-
-            Core.app.post(() -> {
-                try{
-                    modList = JsonIO.json.fromJson(Seq.class, ModListing.class, strResult);
-
-                    var d = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                    Func<String, Date> parser = text -> {
-                        try{
-                            return d.parse(text);
-                        }catch(Exception e){
-                            return new Date();
-                        }
-                    };
-
-                    modList.sortComparing(m -> parser.get(m.lastUpdated)).reverse();
-                    listener.get(modList);
-                }catch(Exception e){
-                    Log.err(e);
-                    ui.showException(e);
-                }
-            });
-        }, error -> {
-            if(index < modJsonURLs.length - 1){
-                getModList(index + 1, listener);
-            }else{
-                Core.app.post(() -> {
-                    modError(error);
-                    if(browser != null){
-                        browser.hide();
-                    }
-                });
-            }
-        });
+        browser = new ModBrowserDialog();
     }
 
     void setup(){
@@ -227,7 +126,7 @@ public class ModsDialog extends BaseDialog{
 
             }).margin(margin);
 
-            buttons.button("@mods.browser", Icon.menu, style, this::showModBrowser).margin(margin);
+            buttons.button("@mods.browser", Icon.menu, style, () -> browser.show()).margin(margin);
         }).width(w);
 
         cont.row();
@@ -466,226 +365,7 @@ public class ModsDialog extends BaseDialog{
         dialog.show();
     }
 
-    private void showModBrowser(){
-        rebuildBrowser();
-        browser.show();
-    }
-
-    private void rebuildBrowser(){
-        ObjectSet<String> installed = mods.list().map(m -> m.getRepo()).asSet();
-
-        browserTable.clear();
-        browserTable.add("@loading");
-
-        int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
-
-        getModList(0, rlistings -> {
-            browserTable.clear();
-            int i = 0;
-
-            var listings = rlistings;
-            if(!orderDate){
-                listings = rlistings.copy();
-                listings.sortComparing(m1 -> -m1.stars);
-            }
-
-            for(ModListing mod : listings){
-                if(((mod.hasJava || mod.hasScripts && !mod.iosCompatible) && Vars.ios) ||
-                    (!Strings.matches(searchtxt, mod.name) && !Strings.matches(searchtxt, mod.repo))
-                ) continue;
-
-                float s = 64f;
-
-                browserTable.button(con -> {
-                    con.margin(0f);
-                    con.left();
-
-                    String repo = mod.repo;
-                    con.add(new BorderImage(){
-                        TextureRegion last;
-
-                        {
-                            border(installed.contains(repo) ? Pal.accent : Color.lightGray);
-                            setDrawable(Tex.nomap);
-                            pad = Scl.scl(4f);
-                        }
-
-                        @Override
-                        public void draw(){
-                            super.draw();
-
-                            //textures are only requested when the rendering happens; this assists with culling
-                            if(!textureCache.containsKey(repo)){
-                                textureCache.put(repo, last = Core.atlas.find("nomap"));
-
-                                if(mod.hasIcon){
-                                    Fi cacheFolder = Vars.mobile ? Core.files.cache("modIconCache"): dataDirectory.child("modIconCache");
-                                    cacheFolder.mkdirs();
-                                    Fi cacheFile = cacheFolder.child(Strings.sanitizeFilename(mod.repo + mod.lastUpdated) + ".png");
-
-                                    if(!cacheFile.exists()){ //fetch from Github
-                                        ConsT<HttpResponse, Exception> fetch = res -> {
-                                            byte[] bytes = res.getResult();
-                                            Pixmap pix = new Pixmap(bytes);
-                                            cacheFile.writeBytes(bytes);
-                                            Core.app.post(() -> {
-                                                try{
-                                                    var tex = new Texture(pix);
-                                                    tex.setFilter(TextureFilter.linear);
-                                                    textureCache.put(repo, new TextureRegion(tex));
-                                                    pix.dispose();
-                                                }catch(Exception e){
-                                                    Log.err(e);
-                                                }
-                                            });
-                                        };
-
-                                        String repoName = repo.replace("/", "_");
-
-                                        Http.get("https://raw.githubusercontent.com/Anuken/MindustryMods/master/icons/" + repoName)
-                                        .error(err -> {
-                                            //github ratelimited the client, try jsdelivr instead
-                                            if(!(err instanceof HttpStatusException s && s.status == HttpStatus.NOT_FOUND)){
-                                                Http.get("https://cdn.jsdelivr.net/gh/anuken/mindustrymods/icons/" + repoName)
-                                                .error(err2 -> {}) //nothing I can do about it
-                                                .timeout(15_000)
-                                                .submit(fetch);
-                                            }
-                                        })
-                                        .timeout(15_000)
-                                        .submit(fetch);
-                                    }else{ //load from cache
-                                        mainExecutor.submit(() -> {
-                                            try{
-                                                Pixmap pix = new Pixmap(cacheFile);
-                                                Core.app.post(() -> {
-                                                    try{
-                                                        var tex = new Texture(pix);
-                                                        tex.setFilter(TextureFilter.linear);
-                                                        textureCache.put(repo, new TextureRegion(tex));
-                                                        pix.dispose();
-                                                    }catch(Exception e){
-                                                        Log.err(e);
-                                                    }
-                                                });
-                                            }catch(Exception e){
-                                                Log.err(e);
-                                                cacheFile.delete();
-                                            }
-                                        });
-                                    }
-                                }
-                            }
-
-                            var next = textureCache.get(repo);
-                            if(last != next){
-                                last = next;
-                                setDrawable(next);
-                            }
-                        }
-                    }).size(s).pad(4f * 2f);
-
-                    String infoText =
-                    "[accent]" + mod.name.replace("\n", "") +
-
-                    (installed.contains(mod.repo) ? "\n[lightgray]" + Core.bundle.get("mod.installed") : "") +
-                    "\n[lightgray]\uE809 " + mod.stars +
-
-                    (!Version.isAtLeast(mod.minGameVersion) ? "\n" + Core.bundle.format("mod.requiresversion", mod.minGameVersion) :
-                    ((mod.hasJava && Strings.parseDouble(mod.minGameVersion, 0) < minJavaModGameVersion && !mod.legacyCompatible) ? "\n" + Core.bundle.get("mod.incompatiblemod") : ""));
-
-                    con.add(infoText).width(358f).wrap().grow().pad(4f, 2f, 4f, 6f).top().left().labelAlign(Align.topLeft);
-
-                }, Styles.grayt, () -> {
-                    var sel = new BaseDialog(mod.name);
-                    sel.cont.pane(p -> p.add(mod.description + "\n\n[accent]" + Core.bundle.get("editor.author") + "[lightgray] " + mod.author)
-                        .width(mobile ? 400f : 500f).wrap().pad(4f).labelAlign(Align.center, Align.left)).grow();
-                    sel.buttons.defaults().size(150f, 54f).pad(2f);
-                    sel.buttons.button("@back", Icon.left, () -> {
-                        sel.clear();
-                        sel.hide();
-                    });
-
-                    var found = mods.list().find(l -> mod.repo != null && mod.repo.equals(l.getRepo()));
-                    sel.buttons.button(found == null ? "@mods.browser.add" : "@mods.browser.reinstall", Icon.download, () -> {
-                        sel.hide();
-                        githubImportMod(mod.repo, mod.hasJava, null);
-                    });
-
-                    if(Core.graphics.isPortrait()){
-                        sel.buttons.row();
-                    }
-
-                    sel.buttons.button("@mods.github.open", Icon.link, () -> {
-                        Core.app.openURI("https://github.com/" + mod.repo);
-                    });
-
-                    sel.buttons.button("@mods.browser.view-releases", Icon.zoom, () -> {
-                        BaseDialog load = new BaseDialog("");
-                        load.cont.add("[accent]" + Core.bundle.get("mods.browser.fetching"));
-                        load.show();
-                        Http.get(ghApi + "/repos/" + mod.repo + "/releases", res -> {
-                            var json = Jval.read(res.getResultAsString());
-                            JsonArray releases = json.asArray();
-
-                            Core.app.post(() -> {
-                                load.hide();
-
-                                if(releases.size == 0){
-                                    ui.showInfo("@mods.browser.noreleases");
-                                }else{
-                                    sel.hide();
-                                    var downloads = new BaseDialog("@mods.browser.releases");
-                                    downloads.cont.pane(p -> {
-                                        for(int j = 0; j < releases.size; j++){
-                                            var release = releases.get(j);
-
-                                            int index = j;
-                                            p.table(((TextureRegionDrawable)Tex.whiteui).tint(Pal.darkestGray), t -> {
-                                                t.add("[accent]" + release.getString("name") + (index == 0 ? " " + Core.bundle.get("mods.browser.latest") : "")).top().left().growX().wrap().pad(5f);
-                                                t.row();
-                                                t.add((release.getString("published_at")).substring(0, 10).replaceAll("-", "/")).top().left().growX().wrap().pad(5f).color(Color.gray);
-                                                t.row();
-                                                t.table(b -> {
-                                                    b.defaults().size(150f, 54f).pad(2f);
-                                                    b.button("@mods.github.open-release", Icon.link, () -> Core.app.openURI(release.getString("html_url")));
-                                                    b.button("@mods.browser.add", Icon.download, () -> {
-                                                        String releaseUrl = release.getString("url");
-                                                        githubImportMod(mod.repo, mod.hasJava, releaseUrl.substring(releaseUrl.lastIndexOf("/") + 1));
-                                                    });
-                                                }).right();
-                                            }).margin(5f).growX().pad(5f);
-
-                                            if(j < releases.size - 1) p.row();
-                                        }
-                                    }).width(500f).scrollX(false).fillY();
-                                    downloads.buttons.button("@back", Icon.left, () -> {
-                                        downloads.clear();
-                                        downloads.hide();
-                                        sel.show();
-                                    }).size(150f, 54f).pad(2f);
-                                    downloads.keyDown(KeyCode.escape, downloads::hide);
-                                    downloads.keyDown(KeyCode.back, downloads::hide);
-                                    downloads.hidden(sel::show);
-                                    downloads.show();
-                                }
-                            });
-                        }, t -> Core.app.post(() -> {
-                            modError(t);
-                            load.hide();
-                        }));
-                    });
-                    sel.keyDown(KeyCode.escape, sel::hide);
-                    sel.keyDown(KeyCode.back, sel::hide);
-                    sel.show();
-                }).width(438f).pad(4).growX().left().height(s + 8*2f).fillY();
-
-                if(++i % cols == 0) browserTable.row();
-            }
-        });
-    }
-
-    private void handleMod(String repo, HttpResponse result){
+    protected void handleMod(String repo, HttpResponse result){
         try{
             Fi file = tmpDirectory.child(repo.replace("/", "") + ".zip");
             long len = result.getContentLength();
@@ -714,12 +394,26 @@ public class ModsDialog extends BaseDialog{
             });
         }catch(Throwable e){
             if(cancelledImport) return;
-            modError(e);
+            showModError(e);
         }
     }
 
-    private void importFail(Throwable t){
-        Core.app.post(() -> modError(t));
+    protected void importFail(Throwable t){
+        Core.app.post(() -> showModError(t));
+    }
+
+    public void showModError(Throwable error){
+        ui.loadfrag.hide();
+
+        if(error instanceof NoSuchMethodError || Strings.getCauses(error).contains(t -> t.getMessage() != null && (t.getMessage().contains("trust anchor") || t.getMessage().contains("SSL") || t.getMessage().contains("protocol")))){
+            ui.showErrorMessage("@feature.unsupported");
+        }else if(error instanceof HttpStatusException st){
+            ui.showErrorMessage(Core.bundle.format("connectfail", Strings.capitalize(st.status.toString().toLowerCase())));
+        }else if(error.getMessage() != null && error.getMessage().toLowerCase(Locale.ROOT).contains("writable dex")){
+            ui.showException("@error.moddex", error);
+        }else{
+            ui.showException(error);
+        }
     }
 
     public void githubImportMod(String repo, boolean isJava){
@@ -756,17 +450,7 @@ public class ModsDialog extends BaseDialog{
         }
     }
 
-    public void importDependencies(Seq<String> dependencies, Runnable done){
-        getModList(listings -> {
-            listings.each(l -> dependencies.contains(l.internalName), l -> {
-                dependencies.remove(l.internalName);
-                githubImportMod(l.repo, l.hasJava);
-            });
-            done.run();
-        });
-    }
-
-    private void githubImportJavaMod(String repo, @Nullable String release){
+    public void githubImportJavaMod(String repo, @Nullable String release){
         //grab latest release
         Http.get(ghApi + "/repos/" + repo + "/releases/" + (release == null ? "latest" : release), res -> {
             if(cancelledImport) return;
@@ -791,7 +475,7 @@ public class ModsDialog extends BaseDialog{
         }, this::importFail);
     }
 
-    private void githubImportBranch(String branch, String repo, @Nullable String release){
+    public void githubImportBranch(String branch, String repo, @Nullable String release){
         if(release != null) {
             Http.get(ghApi + "/repos/" + repo + "/releases/" + release, res -> {
                 if(cancelledImport) return;
