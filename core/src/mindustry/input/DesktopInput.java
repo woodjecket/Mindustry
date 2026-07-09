@@ -242,7 +242,7 @@ public class DesktopInput extends InputHandler{
         if(!scene.hasField() && !scene.hasDialog()){
             if(input.keyTap(Binding.debugHitboxes)) Core.settings.toggle("drawhitboxes");
 
-            if(input.keyTap(Binding.teleportCursor) && (state.rules.editor || state.rules.infiniteResources)){
+            if(input.keyTap(Binding.teleportCursor) && (state.rules.editor || state.rules.infiniteResources) && !net.client()){
                 if(player.dead()){
                     camera.position.set(input.mouseWorld());
                 }else{
