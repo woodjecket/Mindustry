@@ -4,9 +4,6 @@ import arc.*;
 import arc.func.*;
 import arc.struct.*;
 import arc.util.*;
-import com.codedisaster.steamworks.*;
-import com.codedisaster.steamworks.SteamMatchmaking.*;
-import com.codedisaster.steamworks.SteamNetworking.*;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
@@ -14,6 +11,9 @@ import mindustry.net.ArcNetProvider.*;
 import mindustry.net.*;
 import mindustry.net.Net.*;
 import mindustry.net.Packets.*;
+import steamworks.*;
+import steamworks.SteamMatchmaking.*;
+import steamworks.SteamNetworkingSockets.*;
 
 import java.io.*;
 import java.nio.*;
@@ -21,8 +21,8 @@ import java.util.concurrent.*;
 
 import static mindustry.Vars.*;
 
-public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, SteamFriendsCallback, NetProvider{
-    public final SteamNetworking snet = new SteamNetworking(this);
+public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCallback, SteamFriendsCallback, NetProvider{
+    public final SteamNetworkingSockets snet = new SteamNetworkingSockets(this);
     public final SteamMatchmaking smat = new SteamMatchmaking(this);
     public final SteamFriends friends = new SteamFriends(this);
 
@@ -30,11 +30,17 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
     final PacketSerializer serializer = new PacketSerializer();
     final ByteBuffer writeBuffer = ByteBuffer.allocateDirect(16384);
-    final ByteBuffer readBuffer = ByteBuffer.allocateDirect(16384);
-    final ByteBuffer readCopyBuffer = ByteBuffer.allocate(writeBuffer.capacity());
+
+    final ByteBuffer netReadBuffer = ByteBuffer.allocateDirect(16384);
+    final ByteBuffer netReadBufferCopy = ByteBuffer.allocate(netReadBuffer.capacity());
+    Thread readThread;
+    volatile boolean running;
 
     final CopyOnWriteArrayList<SteamConnection> connections = new CopyOnWriteArrayList<>();
     final IntMap<SteamConnection> steamConnections = new IntMap<>(); //maps steam ID -> valid net connection
+
+    Socket listenSocket;
+    volatile Connection clientConnection; //our connection to the server, when we are the client
 
     SteamID currentLobby, currentServer;
     Cons<Host> lobbyCallback;
@@ -42,70 +48,6 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
     public SNet(NetProvider provider){
         this.provider = provider;
-
-        Events.on(ClientLoadEvent.class, e -> Core.app.addListener(new ApplicationListener(){
-            //read packets
-            int length;
-            SteamID from = new SteamID();
-
-            @Override
-            public void update(){
-                while((length = snet.isP2PPacketAvailable(0)) != 0){
-                    try{
-                        readBuffer.position(0).limit(readBuffer.capacity());
-                        //lz4 chokes on direct buffers, so copy the bytes over
-                        int len = snet.readP2PPacket(from, readBuffer, 0);
-                        readBuffer.limit(len);
-                        readCopyBuffer.limit(readBuffer.capacity());
-                        readCopyBuffer.position(0);
-                        readCopyBuffer.put(readBuffer);
-                        readCopyBuffer.limit(len);
-                        readCopyBuffer.position(0);
-                        int fromID = from.getAccountID();
-                        Object output = serializer.read(readCopyBuffer);
-
-                        //it may be theoretically possible for this to be a framework message, if the packet is malicious or corrupted
-                        if(!(output instanceof Packet)) return;
-
-                        Packet pack = (Packet)output;
-
-                        if(net.server()){
-                            SteamConnection con = steamConnections.get(fromID);
-                            try{
-                                //accept users on request
-                                if(con == null){
-                                    con = new SteamConnection(SteamID.createFromNativeHandle(from.handle()));
-                                    Connect c = new Connect();
-                                    c.addressTCP = "steam:" + from.getAccountID();
-
-                                    Log.info("&bReceived STEAM connection: @", c.addressTCP);
-
-                                    steamConnections.put(from.getAccountID(), con);
-                                    connections.add(con);
-                                    net.handleServerReceived(con, c);
-                                }
-
-                                net.handleServerReceived(con, pack);
-                            }catch(Throwable e){
-                                Log.err(e);
-                            }
-                        }else if(currentServer != null && fromID == currentServer.getAccountID()){
-                            try{
-                                net.handleClientReceived(pack);
-                            }catch(Throwable t){
-                                net.handleException(t);
-                            }
-                        }
-                    }catch(Exception e){
-                        if(net.server()){
-                            Log.err(e);
-                        }else{
-                            net.showError(e);
-                        }
-                    }
-                }
-            }
-        }));
 
         Events.on(WaveEvent.class, e -> updateWave());
         Events.run(Trigger.newGame, this::updateWave);
@@ -122,8 +64,94 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
         return currentServer != null;
     }
 
+    void stopNetThread(){
+        if(readThread != null){
+            running = false;
+            readThread.interrupt();
+            readThread = null;
+        }
+    }
+
+    void startNetThread(){
+        stopNetThread();
+
+        running = true;
+        readThread = new Thread(this::readLoop, "steam-net-read");
+        readThread.setDaemon(true);
+        readThread.start();
+    }
+
+    void readLoop(){
+        while(running){
+            boolean readAny = false;
+
+            try{
+                if(net.server()){
+                    for(SteamConnection con : connections){
+                        readAny |= pollConnection(con.connection, con);
+                    }
+                }else{
+                    Connection cc = clientConnection;
+                    if(cc != null) readAny |= pollConnection(cc, null);
+                }
+            }catch(Exception e){
+                Core.app.post(() -> {
+                    if(net.server()){
+                        Log.err(e);
+                    }else{
+                        net.showError(e);
+                    }
+                });
+            }
+
+            if(!readAny){
+                try{
+                    Thread.sleep(12);
+                }catch(InterruptedException ignored){
+                    return; //thread stopped
+                }
+            }
+        }
+    }
+
+    /** Drains all currently-pending messages on one connection. Returns true if anything was read. */
+    boolean pollConnection(Connection connection, SteamConnection con) throws Exception{
+        boolean readAny = false;
+        int length;
+
+        while((length = snet.receiveMessageOnConnection(connection, netReadBuffer.clear())) != 0){
+            readAny = true;
+
+            //lz4 chokes on direct buffers
+            netReadBufferCopy.position(0).limit(length);
+            netReadBufferCopy.put(0, netReadBuffer, 0, length);
+
+            Object output = serializer.read(netReadBufferCopy);
+            if(!(output instanceof Packet pack)) continue;
+
+            Core.app.post(() -> {
+                if(net.server()){
+                    try{
+                        net.handleServerReceived(con, pack);
+                    }catch(Throwable t){
+                        Log.err(t);
+                    }
+                }else{
+                    try{
+                        net.handleClientReceived(pack);
+                    }catch(Throwable t){
+                        net.handleException(t);
+                    }
+                }
+            });
+        }
+
+        return readAny;
+    }
+
     @Override
     public void connectClient(String ip, int port, Runnable success) throws IOException{
+
         if(ip.startsWith("steam:")){
             String lobbyname = ip.substring("steam:".length());
             try{
@@ -142,16 +170,11 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
                 Core.app.post(() -> {
                     currentLobby = null;
                     currentServer = serverID;
+                    joinCallback = success;
 
-                    // Run success
-                    if(success != null) success.run();
+                    //begin the handshake; success/handleClientReceived/setClientConnected fire once onConnectionStatusChanged reports Connected
+                    clientConnection = snet.connectP2P(serverID, 0);
 
-                    // Connect
-                    Connect con = new Connect();
-                    con.addressTCP = "steam:" + currentServer.getAccountID();
-
-                    net.setClientConnected();
-                    net.handleClientReceived(con);
                     Core.app.post(() -> {  // TODO: This gets hidden and I can't figure out how to not do so.
                         ui.loadfrag.show("@connecting");
                         ui.loadfrag.setButton(() -> {
@@ -173,7 +196,7 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
     @Override
     public void sendClient(Object object, boolean reliable){
         if(isSteamClient()){
-            if(currentServer == null){
+            if(currentServer == null || clientConnection == null){
                 Log.info("Not connected, quitting.");
                 return;
             }
@@ -185,7 +208,7 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
                 int length = writeBuffer.position();
                 writeBuffer.flip();
 
-                snet.sendP2PPacket(currentServer, writeBuffer, reliable || length >= 1000 ? P2PSend.Reliable : P2PSend.UnreliableNoDelay, 0);
+                snet.sendMessageToConnection(clientConnection, writeBuffer, reliable || length >= 1000 ? SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay);
             }catch(Exception e){
                 net.showError(e);
             }
@@ -196,9 +219,12 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
     @Override
     public void disconnectClient(){
+        stopNetThread();
+
         if(isSteamClient()){
             if(currentLobby != null) smat.leaveLobby(currentLobby);
-            snet.closeP2PSessionWithUser(currentServer);
+            if(clientConnection != null) snet.closeConnection(clientConnection, 0, false);
+            clientConnection = null;
             currentServer = null;
             currentLobby = null;
             net.handleClientReceived(new Disconnect());
@@ -226,9 +252,9 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
     @Override
     public void hostServer(int port) throws IOException{
         provider.hostServer(port);
+        listenSocket = snet.createListenSocketP2P(0);
         smat.createLobby(Core.settings.getBool("steampublichost2") ? LobbyType.Public : LobbyType.FriendsOnly, Core.settings.getInt("playerlimit"));
-
-        Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
+        startNetThread();
     }
 
     public void updateLobby(){
@@ -255,6 +281,7 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
     @Override
     public void closeServer(){
         provider.closeServer();
+        stopNetThread();
 
         if(currentLobby != null){
             smat.leaveLobby(currentLobby);
@@ -262,6 +289,11 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
                 con.close();
             }
             currentLobby = null;
+        }
+
+        if(listenSocket != null){
+            snet.closeListenSocket(listenSocket);
+            listenSocket = null;
         }
 
         steamConnections.clear();
@@ -275,13 +307,13 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
         return connectionsOut;
     }
 
+    /** Closes out and unregisters a connected steam user, if one is registered under this ID. */
     void disconnectSteamUser(SteamID steamid){
-        //a client left
         int sid = steamid.getAccountID();
-        snet.closeP2PSessionWithUser(steamid);
+        SteamConnection con = steamConnections.get(sid);
 
-        if(steamConnections.containsKey(sid)){
-            SteamConnection con = steamConnections.get(sid);
+        if(con != null){
+            snet.closeConnection(con.connection, 0, false);
             net.handleServerReceived(con, new Disconnect());
             steamConnections.remove(sid);
             connections.remove(con);
@@ -310,9 +342,15 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
         if(version != Version.build && !hidden){
             ui.loadfrag.hide();
             ui.showInfo("[scarlet]" + (version > Version.build ? KickReason.clientOutdated : KickReason.serverOutdated) + "\n[]" +
-                Core.bundle.format("server.versions", Version.build, version));
+            Core.bundle.format("server.versions", Version.build, version));
             smat.leaveLobby(steamIDLobby);
             return;
+        }
+
+        if(clientConnection != null){
+            Log.info("onLobbyEnter fired with an existing clientConnection @, closing it before reconnecting.", clientConnection);
+            snet.closeConnection(clientConnection, 0, false);
+            clientConnection = null;
         }
 
         ui.editor.hide();
@@ -327,18 +365,8 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
             Log.info("Connecting to owner @: @", currentServer.getAccountID(), friends.getFriendPersonaName(currentServer));
 
-            if(joinCallback != null){
-                joinCallback.run();
-                joinCallback = null;
-            }
-
-            Connect con = new Connect();
-            con.addressTCP = "steam:" + currentServer.getAccountID();
-
-            net.setClientConnected();
-            net.handleClientReceived(con);
-
-            Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
+            //begin the handshake; success/handleClientReceived/setClientConnected fire once onConnectionStatusChanged reports Connected
+            clientConnection = snet.connectP2P(currentServer, 0);
         });
     }
 
@@ -379,18 +407,18 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
                     boolean banned = banList.length() > 0 && Structs.contains(banList.split(","), SVars.user.user.getSteamID().getAccountID() + "");
 
                     Host out = new Host(
-                        -1, //invalid ping
-                        smat.getLobbyData(lobby, "name"),
-                        "steam:" + lobby.handle(),
-                        smat.getLobbyData(lobby, "mapname"),
-                        Strings.parseInt(smat.getLobbyData(lobby, "wave"), -1),
-                        smat.getNumLobbyMembers(lobby),
-                        Strings.parseInt(smat.getLobbyData(lobby, "version"), -1),
-                        smat.getLobbyData(lobby, "versionType"),
-                        Gamemode.valueOf(mode),
-                        smat.getLobbyMemberLimit(lobby),
-                        banned ? "[banned]" : "",
-                        null
+                    -1, //invalid ping
+                    smat.getLobbyData(lobby, "name"),
+                    "steam:" + lobby.handle(),
+                    smat.getLobbyData(lobby, "mapname"),
+                    Strings.parseInt(smat.getLobbyData(lobby, "wave"), -1),
+                    smat.getNumLobbyMembers(lobby),
+                    Strings.parseInt(smat.getLobbyData(lobby, "version"), -1),
+                    smat.getLobbyData(lobby, "versionType"),
+                    Gamemode.valueOf(mode),
+                    smat.getLobbyMemberLimit(lobby),
+                    banned ? "[banned]" : "",
+                    null
                     );
                     hosts.add(out);
                 }catch(Exception e){
@@ -434,29 +462,69 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
     }
 
     @Override
-    public void onP2PSessionConnectFail(SteamID steamIDRemote, P2PSessionError sessionError){
-        if(net.server()){
-            Log.info("@ has disconnected: @", steamIDRemote.getAccountID(), sessionError);
-            disconnectSteamUser(steamIDRemote);
-        }else if(steamIDRemote.equals(currentServer)){
-            Log.info("Disconnected! @: @", steamIDRemote.getAccountID(), sessionError);
-            net.handleClientReceived(new Disconnect());
+    public void onConnectionStatusChanged(Connection connection, SteamID remote, ConnectionState state, ConnectionState prevState){
+        Log.info("Connection @ (steam @) changed: @ -> @", connection, remote.getAccountID(), prevState, state);
 
-            Core.app.post(() -> {
-                ui.loadfrag.hide();
-                ui.showErrorMessage(Core.bundle.format("cantconnect", sessionError.name()));
-                net.handleClientReceived(new Disconnect());
-                currentServer = null;
-            });
-        }
-    }
-
-    @Override
-    public void onP2PSessionRequest(SteamID steamIDRemote){
-        Log.info("Connection request: @", steamIDRemote.getAccountID());
         if(net.server()){
-            Log.info("Am server, accepting request from " + steamIDRemote.getAccountID());
-            snet.acceptP2PSessionWithUser(steamIDRemote);
+            if(state == ConnectionState.Connecting){
+                //incoming connection request arriving through our listen socket; accept it
+                SteamResult result = snet.acceptConnection(connection);
+                if(result != SteamResult.OK){
+                    Log.err("Failed to accept incoming Steam connection: @", result);
+                    snet.closeConnection(connection, 0, false);
+                }
+            }else if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
+                int fromID = remote.getAccountID();
+
+                SteamConnection existing = steamConnections.get(fromID);
+                if(existing != null){
+                    //close out stale connections
+                    Log.info("Duplicate connection from @ (old=@ new=@), closing old.", fromID, existing.connection, connection);
+                    snet.closeConnection(existing.connection, 0, false);
+                    steamConnections.remove(fromID);
+                    connections.remove(existing);
+                }
+
+                SteamConnection con = new SteamConnection(remote, connection);
+                Connect c = new Connect();
+                c.addressTCP = "steam:" + fromID;
+
+                Log.info("&bReceived STEAM connection: @", c.addressTCP);
+
+                steamConnections.put(fromID, con);
+                connections.add(con);
+                net.handleServerReceived(con, c);
+            }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
+                Log.info("@ has disconnected: @", remote.getAccountID(), state);
+                disconnectSteamUser(remote);
+            }
+        }else if(currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
+            if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
+                startNetThread();
+
+                if(joinCallback != null){
+                    joinCallback.run();
+                    joinCallback = null;
+                }
+
+                Connect con = new Connect();
+                con.addressTCP = "steam:" + currentServer.getAccountID();
+
+                net.setClientConnected();
+                net.handleClientReceived(con);
+
+                Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
+            }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
+                Log.info("Disconnected! @: @", remote.getAccountID(), state);
+
+                Core.app.post(() -> {
+                    ui.loadfrag.hide();
+                    ui.showErrorMessage(Core.bundle.format("cantconnect", state.name()));
+                    net.handleClientReceived(new Disconnect());
+                    currentServer = null;
+                    clientConnection = null;
+                });
+            }
         }
     }
 
@@ -468,10 +536,12 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
     public class SteamConnection extends NetConnection{
         final SteamID sid;
+        final Connection connection;
 
-        public SteamConnection(SteamID sid){
+        public SteamConnection(SteamID sid, Connection connection){
             super("steam:" + sid.getAccountID());
             this.sid = sid;
+            this.connection = connection;
             Log.info("Created STEAM connection: @", sid.getAccountID());
         }
 
@@ -494,7 +564,7 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
                 int length = writeBuffer.position();
                 writeBuffer.flip();
 
-                snet.sendP2PPacket(sid, writeBuffer, reliable || length >= 1000 ? object instanceof StreamChunk ? P2PSend.ReliableWithBuffering : P2PSend.Reliable : P2PSend.UnreliableNoDelay, 0);
+                snet.sendMessageToConnection(connection, writeBuffer, reliable || length >= 1000 ? object instanceof StreamChunk ? SendFlags.Reliable : SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay);
             }catch(Exception e){
                 Log.err(e);
                 Log.info("Error sending packet. Disconnecting invalid client!");
@@ -507,9 +577,7 @@ public class SNet implements SteamNetworkingCallback, SteamMatchmakingCallback, 
 
         @Override
         public boolean isConnected(){
-            //TODO ???
-            //snet.getP2PSessionState(sid, state);
-            return true;//state.isConnectionActive();
+            return connection.isValid();
         }
 
         @Override
