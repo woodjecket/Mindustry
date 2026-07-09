@@ -19,7 +19,6 @@ import mindustry.*;
 import mindustry.core.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
-import mindustry.io.*;
 import mindustry.mod.*;
 import mindustry.ui.*;
 
@@ -33,7 +32,8 @@ public class ModBrowserDialog extends BaseDialog{
 
     protected String searchtxt = "";
     protected @Nullable Seq<ModListing> modList;
-    protected boolean orderDate = true;
+    protected Seq<Cons<Seq<ModListing>>> fetchCallbacks = new Seq<>();
+    protected boolean orderDate = true, fetchingMods;
 
     protected ObjectMap<String, TextureRegion> textureCache = new ObjectMap<>();
 
@@ -67,46 +67,66 @@ public class ModBrowserDialog extends BaseDialog{
         shown(this::rebuildBrowser);
     }
 
-    protected void getModList(Cons<Seq<ModListing>> listener){
-        getModList(0, listener);
-    }
-
-    protected void getModList(int index, Cons<Seq<ModListing>> listener){
-        if(index >= modJsonURLs.length) return;
-
+    public void getModList(Cons<Seq<ModListing>> listener){
+        //mods already fetched, use that
         if(modList != null){
             listener.get(modList);
             return;
         }
 
+        //queue more callbacks
+        fetchCallbacks.add(listener);
+
+        if(fetchingMods) return;
+
+        getModListInternal(0);
+    }
+
+    protected void getModListInternal(int index){
+        if(index >= modJsonURLs.length) return;
+
+        //use a custom instance, since this is run in a new thread
+        Json json = new Json();
+        fetchingMods = true;
+
         Http.get(modJsonURLs[index], response -> {
             String strResult = response.getResultAsString();
 
-            Core.app.post(() -> {
-                try{
-                    modList = JsonIO.json.fromJson(Seq.class, ModListing.class, strResult);
+            try{
+                Seq<ModListing> mods = json.fromJson(Seq.class, ModListing.class, strResult);
 
-                    var d = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                    Func<String, Date> parser = text -> {
-                        try{
-                            return d.parse(text);
-                        }catch(Exception e){
-                            return new Date();
-                        }
-                    };
+                var d = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                Func<String, Date> parser = text -> {
+                    try{
+                        return d.parse(text);
+                    }catch(Exception e){
+                        return new Date();
+                    }
+                };
 
-                    modList.sortComparing(m -> parser.get(m.lastUpdated)).reverse();
-                    listener.get(modList);
-                }catch(Exception e){
-                    Log.err(e);
+                mods.sortComparing(m -> parser.get(m.lastUpdated)).reverse();
+                Core.app.post(() -> {
+                    fetchingMods = false;
+                    modList = mods;
+
+                    fetchCallbacks.each(c -> c.get(mods));
+                    fetchCallbacks.clear();
+                });
+            }catch(Exception e){ //failed to parse, should not happen
+                Log.err(e);
+                Core.app.post(() -> {
+                    fetchCallbacks.clear();
+                    fetchingMods = false;
                     ui.showException(e);
-                }
-            });
+                });
+            }
         }, error -> {
             if(index < modJsonURLs.length - 1){
-                getModList(index + 1, listener);
+                getModListInternal(index + 1);
             }else{
-                Core.app.post(() -> {
+                Core.app.post(() -> { //failed to fetch (different kind of error)
+                    fetchCallbacks.clear();
+                    fetchingMods = false;
                     ui.mods.showModError(error);
                     hide();
                 });
@@ -120,7 +140,7 @@ public class ModBrowserDialog extends BaseDialog{
         getModList(listings -> {
             listings.each(l -> remaining.contains(l.internalName), l -> {
                 remaining.remove(l.internalName);
-                ui.mods.githubImportMod(l.repo, l.hasJava);
+                ui.mods.githubImportMod(l.repo, l.hasJava, true);
             });
             toImport.removeAll(remaining);
             imported.get(toImport);
@@ -189,7 +209,7 @@ public class ModBrowserDialog extends BaseDialog{
 
         int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
 
-        getModList(0, rlistings -> {
+        getModList(rlistings -> {
             browserTable.clear();
             int i = 0;
 
@@ -319,7 +339,7 @@ public class ModBrowserDialog extends BaseDialog{
                     var found = mods.list().find(l -> mod.repo != null && mod.repo.equals(l.getRepo()));
                     sel.buttons.button(found == null ? "@mods.browser.add" : "@mods.browser.reinstall", Icon.download, () -> {
                         sel.hide();
-                        ui.mods.githubImportMod(mod.repo, mod.hasJava, null);
+                        ui.mods.githubImportMod(mod.repo, mod.hasJava, null, true);
                     });
 
                     if(Core.graphics.isPortrait()){
@@ -361,7 +381,7 @@ public class ModBrowserDialog extends BaseDialog{
                                                     b.button("@mods.github.open-release", Icon.link, () -> Core.app.openURI(release.getString("html_url")));
                                                     b.button("@mods.browser.add", Icon.download, () -> {
                                                         String releaseUrl = release.getString("url");
-                                                        ui.mods.githubImportMod(mod.repo, mod.hasJava, releaseUrl.substring(releaseUrl.lastIndexOf("/") + 1));
+                                                        ui.mods.githubImportMod(mod.repo, mod.hasJava, releaseUrl.substring(releaseUrl.lastIndexOf("/") + 1), true);
                                                     });
                                                 }).right();
                                             }).margin(5f).growX().pad(5f);
