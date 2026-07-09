@@ -191,6 +191,7 @@ public class SoundControl{
             current.stop();
             current = null;
         }
+        silenced = true; //don't fade it out
         playOnce(music);
     }
 
