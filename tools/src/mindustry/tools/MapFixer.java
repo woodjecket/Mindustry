@@ -73,9 +73,19 @@ public class MapFixer{
 
                 editor.beginEdit(map);
 
-                if(!map.name().equals(targetName)){
-                    Log.info("Changed name: '@' -> '@'", map.name(), targetName);
-                    map.tags.put("name", targetName);
+                if(!state.rules.bannedBlocks.isEmpty()) Log.warn("@: Banned blocks found: @", map.name(), state.rules.bannedBlocks);
+                if(!state.rules.bannedUnits.isEmpty()) Log.warn("@: Banned units found: @", map.name(), state.rules.bannedUnits);
+
+                if(!map.name().equals(targetName) || state.rules.revealedBlocks.size > 0){
+                    if(!state.rules.revealedBlocks.isEmpty()){
+                        Log.info("@: Clearing revealed blocks: @", map.name(), state.rules.revealedBlocks);
+                        state.rules.revealedBlocks.clear();
+                    }
+
+                    if(!map.name().equals(targetName)){
+                        Log.info("Changed name: '@' -> '@'", map.name(), targetName);
+                        map.tags.put("name", targetName);
+                    }
 
                     MapIO.writeMap(f, map);
                 }
