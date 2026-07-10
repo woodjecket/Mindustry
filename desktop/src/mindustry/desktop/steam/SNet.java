@@ -17,6 +17,7 @@ import steamworks.SteamNetworkingSockets.*;
 
 import java.io.*;
 import java.nio.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static mindustry.Vars.*;
@@ -29,7 +30,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
     final NetProvider provider;
 
     final PacketSerializer serializer = new PacketSerializer();
-    final ByteBuffer writeBuffer = ByteBuffer.allocateDirect(16384);
+    final ByteBuffer clientWriteBuffer = ByteBuffer.allocateDirect(16384);
 
     final ByteBuffer netReadBuffer = ByteBuffer.allocateDirect(16384);
     final ByteBuffer netReadBufferCopy = ByteBuffer.allocate(netReadBuffer.capacity());
@@ -90,6 +91,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                     for(SteamConnection con : connections){
                         readAny |= pollConnection(con.connection, con);
                     }
+
                 }else{
                     Connection cc = clientConnection;
                     if(cc != null) readAny |= pollConnection(cc, null);
@@ -144,6 +146,10 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                     }
                 }
             });
+        }
+
+        if(con != null){
+            con.pollWrites();
         }
 
         return readAny;
@@ -202,13 +208,17 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
             }
 
             try{
-                writeBuffer.limit(writeBuffer.capacity());
-                writeBuffer.position(0);
-                serializer.write(writeBuffer, object);
-                int length = writeBuffer.position();
-                writeBuffer.flip();
+                clientWriteBuffer.limit(clientWriteBuffer.capacity());
+                clientWriteBuffer.position(0);
+                serializer.write(clientWriteBuffer, object);
+                int length = clientWriteBuffer.position();
+                clientWriteBuffer.flip();
 
-                snet.sendMessageToConnection(clientConnection, writeBuffer, reliable || length >= 1000 ? SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay);
+                var result = snet.sendMessageToConnection(clientConnection, clientWriteBuffer, reliable || length >= 1000 ? SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay);
+
+                if(result == SteamResult.InvalidParam || result == SteamResult.NoConnection || result == SteamResult.InvalidState){
+                    throw new IOException("Failed to send packet: " + result);
+                }
             }catch(Exception e){
                 net.showError(e);
             }
@@ -465,66 +475,74 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
     public void onConnectionStatusChanged(Connection connection, SteamID remote, ConnectionState state, ConnectionState prevState){
         Log.info("Connection @ (steam @) changed: @ -> @", connection, remote.getAccountID(), prevState, state);
 
-        if(net.server()){
-            if(state == ConnectionState.Connecting){
-                //incoming connection request arriving through our listen socket; accept it
-                SteamResult result = snet.acceptConnection(connection);
-                if(result != SteamResult.OK){
-                    Log.err("Failed to accept incoming Steam connection: @", result);
-                    snet.closeConnection(connection, 0, false);
+        try{
+            if(net.server()){
+                if(state == ConnectionState.Connecting){
+                    //256kb -> 1mb/sec for large worlds
+                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMax, 1 * 1024 * 1024);
+                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMin, 1 * 1024 * 1024);
+
+                    //incoming connection request arriving through our listen socket; accept it
+                    SteamResult result = snet.acceptConnection(connection);
+                    if(result != SteamResult.OK){
+                        Log.err("Failed to accept incoming Steam connection: @", result);
+                        snet.closeConnection(connection, 0, false);
+                    }
+                }else if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
+                    int fromID = remote.getAccountID();
+
+                    SteamConnection existing = steamConnections.get(fromID);
+                    if(existing != null){
+                        //close out stale connections
+                        Log.info("Duplicate connection from @ (old=@ new=@), closing old.", fromID, existing.connection, connection);
+                        snet.closeConnection(existing.connection, 0, false);
+                        steamConnections.remove(fromID);
+                        connections.remove(existing);
+                    }
+
+                    SteamConnection con = new SteamConnection(remote, connection);
+                    Connect c = new Connect();
+                    c.addressTCP = "steam:" + fromID;
+
+                    Log.info("&bReceived STEAM connection: @", c.addressTCP);
+
+                    steamConnections.put(fromID, con);
+                    connections.add(con);
+                    net.handleServerReceived(con, c);
+                }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
+                    Log.info("@ has disconnected: @", remote.getAccountID(), state);
+                    disconnectSteamUser(remote);
                 }
-            }else if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
-                int fromID = remote.getAccountID();
+            }else if(currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
+                if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
+                    startNetThread();
 
-                SteamConnection existing = steamConnections.get(fromID);
-                if(existing != null){
-                    //close out stale connections
-                    Log.info("Duplicate connection from @ (old=@ new=@), closing old.", fromID, existing.connection, connection);
-                    snet.closeConnection(existing.connection, 0, false);
-                    steamConnections.remove(fromID);
-                    connections.remove(existing);
+                    if(joinCallback != null){
+                        joinCallback.run();
+                        joinCallback = null;
+                    }
+
+                    Connect con = new Connect();
+                    con.addressTCP = "steam:" + currentServer.getAccountID();
+
+                    net.setClientConnected();
+                    net.handleClientReceived(con);
+
+                    Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
+                }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
+                    Log.info("Disconnected! @: @", remote.getAccountID(), state);
+
+                    Core.app.post(() -> {
+                        ui.loadfrag.hide();
+                        ui.showErrorMessage(Core.bundle.format("cantconnect", state.name()));
+                        net.handleClientReceived(new Disconnect());
+                        currentServer = null;
+                        clientConnection = null;
+                    });
                 }
-
-                SteamConnection con = new SteamConnection(remote, connection);
-                Connect c = new Connect();
-                c.addressTCP = "steam:" + fromID;
-
-                Log.info("&bReceived STEAM connection: @", c.addressTCP);
-
-                steamConnections.put(fromID, con);
-                connections.add(con);
-                net.handleServerReceived(con, c);
-            }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
-                Log.info("@ has disconnected: @", remote.getAccountID(), state);
-                disconnectSteamUser(remote);
             }
-        }else if(currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
-            if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
-                startNetThread();
-
-                if(joinCallback != null){
-                    joinCallback.run();
-                    joinCallback = null;
-                }
-
-                Connect con = new Connect();
-                con.addressTCP = "steam:" + currentServer.getAccountID();
-
-                net.setClientConnected();
-                net.handleClientReceived(con);
-
-                Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
-            }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
-                Log.info("Disconnected! @: @", remote.getAccountID(), state);
-
-                Core.app.post(() -> {
-                    ui.loadfrag.hide();
-                    ui.showErrorMessage(Core.bundle.format("cantconnect", state.name()));
-                    net.handleClientReceived(new Disconnect());
-                    currentServer = null;
-                    clientConnection = null;
-                });
-            }
+        }catch(Exception e){
+            Log.err("Error processing connection status change.", e);
         }
     }
 
@@ -532,46 +550,101 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
     public void onGameLobbyJoinRequested(SteamID lobby, SteamID steamIDFriend){
         Log.info("onGameLobbyJoinRequested @ @", lobby, steamIDFriend);
         smat.joinLobby(lobby);
+
+        //prevents awkward pause when joining
+        ui.loadfrag.show("@connecting");
+        ui.loadfrag.setButton(() -> {
+            ui.loadfrag.hide();
+            netClient.disconnectQuietly();
+        });
     }
 
     public class SteamConnection extends NetConnection{
+        final ByteBuffer writeBuffer = ByteBuffer.allocateDirect(16384);
         final SteamID sid;
         final Connection connection;
+
+        //outgoing queue of not-yet-accepted messages, in send order
+        private final ArrayDeque<QueuedMessage> outgoing = new ArrayDeque<>();
+        private static final int maxQueuedBytes = 50 * 1024 * 1024; //50mb (for large data asset maps)
+        private int queuedBytes = 0;
 
         public SteamConnection(SteamID sid, Connection connection){
             super("steam:" + sid.getAccountID());
             this.sid = sid;
             this.connection = connection;
-            Log.info("Created STEAM connection: @", sid.getAccountID());
+            Log.info("Created Steam connection: @", sid.getAccountID());
         }
 
-        @Override
-        public void sendStreamAsync(Streamable stream, ByteArrayOutputStream data){
-            if(Core.app.isOnMainThread()){
-                sendStream(stream, data);
-            }else{
-                //must be sent on main thread because of global buffer variables.
-                Core.app.post(() -> sendStream(stream, data));
+        /** Called in an external thread at around 60fps per client connection. */
+        public void pollWrites(){
+            synchronized(outgoing){
+                QueuedMessage msg;
+                while((msg = outgoing.peek()) != null){
+                    SteamResult result;
+                    try{
+                        //rewind defensively in case a previous failed attempt touched the position
+                        msg.buffer.rewind();
+                        result = snet.sendMessageToConnection(connection, msg.buffer, msg.flags);
+                    }catch(Exception e){
+                        handleError(e);
+                        return;
+                    }
+
+                    if(result == SteamResult.OK){
+                        outgoing.poll();
+                        queuedBytes -= msg.buffer.capacity();
+                    }else if(result == SteamResult.LimitExceeded){
+                        //Steam's send buffer is full; stop draining for this tick and retry the SAME
+                        //message (preserving order) next poll instead of silently losing it
+                        break;
+                    }else if(result == SteamResult.Ignored){
+                        //only possible with NoDelay-flagged unreliable sends; fine to drop and move on
+                        outgoing.poll();
+                        queuedBytes -= msg.buffer.capacity();
+                    }else{
+                        //InvalidParam / InvalidState / NoConnection: connection is dead, nothing to retry
+                        outgoing.clear();
+                        queuedBytes = 0;
+                        handleError(new IOException("Failed to send packet: " + result));
+                        return;
+                    }
+                }
             }
         }
 
+        /** Can be called on any thread. Serializes immediately, but only *queues* the send;
+         * actual transmission and backpressure handling happens in {@link #pollWrites()}. */
         @Override
         public void send(Object object, boolean reliable){
             try{
-                writeBuffer.limit(writeBuffer.capacity());
-                writeBuffer.position(0);
-                serializer.write(writeBuffer, object);
-                int length = writeBuffer.position();
-                writeBuffer.flip();
+                ByteBuffer buffer;
+                int flags;
 
-                snet.sendMessageToConnection(connection, writeBuffer, reliable || length >= 1000 ? object instanceof StreamChunk ? SendFlags.Reliable : SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay);
+                synchronized(writeBuffer){
+                    writeBuffer.limit(writeBuffer.capacity());
+                    writeBuffer.position(0);
+                    serializer.write(writeBuffer, object);
+                    int length = writeBuffer.position();
+                    writeBuffer.flip();
+
+                    flags = reliable || length >= 1000 ? SendFlags.ReliableNoNagle : SendFlags.UnreliableNoDelay;
+
+                    buffer = ByteBuffer.allocateDirect(length);
+                    buffer.put(writeBuffer);
+                    buffer.flip();
+                }
+
+                synchronized(outgoing){
+                    if(queuedBytes + buffer.capacity() > maxQueuedBytes){
+                        throw new IOException("Send queue overflow (" + queuedBytes + " bytes); disconnecting client");
+                    }
+
+                    outgoing.add(new QueuedMessage(buffer, flags));
+                    queuedBytes += buffer.capacity();
+                }
             }catch(Exception e){
-                Log.err(e);
-                Log.info("Error sending packet. Disconnecting invalid client!");
-                close();
-
-                SteamConnection k = steamConnections.get(sid.getAccountID());
-                if(k != null) steamConnections.remove(sid.getAccountID());
+                handleError(e);
             }
         }
 
@@ -589,6 +662,27 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
         @Override
         public void close(){
             disconnectSteamUser(sid);
+        }
+
+        private void handleError(Exception e){
+            //handle errors on the main thread
+            Core.app.post(() -> {
+                Log.err("Error sending packet. Disconnecting invalid client!", e);
+                close();
+
+                SteamConnection k = steamConnections.get(sid.getAccountID());
+                if(k != null) steamConnections.remove(sid.getAccountID());
+            });
+        }
+
+        private static final class QueuedMessage{
+            final ByteBuffer buffer;
+            final int flags;
+
+            QueuedMessage(ByteBuffer buffer, int flags){
+                this.buffer = buffer;
+                this.flags = flags;
+            }
         }
     }
 }
