@@ -108,7 +108,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
 
             if(!readAny){
                 try{
-                    Thread.sleep(12);
+                    Thread.sleep(15);
                 }catch(InterruptedException ignored){
                     return; //thread stopped
                 }
@@ -116,7 +116,10 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
         }
     }
 
-    /** Drains all currently-pending messages on one connection. Returns true if anything was read. */
+    /**
+     * Drains all currently-pending messages on one connection.
+     * @return true if anything was read.
+     * */
     boolean pollConnection(Connection connection, SteamConnection con) throws Exception{
         boolean readAny = false;
         int length;
@@ -375,8 +378,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
 
             Log.info("Connecting to owner @: @", currentServer.getAccountID(), friends.getFriendPersonaName(currentServer));
 
-            //begin the handshake; success/handleClientReceived/setClientConnected fire once onConnectionStatusChanged reports Connected
-            clientConnection = snet.connectP2P(currentServer, 0);
+           clientConnection = snet.connectP2P(currentServer, 0);
         });
     }
 
@@ -417,18 +419,18 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                     boolean banned = banList.length() > 0 && Structs.contains(banList.split(","), SVars.user.user.getSteamID().getAccountID() + "");
 
                     Host out = new Host(
-                    -1, //invalid ping
-                    smat.getLobbyData(lobby, "name"),
-                    "steam:" + lobby.handle(),
-                    smat.getLobbyData(lobby, "mapname"),
-                    Strings.parseInt(smat.getLobbyData(lobby, "wave"), -1),
-                    smat.getNumLobbyMembers(lobby),
-                    Strings.parseInt(smat.getLobbyData(lobby, "version"), -1),
-                    smat.getLobbyData(lobby, "versionType"),
-                    Gamemode.valueOf(mode),
-                    smat.getLobbyMemberLimit(lobby),
-                    banned ? "[banned]" : "",
-                    null
+                        -1, //invalid ping
+                        smat.getLobbyData(lobby, "name"),
+                        "steam:" + lobby.handle(),
+                        smat.getLobbyData(lobby, "mapname"),
+                        Strings.parseInt(smat.getLobbyData(lobby, "wave"), -1),
+                        smat.getNumLobbyMembers(lobby),
+                        Strings.parseInt(smat.getLobbyData(lobby, "version"), -1),
+                        smat.getLobbyData(lobby, "versionType"),
+                        Gamemode.valueOf(mode),
+                        smat.getLobbyMemberLimit(lobby),
+                        banned ? "[banned]" : "",
+                        null
                     );
                     hosts.add(out);
                 }catch(Exception e){
@@ -479,8 +481,9 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
             if(net.server()){
                 if(state == ConnectionState.Connecting){
                     //256kb -> 1mb/sec for large worlds
-                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMax, 1 * 1024 * 1024);
-                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMin, 1 * 1024 * 1024);
+                    int limit = 1 * 1024 * 1024;
+                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMax, limit);
+                    snet.setConnectionConfigValue(connection, SteamNetworkingConfigValue.SendRateMin, limit);
 
                     //incoming connection request arriving through our listen socket; accept it
                     SteamResult result = snet.acceptConnection(connection);
@@ -527,8 +530,6 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
 
                     net.setClientConnected();
                     net.handleClientReceived(con);
-
-                    Core.app.post(() -> Core.app.post(() -> Core.app.post(() -> Log.info("Server: @\nClient: @\nActive: @", net.server(), net.client(), net.active()))));
                 }else if(state == ConnectionState.ClosedByPeer || state == ConnectionState.ProblemDetectedLocally){
                     Log.info("Disconnected! @: @", remote.getAccountID(), state);
 
@@ -542,7 +543,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                 }
             }
         }catch(Exception e){
-            Log.err("Error processing connection status change.", e);
+            Log.err("Error processing connection status change", e);
         }
     }
 
@@ -595,8 +596,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                         outgoing.poll();
                         queuedBytes -= msg.buffer.capacity();
                     }else if(result == SteamResult.LimitExceeded){
-                        //Steam's send buffer is full; stop draining for this tick and retry the SAME
-                        //message (preserving order) next poll instead of silently losing it
+                        //Steam's send buffer is full; stop draining and retry the same message (preserving order) next poll instead of silently losing it
                         break;
                     }else if(result == SteamResult.Ignored){
                         //only possible with NoDelay-flagged unreliable sends; fine to drop and move on
