@@ -516,7 +516,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                     Log.info("@ has disconnected: @", remote.getAccountID(), state);
                     disconnectSteamUser(remote);
                 }
-            }else if(currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
+            }else if(net.client() && currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
                 if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
                     startNetThread();
 
@@ -584,8 +584,6 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                 while((msg = outgoing.peek()) != null){
                     SteamResult result;
                     try{
-                        //rewind defensively in case a previous failed attempt touched the position
-                        msg.buffer.rewind();
                         result = snet.sendMessageToConnection(connection, msg.buffer, msg.flags);
                     }catch(Exception e){
                         handleError(e);
@@ -613,8 +611,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
             }
         }
 
-        /** Can be called on any thread. Serializes immediately, but only *queues* the send;
-         * actual transmission and backpressure handling happens in {@link #pollWrites()}. */
+        /** Can be called on any thread. Serializes immediately, but only queues the send. Actual transmission and backpressure handling happens in {@link #pollWrites()}. */
         @Override
         public void send(Object object, boolean reliable){
             try{
