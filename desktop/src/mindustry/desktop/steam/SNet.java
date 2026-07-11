@@ -516,7 +516,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
                     Log.info("@ has disconnected: @", remote.getAccountID(), state);
                     disconnectSteamUser(remote);
                 }
-            }else if(net.client() && currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
+            }else if(currentServer != null && remote.getAccountID() == currentServer.getAccountID()){
                 if(state == ConnectionState.Connected && prevState != ConnectionState.Connected){
                     startNetThread();
 
@@ -535,7 +535,7 @@ public class SNet implements SteamNetworkingSocketsCallback, SteamMatchmakingCal
 
                     Core.app.post(() -> {
                         ui.loadfrag.hide();
-                        ui.showErrorMessage(Core.bundle.format("cantconnect", state.name()));
+                        ui.showErrorMessage(Core.bundle.format("disconnect.reason", state.name()));
                         net.handleClientReceived(new Disconnect());
                         currentServer = null;
                         clientConnection = null;
