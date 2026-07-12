@@ -952,11 +952,6 @@ public class UnitType extends UnlockableContent implements Senseable{
             lightRadius = Math.max(60f, hitSize * 2.3f);
         }
 
-        //if a status effects slows a unit when firing, don't shoot while moving.
-        if(autoFindTarget){
-            autoFindTarget = !weapons.contains(w -> w.shootStatus.speedMultiplier < 0.99f) || alwaysShootWhenMoving;
-        }
-
         if(flyingLayer < 0) flyingLayer = lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit;
         clipSize = Math.max(clipSize, lightRadius * 1.1f);
         singleTarget |= weapons.size <= 1 && !forceMultiTarget;
