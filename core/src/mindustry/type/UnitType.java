@@ -243,7 +243,7 @@ public class UnitType extends UnlockableContent implements Senseable{
     bounded = true,
     /** if true, this unit is detected as naval - do NOT assign this manually! Initialized in init() */
     naval = false,
-    /** if false, RTS AI controlled units do not automatically attack things while moving. This is automatically assigned. */
+    /** if false, RTS AI controlled units do not automatically attack things while moving. */
     autoFindTarget = true,
     /** If false, 'under' blocks like conveyors are not targeted. */
     targetUnderBlocks = true,
