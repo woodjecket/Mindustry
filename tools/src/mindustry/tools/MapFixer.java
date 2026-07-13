@@ -142,6 +142,12 @@ public class MapFixer{
                     changed = true;
                 }
 
+                if(isHidden && !state.rules.attackMode && state.rules.winWave <= 1){
+                    Log.warn("@: Attack mode not enabled.",  map.name());
+                    state.rules.attackMode = true;
+                    changed = true;
+                }
+
                 if(changed){
                     MapIO.writeMap(f, map);
                 }
