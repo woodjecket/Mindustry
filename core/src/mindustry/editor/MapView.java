@@ -196,7 +196,7 @@ public class MapView extends Element implements GestureListener{
 
         if(Core.scene.getScrollFocus() != this) return;
 
-        zoom += Core.input.axis(Binding.zoom) / 10f * zoom;
+        if(!ui.consolefrag.shown()) zoom += Core.input.axis(Binding.zoom) / 10f * zoom;
         clampZoom();
     }
 
