@@ -76,6 +76,9 @@ public class MapFixer{
                 SectorPreset preset = content.sectors().find(s -> s.generator.map.file.absolutePath().equals(f.absolutePath()));
                 if(preset == null) return;
 
+                //uniquely broken (TODO: remove and fix 263)
+                if(preset.sector.planet == Planets.serpulo && preset.sector.id == 263) return;
+
                 String targetName = preset.requireUnlock ? preset.localizedName : f.nameWithoutExtension();
 
                 editor.beginEdit(map);
