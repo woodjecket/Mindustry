@@ -17,8 +17,6 @@ import arc.util.*;
 import dalvik.system.*;
 import mindustry.*;
 import mindustry.game.EventType.*;
-import mindustry.game.Saves.*;
-import mindustry.io.*;
 import mindustry.net.*;
 import mindustry.ui.*;
 import mindustry.ui.FileChooser.*;
@@ -298,6 +296,11 @@ public class AndroidLauncher extends AndroidApplication{
             if(uri != null){
                 String scheme = uri.getScheme();
 
+                //clear data (not sure if necessary?)
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.setData(null);
+                setIntent(intent);
+
                 if("mindustry".equalsIgnoreCase(scheme)){ //open a server URL
 
                     String host = uri.getHost();
@@ -309,32 +312,11 @@ public class AndroidLauncher extends AndroidApplication{
                         });
                     }
                 }else{ //open a save file
-                    Fi file = Core.files.cache("temp-save." + saveExtension);
+                    Fi file = Core.files.cache("imported");
                     file.write(getContentResolver().openInputStream(uri), false);
 
-                    //may run on a different thread
-                    Core.app.post(() -> {
-                        try{
-                            SaveMeta meta = SaveIO.getMeta(file);
-                            if(!meta.isMap()){ //open save
-                                SaveSlot slot = control.saves.importSave(file);
-                                ui.load.runLoadSave(slot);
-                            }else{ //open map
-                                if(!ui.maps.isShown()){
-                                    ui.maps.show();
-                                }
-                                ui.maps.tryImportMap(file, result -> ui.maps.showMap(result));
-                            }
-                        }catch(Throwable e){
-                            Log.err("Failed to load save", e);
-                            ui.showException("@save.import.invalid", e);
-                        }
-                    });
+                    ClientLauncher.handleFileImport(file);
                 }
-
-                //clear data (not sure if necessary?)
-                intent.setAction(Intent.ACTION_MAIN);
-                intent.setData(null);
             }
         }catch(Throwable e){
             Log.err(e);
