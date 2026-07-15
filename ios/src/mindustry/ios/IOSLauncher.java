@@ -193,17 +193,13 @@ public class IOSLauncher extends IOSApplication.Delegate{
 
     @Override
     public boolean openURL(UIApplication app, NSURL url, UIApplicationOpenURLOptions options){
-        openURL(url);
+        handleAppURL(url);
         return false;
     }
 
     @Override
     public boolean didFinishLaunching(UIApplication application, UIApplicationLaunchOptions options){
         boolean b = super.didFinishLaunching(application, options);
-
-        if(options != null && options.has(UIApplicationLaunchOptions.Keys.URL())){
-            openURL(((NSURL)options.get(UIApplicationLaunchOptions.Keys.URL())));
-        }
 
         Events.on(ClientLoadEvent.class, e -> Core.app.post(() -> Core.app.post(() -> Core.scene.table(Styles.black9, t -> {
             t.visible(() -> {
@@ -218,7 +214,7 @@ public class IOSLauncher extends IOSApplication.Delegate{
         return b;
     }
 
-    void openURL(NSURL url){
+    void handleAppURL(NSURL url){
         if(url == null) return;
         try{
             Fi file = new Fi(getDocumentsDirectory()).child(url.getLastPathComponent());
