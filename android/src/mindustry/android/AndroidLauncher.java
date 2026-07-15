@@ -225,7 +225,7 @@ public class AndroidLauncher extends AndroidApplication{
         }});
 
         var intent = getIntent();
-        Events.on(ClientLoadEvent.class, u -> handleFiles(intent));
+        Events.on(ClientLoadEvent.class, u -> handleIntent(intent));
 
         try{
             //new external folder
@@ -287,38 +287,50 @@ public class AndroidLauncher extends AndroidApplication{
     protected void onNewIntent(Intent intent){
         super.onNewIntent(intent);
 
-        handleFiles(intent);
+        handleIntent(intent);
     }
 
-    private void handleFiles(Intent intent){
+    private void handleIntent(Intent intent){
         if(intent == null) return;
 
         try{
             Uri uri = intent.getData();
             if(uri != null){
+                String scheme = uri.getScheme();
 
-                Fi file = Core.files.cache("temp-save." + saveExtension);
-                file.write(getContentResolver().openInputStream(uri), false);
-                //TODO: how to check if it's a server URL? e.g: mindustry://myserver.com or mindustry://127.0.0.1
+                if("mindustry".equalsIgnoreCase(scheme)){ //open a server URL
 
-                //may run on a different thread
-                Core.app.post(() -> {
-                    try{
-                        SaveMeta meta = SaveIO.getMeta(file);
-                        if(!meta.isMap()){ //open save
-                            SaveSlot slot = control.saves.importSave(file);
-                            ui.load.runLoadSave(slot);
-                        }else{ //open map
-                            if(!ui.maps.isShown()){
-                                ui.maps.show();
-                            }
-                            ui.maps.tryImportMap(file, result -> ui.maps.showMap(result));
-                        }
-                    }catch(Throwable e){
-                        Log.err("Failed to load save", e);
-                        ui.showException("@save.import.invalid", e);
+                    String host = uri.getHost();
+                    int port = uri.getPort();
+
+                    if(host != null && !host.isEmpty()){
+                        Core.app.post(() -> {
+                            ui.showConfirm(Core.bundle.format("servers.connect.confirm", host), () -> ui.join.connect(host, port != -1 ? port : 6567));
+                        });
                     }
-                });
+                }else{ //open a save file
+                    Fi file = Core.files.cache("temp-save." + saveExtension);
+                    file.write(getContentResolver().openInputStream(uri), false);
+
+                    //may run on a different thread
+                    Core.app.post(() -> {
+                        try{
+                            SaveMeta meta = SaveIO.getMeta(file);
+                            if(!meta.isMap()){ //open save
+                                SaveSlot slot = control.saves.importSave(file);
+                                ui.load.runLoadSave(slot);
+                            }else{ //open map
+                                if(!ui.maps.isShown()){
+                                    ui.maps.show();
+                                }
+                                ui.maps.tryImportMap(file, result -> ui.maps.showMap(result));
+                            }
+                        }catch(Throwable e){
+                            Log.err("Failed to load save", e);
+                            ui.showException("@save.import.invalid", e);
+                        }
+                    });
+                }
 
                 //clear data (not sure if necessary?)
                 intent.setAction(Intent.ACTION_MAIN);
