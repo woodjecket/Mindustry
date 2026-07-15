@@ -1,36 +1,21 @@
 sourceSets.main.java.srcDirs = ["src/"]
 
 
+import arc.files.*
+import arc.func.*
+import arc.graphics.*
+import arc.packer.*
+import arc.struct.*
+import arc.util.*
+import arc.util.io.*
+import groovy.transform.*
 
-import arc.files.Fi
-import arc.files.ZipFi
-import arc.func.Func2
-import arc.graphics.Pixmap
-import arc.graphics.Pixmaps
-import arc.packer.TexturePacker
-import arc.struct.IntMap
-import arc.struct.ObjectMap
-import arc.struct.OrderedMap
-import arc.struct.Seq
-import arc.util.Http
-import arc.util.Log
-import arc.util.OS
-import arc.util.Threads
-import arc.util.io.PropertiesUtils
-import arc.util.io.Streams
-
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 def genFolder = "../core/assets-raw/sprites_out/generated/"
 def enableAA = true
 
-@groovy.transform.CompileStatic
-static int getRGB(Pixmap image, int ix, int iy) {
-    return image.getRaw(Math.max(Math.min(ix, image.width - 1), 0), Math.max(Math.min(iy, image.height - 1), 0))
-}
-
-@groovy.transform.CompileStatic
+@CompileStatic
 static void antialias(File file){
     Pixmap result = new Pixmap(new Fi(file))
     Pixmaps.antialias(result)
