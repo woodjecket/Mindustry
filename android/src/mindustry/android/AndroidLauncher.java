@@ -16,6 +16,7 @@ import arc.struct.*;
 import arc.util.*;
 import dalvik.system.*;
 import mindustry.*;
+import mindustry.game.EventType.*;
 import mindustry.game.Saves.*;
 import mindustry.io.*;
 import mindustry.net.*;
@@ -222,7 +223,9 @@ public class AndroidLauncher extends AndroidApplication{
             hideStatusBar = true;
             useGL30 = true;
         }});
-        checkFiles(getIntent());
+
+        var intent = getIntent();
+        Events.on(ClientLoadEvent.class, u -> handleFiles(intent));
 
         try{
             //new external folder
@@ -280,54 +283,49 @@ public class AndroidLauncher extends AndroidApplication{
         }
     }
 
-    private void checkFiles(Intent intent){
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+
+        handleFiles(intent);
+    }
+
+    private void handleFiles(Intent intent){
+        if(intent == null) return;
+
         try{
             Uri uri = intent.getData();
             if(uri != null){
-                File myFile = null;
-                String scheme = uri.getScheme();
-                if(scheme.equals("file")){
-                    String fileName = uri.getEncodedPath();
-                    myFile = new File(fileName);
-                }else if(!scheme.equals("content")){
-                    //error
-                    return;
-                }
-                boolean save = uri.getPath().endsWith(saveExtension);
-                boolean map = uri.getPath().endsWith(mapExtension);
-                InputStream inStream;
-                if(myFile != null) inStream = new FileInputStream(myFile);
-                else inStream = getContentResolver().openInputStream(uri);
-                Core.app.post(() -> Core.app.post(() -> {
-                    if(save){ //open save
-                        System.out.println("Opening save.");
-                        Fi file = Core.files.local("temp-save." + saveExtension);
-                        file.write(inStream, false);
-                        if(SaveIO.isSaveValid(file)){
-                            try{
-                                SaveSlot slot = control.saves.importSave(file);
-                                ui.load.runLoadSave(slot);
-                            }catch(IOException e){
-                                ui.showException("@save.import.fail", e);
+
+                Fi file = Core.files.cache("temp-save." + saveExtension);
+                file.write(getContentResolver().openInputStream(uri), false);
+                //TODO: how to check if it's a server URL? e.g: mindustry://myserver.com or mindustry://127.0.0.1
+
+                //may run on a different thread
+                Core.app.post(() -> {
+                    try{
+                        SaveMeta meta = SaveIO.getMeta(file);
+                        if(!meta.isMap()){ //open save
+                            SaveSlot slot = control.saves.importSave(file);
+                            ui.load.runLoadSave(slot);
+                        }else{ //open map
+                            if(!ui.maps.isShown()){
+                                ui.maps.show();
                             }
-                        }else{
-                            ui.showErrorMessage("@save.import.invalid");
+                            ui.maps.tryImportMap(file, result -> ui.maps.showMap(result));
                         }
-                    }else if(map){ //open map
-                        Fi file = Core.files.local("temp-map." + mapExtension);
-                        file.write(inStream, false);
-                        Core.app.post(() -> {
-                            System.out.println("Opening map.");
-                            if(!ui.editor.isShown()){
-                                ui.editor.show();
-                            }
-                            ui.editor.beginEditMap(file);
-                        });
+                    }catch(Throwable e){
+                        Log.err("Failed to load save", e);
+                        ui.showException("@save.import.invalid", e);
                     }
-                }));
+                });
+
+                //clear data (not sure if necessary?)
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.setData(null);
             }
-        }catch(IOException e){
-            e.printStackTrace();
+        }catch(Throwable e){
+            Log.err(e);
         }
     }
 
