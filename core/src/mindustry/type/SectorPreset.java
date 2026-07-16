@@ -123,8 +123,8 @@ public class SectorPreset extends UnlockableContent{
     public void createIcons(MultiPacker packer){
         super.createIcons(packer);
 
-        if(outline && uiIcon.found() && uiIcon != Icon.terrain.getRegion()){
-            makeOutline(PageType.ui, packer, uiIcon, true, outlineColor, outlineRadius, outlineRadius);
+        if(outline && Core.atlas.has("sector-" + name)){
+            makeOutline(PageType.ui, packer, Core.atlas.find("sector-" + name), true, outlineColor, outlineRadius, outlineRadius);
         }
     }
 
