@@ -124,7 +124,7 @@ public class SectorPreset extends UnlockableContent{
         super.createIcons(packer);
 
         if(outline && Core.atlas.has("sector-" + name)){
-            makeOutline(PageType.ui, packer, Core.atlas.find("sector-" + name), true, outlineColor, outlineRadius, outlineRadius);
+            makeOutline(PageType.ui, packer, Core.atlas.find("sector-" + name), false, outlineColor, outlineRadius, outlineRadius);
         }
     }
 
